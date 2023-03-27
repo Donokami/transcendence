@@ -10,7 +10,7 @@
       <div
         class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify w-3/4 justify-between"
       >
-        <chat-discussion></chat-discussion>
+        <chat-message-screen></chat-message-screen>
       </div>
     </div>
   </div>
@@ -19,14 +19,14 @@
 <script lang="ts">
 import SiteHeader from '../components/SiteHeader.vue'
 import ChatDiscussionsList from '../components/ChatDiscussionsList.vue'
-import ChatDiscussion from '../components/ChatDiscussion.vue'
+import ChatMessageScreen from '../components/ChatMessageScreen.vue'
 
 export default {
   name: 'ChatView',
   components: {
     SiteHeader,
     ChatDiscussionsList,
-    ChatDiscussion
+    ChatMessageScreen
   }
 }
 </script>

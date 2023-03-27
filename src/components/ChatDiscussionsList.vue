@@ -1,74 +1,67 @@
 <template>
   <h2 class="text-2xl font-bold mb-8 text-black">Discussions</h2>
   <ul class="menu bg-base-100 w-full">
-    <li>
-      <a class="flex p-1">
-        <div class="mx-auto md:mx-0 w-16 flex justify-center items-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="h-[60px] w-12"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-        </div>
-        <span class="hidden md:block">Conobi</span>
-      </a>
-    </li>
-    <li>
-      <a class="flex active p-1">
-        <div class="mx-auto md:mx-0 w-16 flex justify-center items-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="h-[60px] w-12"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-        </div>
-        <span class="hidden md:block">Hayce_</span>
-      </a>
-    </li>
-    <li>
-      <a class="flex flex-grow p-1">
-        <div class="mx-auto md:mx-0 w-16 flex justify-center items-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="h-[60px] w-12"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z"
-            />
-          </svg>
-        </div>
-        <span class="hidden md:block">Narcisserael</span>
-      </a>
-    </li>
+    <ChatUserSelector
+      v-for="user in users"
+      :key="user.id"
+      :user_name="user.name"
+      :user_profile_picture="user.profile_picture"
+      :is_selected="user.is_selected"
+      @select-user="selectUser(user)"
+    />
   </ul>
 </template>
 
 <script lang="ts">
+import ChatUserSelector from './ChatUserSelector.vue'
+
+interface User {
+  id: number
+  name: string
+  profile_picture: string
+  is_selected: boolean
+}
+
 export default {
-  name: 'ChatDiscussionsList'
+  name: 'ChatDiscussionsList',
+  components: {
+    ChatUserSelector
+  },
+  data() {
+    return {
+      users: [
+        {
+          id: 1,
+          name: 'Conobi',
+          profile_picture: '',
+          is_selected: true
+        },
+        {
+          id: 2,
+          name: 'Hayce_',
+          profile_picture: '',
+          is_selected: false
+        },
+        {
+          id: 3,
+          name: 'Narcisserael',
+          profile_picture: '',
+          is_selected: false
+        }
+      ]
+    }
+  },
+  methods: {
+    selectUser(selectedUser: User) {
+      // DEACTIVATE ALL USERS
+      this.users.forEach((user) => {
+        if (user !== selectedUser) {
+          user.is_selected = false
+        }
+      })
+      // ACIVATE THE SELECTED USER
+      selectedUser.is_selected = true
+    }
+  }
 }
 </script>
