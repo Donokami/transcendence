@@ -1,6 +1,6 @@
 <template>
   <div class="chat-messages">
-    <h2 class="text-2xl font-bold mb-8 text-black">{{ selectedUser.name }}</h2>
+    <h2 class="text-2xl font-bold mb-8 text-black">{{ selectedUser.username }}</h2>
     <div
       v-for="message in filteredMessages"
       :key="message.id"
@@ -27,25 +27,48 @@
 </template>
 
 <script lang="ts">
-import type { User } from '../types/user.js'
-
-interface Message {
-  id: number
-  text: string
-  sender: User
-  receiver: User
-}
+import type { Message } from '../types/Message.js'
 
 export default {
   name: 'ChatDiscussion',
   props: {
     selectedUser: {
       required: true,
-      default: () => ({ id: 0, name: '', profile_picture: '' })
+      default: () => ({
+        id: 0,
+        username: '',
+        email: '',
+        password: '',
+        profile_picture: '',
+        status: '',
+        rank: 0,
+        games_played: 0,
+        win: 0,
+        loss: 0,
+        win_rate: 0,
+        points_scored: 0,
+        points_conceded: 0,
+        points_difference: 0
+      })
     },
     loggedUser: {
       required: true,
-      default: () => ({ id: 0, name: '', profile_picture: '' })
+      default: () => ({
+        id: 0,
+        username: '',
+        email: '',
+        password: '',
+        profile_picture: '',
+        status: '',
+        rank: 0,
+        games_played: 0,
+        win: 0,
+        loss: 0,
+        win_rate: 0,
+        points_scored: 0,
+        points_conceded: 0,
+        points_difference: 0
+      })
     }
   },
   data() {
@@ -55,13 +78,35 @@ export default {
           id: 1,
           sender: {
             id: 1,
-            name: 'Conobi',
-            profile_picture: ''
+            username: 'Conobi',
+            email: '',
+            password: '',
+            profile_picture: '',
+            status: '',
+            rank: 1,
+            games_played: 10,
+            win: 5,
+            loss: 5,
+            win_rate: 50,
+            points_scored: 10,
+            points_conceded: 10,
+            points_difference: 0
           },
           receiver: {
             id: 3,
-            name: 'Mitsun0bu',
-            profile_picture: ''
+            username: 'Mitsun0bu',
+            email: '',
+            password: '',
+            profile_picture: '',
+            status: '',
+            rank: 4,
+            games_played: 10,
+            win: 2,
+            loss: 8,
+            win_rate: 20,
+            points_scored: 4,
+            points_conceded: 25,
+            points_difference: -21
           },
           text: "Hello! It's Conobi here!"
         },
@@ -69,13 +114,35 @@ export default {
           id: 2,
           sender: {
             id: 2,
-            name: 'Hayce_',
-            profile_picture: ''
+            username: 'Hayce_',
+            email: '',
+            password: '',
+            profile_picture: '',
+            status: '',
+            rank: 2,
+            games_played: 10,
+            win: 4,
+            loss: 6,
+            win_rate: 40,
+            points_scored: 8,
+            points_conceded: 12,
+            points_difference: -4
           },
           receiver: {
             id: 3,
-            name: 'Mitsun0bu',
-            profile_picture: ''
+            username: 'Mitsun0bu',
+            email: '',
+            password: '',
+            profile_picture: '',
+            status: '',
+            rank: 4,
+            games_played: 10,
+            win: 2,
+            loss: 8,
+            win_rate: 20,
+            points_scored: 4,
+            points_conceded: 25,
+            points_difference: -21
           },
           text: "Hi ! It's Hayce_ here!"
         },
@@ -83,13 +150,35 @@ export default {
           id: 3,
           sender: {
             id: 4,
-            name: 'Narcisserael',
-            profile_picture: ''
+            username: 'Narcisserael',
+            email: '',
+            password: '',
+            profile_picture: '',
+            status: '',
+            rank: 3,
+            games_played: 10,
+            win: 6,
+            loss: 4,
+            win_rate: 60,
+            points_scored: 12,
+            points_conceded: 8,
+            points_difference: 4
           },
           receiver: {
             id: 3,
-            name: 'Mitsun0bu',
-            profile_picture: ''
+            username: 'Mitsun0bu',
+            email: '',
+            password: '',
+            profile_picture: '',
+            status: '',
+            rank: 4,
+            games_played: 10,
+            win: 2,
+            loss: 8,
+            win_rate: 20,
+            points_scored: 4,
+            points_conceded: 25,
+            points_difference: -21
           },
           text: "Yo ! It's Narcisserael here"
         },
@@ -97,13 +186,35 @@ export default {
           id: 3,
           sender: {
             id: 3,
-            name: 'Mitsun0bu',
-            profile_picture: ''
+            username: 'Mitsun0bu',
+            email: '',
+            password: '',
+            profile_picture: '',
+            status: '',
+            rank: 4,
+            games_played: 10,
+            win: 2,
+            loss: 8,
+            win_rate: 20,
+            points_scored: 4,
+            points_conceded: 25,
+            points_difference: -21
           },
           receiver: {
             id: 1,
-            name: 'Conobi',
-            profile_picture: ''
+            username: 'Conobi',
+            email: '',
+            password: '',
+            profile_picture: '',
+            status: '',
+            rank: 1,
+            games_played: 10,
+            win: 5,
+            loss: 5,
+            win_rate: 50,
+            points_scored: 10,
+            points_conceded: 10,
+            points_difference: 0
           },
           text: 'Well received Conobi! My name is Mitsun0bu'
         }

@@ -10,26 +10,26 @@
           <tr>
             <th class="text-center rounded-none">Rank</th>
             <th class="text-center">Pseudo</th>
-            <th class="text-center">Games Played</th>
+            <th class="text-center">Win Rate</th>
             <th class="text-center">Win</th>
             <th class="text-center">Loss</th>
-            <th class="text-center">Win Rate</th>
+            <th class="text-center">Games Played</th>
             <th class="text-center">Points Scored</th>
             <th class="text-center">Points Conceded</th>
             <th class="text-center rounded-none">Points Difference</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="player in getPlayerRankingData()" :key="player.rank">
-            <th class="text-center">{{ player.rank }}</th>
-            <td class="text-center">{{ player.pseudo }}</td>
-            <td class="text-center">{{ player.gamesPlayed }}</td>
-            <td class="text-center">{{ player.win }}</td>
-            <td class="text-center">{{ player.loss }}</td>
-            <td class="text-center">{{ player.winRate }}</td>
-            <td class="text-center">{{ player.pointsScored }}</td>
-            <td class="text-center">{{ player.pointsConceded }}</td>
-            <td class="text-center">{{ player.pointsDifference }}</td>
+          <tr v-for="user in getUserRanking()" :key="user.rank">
+            <th class="text-center">{{ user.rank }}</th>
+            <td class="text-center">{{ user.username }}</td>
+            <td class="text-center">{{ user.win_rate }} %</td>
+            <td class="text-center">{{ user.win }}</td>
+            <td class="text-center">{{ user.loss }}</td>
+            <td class="text-center">{{ user.games_played }}</td>
+            <td class="text-center">{{ user.points_scored }}</td>
+            <td class="text-center">{{ user.points_conceded }}</td>
+            <td class="text-center">{{ user.points_difference }}</td>
           </tr>
         </tbody>
       </table>
@@ -38,17 +38,7 @@
 </template>
 
 <script lang="ts">
-interface PlayerRankingData {
-  rank: number
-  pseudo: string
-  gamesPlayed: number
-  win: number
-  loss: number
-  winRate: number
-  pointsScored: number
-  pointsConceded: number
-  pointsDifference: number
-}
+import type { User } from '../types/User.js'
 
 export default {
   name: 'StatsRankingTable',
@@ -59,50 +49,81 @@ export default {
     toggleTable(): void {
       this.$emit('table-state-changed', 'matchHistory')
     },
-    getPlayerRankingData(): PlayerRankingData[] {
-      const players: PlayerRankingData[] = [
+    getUserRanking(): User[] {
+      const users: User[] = [
         {
+          id: 1,
+          username: 'Conobi',
+          email: '',
+          password: '',
+          profile_picture: '',
+          status: '',
           rank: 1,
-          pseudo: 'Player 1',
-          gamesPlayed: 10,
+          games_played: 10,
           win: 5,
           loss: 5,
-          winRate: 50,
-          pointsScored: 10,
-          pointsConceded: 10,
-          pointsDifference: 0
+          win_rate: 50,
+          points_scored: 10,
+          points_conceded: 10,
+          points_difference: 0
         },
         {
+          id: 2,
+          username: 'Hayce_',
+          email: '',
+          password: '',
+          profile_picture: '',
+          status: '',
           rank: 2,
-          pseudo: 'Player 2',
-          gamesPlayed: 10,
+          games_played: 10,
           win: 4,
           loss: 6,
-          winRate: 40,
-          pointsScored: 8,
-          pointsConceded: 12,
-          pointsDifference: -4
+          win_rate: 40,
+          points_scored: 8,
+          points_conceded: 12,
+          points_difference: -4
         },
         {
+          id: 3,
+          username: 'Mitsun0bu',
+          email: '',
+          password: '',
+          profile_picture: '',
+          status: '',
+          rank: 4,
+          games_played: 10,
+          win: 2,
+          loss: 8,
+          win_rate: 20,
+          points_scored: 4,
+          points_conceded: 25,
+          points_difference: -21
+        },
+        {
+          id: 4,
+          username: 'Narcisserael',
+          email: '',
+          password: '',
+          profile_picture: '',
+          status: '',
           rank: 3,
-          pseudo: 'Player 3',
-          gamesPlayed: 10,
+          games_played: 10,
           win: 6,
           loss: 4,
-          winRate: 60,
-          pointsScored: 12,
-          pointsConceded: 8,
-          pointsDifference: 4
+          win_rate: 60,
+          points_scored: 12,
+          points_conceded: 8,
+          points_difference: 4
         }
       ]
 
-      // Sort players by winRate in descending order
-      players.sort((a, b) => b.winRate - a.winRate)
+      // Sort users by win_rate in descending order
+      users.sort((a, b) => b.win_rate - a.win_rate)
 
-      // Assign new rank to each player based on the sorted order
-      players.forEach((player, index) => (player.rank = index + 1))
+      // Assign new rank to each user based on the sorted order
+      users.forEach((user, index) => (user.rank = index + 1))
 
-      return players
+      return users
     }
   }
 }

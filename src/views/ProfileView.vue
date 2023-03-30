@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-screen-xl min-w-[95%] mx-auto text-black">
+  <div class="max-w-screen-xl min-w-[95%] lg:mx-auto text-black">
     <site-header></site-header>
     <div class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify">
       <h2 class="text-2xl font-bold mb-8 text-black">Profile</h2>
@@ -13,8 +13,8 @@
               </div>
             </div>
           </div>
-          <div class="stat-value text-xl">Mitsun0bu</div>
-          <div class="stat-title text-md">Status: online</div>
+          <div class="stat-value text-xl">{{ observedUser.username }}</div>
+          <div class="stat-title text-md">Status: {{ observedUser.status }}</div>
           <div class="stat-desc text-secondary">-</div>
         </div>
 
@@ -35,7 +35,7 @@
             </svg>
           </div>
           <div class="stat-value text-xl">Rank</div>
-          <div class="stat-value text-primary">3rd</div>
+          <div class="stat-value text-primary">{{ observedUser.rank }}</div>
           <div class="stat-desc">-</div>
         </div>
 
@@ -56,18 +56,21 @@
             </svg>
           </div>
           <div class="stat-value text-xl">Win Rate</div>
-          <div class="stat-value text-primary">50%</div>
+          <div class="stat-value text-primary">{{ observedUser.win_rate }} %</div>
           <div class="stat-desc">-</div>
         </div>
       </div>
+    </div>
+    <div class="border-2 border-black items-center mx-2 my-3 mt-1 p-5 text-justify relative">
+      <h2 class="text-2xl font-bold mb-8 text-black">Stats</h2>
 
       <stats-ranking-table
-        @table-state-changed="tableState = $event"
-        v-show="tableState === 'ranking'"
+        @table-state-changed="table_state = $event"
+        v-show="table_state === 'ranking'"
       ></stats-ranking-table>
       <stats-match-history-table
-        @table-state-changed="tableState = $event"
-        v-show="tableState === 'matchHistory'"
+        @table-state-changed="table_state = $event"
+        v-show="table_state === 'matchHistory'"
       ></stats-match-history-table>
     </div>
   </div>
@@ -86,7 +89,25 @@ export default {
     StatsMatchHistoryTable
   },
   data() {
-    return { tableState: 'ranking' }
+    return {
+      observedUser: {
+        id: 3,
+        username: 'Mitsun0bu',
+        email: '',
+        password: '',
+        profile_picture: '',
+        status: '',
+        rank: 4,
+        games_played: 10,
+        win: 2,
+        loss: 8,
+        win_rate: 20,
+        points_scored: 4,
+        points_conceded: 25,
+        points_difference: -21
+      },
+      table_state: 'ranking'
+    }
   },
   methods: {}
 }

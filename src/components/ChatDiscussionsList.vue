@@ -25,21 +25,36 @@
             />
           </svg>
         </div>
-        <span class="hidden md:block">{{ user.name }}</span>
+        <span class="hidden md:block">{{ user.username }}</span>
       </a>
     </li>
   </ul>
 </template>
 
 <script lang="ts">
-import type { User } from '../types/user.js'
+import type { User } from '../types/User.js'
 
 export default {
   name: 'ChatDiscussionsList',
   props: {
     loggedUser: {
       required: true,
-      default: () => ({ id: 0, name: '', profile_picture: '' })
+      default: () => ({
+        id: 0,
+        username: '',
+        email: '',
+        password: '',
+        profile_picture: '',
+        status: '',
+        rank: 0,
+        games_played: 0,
+        win: 0,
+        loss: 0,
+        win_rate: 0,
+        points_scored: 0,
+        points_conceded: 0,
+        points_difference: 0
+      })
     },
     users: {
       type: Array as () => User[],
@@ -47,7 +62,22 @@ export default {
     },
     selectedUser: {
       required: true,
-      default: () => ({ id: 0, name: '', profile_picture: '' })
+      default: () => ({
+        id: 0,
+        username: '',
+        email: '',
+        password: '',
+        profile_picture: '',
+        status: '',
+        rank: 0,
+        games_played: 0,
+        win: 0,
+        loss: 0,
+        win_rate: 0,
+        points_scored: 0,
+        points_conceded: 0,
+        points_difference: 0
+      })
     }
   },
   methods: {

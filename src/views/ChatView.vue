@@ -25,7 +25,7 @@
 import SiteHeader from '../components/SiteHeader.vue'
 import ChatDiscussionsList from '../components/ChatDiscussionsList.vue'
 import ChatDiscussion from '../components/ChatDiscussion.vue'
-import type { User } from '../types/user.js'
+import type { User } from '../types/User.js'
 
 export default {
   name: 'ChatView',
@@ -38,35 +38,101 @@ export default {
     return {
       loggedUser: {
         id: 3,
-        name: 'Mitsun0bu',
-        profile_picture: ''
+        username: 'Mitsun0bu',
+        email: '',
+        password: '',
+        profile_picture: '',
+        status: '',
+        rank: 0,
+        games_played: 0,
+        win: 0,
+        loss: 0,
+        win_rate: 0,
+        points_scored: 0,
+        points_conceded: 0,
+        points_difference: 0
       },
       users: [
         {
           id: 1,
-          name: 'Conobi',
-          profile_picture: ''
+          username: 'Conobi',
+          email: '',
+          password: '',
+          profile_picture: '',
+          status: '',
+          rank: 1,
+          games_played: 10,
+          win: 5,
+          loss: 5,
+          win_rate: 50,
+          points_scored: 10,
+          points_conceded: 10,
+          points_difference: 0
         },
         {
           id: 2,
-          name: 'Hayce_',
-          profile_picture: ''
+          username: 'Hayce_',
+          email: '',
+          password: '',
+          profile_picture: '',
+          status: '',
+          rank: 2,
+          games_played: 10,
+          win: 4,
+          loss: 6,
+          win_rate: 40,
+          points_scored: 8,
+          points_conceded: 12,
+          points_difference: -4
         },
         {
           id: 3,
-          name: 'Mitsun0bu',
-          profile_picture: ''
+          username: 'Mitsun0bu',
+          email: '',
+          password: '',
+          profile_picture: '',
+          status: '',
+          rank: 0,
+          games_played: 0,
+          win: 0,
+          loss: 0,
+          win_rate: 0,
+          points_scored: 0,
+          points_conceded: 0,
+          points_difference: 0
         },
         {
           id: 4,
-          name: 'Narcisserael',
-          profile_picture: ''
+          username: 'Narcisserael',
+          email: '',
+          password: '',
+          profile_picture: '',
+          status: '',
+          rank: 4,
+          games_played: 10,
+          win: 2,
+          loss: 8,
+          win_rate: 20,
+          points_scored: 4,
+          points_conceded: 25,
+          points_difference: -21
         }
       ],
       selectedUser: {
         id: 1,
-        name: 'Conobi',
-        profile_picture: ''
+        username: 'Conobi',
+        email: '',
+        password: '',
+        profile_picture: '',
+        status: '',
+        rank: 1,
+        games_played: 10,
+        win: 5,
+        loss: 5,
+        win_rate: 50,
+        points_scored: 10,
+        points_conceded: 10,
+        points_difference: 0
       }
     }
   },
