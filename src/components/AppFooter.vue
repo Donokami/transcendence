@@ -5,7 +5,7 @@
       <p class="pl-6">Made by Conobi, Hayce_, Mitsun0bu & Narcisserael</p>
     </div>
     <div class="grid-flow-col gap-4 md:place-self-center md:justify-self-end">
-      <font-awesome-icon icon="fa-brands fa-github" class="h-8" />
+      <iconify-icon icon="mdi:github" width="60" height="60"></iconify-icon>
     </div>
   </footer>
 </template>

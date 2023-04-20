@@ -15,4 +15,7 @@ export interface User {
   points_scored: number
   points_conceded: number
   points_difference: number
+  // USER FRIENDS INFORMATIONS
+  friends: string[]
+  n_friends: number
 }
