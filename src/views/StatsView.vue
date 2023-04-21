@@ -3,12 +3,12 @@
     <site-header></site-header>
     <div class="border-2 border-black items-center mx-2 my-3 mt-1 p-5 text-justify relative">
       <stats-ranking-table
-        @table-state-changed="tableState = $event"
-        v-show="tableState === 'ranking'"
+        @table-state-changed="table_state = $event"
+        v-show="table_state === 'ranking'"
       ></stats-ranking-table>
       <stats-match-history-table
-        @table-state-changed="tableState = $event"
-        v-show="tableState === 'matchHistory'"
+        @table-state-changed="table_state = $event"
+        v-show="table_state === 'matchHistory'"
       ></stats-match-history-table>
     </div>
   </div>
@@ -28,7 +28,7 @@ export default {
   },
   data() {
     return {
-      tableState: 'ranking'
+      table_state: 'ranking'
     }
   },
   methods: {}

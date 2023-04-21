@@ -65,7 +65,9 @@ export default {
           win_rate: 50,
           points_scored: 10,
           points_conceded: 10,
-          points_difference: 0
+          points_difference: 0,
+          friends: [],
+          n_friends: 0
         },
         {
           id: 2,
@@ -81,7 +83,9 @@ export default {
           win_rate: 40,
           points_scored: 8,
           points_conceded: 12,
-          points_difference: -4
+          points_difference: -4,
+          friends: [],
+          n_friends: 0
         },
         {
           id: 3,
@@ -97,7 +101,9 @@ export default {
           win_rate: 20,
           points_scored: 4,
           points_conceded: 25,
-          points_difference: -21
+          points_difference: -21,
+          friends: [],
+          n_friends: 0
         },
         {
           id: 4,
@@ -113,7 +119,9 @@ export default {
           win_rate: 60,
           points_scored: 12,
           points_conceded: 8,
-          points_difference: 4
+          points_difference: 4,
+          friends: [],
+          n_friends: 0
         }
       ]
 

@@ -3,8 +3,7 @@
 @tailwind utilities;
 
 .btn {
-  border: none;
-  border-radius: 0.25rem;
+  border-radius: 0;
   font-size: 1rem;
   font-weight: 600;
   padding: 0.5rem 1rem;
@@ -32,4 +31,8 @@
   font-size: 1rem;
   font-weight: normal;
   outline: none;
+}
+
+.tooltip-left {
+  color: 'white';
 }

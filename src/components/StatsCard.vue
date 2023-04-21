@@ -1,5 +1,5 @@
 <template>
-  <div class="stats">
+  <div class="stats rounded-none">
     <div class="stat border-black border-r-2">
       <div class="stat-figure text-secondary">
         <div class="avatar online">
@@ -8,7 +8,7 @@
           </div>
         </div>
       </div>
-      <div class="stat-value text-xl">{{ observedUser.username }}</div>
+      <div class="stat-value text-black text-xl">{{ observedUser.username }}</div>
       <div class="stat-title text-md">Status:</div>
       <div class="stat-desc text-[#62D49A]">{{ observedUser.status }}</div>
     </div>
@@ -38,7 +38,7 @@
     </div>
 
     <div class="stat border-black !border-l-2">
-      <div class="stat-figure text-primary">
+      <div class="stat-figure text-primary tooltip tooltip-top" data-tip="Add friend">
         <iconify-icon
           class="w-10 h-10"
           :icon="hoverIcon"

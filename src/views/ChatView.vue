@@ -5,17 +5,30 @@
       <div
         class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify min-w-min w-1/4"
       >
-        <chat-discussions-list
+        <chat-direct-messages-list
+          @list-state-changed="list_state = $event"
+          v-show="list_state === 'dm'"
           :loggedUser="loggedUser"
           :users="users"
-          :selectedUser="selectedUser"
           @select-user="selectedUser = $event"
-        ></chat-discussions-list>
+        ></chat-direct-messages-list>
+        <!-- <chat-channels-list
+          @list-state-changed="list_state = $event"
+          v-show="list_state === 'channels'"
+          :loggedUser="loggedUser"
+          :users="users"
+          @select-user="selectedUser = $event"
+        ></chat-channels-list> -->
       </div>
       <div
         class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify w-3/4 justify-between"
+        v-if="selectedUser"
       >
-        <chat-discussion :loggedUser="loggedUser" :selectedUser="selectedUser"></chat-discussion>
+        <chat-discussion
+          :loggedUser="loggedUser"
+          :selectedUser="selectedUser"
+          @select-user="selectedUser = $event"
+        ></chat-discussion>
       </div>
     </div>
   </div>
@@ -23,7 +36,8 @@
 
 <script lang="ts">
 import SiteHeader from '../components/SiteHeader.vue'
-import ChatDiscussionsList from '../components/ChatDiscussionsList.vue'
+import ChatChannelsList from '../components/ChatChannelsList.vue'
+import ChatDirectMessagesList from '../components/ChatDirectMessagesList.vue'
 import ChatDiscussion from '../components/ChatDiscussion.vue'
 import type { User } from '../types/User.js'
 
@@ -31,11 +45,13 @@ export default {
   name: 'ChatView',
   components: {
     SiteHeader,
-    ChatDiscussionsList,
+    ChatChannelsList,
+    ChatDirectMessagesList,
     ChatDiscussion
   },
   data() {
     return {
+      list_state: 'dm',
       loggedUser: {
         id: 3,
         username: 'Mitsun0bu',
@@ -50,7 +66,9 @@ export default {
         win_rate: 0,
         points_scored: 0,
         points_conceded: 0,
-        points_difference: 0
+        points_difference: 0,
+        friends: [''],
+        n_friends: 0
       },
       users: [
         {
@@ -67,7 +85,9 @@ export default {
           win_rate: 50,
           points_scored: 10,
           points_conceded: 10,
-          points_difference: 0
+          points_difference: 0,
+          friends: [''],
+          n_friends: 0
         },
         {
           id: 2,
@@ -83,7 +103,9 @@ export default {
           win_rate: 40,
           points_scored: 8,
           points_conceded: 12,
-          points_difference: -4
+          points_difference: -4,
+          friends: [''],
+          n_friends: 0
         },
         {
           id: 3,
@@ -99,7 +121,9 @@ export default {
           win_rate: 0,
           points_scored: 0,
           points_conceded: 0,
-          points_difference: 0
+          points_difference: 0,
+          friends: [''],
+          n_friends: 0
         },
         {
           id: 4,
@@ -115,30 +139,21 @@ export default {
           win_rate: 20,
           points_scored: 4,
           points_conceded: 25,
-          points_difference: -21
+          points_difference: -21,
+          friends: [''],
+          n_friends: 0
         }
       ],
-      selectedUser: {
-        id: 1,
-        username: 'Conobi',
-        email: '',
-        password: '',
-        profile_picture: '',
-        status: '',
-        rank: 1,
-        games_played: 10,
-        win: 5,
-        loss: 5,
-        win_rate: 50,
-        points_scored: 10,
-        points_conceded: 10,
-        points_difference: 0
-      }
+      selectedUser: null as User | null
     }
   },
   methods: {
     selectUser(user: User) {
-      this.selectedUser = user
+      if (user) {
+        this.selectedUser = user
+      } else {
+        this.selectedUser = null
+      }
     }
   }
 }

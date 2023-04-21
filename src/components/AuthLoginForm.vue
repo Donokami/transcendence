@@ -23,11 +23,15 @@
         <ErrorMessage class="font-normal text-base text-red-600" name="password" />
       </div>
       <div class="flex items-center justify-between mt-8">
-        <button class="btn bg-zinc-900 text-white" type="submit" :disabled="inSubmission">
+        <button
+          class="btn border-zinc-900 bg-zinc-900 text-white"
+          type="submit"
+          :disabled="inSubmission"
+        >
           Log in
         </button>
         <button
-          class="btn bg-gray-400 hover:bg-gray-300 text-zinc-900"
+          class="btn border-gray-400 bg-gray-400 hover:bg-gray-300 hover:border-gray-300 text-zinc-900"
           type="button"
           @click="toggleForm"
         >

@@ -54,7 +54,7 @@
           Create account
         </button>
         <button
-          class="btn bg-gray-400 hover:bg-gray-300 text-zinc-900"
+          class="btn bg-gray-400 border-gray-400 hover:bg-gray-300 hover:border-gray-300 text-zinc-900"
           type="button"
           @click="toggleForm"
         >
@@ -64,7 +64,11 @@
     </vee-form>
     <div class="divider before:bg-gray-400 after:bg-gray-400 m-8">or</div>
     <div class="flex justify-center">
-      <button class="btn bg-zinc-900 text-white" type="submit" :disabled="inSubmission">
+      <button
+        class="btn bg-zinc-900 border-zinc-900 text-white"
+        type="submit"
+        :disabled="inSubmission"
+      >
         Register with
         <img class="icon mx-3 h-2/4" src="../assets/42-logo.svg" alt="42 Logo" />
       </button>
