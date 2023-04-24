@@ -66,7 +66,7 @@ export default {
           points_scored: 10,
           points_conceded: 10,
           points_difference: 0,
-          friends: [],
+          friends: ['Mitsun0bu', 'Hayce_', 'Narcisserael'],
           n_friends: 0
         },
         {
@@ -84,7 +84,7 @@ export default {
           points_scored: 8,
           points_conceded: 12,
           points_difference: -4,
-          friends: [],
+          friends: ['Conobi', 'Mitsun0bu', 'Narcisserael'],
           n_friends: 0
         },
         {
@@ -102,7 +102,7 @@ export default {
           points_scored: 4,
           points_conceded: 25,
           points_difference: -21,
-          friends: [],
+          friends: ['Conobi', 'Hayce_', 'Narcisserael'],
           n_friends: 0
         },
         {
@@ -120,7 +120,7 @@ export default {
           points_scored: 12,
           points_conceded: 8,
           points_difference: 4,
-          friends: [],
+          friends: ['Conobi', 'Mitsun0bu', 'Hayce_'],
           n_friends: 0
         }
       ]

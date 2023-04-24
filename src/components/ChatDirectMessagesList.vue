@@ -1,15 +1,11 @@
 <template>
   <div class="tabs">
-    <a class="tab tab-bordered tab-active text-2xl font-bold mb-8">DMs</a>
+    <a class="tab tab-active tab-bordered text-2xl font-bold mb-8">DMs</a>
     <a class="tab tab-bordered text-2xl font-bold mb-8" @click="toggleList">Channels</a>
   </div>
   <div>
-    <button
-      class="btn bg-white border-2 border-black mb-2 text-black hover:bg-primary hover:border-primary hover:text-white"
-      type="button"
-    >
-      SEND A NEW DM
-    </button>
+    <chat-direct-messages-button></chat-direct-messages-button>
+    <chat-direct-messages-modal></chat-direct-messages-modal>
     <ul class="menu bg-base-100 w-full">
       <li v-for="user in filteredUsers" :key="user.id">
         <a
@@ -34,13 +30,36 @@
 
 <script lang="ts">
 import type { User } from '../types/User.js'
+import ChatDirectMessagesButton from '../components/ChatDirectMessagesButton.vue'
+import ChatDirectMessagesModal from '../components/ChatDirectMessagesModal.vue'
 
 export default {
   name: 'ChatDirectMessagesList',
-  props: {
-    loggedUser: {
-      required: true,
-      default: () => ({
+  components: {
+    ChatDirectMessagesButton,
+    ChatDirectMessagesModal
+  },
+  data() {
+    return {
+      loggedUser: {
+        id: 3,
+        username: 'Mitsun0bu',
+        email: '',
+        password: '',
+        profile_picture: '',
+        status: '',
+        rank: 0,
+        games_played: 0,
+        win: 0,
+        loss: 0,
+        win_rate: 0,
+        points_scored: 0,
+        points_conceded: 0,
+        points_difference: 0,
+        friends: ['Conobi', 'Hayce_', 'Narcisserael'],
+        n_friends: 3
+      },
+      selectedUser: {
         id: 0,
         username: '',
         email: '',
@@ -57,32 +76,81 @@ export default {
         points_difference: 0,
         friends: [''],
         n_friends: 0
-      })
-    },
-    users: {
-      type: Array as () => User[],
-      required: true
-    },
-    selectedUser: {
-      required: true,
-      default: () => ({
-        id: 0,
-        username: '',
-        email: '',
-        password: '',
-        profile_picture: '',
-        status: '',
-        rank: 0,
-        games_played: 0,
-        win: 0,
-        loss: 0,
-        win_rate: 0,
-        points_scored: 0,
-        points_conceded: 0,
-        points_difference: 0,
-        friends: [''],
-        n_friends: 0
-      })
+      },
+      users: [
+        {
+          id: 1,
+          username: 'Conobi',
+          email: '',
+          password: '',
+          profile_picture: '',
+          status: '',
+          rank: 1,
+          games_played: 10,
+          win: 5,
+          loss: 5,
+          win_rate: 50,
+          points_scored: 10,
+          points_conceded: 10,
+          points_difference: 0,
+          friends: ['Mitsun0bu', 'Hayce_', 'Narcisserael'],
+          n_friends: 0
+        },
+        {
+          id: 2,
+          username: 'Hayce_',
+          email: '',
+          password: '',
+          profile_picture: '',
+          status: '',
+          rank: 2,
+          games_played: 10,
+          win: 4,
+          loss: 6,
+          win_rate: 40,
+          points_scored: 8,
+          points_conceded: 12,
+          points_difference: -4,
+          friends: ['Conobi', 'Mitsun0bu', 'Narcisserael'],
+          n_friends: 0
+        },
+        {
+          id: 3,
+          username: 'Mitsun0bu',
+          email: '',
+          password: '',
+          profile_picture: '',
+          status: '',
+          rank: 0,
+          games_played: 0,
+          win: 0,
+          loss: 0,
+          win_rate: 0,
+          points_scored: 0,
+          points_conceded: 0,
+          points_difference: 0,
+          friends: ['Conobi', 'Hayce_', 'Narcisserael'],
+          n_friends: 0
+        },
+        {
+          id: 4,
+          username: 'Narcisserael',
+          email: '',
+          password: '',
+          profile_picture: '',
+          status: '',
+          rank: 4,
+          games_played: 10,
+          win: 2,
+          loss: 8,
+          win_rate: 20,
+          points_scored: 4,
+          points_conceded: 25,
+          points_difference: -21,
+          friends: ['Conobi', 'Hayce_', 'Mitsun0bu'],
+          n_friends: 0
+        }
+      ]
     }
   },
   methods: {

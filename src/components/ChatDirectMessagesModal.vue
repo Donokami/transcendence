@@ -1,37 +1,38 @@
 <template>
-  <div class="tabs">
-    <a class="tab tab-bordered text-2xl font-bold mb-8" @click="toggleList">DMs</a>
-    <a class="tab tab-bordered tab-active text-2xl font-bold mb-8">Channels</a>
-  </div>
-  <div>
-    <chat-channels-button></chat-channels-button>
-    <chat-channels-modal></chat-channels-modal>
-    <ul class="menu bg-base-100 w-full">
-      <li v-for="channel in channels" :key="channel.name">
-        <a
-          class="flex p-1"
-          :class="{ active: selectedChannel.name === channel.name }"
-          @click="selectChannel()"
+  <input type="checkbox" id="my-modal-3" class="modal-toggle" />
+  <div class="modal">
+    <div class="modal-box rounded-none">
+      <div class="flex items-center justify-end">
+        <label
+          for="my-modal-3"
+          class="btn bg-white border-black border-2 text-black hover:bg-black hover:border-black hover:text-white"
+          >X</label
         >
-          <span class="block">{{ channel.name }}</span>
-        </a>
-      </li>
-    </ul>
+      </div>
+      <div class="py-4">
+        <h3 class="font-bold text-lg">Who do you want to a send a DM to ?</h3>
+      </div>
+      <div class="collapse collapse-arrow border-2 border-black rounded-none">
+        <input type="checkbox" />
+        <div class="collapse-title text-base">Select a friend</div>
+        <div class="collapse-content text-base">
+          <ul class="menu bg-base-100 w-full">
+            <li v-for="friend in loggedUser.friends" :key="friend">
+              <a class="flex p-1">
+                <span class="block">{{ friend }}</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import type { Channel } from '../types/Channel.js'
 import type { User } from '../types/User.js'
-import ChatChannelsButton from '../components/ChatChannelsButton.vue'
-import ChatChannelsModal from '../components/ChatChannelsModal.vue'
-
 export default {
-  name: 'ChatChannelsList',
-  components: {
-    ChatChannelsButton,
-    ChatChannelsModal
-  },
+  name: 'ChatDirectMessagesModal',
   data() {
     return {
       loggedUser: {
@@ -52,19 +53,23 @@ export default {
         friends: ['Conobi', 'Hayce_', 'Narcisserael'],
         n_friends: 0
       },
-      channels: [
-        {
-          name: 'Test Channel #1',
-          members: [] as User[]
-        },
-        {
-          name: 'Test Channel #2',
-          members: [] as User[]
-        }
-      ] as Channel[],
-      selectedChannel: {
-        name: 'Test',
-        members: [] as User[]
+      selectedUser: {
+        id: 0,
+        username: '',
+        email: '',
+        password: '',
+        profile_picture: '',
+        status: '',
+        rank: 0,
+        games_played: 0,
+        win: 0,
+        loss: 0,
+        win_rate: 0,
+        points_scored: 0,
+        points_conceded: 0,
+        points_difference: 0,
+        friends: [''],
+        n_friends: 0
       },
       users: [
         {
@@ -142,14 +147,12 @@ export default {
       ]
     }
   },
-  methods: {
-    toggleList(): void {
-      this.$emit('list-state-changed', 'dm')
-    },
-    selectUser(selectedUser: User) {
-      this.$emit('select-user', selectedUser)
+  computed: {
+    filteredUsers(): User[] {
+      return this.users.filter((user) => {
+        return user.id !== this.loggedUser.id
+      })
     }
-  },
-  computed: {}
+  }
 }
 </script>

@@ -6,19 +6,15 @@
         class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify min-w-min w-1/4"
       >
         <chat-direct-messages-list
+          v-if="list_state === 'dm'"
           @list-state-changed="list_state = $event"
-          v-show="list_state === 'dm'"
-          :loggedUser="loggedUser"
-          :users="users"
           @select-user="selectedUser = $event"
         ></chat-direct-messages-list>
-        <!-- <chat-channels-list
+        <chat-channels-list
+          v-if="list_state === 'channels'"
           @list-state-changed="list_state = $event"
-          v-show="list_state === 'channels'"
-          :loggedUser="loggedUser"
-          :users="users"
           @select-user="selectedUser = $event"
-        ></chat-channels-list> -->
+        ></chat-channels-list>
       </div>
       <div
         class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify w-3/4 justify-between"
@@ -67,7 +63,7 @@ export default {
         points_scored: 0,
         points_conceded: 0,
         points_difference: 0,
-        friends: [''],
+        friends: ['Conobi', 'Hayce_', 'Narcisserael'],
         n_friends: 0
       },
       users: [
@@ -86,7 +82,7 @@ export default {
           points_scored: 10,
           points_conceded: 10,
           points_difference: 0,
-          friends: [''],
+          friends: ['Mitsun0bu', 'Hayce_', 'Narcisserael'],
           n_friends: 0
         },
         {
@@ -104,7 +100,7 @@ export default {
           points_scored: 8,
           points_conceded: 12,
           points_difference: -4,
-          friends: [''],
+          friends: ['Conobi', 'Mitsun0bu', 'Narcisserael'],
           n_friends: 0
         },
         {
@@ -122,7 +118,7 @@ export default {
           points_scored: 0,
           points_conceded: 0,
           points_difference: 0,
-          friends: [''],
+          friends: ['Conobi', 'Hayce_', 'Narcisserael'],
           n_friends: 0
         },
         {
@@ -140,7 +136,7 @@ export default {
           points_scored: 4,
           points_conceded: 25,
           points_difference: -21,
-          friends: [''],
+          friends: ['Conobi', 'Mitsun0bu', 'Hayce_'],
           n_friends: 0
         }
       ],

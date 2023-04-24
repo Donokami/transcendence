@@ -58,7 +58,6 @@ export default {
   name: 'ProfileStatsCard',
   data() {
     return {
-      // hover: false,
       hoverIcon: 'mdi:account-plus-outline',
       observedUser: {
         id: 3,
@@ -75,7 +74,7 @@ export default {
         points_scored: 4,
         points_conceded: 25,
         points_difference: -21,
-        friends: [],
+        friends: ['Conobi', 'Hayce_', 'Narcisserael'],
         n_friends: 0
       }
     }
