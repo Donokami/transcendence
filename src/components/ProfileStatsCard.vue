@@ -55,7 +55,7 @@
 
 <script lang="ts">
 export default {
-  name: 'StatsCard',
+  name: 'ProfileStatsCard',
   data() {
     return {
       // hover: false,

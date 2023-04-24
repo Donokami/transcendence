@@ -3,12 +3,11 @@
     <site-header></site-header>
     <div class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify">
       <h2 class="text-2xl font-bold mb-8 text-black">Profile</h2>
-      <stats-card></stats-card>
+      <profile-stats-card></profile-stats-card>
       <div class="form-control">
         <label class="cursor-pointer p-6">
-          <span class="stat-value text-xl">Activate 2FA</span>
-          <span class="stat-value text-xl">Deactivate 2FA</span>
-          <span class="px-6 align-middle">
+          <span class="stat-value text-xl">{{ authentication_msg }}</span>
+          <span class="px-6 align-middle" @click="switchAuthenticationMsg">
             <input type="checkbox" class="toggle rounded-none" />
           </span>
         </label>
@@ -31,7 +30,7 @@
 
 <script lang="ts">
 import SiteHeader from '../components/SiteHeader.vue'
-import StatsCard from '../components/StatsCard.vue'
+import ProfileStatsCard from '../components/ProfileStatsCard.vue'
 import StatsRankingTable from '../components/StatsRankingTable.vue'
 import StatsMatchHistoryTable from '../components/StatsMatchHistoryTable.vue'
 
@@ -39,15 +38,21 @@ export default {
   name: 'ProfileView',
   components: {
     SiteHeader,
-    StatsCard,
+    ProfileStatsCard,
     StatsRankingTable,
     StatsMatchHistoryTable
   },
   data() {
     return {
-      table_state: 'ranking'
+      table_state: 'ranking',
+      authentication_msg: 'Activate 2FA'
     }
   },
-  methods: {}
+  methods: {
+    switchAuthenticationMsg(): void {
+      if (this.authentication_msg === 'Activate 2FA') this.authentication_msg = 'Deactivate 2FA'
+      else this.authentication_msg = 'Activate 2FA'
+    }
+  }
 }
 </script>
