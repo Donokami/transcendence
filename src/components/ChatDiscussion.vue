@@ -1,23 +1,27 @@
 <template>
   <div class="chat-messages">
-    <h2 class="text-2xl font-bold mb-8 text-black">{{ selectedUser.username }}</h2>
+    <h2 class="text-2xl font-bold mb-8 text-black">{{ userStore.selectedUser.username }}</h2>
     <div
       v-for="message in filteredMessages"
       :key="message.id"
       :class="{
         'border-black border-2 bg-zinc-900 flex flex-col mx-2 my-3 mt-1 p-2.5 text-justify w-2/6 ml-auto':
-          message.sender.id === loggedUser.id && message.receiver.id === selectedUser.id,
+          message.sender.id === userStore.loggedUser.id &&
+          message.receiver.id === userStore.selectedUser.id,
         'border-black border-2 flex flex-col mx-2 my-3 mt-1 p-2.5 text-justify w-2/6 min-w-min':
-          message.sender.id === selectedUser.id && message.receiver.id === loggedUser.id
+          message.sender.id === userStore.selectedUser.id &&
+          message.receiver.id === userStore.loggedUser.id
       }"
     >
       <p
         class="text-sm"
         :class="{
           'text-white':
-            message.sender.id === loggedUser.id && message.receiver.id === selectedUser.id,
+            message.sender.id === userStore.loggedUser.id &&
+            message.receiver.id === userStore.selectedUser.id,
           'text-black':
-            message.sender.id === selectedUser.id && message.receiver.id === loggedUser.id
+            message.sender.id === userStore.selectedUser.id &&
+            message.receiver.id === userStore.loggedUser.id
         }"
       >
         {{ message.text }}
@@ -28,51 +32,13 @@
 
 <script lang="ts">
 import type { Message } from '../types/Message.js'
+import { useUserStore } from '@/stores/UserStore.js'
 
 export default {
   name: 'ChatDiscussion',
-  props: {
-    selectedUser: {
-      required: true,
-      default: () => ({
-        id: 0,
-        username: '',
-        email: '',
-        password: '',
-        profile_picture: '',
-        status: '',
-        rank: 0,
-        games_played: 0,
-        win: 0,
-        loss: 0,
-        win_rate: 0,
-        points_scored: 0,
-        points_conceded: 0,
-        points_difference: 0
-      })
-    },
-    loggedUser: {
-      required: true,
-      default: () => ({
-        id: 0,
-        username: '',
-        email: '',
-        password: '',
-        profile_picture: '',
-        status: '',
-        rank: 0,
-        games_played: 0,
-        win: 0,
-        loss: 0,
-        win_rate: 0,
-        points_scored: 0,
-        points_conceded: 0,
-        points_difference: 0
-      })
-    }
-  },
   data() {
     return {
+      userStore: useUserStore(),
       messages: [
         {
           id: 1,
@@ -90,7 +56,9 @@ export default {
             win_rate: 50,
             points_scored: 10,
             points_conceded: 10,
-            points_difference: 0
+            points_difference: 0,
+            friends: ['Hayce_', 'Mitsun0bu', 'Narcisserael'],
+            n_friends: 0
           },
           receiver: {
             id: 3,
@@ -106,7 +74,9 @@ export default {
             win_rate: 20,
             points_scored: 4,
             points_conceded: 25,
-            points_difference: -21
+            points_difference: -21,
+            friends: ['Conobi', 'Hayce_', 'Narcisserael'],
+            n_friends: 0
           },
           text: "Hello! It's Conobi here!"
         },
@@ -126,7 +96,9 @@ export default {
             win_rate: 40,
             points_scored: 8,
             points_conceded: 12,
-            points_difference: -4
+            points_difference: -4,
+            friends: ['Conobi', 'Mitsun0bu', 'Narcisserael'],
+            n_friends: 0
           },
           receiver: {
             id: 3,
@@ -142,7 +114,9 @@ export default {
             win_rate: 20,
             points_scored: 4,
             points_conceded: 25,
-            points_difference: -21
+            points_difference: -21,
+            friends: ['Conobi', 'Hayce_', 'Narcisserael'],
+            n_friends: 0
           },
           text: "Hi ! It's Hayce_ here!"
         },
@@ -162,7 +136,9 @@ export default {
             win_rate: 60,
             points_scored: 12,
             points_conceded: 8,
-            points_difference: 4
+            points_difference: 4,
+            friends: ['Conobi', 'Hayce_', 'Mitsun0bu'],
+            n_friends: 0
           },
           receiver: {
             id: 3,
@@ -178,7 +154,9 @@ export default {
             win_rate: 20,
             points_scored: 4,
             points_conceded: 25,
-            points_difference: -21
+            points_difference: -21,
+            friends: ['Conobi', 'Hayce_', 'Narcisserael'],
+            n_friends: 0
           },
           text: "Yo ! It's Narcisserael here"
         },
@@ -198,7 +176,9 @@ export default {
             win_rate: 20,
             points_scored: 4,
             points_conceded: 25,
-            points_difference: -21
+            points_difference: -21,
+            friends: ['Conobi', 'Hayce_', 'Narcisserael'],
+            n_friends: 0
           },
           receiver: {
             id: 1,
@@ -214,7 +194,9 @@ export default {
             win_rate: 50,
             points_scored: 10,
             points_conceded: 10,
-            points_difference: 0
+            points_difference: 0,
+            friends: ['Mitsun0bu', 'Hayce_', 'Narcisserael'],
+            n_friends: 0
           },
           text: 'Well received Conobi! My name is Mitsun0bu'
         }
@@ -225,9 +207,10 @@ export default {
     filteredMessages(): Message[] {
       return this.messages.filter((message) => {
         return (
-          (message.receiver.id === this.loggedUser.id &&
-            message.sender.id === this.selectedUser.id) ||
-          (message.receiver.id === this.selectedUser.id && message.sender.id === this.loggedUser.id)
+          (message.receiver.id === this.userStore.loggedUser.id &&
+            message.sender.id === this.userStore.selectedUser.id) ||
+          (message.receiver.id === this.userStore.selectedUser.id &&
+            message.sender.id === this.userStore.loggedUser.id)
         )
       })
     }
