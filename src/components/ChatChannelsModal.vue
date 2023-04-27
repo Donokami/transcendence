@@ -29,12 +29,24 @@
             <div class="collapse-title text-base">Friends list</div>
             <div class="collapse-content text-base">
               <ul class="menu bg-base-100 w-full">
-                <li v-for="friend in userStore.loggedUser.friends" :key="friend">
-                  <a class="flex p-1">
-                    <span class="block">{{ friend }}</span>
+                <li v-for="username in userStore.loggedUser.friends" :key="username">
+                  <a class="flex p-1" @click="addUserToChannel(username)">
+                    {{ username }}
                   </a>
                 </li>
               </ul>
+            </div>
+          </div>
+        </div>
+        <!-- USER TO ADD BADGES -->
+        <div>
+          <div v-for="username in usersToAdd" :key="username">
+            <div
+              class="label cursor-pointer bg-primary w-1/3 my-1"
+              @click="cancelAddToChannel(username)"
+            >
+              <span class="badge bg-primary border-none rounded-none">{{ username }}</span>
+              <span class="text-white">x</span>
             </div>
           </div>
         </div>
@@ -76,14 +88,29 @@ export default {
   name: 'ChatChannelsModal',
   data() {
     return {
+      userStore: useUserStore(),
       password_required: false,
-      userStore: useUserStore()
+      usersToAdd: [] as string[]
     }
   },
   methods: {
     requirePassword() {
       if (this.password_required === true) this.password_required = false
       else this.password_required = true
+    },
+    addUserToChannel(username: string) {
+      const index = this.usersToAdd.indexOf(username)
+      if (index >= 0) {
+        console.log('User already added to the channel')
+      } else {
+        this.usersToAdd.push(username)
+      }
+    },
+    cancelAddToChannel(username: string) {
+      const index = this.usersToAdd.indexOf(username, 0)
+      if (index > -1) {
+        this.usersToAdd.splice(index, 1)
+      }
     }
   },
   computed: {

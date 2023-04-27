@@ -12,7 +12,6 @@
         <chat-channels
           v-if="list_state === 'channels'"
           @list-state-changed="list_state = $event"
-          @select-channel="selectedChannel = $event"
         ></chat-channels>
       </div>
       <div
