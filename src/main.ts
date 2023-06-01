@@ -5,8 +5,12 @@ import { Icon } from '@iconify/vue'
 import App from './App.vue'
 import router from './router'
 import VeeValidatePlugin from './includes/validation.js'
+import io from 'socket.io-client'
 
 import './assets/base.css'
+
+const chatSocket = io('http://localhost:3000/chat')
+const gameSocket = io('http://localhost:3000/game')
 
 const app = createApp(App)
 
@@ -14,6 +18,9 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.use(VeeValidatePlugin)
+
+app.config.globalProperties.$chatSocket = chatSocket
+app.config.globalProperties.$gameSocket = gameSocket
 
 app.component('iconify-icon', Icon)
 

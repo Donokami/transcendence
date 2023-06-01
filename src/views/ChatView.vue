@@ -1,7 +1,7 @@
 <template>
-  <div class="max-w-screen-xl min-w-[95%] mx-auto text-black">
+  <div class="max-w-screen-xl min-w-[95%] mx-auto h-[86vh] text-black">
     <site-header></site-header>
-    <div class="flex ...">
+    <div class="flex h-[75vh]">
       <div
         class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify min-w-min w-1/4"
       >
@@ -14,11 +14,13 @@
           @list-state-changed="list_state = $event"
         ></chat-channels>
       </div>
-      <div
-        class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify w-3/4 justify-between"
-        v-if="userStore.selectedUser"
-      >
-        <chat-discussion></chat-discussion>
+      <div class="flex flex-col justify-between text-justify w-3/4" v-if="userStore.selectedUser">
+        <div class="border-black border-2 mx-2 my-3 mt-1 p-5 h-5/6">
+          <chat-discussion></chat-discussion>
+        </div>
+        <div class="border-black border-2 mx-2 my-3 mt-1 p-5 h-1/6">
+          <chat-input></chat-input>
+        </div>
       </div>
     </div>
   </div>
@@ -31,6 +33,7 @@ import SiteHeader from '../components/SiteHeader.vue'
 import ChatChannels from '../components/ChatChannels.vue'
 import ChatDirectMessages from '../components/ChatDirectMessages.vue'
 import ChatDiscussion from '../components/ChatDiscussion.vue'
+import ChatInput from '../components/ChatInput.vue'
 
 export default {
   name: 'ChatView',
@@ -38,7 +41,8 @@ export default {
     SiteHeader,
     ChatChannels,
     ChatDirectMessages,
-    ChatDiscussion
+    ChatDiscussion,
+    ChatInput
   },
   data() {
     return {
