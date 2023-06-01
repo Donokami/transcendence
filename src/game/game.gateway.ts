@@ -1,3 +1,4 @@
+// game.gateway.ts
 import {
   ConnectedSocket,
   MessageBody,
@@ -7,26 +8,26 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ namespace: '/chat' })
-export class ChatGateway {
+@WebSocketGateway({ namespace: '/game' })
+export class GameGateway {
   @WebSocketServer()
   server: Server;
 
   handleConnection(client: Socket) {
     console.log(`Client connected : ${client.id}`);
-    // client.emit('connection', 'Successfully connected to chat server');
+    // client.emit('connection', 'Successfully connected to game server');
   }
 
   handleDisconnection(client: Socket) {
     console.log(`Client disconnected : ${client.id}`);
-    // client.emit('disconnection', 'Successfully disconnected from chat server');
+    // client.emit('disconnection', 'Successfully disconnected from game server');
   }
 
-  @SubscribeMessage('message')
-  handleMessage(
-    @MessageBody() message: string,
+  @SubscribeMessage('move')
+  handleMove(
+    @MessageBody() move: string,
     @ConnectedSocket() client: Socket,
   ): void {
-    this.server.emit('message', client.id, message);
+    this.server.emit('move', client.id, move);
   }
 }

@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { UsersModule } from './users/users.module';
 import { User } from './users/user.entity';
 import { ChatModule } from './chat/chat.module';
+import { GameModule } from './game/game.module';
 
 const cookieSession = require('cookie-session');
 
@@ -38,6 +39,7 @@ const cookieSession = require('cookie-session');
     }),
     UsersModule,
     ChatModule,
+    GameModule,
   ],
   controllers: [AppController],
   providers: [
