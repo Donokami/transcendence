@@ -81,7 +81,7 @@
 </template>
 
 <script lang="ts">
-import type { User } from '../types/User.js'
+import type { User } from '../types/user.js'
 import { useUserStore } from '@/stores/UserStore.js'
 
 export default {

@@ -38,7 +38,7 @@
 </template>
 
 <script lang="ts">
-import type { User } from '../types/User.js'
+import type { User } from '../types/user.js'
 
 export default {
   name: 'StatsRankingTable',

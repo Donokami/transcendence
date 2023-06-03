@@ -1,20 +1,21 @@
 <template>
   <div class="neobrutalist-box w-[30rem] px-6 py-6">
     <h2 class="text-2xl font-bold mb-8 text-black">Register</h2>
-    <vee-form ref="formRef" :validation-schema="registerSchema" @submit="submitForm">
+    <Form ref="formRef" :validation-schema="registerSchema" @submit="submitForm">
       <div class="mb-6">
         <label class="block font-medium mb-1" for="username"> Username </label>
-        <vee-field
+        <Field
           class="neobrutalist-input w-full text-black"
+          id="username"
           name="username"
           type="username"
           placeholder="Choose a username"
         />
-        <ErrorMessage class="font-normal text-base text-red-600" name="email" />
+        <ErrorMessage class="font-normal text-base text-red-600" name="username" />
       </div>
       <div class="mb-6">
         <label class="block font-medium mb-1" for="email">Email</label>
-        <vee-field
+        <Field
           class="neobrutalist-input w-full text-black"
           name="email"
           type="email"
@@ -24,7 +25,7 @@
       </div>
       <div class="mb-6">
         <label class="block font-medium mb-1" for="password">Password</label>
-        <vee-field
+        <Field
           class="neobrutalist-input w-full text-black"
           name="password"
           type="password"
@@ -34,7 +35,7 @@
       </div>
       <div class="mb-6">
         <label class="block font-medium mb-1" for="confirmPassword">Confirm Password</label>
-        <vee-field
+        <Field
           class="neobrutalist-input w-full text-black"
           name="confirmPassword"
           type="password"
@@ -45,7 +46,7 @@
       <div
         class="text-white text-center font-bold p-4 rounded mb-4"
         v-if="showAlert"
-        :class="alertVariant"
+        :class="alertColor"
       >
         {{ alertMsg }}
       </div>
@@ -61,7 +62,7 @@
           Log in
         </button>
       </div>
-    </vee-form>
+    </Form>
     <div class="divider before:bg-gray-400 after:bg-gray-400 m-8">or</div>
     <div class="flex justify-center">
       <button
@@ -76,57 +77,59 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
-import { Form as VeeForm } from 'vee-validate'
+// COMPOSITION API
 
-interface FormModel {
-  username: string
-  email: string
-  password: string
-  registerSchema: Record<string, string>
-  inSubmission: boolean
-  showAlert: boolean
-  alertVariant: string
-  alertMsg: string
-}
+<script setup lang="ts">
+  import { ref } from 'vue'
+  import { Form, Field, ErrorMessage } from 'vee-validate'
+  import { useRouter } from 'vue-router'
 
-export default defineComponent({
-  name: 'AppNeobrutalistForm',
-  data(): FormModel {
-    return {
-      username: '',
-      email: '',
-      password: '',
-      registerSchema: {
-        username: 'required|min:3|max:100',
-        email: 'required|min:3|max:100|email',
-        password: 'required|min:8|max:100',
-        confirmPassword: 'required|password_mismatch:@password'
-      },
-      inSubmission: false,
-      showAlert: false,
-      alertVariant: 'bg-blue-500',
-      alertMsg: 'Your account is being created...'
+  const alertMsg = ref('Your account is being created...')
+  const alertColor = ref('bg-blue-500')
+  const inSubmission = ref(false)
+  const showAlert = ref(false)
+  
+  const router = useRouter()
+  const emit = defineEmits(['form-state-changed', 'login'])
+
+  const registerSchema = {
+    username: 'required|min:3|max:100',
+    email: 'required|email',
+    password: 'required|min:8|max:100',
+    confirmPassword: 'required|password_mismatch:@password',
+  };
+
+  const submitForm = async (values: Record<string, any>) => {
+    showAlert.value = true
+    inSubmission.value = true
+    alertMsg.value = 'Your account is being created...'
+    alertColor.value = 'bg-blue-500'
+
+    try {
+      const response = await fetch('http://localhost:3000/auth/signup', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(values)
+      })
+      if(response.ok) {
+        alertColor.value = 'bg-green-500'
+        alertMsg.value = 'Your account has been created!'
+        await router.push('/home')
+      } else {
+        alertColor.value = 'bg-red-500'
+        alertMsg.value = 'Email already in use!'
+        throw new Error('Something went wrong');
+      }
+    } catch (error) {
+      console.log(error)
+      throw error
     }
-  },
-  methods: {
-    submitForm(values: Record<string, string>) {
-      this.showAlert = true
-      this.inSubmission = true
-      ;('')
-      this.alertVariant = 'bg-blue-500'
-      this.alertMsg = 'Your account is being created...'
-
-      this.alertVariant = 'bg-green-500'
-      this.alertMsg = 'Your account has been created!'
-
-      console.log(values)
-    },
-    toggleForm(): void {
-      this.$emit('form-state-changed', 'login')
-      ;(this.$refs.formRef as typeof VeeForm).resetForm()
+    finally {
+      inSubmission.value = false
     }
   }
-})
+
+  const toggleForm = () => {
+    emit('form-state-changed', 'login')
+  }
 </script>

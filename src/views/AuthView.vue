@@ -17,7 +17,9 @@
   </div>
 </template>
 
-<script lang="ts">
+// OPTION API
+
+<!-- <script lang="ts">
 import AuthHeader from '../components/AuthHeader.vue'
 import AuthLoginForm from '../components/AuthLoginForm.vue'
 import AuthRegisterForm from '../components/AuthRegisterForm.vue'
@@ -37,4 +39,21 @@ export default {
     }
   }
 }
+</script> -->
+
+// COMPOSITION API
+
+<script setup lang="ts">
+import { ref } from "vue"
+import AuthHeader from '../components/AuthHeader.vue'
+import AuthLoginForm from '../components/AuthLoginForm.vue'
+import AuthRegisterForm from '../components/AuthRegisterForm.vue'
+import AuthBallCanvas from '../components/AuthBallCanvas.vue'
+
+const props = defineProps({
+  formState: { type: String, default: 'login'},
+})
+
+props.formState
+
 </script>

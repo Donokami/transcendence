@@ -1,4 +1,4 @@
-import type { User } from './User.js'
+import type { User } from './user'
 
 export interface Channel {
   name: string

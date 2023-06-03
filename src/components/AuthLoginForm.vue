@@ -49,7 +49,64 @@
   </div>
 </template>
 
-<script lang="ts">
+// COMPOSITION API
+
+<script setup lang="ts">
+  import { ref } from 'vue'
+  import { Form as VeeForm } from 'vee-validate'
+  import { useRouter } from 'vue-router'
+
+  const alertMsg = ref('Your account is being created...')
+  const alertColor = ref('bg-blue-500')
+  const inSubmission = ref(false)
+  const showAlert = ref(false)
+
+  const router = useRouter()
+  const emit = defineEmits(['form-state-changed', 'register'])
+
+  const loginSchema = {
+    email: 'required|min:3|max:100|email',
+    password: 'required|min:8|max:100'
+  }
+    
+  const submitForm = async (values: Record<string, any>) => {
+    showAlert.value = true
+    inSubmission.value = true
+    alertMsg.value = 'Looking for your account in database...'
+    alertColor.value = 'bg-blue-500'
+    
+    try {
+      const response = await fetch('http://localhost:3000/auth/signin', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(values)
+      })
+      if (response.ok) {      
+        alertColor.value = 'bg-green-500'
+        alertMsg.value = 'Your account has been found in database!'
+        await router.push('/home')
+      } else {
+        alertColor.value = 'bg-red-500'
+        alertMsg.value = 'Your account is not found in database!'
+        throw new Error('Something went wrong');
+      } 
+    } catch (error) {
+      console.log(error)
+      throw error
+    }
+    finally {
+      inSubmission.value = false
+    }
+  } 
+    
+  const toggleForm = () => {
+    emit('form-state-changed', 'register')
+  }
+</script>
+
+// OPTION API 
+
+<!-- <script lang="ts">
 import { Form as VeeForm } from 'vee-validate'
 
 interface FormModel {
@@ -58,7 +115,7 @@ interface FormModel {
   loginSchema: Record<string, string>
   inSubmission: boolean
   showAlert: boolean
-  alertVariant: string
+  alertColor: string
   alertMsg: string
 }
 
@@ -74,22 +131,33 @@ export default {
       },
       inSubmission: false,
       showAlert: false,
-      alertVariant: 'bg-blue-500',
+      alertColor: 'bg-blue-500',
       alertMsg: 'Your account is being created...'
     }
   },
   methods: {
-    submitForm(values: Record<string, string>) {
+    async submitForm(values: Record<string, string>) {
       this.showAlert = true
       this.inSubmission = true
       ;('')
-      this.alertVariant = 'bg-blue-500'
+      this.alertColor = 'bg-blue-500'
       this.alertMsg = 'Your account is being created...'
 
-      this.alertVariant = 'bg-green-500'
+      this.alertColor = 'bg-green-500'
       this.alertMsg = 'Your account has been created!'
 
       console.log(values)
+      try{
+        await fetch('http://localhost:3000/auth/signin', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(values)
+        })
+      }
+      catch (err) {
+        this.alertColor = 'bg-red-500'
+        this.alertMsg = 'Something went wrong!'
+      }
     },
     toggleForm(): void {
       this.$emit('form-state-changed', 'register')
@@ -97,4 +165,4 @@ export default {
     }
   }
 }
-</script>
+</script> -->

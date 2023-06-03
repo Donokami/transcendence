@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts">
-import type { User } from '../types/User.js'
+import type { User } from '../types/user.js'
 import { useUserStore } from '@/stores/UserStore.js'
 import ChatDirectMessagesButton from '../components/ChatDirectMessagesButton.vue'
 import ChatDirectMessagesList from '../components/ChatDirectMessagesList.vue'
