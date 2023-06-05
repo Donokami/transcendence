@@ -9,8 +9,27 @@ import io from 'socket.io-client'
 
 import './assets/base.css'
 
-const chatSocket = io('http://localhost:3000/chat')
-const gameSocket = io('http://localhost:3000/game')
+const chatSocket = io('http://localhost:3000/chat', {
+    transportOptions: {
+        polling: {
+            cors : {
+                origin: 'http://localhost:3000/',
+                methods: ['GET,POST,DELETE'],
+            }
+        }
+    }
+})
+
+const gameSocket = io('http://localhost:3000/game', {
+    transportOptions: {
+        polling: {
+            cors : {
+                origin: 'http://localhost:3000/',
+                methods: ['GET,POST,DELETE'],
+            }
+        }
+    }
+})
 
 const app = createApp(App)
 
