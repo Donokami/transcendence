@@ -8,7 +8,15 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ namespace: '/game' })
+@WebSocketGateway({
+  namespace: '/game',
+  cors: {
+    origin: 'http://localhost:5173',
+    methods: ['GET,POST,DELETE'],
+    credentials: true,
+  },
+  transport: ['websocket', 'polling'],
+})
 export class GameGateway {
   @WebSocketServer()
   server: Server;
