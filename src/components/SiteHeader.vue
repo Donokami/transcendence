@@ -38,9 +38,35 @@
           class="menu menu-compact dropdown-content shadow bg-base-100 -ml-[75px] mt-1"
         >
           <li><router-link to="/profile">Profile</router-link></li>
-          <li><a>Logout</a></li>
+          <li><a @click="logout">Logout</a></li>
         </ul>
       </div>
     </div>
   </div>
 </template>
+
+// COMPOSITION API
+
+<script setup lang="ts">
+  import { useRouter } from 'vue-router'
+
+  const router = useRouter()
+    
+  const logout = async () => {
+    try {
+      const response = await fetch('http://localhost:3000/auth/signout', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        // body: JSON.stringify(values)
+      })
+      if (response.ok) {      
+        await router.push('/auth')
+      } else {
+        throw new Error('Something went wrong');
+      } 
+    } catch (error) {
+      console.log(error)
+      throw error
+    }
+  } 
+</script>
