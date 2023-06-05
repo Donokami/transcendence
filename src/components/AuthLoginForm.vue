@@ -49,8 +49,6 @@
   </div>
 </template>
 
-// COMPOSITION API
-
 <script setup lang="ts">
   import { ref } from 'vue'
   import { Form as VeeForm } from 'vee-validate'

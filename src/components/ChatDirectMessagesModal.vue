@@ -29,23 +29,15 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { computed } from 'vue'
 import type { User } from '../types/user.js'
 import { useUserStore } from '@/stores/UserStore.js'
 
-export default {
-  name: 'ChatDirectMessagesModal',
-  data() {
-    return {
-      userStore: useUserStore()
-    }
-  },
-  computed: {
-    filteredUsers(): User[] {
-      return this.userStore.users.filter((user) => {
-        return user.id !== this.userStore.loggedUser.id
-      })
-    }
-  }
-}
+const userStore = useUserStore() 
+const filteredUsers = computed(() => {
+    return userStore.users.filter((user: User) => {
+      return user.id !== userStore.loggedUser.id
+    })
+  })
 </script>

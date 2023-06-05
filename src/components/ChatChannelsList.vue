@@ -16,16 +16,8 @@
   </ul>
 </template>
 
-<script lang="ts">
-import { useChannelStore } from '@/stores/ChannelStore'
+<script setup lang="ts">
+  import { useChannelStore } from '@/stores/ChannelStore'
 
-export default {
-  name: 'ChatChannelsList',
-  data() {
-    return {
-      channelStore: useChannelStore()
-    }
-  },
-  methods: {}
-}
+  const channelStore = useChannelStore()
 </script>

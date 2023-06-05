@@ -80,45 +80,40 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 import type { User } from '../types/user.js'
 import { useUserStore } from '@/stores/UserStore.js'
 
-export default {
-  name: 'ChatChannelsModal',
-  data() {
-    return {
-      userStore: useUserStore(),
-      password_required: false,
-      usersToAdd: [] as string[]
-    }
-  },
-  methods: {
-    requirePassword() {
-      if (this.password_required === true) this.password_required = false
-      else this.password_required = true
-    },
-    addUserToChannel(username: string) {
-      const index = this.usersToAdd.indexOf(username)
-      if (index >= 0) {
-        console.log('User already added to the channel')
-      } else {
-        this.usersToAdd.push(username)
-      }
-    },
-    cancelAddToChannel(username: string) {
-      const index = this.usersToAdd.indexOf(username, 0)
-      if (index > -1) {
-        this.usersToAdd.splice(index, 1)
-      }
-    }
-  },
-  computed: {
-    filteredUsers(): User[] {
-      return this.userStore.users.filter((user) => {
-        return user.id !== this.userStore.loggedUser.id
-      })
-    }
+const userStore = useUserStore()
+const password_required = ref(false)
+const usersToAdd = ref<string[]>([])
+
+const requirePassword = () => {
+  if (password_required.value === true) 
+    password_required.value = false
+  else
+    password_required.value = true
+}
+
+const addUserToChannel = (username: string) => {
+  if (!usersToAdd.value.includes(username))
+    usersToAdd.value.push(username)
+  else
+    console.log('User already added to the channel')
+}
+
+const cancelAddToChannel = (username: string) => {
+  const index = usersToAdd.value.indexOf(username)
+  if (index > -1) {
+    usersToAdd.value.splice(index, 1)
   }
 }
+
+const filteredUsers = computed(() => {
+    return userStore.users.filter((user: User) => {
+      return user.id !== userStore.loggedUser.id
+    })
+  })
+
 </script>

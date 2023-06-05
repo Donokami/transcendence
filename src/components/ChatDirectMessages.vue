@@ -4,43 +4,25 @@
     <a class="tab tab-bordered text-2xl font-bold mb-8" @click="toggleList">Channels</a>
   </div>
   <div>
-    <chat-direct-messages-button></chat-direct-messages-button>
+    <label
+    for="my-modal-3"
+    class="btn bg-white border-2 border-black mb-2 text-black hover:bg-primary hover:border-primary hover:text-white"
+    type="button"
+  >
+    SEND A NEW DM
+  </label>
     <chat-direct-messages-modal></chat-direct-messages-modal>
     <chat-direct-messages-list></chat-direct-messages-list>
   </div>
 </template>
 
-<script lang="ts">
-import type { User } from '../types/user.js'
-import { useUserStore } from '@/stores/UserStore.js'
-import ChatDirectMessagesButton from '../components/ChatDirectMessagesButton.vue'
-import ChatDirectMessagesList from '../components/ChatDirectMessagesList.vue'
-import ChatDirectMessagesModal from '../components/ChatDirectMessagesModal.vue'
+<script setup lang="ts">
+  import ChatDirectMessagesList from '../components/ChatDirectMessagesList.vue'
+  import ChatDirectMessagesModal from '../components/ChatDirectMessagesModal.vue'
 
-export default {
-  name: 'ChatDirectMessages',
-  emits: ['list-state-changed'],
-  components: {
-    ChatDirectMessagesButton,
-    ChatDirectMessagesList,
-    ChatDirectMessagesModal
-  },
-  data() {
-    return {
-      userStore: useUserStore()
-    }
-  },
-  methods: {
-    toggleList(): void {
-      this.$emit('list-state-changed', 'channels')
-    }
-  },
-  computed: {
-    filteredUsers(): User[] {
-      return this.userStore.users.filter((user) => {
-        return user.id !== this.userStore.loggedUser.id
-      })
-    }
+  const emit = defineEmits(['list-state-changed', 'channels'])
+
+  const toggleList = () => {
+    emit('list-state-changed', 'channels')
   }
-}
 </script>

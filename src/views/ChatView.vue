@@ -6,12 +6,12 @@
         class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify min-w-min w-1/4"
       >
         <chat-direct-messages
-          v-if="list_state === 'dm'"
-          @list-state-changed="list_state = $event"
+          v-if="listState === 'dm'"
+          @list-state-changed="listState = $event"
         ></chat-direct-messages>
         <chat-channels
-          v-if="list_state === 'channels'"
-          @list-state-changed="list_state = $event"
+          v-if="listState === 'channels'"
+          @list-state-changed="listState = $event"
         ></chat-channels>
       </div>
       <div class="flex flex-col justify-between text-justify w-3/4" v-if="userStore.selectedUser">
@@ -26,31 +26,16 @@
   </div>
 </template>
 
-<script lang="ts">
-import type { Channel } from '../types/Channel.js'
-import { useUserStore } from '@/stores/UserStore.js'
-import SiteHeader from '../components/SiteHeader.vue'
-import ChatChannels from '../components/ChatChannels.vue'
-import ChatDirectMessages from '../components/ChatDirectMessages.vue'
-import ChatDiscussion from '../components/ChatDiscussion.vue'
-import ChatInput from '../components/ChatInput.vue'
+<script setup lang="ts">
+  import { ref } from 'vue'
+  import { useUserStore } from '@/stores/UserStore.js'
 
-export default {
-  name: 'ChatView',
-  components: {
-    SiteHeader,
-    ChatChannels,
-    ChatDirectMessages,
-    ChatDiscussion,
-    ChatInput
-  },
-  data() {
-    return {
-      list_state: 'dm',
-      userStore: useUserStore(),
-      selectedChannel: null as Channel | null
-    }
-  },
-  methods: {}
-}
+  import SiteHeader from '../components/SiteHeader.vue'
+  import ChatChannels from '../components/ChatChannels.vue'
+  import ChatDirectMessages from '../components/ChatDirectMessages.vue'
+  import ChatDiscussion from '../components/ChatDiscussion.vue'
+  import ChatInput from '../components/ChatInput.vue'
+
+  const listState = ref('dm')
+  const userStore = useUserStore() 
 </script>

@@ -4,29 +4,25 @@
     <a class="tab tab-bordered tab-active text-2xl font-bold mb-8">Channels</a>
   </div>
   <div>
-    <chat-channels-button></chat-channels-button>
+    <label
+    for="my-modal-3"
+    class="btn bg-white border-2 border-black mb-2 text-black hover:bg-primary hover:border-primary hover:text-white"
+    type="button"
+  >
+    CREATE A NEW CHANNEL
+  </label>
     <chat-channels-modal></chat-channels-modal>
     <chat-channels-list></chat-channels-list>
   </div>
 </template>
 
-<script lang="ts">
-import ChatChannelsButton from '../components/ChatChannelsButton.vue'
-import ChatChannelsList from '../components/ChatChannelsList.vue'
-import ChatChannelsModal from '../components/ChatChannelsModal.vue'
+<script setup lang="ts">
+  import ChatChannelsList from '../components/ChatChannelsList.vue'
+  import ChatChannelsModal from '../components/ChatChannelsModal.vue'
 
-export default {
-  name: 'ChatChannels',
-  emits: ['list-state-changed'],
-  components: {
-    ChatChannelsButton,
-    ChatChannelsList,
-    ChatChannelsModal
-  },
-  methods: {
-    toggleList(): void {
-      this.$emit('list-state-changed', 'dm')
+  const emit = defineEmits(['list-state-changed', 'dm'])
+
+  const toggleList = () => {
+      emit('list-state-changed', 'channels')
     }
-  }
-}
 </script>

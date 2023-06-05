@@ -16,24 +16,16 @@
   </ul>
 </template>
 
-<script lang="ts">
-import type { User } from '../types/user.js'
-import { useUserStore } from '@/stores/UserStore.js'
+<script setup lang="ts">
+  import { computed } from 'vue'
+  import type { User } from '../types/user.js'
+  import { useUserStore } from '@/stores/UserStore.js'
 
-export default {
-  name: 'ChatDirectMessagesList',
-  data() {
-    return {
-      userStore: useUserStore()
-    }
-  },
-  methods: {},
-  computed: {
-    filteredUsers(): User[] {
-      return this.userStore.users.filter((user) => {
-        return user.id !== this.userStore.loggedUser.id
-      })
-    }
-  }
-}
+  const userStore = useUserStore() 
+
+  const filteredUsers = computed(() => {
+    return userStore.users.filter((user: User) => {
+      return user.id !== userStore.loggedUser.id
+    })
+  })
 </script>
