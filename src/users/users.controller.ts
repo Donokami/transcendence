@@ -11,15 +11,18 @@ import {
   Session,
   UseGuards,
 } from '@nestjs/common';
+
+import { AuthService } from './auth.service';
+import { AuthGuard } from '../guards/auth.guard';
+
+import { User } from './user.entity';
+import { UserDto } from './dtos/user.dto';
+import { UsersService } from './users.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
-import { UsersService } from './users.service';
-import { Serialize } from '../interceptors/serialize.interceptor';
-import { UserDto } from './dtos/user.dto';
-import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { User } from './user.entity';
-import { AuthGuard } from '../guards/auth.guard';
+
+import { Serialize } from '../interceptors/serialize.interceptor';
 
 @Controller('auth')
 @Serialize(UserDto)
@@ -56,8 +59,7 @@ export class UsersController {
 
   @Get('/:id')
   async findUser(@Param('id') id: string) {
-    console.log('Handler is running');
-    const user = await this.usersService.findOne(parseInt(id));
+    const user = await this.usersService.findOne(id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -71,11 +73,11 @@ export class UsersController {
 
   @Delete('/:id')
   removeUser(@Param('id') id: string) {
-    return this.usersService.remove(parseInt(id));
+    return this.usersService.remove(id);
   }
 
   @Patch('/:id')
   updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
-    return this.usersService.update(parseInt(id), body);
+    return this.usersService.update(id, body);
   }
 }

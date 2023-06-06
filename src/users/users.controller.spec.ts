@@ -12,7 +12,7 @@ describe('UsersController', () => {
 
   beforeEach(async () => {
     fakeUsersService = {
-      findOne: (id: number) => {
+      findOne: (id: string) => {
         return Promise.resolve({
           id,
           email: 'user@test.fr',

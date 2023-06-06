@@ -5,38 +5,41 @@ import { User } from './user.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(User) private repo: Repository<User>) {}
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
 
   create(email: string, password: string) {
-    const user = this.repo.create({ email, password });
-    return this.repo.save(user);
+    const user = this.userRepository.create({ email, password });
+    return this.userRepository.save(user);
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     if (!id) {
       return null;
     }
-    return this.repo.findOneBy({ id });
+    return this.userRepository.findOneBy({ id });
   }
 
   find(email: string) {
-    return this.repo.find({ where: { email } });
+    return this.userRepository.find({ where: { email } });
   }
 
-  async update(id: number, attrs: Partial<User>) {
+  async update(id: string, attrs: Partial<User>) {
     const user = await this.findOne(id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
     Object.assign(user, attrs);
-    return this.repo.save(user);
+    return this.userRepository.save(user);
   }
 
-  async remove(id: number) {
+  async remove(id: string) {
     const user = await this.findOne(id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return this.repo.remove(user);
+    return this.userRepository.remove(user);
   }
 }

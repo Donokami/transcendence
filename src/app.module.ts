@@ -1,32 +1,27 @@
 import { Module, ValidationPipe, MiddlewareConsumer } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+
+import { ChannelsModule } from './channels/channels.module';
+import { Channel } from './channels/entities/channel.entity';
+
+import { ChatModule } from './chat/chat.module';
+
+import { GameModule } from './game/game.module';
+
+import { MessagesModule } from './messages/messages.module';
+import { Message } from './channels/message.entity';
+
 import { UsersModule } from './users/users.module';
 import { User } from './users/user.entity';
-import { ChatModule } from './chat/chat.module';
-import { GameModule } from './game/game.module';
 
 const cookieSession = require('cookie-session');
 
 @Module({
   imports: [
-    // ConfigModule.forRoot({
-    //   isGlobal: true,
-    //   envFilePath: `../../envs/env.${process.env.NODE_ENV}`,
-    // }),
-    // TypeOrmModule.forRootAsync({
-    //   inject: [ConfigService],
-    //   useFactory: (config: ConfigService) => {
-    //     return {
-    //       type: 'postgres',
-    //       database: config.get<string>('DB_NAME'),
-    //       synhronize: true,
-    //       entities: [User],
-    //     };
-    //   },
-    // }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: process.env.DB_HOST,
@@ -34,12 +29,14 @@ const cookieSession = require('cookie-session');
       username: process.env.DB_USER,
       password: process.env.DB_PASS,
       database: process.env.DB_NAME_DEVELOPMENT,
-      entities: [User],
+      entities: [Channel, Message, User],
       synchronize: true,
     }),
-    UsersModule,
+    ChannelsModule,
     ChatModule,
     GameModule,
+    MessagesModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [
