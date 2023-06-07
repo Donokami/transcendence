@@ -3,7 +3,7 @@
     <site-header></site-header>
     <div class="flex h-[75vh]">
       <div
-        class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify min-w-min w-1/4"
+        class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify min-w-min w-1/4 overflow-y-auto"
       >
         <chat-direct-messages
           v-if="listState === 'dm'"

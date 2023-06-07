@@ -20,7 +20,7 @@
   import ChatDirectMessagesList from '../components/ChatDirectMessagesList.vue'
   import ChatDirectMessagesModal from '../components/ChatDirectMessagesModal.vue'
 
-  const emit = defineEmits(['list-state-changed', 'channels'])
+  const emit = defineEmits(['list-state-changed'])
 
   const toggleList = () => {
     emit('list-state-changed', 'channels')

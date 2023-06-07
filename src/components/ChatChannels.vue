@@ -20,9 +20,9 @@
   import ChatChannelsList from '../components/ChatChannelsList.vue'
   import ChatChannelsModal from '../components/ChatChannelsModal.vue'
 
-  const emit = defineEmits(['list-state-changed', 'dm'])
+  const emit = defineEmits(['list-state-changed'])
 
   const toggleList = () => {
-      emit('list-state-changed', 'channels')
+      emit('list-state-changed', 'dm')
     }
 </script>
