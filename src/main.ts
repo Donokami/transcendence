@@ -13,8 +13,9 @@ const chatSocket = io('http://localhost:3000/chat', {
     transportOptions: {
         polling: {
             cors : {
-                origin: 'http://localhost:3000/',
+                origin: 'http://localhost:3000',
                 methods: ['GET,POST,DELETE'],
+                credentials: true,
             }
         }
     }
@@ -24,12 +25,15 @@ const gameSocket = io('http://localhost:3000/game', {
     transportOptions: {
         polling: {
             cors : {
-                origin: 'http://localhost:3000/',
+                origin: 'http://localhost:3000',
                 methods: ['GET,POST,DELETE'],
+                credentials: true,
             }
         }
     }
 })
+
+console.log('[DEBUG] - FRONT - Socket creation in main.ts')
 
 const app = createApp(App)
 

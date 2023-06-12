@@ -6,6 +6,7 @@
         <label class="block font-medium mb-1" for="email"> Email </label>
         <vee-field
           class="neobrutalist-input w-full text-black"
+          id="email"
           name="email"
           type="email"
           placeholder="Enter your email address"
@@ -16,6 +17,7 @@
         <label class="block font-medium mb-1" for="password">Password</label>
         <vee-field
           class="neobrutalist-input w-full text-black"
+          id="password"
           name="password"
           type="password"
           placeholder="Enter your password"
@@ -72,6 +74,8 @@
     inSubmission.value = true
     alertMsg.value = 'Looking for your account in database...'
     alertColor.value = 'bg-blue-500'
+    
+    console.log('[DEBUG] - FRONT - Request in submitForm login')
     
     try {
       const response = await fetch('http://localhost:3000/auth/signin', {

@@ -17,6 +17,7 @@
         <label class="block font-medium mb-1" for="email">Email</label>
         <Field
           class="neobrutalist-input w-full text-black"
+          id="email"
           name="email"
           type="email"
           placeholder="Enter your email address"
@@ -27,6 +28,7 @@
         <label class="block font-medium mb-1" for="password">Password</label>
         <Field
           class="neobrutalist-input w-full text-black"
+          id="password"
           name="password"
           type="password"
           placeholder="Enter your password"
@@ -37,6 +39,7 @@
         <label class="block font-medium mb-1" for="confirmPassword">Confirm Password</label>
         <Field
           class="neobrutalist-input w-full text-black"
+          id="confirmPassword"
           name="confirmPassword"
           type="password"
           placeholder="Confirm your password"
@@ -83,6 +86,7 @@
   import { ref } from 'vue'
   import { Form, Field, ErrorMessage } from 'vee-validate'
   import { useRouter } from 'vue-router'
+import { createSimpleExpression } from '@vue/compiler-core';
 
   const alertMsg = ref('Your account is being created...')
   const alertColor = ref('bg-blue-500')
@@ -102,29 +106,37 @@
   const submitForm = async (values: Record<string, any>) => {
     showAlert.value = true
     inSubmission.value = true
-    alertMsg.value = 'Your account is being created...'
+    // alertMsg.value = 'Your account is being created...'
     alertColor.value = 'bg-blue-500'
 
+    console.log('[DEBUG] - FRONT - Request in submitForm register')
+    
     try {
       const response = await fetch('http://localhost:3000/auth/signup', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(values)
+        body: JSON.stringify(values),
+        credentials: 'include',
       })
       if(response.ok) {
+        console.log('[DEBUG] - FRONT - response ok')
         alertColor.value = 'bg-green-500'
         alertMsg.value = 'Your account has been created!'
-        await router.push('/home')
+        setTimeout( () => router.push('/home'), 5000);
       } else {
         alertColor.value = 'bg-red-500'
         alertMsg.value = 'Email already in use!'
         throw new Error('Something went wrong');
       }
     } catch (error) {
+      console.log('[DEBUG] - FRONT - error')
       console.log(error)
+      alertColor.value = 'bg-red-500'
+      alertMsg.value = 'Something went wrong!'
       throw error
     }
     finally {
+      console.log('[DEBUG] - FRONT - finally')
       inSubmission.value = false
     }
   }
