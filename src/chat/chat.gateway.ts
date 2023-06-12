@@ -52,13 +52,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // const cli = client;
     // console.dir(cli);
 
-    // const cookieTest = client.handshake.headers.cookie;
+    const cookieTest = client.handshake.headers.cookie;
     // console.log(`cookieTest = ${cookieTest}`);
 
     // const sessionId = client.handshake.headers.cookie
     //   .split('; ')
     //   .find((cookie: string) => cookie.startsWith('session'))
     //   .split('=')[1];
+
     // const user = await this.userService.findOne(sessionId);
     // const channel = user?.channel;
     // this.connectedUsers.set(client.id, user.id);

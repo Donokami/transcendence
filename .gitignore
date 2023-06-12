@@ -1,5 +1,7 @@
 .env.development
 .env.test
+package-lock.json
+/postgres-data
 
 # Compiled output
 /dist
