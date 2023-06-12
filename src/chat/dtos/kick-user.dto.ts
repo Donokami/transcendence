@@ -2,7 +2,7 @@ import { IsString } from 'class-validator';
 
 export class KickUserDto {
   @IsString()
-  roomId: string;
+  channelId: string;
 
   @IsString()
   userId: string;

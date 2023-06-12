@@ -28,10 +28,10 @@ export class User {
   @Column()
   password: string;
 
-  @Column()
+  @Column({ nullable: true })
   profile_picture: string;
 
-  @Column()
+  @Column({ default: false })
   is_admin: boolean;
 
   @JoinTable()

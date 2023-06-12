@@ -38,6 +38,6 @@ export class Message {
 
   @AfterRemove()
   logRemove() {
-    console.log(`Message with id ${this.id} removed`, this.id);
+    console.log(`Message with id ${this.id} removed`);
   }
 }

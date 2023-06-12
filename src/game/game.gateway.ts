@@ -22,7 +22,9 @@ export class GameGateway {
   server: Server;
 
   handleConnection(client: Socket) {
-    console.log(`Client connected : ${client.id}`);
+    console.log(
+      `[DEBUG] - BACK - handleConnection called in game.gateway.ts (client id = : ${client.id})`,
+    );
     // client.emit('connection', 'Successfully connected to game server');
   }
 

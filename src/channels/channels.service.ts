@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Repository } from 'typeorm';
 
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 
 import { Channel } from './entities/channel.entity';
 import { Message } from './entities/message.entity';
@@ -42,6 +42,16 @@ export class ChannelsService {
     }
 
     return channels;
+  }
+
+  async findOneWithRelations(id: string) {
+    const channel = await this.channelRepository.findOneBy({ id });
+
+    if (!channel) {
+      throw new NotFoundException(`There is no channel under id ${id}`);
+    }
+
+    return channel;
   }
 
   async create(createChannelDto: CreateChannelDto) {

@@ -12,8 +12,7 @@ import { ChatModule } from './chat/chat.module';
 
 import { GameModule } from './game/game.module';
 
-import { MessagesModule } from './messages/messages.module';
-import { Message } from './channels/message.entity';
+import { Message } from './channels/entities/message.entity';
 
 import { UsersModule } from './users/users.module';
 import { User } from './users/user.entity';
@@ -35,7 +34,6 @@ const cookieSession = require('cookie-session');
     ChannelsModule,
     ChatModule,
     GameModule,
-    MessagesModule,
     UsersModule,
   ],
   controllers: [AppController],

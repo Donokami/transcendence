@@ -38,6 +38,6 @@ export class Channel {
 
   @AfterRemove()
   logRemove() {
-    console.log(`Channel with id ${this.id} removed`, this.id);
+    console.log(`Channel with id ${this.id} removed`);
   }
 }

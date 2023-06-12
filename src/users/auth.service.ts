@@ -13,7 +13,9 @@ const scrypt = promisify(_scrypt);
 export class AuthService {
   constructor(private usersService: UsersService) {}
 
-  async signup(email: string, password: string) {
+  async signup(email: string, password: string, username: string) {
+    console.log('[DEBUG] - BACK - signup function called in auth.service.ts');
+
     // See if email is in use
     const users = await this.usersService.find(email);
     if (users.length) {
@@ -23,10 +25,14 @@ export class AuthService {
     // Hash the user's password
     const salt = randomBytes(8).toString('hex');
     const hash = (await scrypt(password, salt, 32)) as Buffer;
-    const result = salt + '.' + hash.toString('hex');
+    const hashedPassword = salt + '.' + hash.toString('hex');
 
     // Create a new user and save it
-    const user = await this.usersService.create(email, result);
+    const user = await this.usersService.create(
+      email,
+      hashedPassword,
+      username,
+    );
 
     // Return the user
     return user;
