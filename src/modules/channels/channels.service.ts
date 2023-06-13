@@ -9,6 +9,7 @@ import { Channel } from './entities/channel.entity';
 import { Message } from './entities/message.entity';
 
 import { AddMessageDto } from '@/modules/chat/dtos/add-message.dto';
+import { BanUserDto } from '@/modules/chat/dtos/ban-user.dto';
 import { CreateChannelDto } from './dtos/create-channel.dto';
 import { UpdateChannelDto } from './dtos/update-channel.dto';
 
@@ -20,7 +21,7 @@ export class ChannelsService {
     @InjectRepository(Message)
     private readonly messageRepository: Repository<Message>,
     private readonly userService: UsersService,
-  ) { }
+  ) {}
 
   async findOne(id: string) {
     const channel = await this.channelRepository.findOneBy({ id });
@@ -99,5 +100,21 @@ export class ChannelsService {
     const message = await this.messageRepository.save(newMessage);
 
     return message;
+  }
+
+  async banUserFromChannel(banUserDto: BanUserDto) {
+    const user = await this.userService.findOne(banUserDto.userId);
+
+    const channel = await this.findOne(banUserDto.channelId);
+
+    await this.userService.updateUserChannel(banUserDto.userId, null);
+
+    const bannedMembers = { ...channel.bannedMembers, ...user };
+    const updatedChannel = await this.channelRepository.preload({
+      id: banUserDto.channelId,
+      bannedMembers,
+    });
+
+    return this.channelRepository.save(updatedChannel);
   }
 }

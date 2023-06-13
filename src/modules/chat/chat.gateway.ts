@@ -44,7 +44,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly userService: UsersService,
     private readonly channelService: ChannelsService,
-  ) { }
+  ) {}
 
   async handleConnection(client: UserSocket): Promise<void> {
     const { user } = client.request;
@@ -106,51 +106,65 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.leave(channelId);
   }
 
-  // @SubscribeMessage('user-kick')
-  // async onUserKick(client: Socket, kickUserDto: KickUserDto) {
-  //   const { roomId, reason } = kickUserDto;
+  @SubscribeMessage('user-kick')
+  async onUserKick(client: Socket, kickUserDto: KickUserDto) {
+    const userId = this.connectedUsers.get(client.id);
 
-  //   const userId = this.connectedUsers.get(client.id);
-  //   const room = await this.roomService.findOneWithRelations(roomId);
+    const channel = await this.channelService.findOneWithRelations(
+      kickUserDto.channelId,
+    );
 
-  //   if (userId !== room.ownerId) {
-  //     throw new ForbiddenException(`You are not the owner of the room!`);
-  //   }
+    if (userId !== channel.ownerId) {
+      throw new ForbiddenException(`You are not the owner of the channel!`);
+    }
+    if (userId === kickUserDto.userId) {
+      throw new ForbiddenException(`You can't kick yourself`);
+    }
+    if (kickUserDto.userId === channel.ownerId) {
+      throw new ForbiddenException(`You can't kick the owner of the channel!`);
+    }
 
-  //   await this.userService.updateUserRoom(kickUserDto.userId, null);
+    await this.userService.updateUserChannel(kickUserDto.userId, null);
 
-  //   const kickedClient = this.getClientByUserId(kickUserDto.userId);
+    const kickedClient = this.getClientByUserId(kickUserDto.userId);
+    if (!kickedClient) {
+      return;
+    }
 
-  //   if (!kickedClient) return;
+    client.to(kickedClient.id).emit('kicked', kickUserDto.reason);
 
-  //   client.to(kickedClient.id).emit('kicked', reason);
-  //   kickedClient.leave(roomId);
-  // }
+    kickedClient.leave(kickUserDto.channelId);
+  }
 
-  // @SubscribeMessage('user-ban')
-  // async onUserBan(client: Socket, banUserDto: BanUserDto) {
-  //   const { channelId, reason } = banUserDto;
+  @SubscribeMessage('user-ban')
+  async onUserBan(client: Socket, banUserDto: BanUserDto) {
+    const userId = this.connectedUsers.get(client.id);
 
-  //   const userId = this.connectedUsers.get(client.id);
-  //   const channel = await this.channelService.findOneWithRelations(channelId);
+    const channel = await this.channelService.findOneWithRelations(
+      banUserDto.channelId,
+    );
 
-  //   if (userId !== channel.ownerId) {
-  //     throw new ForbiddenException(`You are not the owner of the channel!`);
-  //   }
+    if (userId !== channel.ownerId) {
+      throw new ForbiddenException(`You are not the owner of the channel!`);
+    }
+    if (userId === banUserDto.userId) {
+      throw new ForbiddenException(`You can't ban yourself`);
+    }
+    if (banUserDto.userId === channel.ownerId) {
+      throw new ForbiddenException(`You can't ban the owner of the channel!`);
+    }
 
-  //   if (userId === banUserDto.userId) {
-  //     throw new ForbiddenException(`You can't ban yourself`);
-  //   }
+    await this.channelService.banUserFromChannel(banUserDto);
 
-  //   await this.channelService.banUserFromChannel(banUserDto);
+    const bannedClient = this.getClientByUserId(banUserDto.userId);
+    if (!bannedClient) {
+      return;
+    }
 
-  //   const bannedClient = this.getClientByUserId(banUserDto.userId);
+    client.to(bannedClient.id).emit('banned', banUserDto.reason);
 
-  //   if (!bannedClient) return;
-
-  //   client.to(bannedClient.id).emit('banned', reason);
-  //   bannedClient.leave(channelId);
-  // }
+    bannedClient.leave(banUserDto.channelId);
+  }
 
   private getClientByUserId(userId: string): Socket | null {
     for (const [key, value] of this.connectedUsers.entries()) {

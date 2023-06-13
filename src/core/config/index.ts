@@ -15,8 +15,6 @@ export default registerAs('transcendence-config', () => {
     dbPass: process.env.DB_PASSWORD,
 
     cookieSessionKey: process.env.COOKIE_SESSION_KEY,
-    jwtSecret: process.env.JWT_SECRET,
-    jwtExpiresIn: process.env.JWT_EXPIRES_IN,
 
     socketPort: parseInt(process.env.SOCKET_PORT),
     socketOrigin: process.env.SOCKET_ORIGIN,
@@ -33,9 +31,6 @@ export default registerAs('transcendence-config', () => {
     dbPass: z.string(),
 
     cookieSessionKey: z.string(),
-
-    jwtSecret: z.string(),
-    jwtExpiresIn: z.string(),
 
     socketPort: z.number(),
     socketOrigin: z.string(),
