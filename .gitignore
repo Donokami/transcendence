@@ -1,5 +1,8 @@
 .env.development
 .env.test
+package-lock.json
+pnpm-lock.yaml
+/postgres-data
 
 # Compiled output
 /dist
@@ -42,6 +45,4 @@ lerna-debug.log*
 
 db.sqlite
 
-package-lock.json
-pnpm-lock.yaml
 .env
