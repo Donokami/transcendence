@@ -39,3 +39,9 @@ lerna-debug.log*
 # Tests
 /coverage
 /.nyc_output
+
+db.sqlite
+
+package-lock.json
+pnpm-lock.yaml
+.env

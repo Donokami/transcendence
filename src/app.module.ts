@@ -5,36 +5,40 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
-import { ChannelsModule } from './channels/channels.module';
-import { Channel } from './channels/entities/channel.entity';
+import { ChannelsModule } from '@/modules/channels/channels.module';
 
-import { ChatModule } from './chat/chat.module';
+import { ChatModule } from '@/modules/chat/chat.module';
 
-import { GameModule } from './game/game.module';
+import { GameModule } from '@/modules/game/game.module';
 
-import { Message } from './channels/entities/message.entity';
+import { UsersModule } from '@/modules/users/users.module';
+import { AuthModule } from './modules/auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
 
-import { UsersModule } from './users/users.module';
-import { User } from './users/user.entity';
+import config from './core/config';
+import { TypeOrmConfigService } from './core/config/database.config';
+import { RequestHandler } from 'express';
 
-const cookieSession = require('cookie-session');
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+export const session: RequestHandler = require('cookie-session')({
+  name: 'session',
+  keys: ['cookieString'],
+});
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: process.env.DB_HOST,
-      port: parseInt(process.env.DB_PORT),
-      username: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME_DEVELOPMENT,
-      entities: [Channel, Message, User],
-      synchronize: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [config],
+    }),
+    TypeOrmModule.forRootAsync({
+      useClass: TypeOrmConfigService,
     }),
     ChannelsModule,
     ChatModule,
     GameModule,
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
@@ -49,6 +53,6 @@ const cookieSession = require('cookie-session');
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(cookieSession({ keys: ['cookieString'] })).forRoutes('*');
+    consumer.apply(session).forRoutes('*');
   }
 }
