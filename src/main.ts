@@ -9,31 +9,29 @@ import io from 'socket.io-client'
 
 import './assets/base.css'
 
-const chatSocket = io('http://localhost:3000/chat', {
-    transportOptions: {
-        polling: {
-            cors : {
-                origin: 'http://localhost:3000',
-                methods: ['GET,POST,DELETE'],
-                credentials: true,
-            }
-        }
-    }
-})
+// const chatSocket = io('http://localhost:3002/chat', {
+//     transportOptions: {
+//         polling: {
+//             cors : {
+//                 origin: 'http://localhost:3002',
+//                 methods: ['GET,POST,DELETE'],
+//                 credentials: true,
+//             }
+//         }
+//     }
+// })
 
-const gameSocket = io('http://localhost:3000/game', {
-    transportOptions: {
-        polling: {
-            cors : {
-                origin: 'http://localhost:3000',
-                methods: ['GET,POST,DELETE'],
-                credentials: true,
-            }
-        }
-    }
-})
-
-console.log('[DEBUG] - FRONT - Socket creation in main.ts')
+// const gameSocket = io('http://localhost:3002/game', {
+//     transportOptions: {
+//         polling: {
+//             cors : {
+//                 origin: 'http://localhost:3002',
+//                 methods: ['GET,POST,DELETE'],
+//                 credentials: true,
+//             }
+//         }
+//     }
+// })
 
 const app = createApp(App)
 
@@ -42,8 +40,8 @@ app.use(createPinia())
 app.use(router)
 app.use(VeeValidatePlugin)
 
-app.config.globalProperties.$chatSocket = chatSocket
-app.config.globalProperties.$gameSocket = gameSocket
+// app.config.globalProperties.$chatSocket = chatSocket
+// app.config.globalProperties.$gameSocket = gameSocket
 
 app.component('iconify-icon', Icon)
 

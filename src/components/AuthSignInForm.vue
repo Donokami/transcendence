@@ -1,10 +1,10 @@
 <template>
   <div class="neobrutalist-box w-[30rem] px-6 py-6">
-    <h2 class="text-2xl font-bold mb-8 text-black">Log in</h2>
-    <vee-form ref="formRef" :validation-schema="loginSchema" @submit="submitForm">
+    <h2 class="text-2xl font-bold mb-8 text-black">Sign In</h2>
+    <Form ref="formRef" :validation-schema="signInSchema" @submit="submitForm">
       <div class="mb-6">
         <label class="block font-medium mb-1" for="email"> Email </label>
-        <vee-field
+        <Field
           class="neobrutalist-input w-full text-black"
           id="email"
           name="email"
@@ -15,7 +15,7 @@
       </div>
       <div class="mb-6">
         <label class="block font-medium mb-1" for="password">Password</label>
-        <vee-field
+        <Field
           class="neobrutalist-input w-full text-black"
           id="password"
           name="password"
@@ -30,7 +30,7 @@
           type="submit"
           :disabled="inSubmission"
         >
-          Log in
+          Sign in
         </button>
         <button
           class="btn border-gray-400 bg-gray-400 hover:bg-gray-300 hover:border-gray-300 text-zinc-900"
@@ -40,11 +40,11 @@
           Register
         </button>
       </div>
-    </vee-form>
+    </Form>
     <div class="divider before:bg-gray-400 after:bg-gray-400 m-8">or</div>
     <div class="flex justify-center">
       <button class="btn bg-zinc-900 text-white" type="submit" :disabled="inSubmission">
-        Log in with
+        Sign in with
         <img class="icon mx-3 h-2/4" src="../assets/42-logo.svg" alt="42 Logo" />
       </button>
     </div>
@@ -53,7 +53,8 @@
 
 <script setup lang="ts">
   import { ref } from 'vue'
-  import { Form as VeeForm } from 'vee-validate'
+  import { Form, Field, ErrorMessage } from 'vee-validate'
+  import { useUserStore } from '../stores/UserStore' 
   import { useRouter } from 'vue-router'
 
   const alertMsg = ref('Your account is being created...')
@@ -61,10 +62,12 @@
   const inSubmission = ref(false)
   const showAlert = ref(false)
 
+  const userStore = useUserStore();
+
   const router = useRouter()
   const emit = defineEmits(['form-state-changed', 'register'])
 
-  const loginSchema = {
+  const signInSchema = {
     email: 'required|min:3|max:100|email',
     password: 'required|min:8|max:100'
   }
@@ -74,19 +77,13 @@
     inSubmission.value = true
     alertMsg.value = 'Looking for your account in database...'
     alertColor.value = 'bg-blue-500'
-    
-    console.log('[DEBUG] - FRONT - Request in submitForm login')
-    
+        
     try {
-      const response = await fetch('http://localhost:3000/auth/signin', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(values)
-      })
+      const response = await userStore.signIn(values)
       if (response.ok) {      
         alertColor.value = 'bg-green-500'
         alertMsg.value = 'Your account has been found in database!'
-        await router.push('/home')
+        router.push('/home')
       } else {
         alertColor.value = 'bg-red-500'
         alertMsg.value = 'Your account is not found in database!'

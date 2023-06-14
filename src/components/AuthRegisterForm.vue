@@ -62,7 +62,7 @@
           type="button"
           @click="toggleForm"
         >
-          Log in
+          Sign In
         </button>
       </div>
     </Form>
@@ -85,16 +85,16 @@
 <script setup lang="ts">
   import { ref } from 'vue'
   import { Form, Field, ErrorMessage } from 'vee-validate'
-  import { useRouter } from 'vue-router'
-import { createSimpleExpression } from '@vue/compiler-core';
+  import { useUserStore } from '../stores/UserStore' 
 
   const alertMsg = ref('Your account is being created...')
   const alertColor = ref('bg-blue-500')
   const inSubmission = ref(false)
   const showAlert = ref(false)
-  
-  const router = useRouter()
-  const emit = defineEmits(['form-state-changed', 'login'])
+
+  const userStore = useUserStore();
+
+  const emit = defineEmits(['form-state-changed', 'signIn'])
 
   const registerSchema = {
     username: 'required|min:3|max:100',
@@ -106,42 +106,33 @@ import { createSimpleExpression } from '@vue/compiler-core';
   const submitForm = async (values: Record<string, any>) => {
     showAlert.value = true
     inSubmission.value = true
-    // alertMsg.value = 'Your account is being created...'
+    alertMsg.value = 'Your account is being created...'
     alertColor.value = 'bg-blue-500'
-
-    console.log('[DEBUG] - FRONT - Request in submitForm register')
     
     try {
-      const response = await fetch('http://localhost:3000/auth/signup', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(values),
-        credentials: 'include',
-      })
+      const response = await userStore.register(values)
       if(response.ok) {
-        console.log('[DEBUG] - FRONT - response ok')
         alertColor.value = 'bg-green-500'
         alertMsg.value = 'Your account has been created!'
-        setTimeout( () => router.push('/home'), 5000);
+        setTimeout( () => toggleForm(), 1000);
       } else {
+        console.log(response)
         alertColor.value = 'bg-red-500'
         alertMsg.value = 'Email already in use!'
         throw new Error('Something went wrong');
       }
     } catch (error) {
-      console.log('[DEBUG] - FRONT - error')
       console.log(error)
       alertColor.value = 'bg-red-500'
       alertMsg.value = 'Something went wrong!'
       throw error
     }
     finally {
-      console.log('[DEBUG] - FRONT - finally')
       inSubmission.value = false
     }
   }
 
   const toggleForm = () => {
-    emit('form-state-changed', 'login')
+    emit('form-state-changed', 'signIn')
   }
 </script>

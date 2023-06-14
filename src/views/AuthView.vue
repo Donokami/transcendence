@@ -4,10 +4,10 @@
     <div class="border-2 border-black flex items-center mx-2 my-3 mt-1 p-5 text-justify relative">
       <auth-ball-canvas></auth-ball-canvas>
       <div class="flex-grow flex items-center justify-center z-10">
-        <auth-login-form
+        <auth-signIn-form
           @form-state-changed="formState = $event"
-          v-show="formState === 'login'"
-        ></auth-login-form>
+          v-show="formState === 'signIn'"
+        ></auth-signIn-form>
         <auth-register-form
           @form-state-changed="formState = $event"
           v-show="formState === 'register'"
@@ -17,41 +17,15 @@
   </div>
 </template>
 
-// OPTION API
-
-<!-- <script lang="ts">
-import AuthHeader from '../components/AuthHeader.vue'
-import AuthLoginForm from '../components/AuthLoginForm.vue'
-import AuthRegisterForm from '../components/AuthRegisterForm.vue'
-import AuthBallCanvas from '../components/AuthBallCanvas.vue'
-
-export default {
-  name: 'AuthView',
-  components: {
-    AuthHeader,
-    AuthLoginForm,
-    AuthRegisterForm,
-    AuthBallCanvas
-  },
-  data() {
-    return {
-      formState: 'login'
-    }
-  }
-}
-</script> -->
-
-// COMPOSITION API
-
 <script setup lang="ts">
 import { ref } from "vue"
 import AuthHeader from '../components/AuthHeader.vue'
-import AuthLoginForm from '../components/AuthLoginForm.vue'
+import AuthSignInForm from '../components/AuthSignInForm.vue'
 import AuthRegisterForm from '../components/AuthRegisterForm.vue'
 import AuthBallCanvas from '../components/AuthBallCanvas.vue'
 
 const props = defineProps({
-  formState: { type: String, default: 'login'},
+  formState: { type: String, default: 'signIn'},
 })
 
 props.formState
