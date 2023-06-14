@@ -49,6 +49,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: UserSocket): Promise<void> {
     const { user } = client.request;
     const channel = user?.channel;
+  
     this.connectedUsers.set(client.id, user.id);
 
     if (channel) {

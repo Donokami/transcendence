@@ -11,34 +11,28 @@ const scrypt = promisify(_scrypt);
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UsersService) { }
+  constructor(private usersService: UsersService) {}
 
-  async signup(email: string, password: string, username: string) {
-    console.log('[DEBUG] - BACK - signup function called in auth.service.ts');
-
-    // See if email is in use
+  async register(email: string, password: string, username: string) {
     const users = await this.usersService.find(email);
     if (users.length) {
       throw new BadRequestException('Email already in use');
     }
 
-    // Hash the user's password
     const salt = randomBytes(8).toString('hex');
     const hash = (await scrypt(password, salt, 32)) as Buffer;
     const hashedPassword = salt + '.' + hash.toString('hex');
 
-    // Create a new user and save it
     const user = await this.usersService.create(
       email,
       hashedPassword,
       username,
     );
 
-    // Return the user
     return user;
   }
 
-  async signin(email: string, password: string) {
+  async signIn(email: string, password: string) {
     const [user] = await this.usersService.find(email);
     if (!user) {
       throw new NotFoundException('User not found');

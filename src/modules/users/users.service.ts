@@ -16,10 +16,9 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
-  ) { }
+  ) {}
 
   create(email: string, password: string, username: string) {
-    console.log('[DEBUG] - BACK - create called in user.service.ts');
     const user = this.userRepository.create({ email, password, username });
     return this.userRepository.save(user);
   }

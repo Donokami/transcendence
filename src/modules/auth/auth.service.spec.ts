@@ -41,7 +41,7 @@ describe('AuthService', () => {
   });
 
   it('Creates a new user with a salted and hashed password', async () => {
-    const user = await service.signup('user@test.com', 'password');
+    const user = await service.register('user@test.com', 'password');
 
     expect(user.password).not.toEqual('password');
     const [salt, hash] = user.password.split('.');
@@ -50,29 +50,29 @@ describe('AuthService', () => {
   });
 
   it('Throws an error if user signs up with email that is in use', async () => {
-    await service.signup('knownUser@test.com', 'pass');
-    await expect(service.signup('knownUser@test.com', 'pass')).rejects.toThrow(
-      BadRequestException,
-    );
+    await service.register('knownUser@test.com', 'pass');
+    await expect(
+      service.register('knownUser@test.com', 'pass'),
+    ).rejects.toThrow(BadRequestException);
   });
 
-  it('Throws an error if signin() is called with an unused email', async () => {
-    await expect(service.signin('dumb@test.com', 'pass')).rejects.toThrow(
+  it('Throws an error if signIn() is called with an unused email', async () => {
+    await expect(service.signIn('dumb@test.com', 'pass')).rejects.toThrow(
       NotFoundException,
     );
   });
 
   it('Throws an error if an invalid password is provided', async () => {
-    await service.signup('user@test.com', 'password');
+    await service.register('user@test.com', 'password');
     await expect(
-      service.signin('user@test.com', 'wrongPassword'),
+      service.signIn('user@test.com', 'wrongPassword'),
     ).rejects.toThrow(BadRequestException);
   });
 
   it('Returns a user if correct password is provided', async () => {
-    await service.signup('user@test.com', 'password');
+    await service.register('user@test.com', 'password');
 
-    const user = service.signin('user@test.com', 'password');
+    const user = service.signIn('user@test.com', 'password');
     expect(user).toBeDefined();
   });
 });

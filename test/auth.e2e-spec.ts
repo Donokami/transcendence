@@ -15,10 +15,10 @@ describe('Authentication system', () => {
     await app.init();
   });
 
-  it('Handles a signup request', () => {
+  it('Handles a register request', () => {
     const email = 'test@mail.fr';
     return request(app.getHttpServer())
-      .post('/auth/signup')
+      .post('/auth/register')
       .send({ email, password: 'password' })
       .expect(201)
       .then((res) => {

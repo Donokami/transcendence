@@ -22,15 +22,11 @@ export class GameGateway {
   server: Server;
 
   handleConnection(client: Socket) {
-    console.log(
-      `[DEBUG] - BACK - handleConnection called in game.gateway.ts (client id = : ${client.id})`,
-    );
-    // client.emit('connection', 'Successfully connected to game server');
+    client.emit('connection', 'Successfully connected to game server');
   }
 
   handleDisconnection(client: Socket) {
-    console.log(`Client disconnected : ${client.id}`);
-    // client.emit('disconnection', 'Successfully disconnected from game server');
+    client.emit('disconnection', 'Successfully disconnected from game server');
   }
 
   @SubscribeMessage('move')

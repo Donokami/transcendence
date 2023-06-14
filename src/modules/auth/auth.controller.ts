@@ -3,29 +3,28 @@ import { Body, Controller, Post, Session } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 import { UserDto } from '@/modules/users/dtos/user.dto';
-import { CreateUserDto } from '@/modules/users/dtos/create-user.dto';
+import { RegisterUserDto } from '@/modules/users/dtos/register-user.dto';
+import { SignInUserDto } from '@/modules/users/dtos/signin-user.dto';
 
 import { Serialize } from '@/core/interceptors/serialize.interceptor';
 
 @Controller('auth')
 @Serialize(UserDto)
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
-  @Post('/signup')
-  async createUser(@Body() body: CreateUserDto, @Session() session: any) {
+  @Post('/register')
+  async createUser(@Body() body: RegisterUserDto, @Session() session: any) {
     const { email, password, username } = body;
 
-    console.log('[DEBUG] - BACK - createUser called in user.controller.ts');
-
-    const user = await this.authService.signup(email, password, username);
+    const user = await this.authService.register(email, password, username);
     session.userId = user.id;
     return user;
   }
 
-  @Post('/signin')
-  async signin(@Body() body: CreateUserDto, @Session() session: any) {
-    const user = await this.authService.signin(body.email, body.password);
+  @Post('/signIn')
+  async signIn(@Body() body: SignInUserDto, @Session() session: any) {
+    const user = await this.authService.signIn(body.email, body.password);
     session.userId = user.id;
     return user;
   }
