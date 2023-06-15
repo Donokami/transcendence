@@ -12,15 +12,21 @@
     SEND A NEW DM
   </label>
     <chat-direct-messages-modal></chat-direct-messages-modal>
-    <chat-direct-messages-list></chat-direct-messages-list>
+    <chat-direct-messages-list v-if="hasChannels"></chat-direct-messages-list>
   </div>
 </template>
 
 <script setup lang="ts">
+  import { computed } from 'vue'
+  import { useUserStore } from '@/stores/UserStore.js'
   import ChatDirectMessagesList from '../components/ChatDirectMessagesList.vue'
   import ChatDirectMessagesModal from '../components/ChatDirectMessagesModal.vue'
 
   const emit = defineEmits(['list-state-changed'])
+  
+  const userStore = useUserStore()
+  
+  const hasChannels = computed(() => userStore.loggedUser?.channels?.length > 0)
 
   const toggleList = () => {
     emit('list-state-changed', 'channels')

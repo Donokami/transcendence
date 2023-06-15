@@ -14,14 +14,14 @@
           @list-state-changed="listState = $event"
         ></chat-channels>
       </div>
-      <div class="flex flex-col justify-between text-justify w-3/4" v-if="userStore.selectedUser">
+      <!-- <div class="flex flex-col justify-between text-justify w-3/4" v-if="userStore.selectedUser">
         <div class="border-black border-2 mx-2 my-3 mt-1 p-5 h-5/6">
           <chat-discussion></chat-discussion>
         </div>
         <div class="border-black border-2 mx-2 my-3 mt-1 p-5 h-1/6">
           <chat-input></chat-input>
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>

@@ -1,6 +1,6 @@
 <template>
   <ul class="menu bg-base-100 w-full">
-    <li v-for="user in filteredUsers" :key="user.id">
+    <li v-for="channel in filteredChannels" :key="channel.name">
       <a
         class="flex p-1"
         :class="userStore.selectedUser && { active: userStore.selectedUser.id === user.id }"
@@ -19,13 +19,19 @@
 <script setup lang="ts">
   import { computed } from 'vue'
   import type { User } from '../types/user.js'
+  import type { Channel } from '../types/Channel.js'
   import { useUserStore } from '@/stores/UserStore.js'
 
   const userStore = useUserStore() 
+  // const selectedChannel
 
-  const filteredUsers = computed(() => {
-    return userStore.users.filter((user: User) => {
-      return user.id !== userStore.loggedUser.id
+  const filteredChannels = computed(() => {
+    return userStore.loggedUser.channels.filter((channel: Channel) => {
+      if (channel.type === 'direct') {
+        return true
+      }
+      console.log(userStore.loggedUser.channels);
+      return userStore.loggedUser.channels
     })
   })
 </script>

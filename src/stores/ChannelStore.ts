@@ -5,19 +5,20 @@ import type { User } from '../types/user.js'
 export const useChannelStore = defineStore('channels', {
   state: () => ({
     selectedChannel: null as unknown as Channel,
-    channels: [
-      {
-        name: 'Test Channel #1',
-        members: [] as User[],
-        passwordRequired: false,
-        password: ''
-      },
-      {
-        name: 'Test Channel #2',
-        members: [] as User[],
-        passwordRequired: false,
-        password: ''
-      }
-    ]
   })
 })
+
+// channels: [
+//   {
+//     name: 'Test Channel #1',
+//     members: [] as User[],
+//     passwordRequired: false,
+//     password: ''
+//   },
+//   {
+//     name: 'Test Channel #2',
+//     members: [] as User[],
+//     passwordRequired: false,
+//     password: ''
+//   }
+// ]

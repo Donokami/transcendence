@@ -1,12 +1,20 @@
+import type { Channel } from './Channel'
+
 export interface User {
-  // USER ID INFORMATIONS
+  // USER INFORMATIONS INSPIRED BY BACKEND USER ENTITY
   id: number
   username: string
   email: string
   password: string
   profile_picture: string
+  is_admin: boolean
+  channels: Array<Channel>
+  bannedChannels: Array<Channel>
+  messages: Array<Message>
+
+  
+  // OTHER USER INFORMATIONS
   status: string
-  // USER STATS INFORMATIONS
   rank: number
   games_played: number
   win: number
@@ -15,7 +23,6 @@ export interface User {
   points_scored: number
   points_conceded: number
   points_difference: number
-  // USER FRIENDS INFORMATIONS
   friends: string[]
   n_friends: number
 }
