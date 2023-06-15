@@ -6,35 +6,29 @@
   </p>
 </template>
 
-<script lang="ts">
-export default {
-  name: 'HomeHistoryPrompt',
-  data() {
-    return {
-      consoleText: '',
-      text: `Pong is a 2D table tennis–themed video game.
-      Manufactured by Atari, it was released in 1972, which makes it one of the very first arcade video games.
-      It was created by Allan Alcorn as a training exercise assigned to him by Atari co-founders.
-      They were so surprised by the quality of Alcorn's work that they decided to manufacture the game!`,
-      index: 0,
-      speed: 100
-    }
-  },
-  mounted() {
-    this.type()
-  },
-  methods: {
-    type() {
-      if (this.index < this.text.length) {
-        this.consoleText += this.text.charAt(this.index)
-        this.index++
-        setTimeout(this.type, this.speed)
-      } else {
-        this.consoleText = ''
-        this.index = 0
-        this.type()
-      }
-    }
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+
+const consoleText = ref('');
+const text = `Pong is a 2D table tennis–themed video game.
+Manufactured by Atari, it was released in 1972, which makes it one of the very first arcade video games.
+It was created by Allan Alcorn as a training exercise assigned to him by Atari co-founders.
+They were so surprised by the quality of Alcorn's work that they decided to manufacture the game!`;
+
+let index = ref(0);
+const speed = 100;
+
+const type = () => {
+  if (index.value < text.length) {
+    consoleText.value += text.charAt(index.value);
+    index.value++;
+    setTimeout(type, speed);
+  } else {
+    consoleText.value = '';
+    index.value = 0;
+    type();
   }
-}
+};
+
+onMounted(type);
 </script>
