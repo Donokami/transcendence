@@ -5,7 +5,7 @@ import { Icon } from '@iconify/vue'
 import App from './App.vue'
 import router from './router'
 import VeeValidatePlugin from './includes/validation.js'
-import io from 'socket.io-client'
+import Tres from '@tresjs/core';
 
 import './assets/base.css'
 
@@ -39,6 +39,7 @@ const app = createApp(App)
 app.use(createPinia())
 app.use(router)
 app.use(VeeValidatePlugin)
+app.use(Tres)
 
 // app.config.globalProperties.$chatSocket = chatSocket
 // app.config.globalProperties.$gameSocket = gameSocket

@@ -6,17 +6,17 @@
 </template>
 
 <script>
-import AppFooter from './components/AppFooter.vue'
+import AppFooter from "./components/AppFooter.vue";
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
     AppFooter,
   },
   data() {
     return {
-      isRegisterForm: false
-    }
-  }
-}
+      isRegisterForm: false,
+    };
+  },
+};
 </script>
