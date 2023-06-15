@@ -5,18 +5,6 @@
   <app-footer class="bg-zinc-900 py-4 px-6 relative text-white"></app-footer>
 </template>
 
-<script>
+<script setup lang="ts">
 import AppFooter from './components/AppFooter.vue'
-
-export default {
-  name: 'App',
-  components: {
-    AppFooter,
-  },
-  data() {
-    return {
-      isRegisterForm: false
-    }
-  }
-}
 </script>
