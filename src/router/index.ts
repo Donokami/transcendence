@@ -40,7 +40,7 @@ const routes: Array<RouteRecordRaw> = [
     name: 'profile'
   },
   {
-    path: '/:catchAll(.*)*',
+    path: '/:pathMatch(.*)*',
     redirect: { name: 'auth' }
   }
 ]
@@ -53,8 +53,12 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore();
-    if (to.name !== 'auth' && !userStore.loggedUser) next({ name: 'auth' })
-    else next()
+  const user = await userStore.fetchUser();
+  console.log(user)
+  if (to.name !== 'auth' && !user) {
+    next({ name: 'auth' })
+  }
+  else next()
 })
 
 export default router
