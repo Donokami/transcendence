@@ -1,4 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteRecordRaw } from "vue-router";
+import { useUserStore } from '../stores/UserStore'
 import AuthView from '../views/AuthView.vue'
 import ChatView from '../views/ChatView.vue'
 import GameView from '../views/GameView.vue'
@@ -6,7 +8,7 @@ import HomeView from '../views/HomeView.vue'
 import StatsView from '../views/StatsView.vue'
 import ProfileView from '../views/ProfileView.vue'
 
-const routes = [
+const routes: Array<RouteRecordRaw> = [
   {
     component: AuthView,
     path: '/auth',
@@ -44,11 +46,15 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes,
   linkExactActiveClass: 'bg-zinc-900 text-white'
 })
 
-// router.beforeEach((to, from, next) => {})
+router.beforeEach(async (to, from, next) => {
+  const userStore = useUserStore();
+    if (to.name !== 'auth' && !userStore.loggedUser) next({ name: 'auth' })
+    else next()
+})
 
 export default router
