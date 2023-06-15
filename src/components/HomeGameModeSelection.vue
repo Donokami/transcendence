@@ -32,20 +32,18 @@
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  name: 'HomeGameModeSelection',
-  data() {},
-  methods: {
-    selectFriendlyGame() {
-      // handle the click event for PVE button
-    },
-    selectRandomGame() {
-      // handle the click event for PVP button
-    },
-    selectRoom() {
-      // handle the click event for Room buttons
-    }
-  }
-}
+<script setup lang="ts">
+// import { ref } from 'vue';
+
+const selectFriendlyGame = () => {
+  // handle the click event for PVE button
+};
+
+const selectRandomGame = () => {
+  // handle the click event for PVP button
+};
+
+const selectRoom = () => {
+  // handle the click event for Room buttons
+};
 </script>
