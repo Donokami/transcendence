@@ -28,31 +28,21 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue';
 import SiteHeader from '../components/SiteHeader.vue'
 import ProfileStatsCard from '../components/ProfileStatsCard.vue'
 import StatsRankingTable from '../components/StatsRankingTable.vue'
 import StatsMatchHistoryTable from '../components/StatsMatchHistoryTable.vue'
 
-export default {
-  name: 'ProfileView',
-  components: {
-    SiteHeader,
-    ProfileStatsCard,
-    StatsRankingTable,
-    StatsMatchHistoryTable
-  },
-  data() {
-    return {
-      table_state: 'ranking',
-      authentication_msg: 'Activate 2FA'
-    }
-  },
-  methods: {
-    switchAuthenticationMsg(): void {
-      if (this.authentication_msg === 'Activate 2FA') this.authentication_msg = 'Deactivate 2FA'
-      else this.authentication_msg = 'Activate 2FA'
-    }
+const table_state = ref('ranking')
+const authentication_msg = ref('Activate 2FA')
+
+const switchAuthenticationMsg = () => {
+  if (authentication_msg.value === 'Activate 2FA') {
+    authentication_msg.value = 'Deactivate 2FA'
+  } else {
+    authentication_msg.value = 'Activate 2FA'
   }
 }
 </script>
