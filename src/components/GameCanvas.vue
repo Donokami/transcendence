@@ -1,5 +1,6 @@
 <template>
-  <TresCanvas shadows>
+  <p>{{ gameState.posX }}</p>
+  <TresCanvas shadows @mousemove="MovePaddle">
     <TresScene>
       <TresAmbientLight :color="0xffffff" :intensity="2" cast-shadow />
       <TresDirectionalLight :color="0xffaaaa" :intensity="2" cast-shadow />
@@ -7,20 +8,20 @@
       <TresGroup ref="groupRef">
         <TresMesh :position="[-1, -2, 1]" :scale="1.25" receive-shadow>
           <TresSphereGeometry />
-          <TresMeshToonMaterial color="brown" />
+          <TresMeshToonMaterial color="beige" />
         </TresMesh>
         <TresMesh :position="[1, -2, 1]" :scale="1.25" receive-shadow>
           <TresSphereGeometry />
-          <TresMeshToonMaterial color="brown" />
+          <TresMeshToonMaterial color="beige" />
         </TresMesh>
-        <TresMesh :position="[0, 2.3, 0]" :scale="1" receive-shadow>
+        <TresMesh :position="[0, 4.8, 0]" :scale="1" receive-shadow>
           <TresSphereGeometry :args="[1]" />
           <TresMeshToonMaterial color="pink" />
         </TresMesh>
-        <TresMesh :scale="1" cast-shadow>
+        <TresMesh :position="[0, 1, 0]" :scale="1" cast-shadow>
           <!-- <TresSphereGeometry /> -->
-          <TresCylinderGeometry :args="[1, 1, 5]" />
-          <TresMeshToonMaterial color="brown" />
+          <TresCylinderGeometry :args="[1, 1, 7.5]" />
+          <TresMeshToonMaterial color="beige" />
         </TresMesh>
       </TresGroup>
       <Suspense>
@@ -32,21 +33,29 @@
 </template>
 
 <script setup lang="ts">
-import { type ShallowRef, shallowRef, watch } from 'vue'
+import { type ShallowRef, shallowRef, reactive } from 'vue'
 import { useRenderLoop } from '@tresjs/core'
 import { OrbitControls, Environment } from '@tresjs/cientos'
-import type { Texture } from 'three';
 
 const groupRef: ShallowRef = shallowRef(null)
 const envRef: ShallowRef = shallowRef(null)
 
 const { onLoop } = useRenderLoop()
 
-let envMap: null = null
-
-watch(envRef, ({ getTexture }) => {
-  envMap = getTexture()
+const gameState =  reactive({
+  score: 0,
+  lives: 3,
+  level: 1,
+  gameOver: false,
+  paused: false,
+  started: false,
+  posX: 0,
+  posY: 0,
 })
+
+const MovePaddle = (e: MouseEvent): void => {
+  gameState.posX = e.offsetX
+}
 
 onLoop(({ delta, elapsed }) => {
   if (groupRef.value != null) {
