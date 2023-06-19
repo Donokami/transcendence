@@ -17,6 +17,8 @@ import {
 
 import { Server, Socket } from 'socket.io';
 
+import { session } from '@/app.module';
+import { type UserSocket } from '@/core/types/socket';
 import { UsersService } from '@/modules/users/users.service';
 import { ChannelsService } from '@/modules/channels/channels.service';
 
@@ -25,8 +27,6 @@ import { JoinChannelDto } from './dtos/join-channel.dto';
 import { LeaveChannelDto } from './dtos/leave-channel.dto';
 import { KickUserDto } from './dtos/kick-user.dto';
 import { BanUserDto } from './dtos/ban-user.dto';
-import { session } from 'src/app.module';
-import { type UserSocket } from '@/core/types/socket';
 
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
@@ -49,7 +49,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   async handleConnection(client: UserSocket): Promise<void> {
     const { user } = client.request;
     const channel = user?.channel;
-  
+
     this.connectedUsers.set(client.id, user.id);
 
     if (channel) {

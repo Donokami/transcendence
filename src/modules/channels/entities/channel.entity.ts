@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 
 import { User } from '@/modules/users/user.entity';
+
 import { Message } from './message.entity';
 
 @Entity()

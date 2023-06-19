@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 
 import { User } from '@/modules/users/user.entity';
+
 import { Channel } from './channel.entity';
 
 @Entity()
