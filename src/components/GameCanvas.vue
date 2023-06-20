@@ -1,15 +1,20 @@
 <template>
   <div class="">
-    <p class="">{{ gameState.posX + ' - ' + gameState.posY }}</p>
+    <p class="">{{ gs.posX + ' - ' + gs.posY }}</p>
     <div class="w-[720px] h-[480px]">
       <TresCanvas shadows @mousemove="MovePaddle">
         <TresScene>
-          <TresAmbientLight :color="0xffffff" :intensity="1" />
-          <TresDirectionalLight :color="'#ffffff'" :intensity="2" />
-          <TresPerspectiveCamera :position="[
-            paddlePos(gameState.posX),
+          <TresAmbientLight color="#ffffff" :intensity="1" />
+          <TresDirectionalLight color="#ffffff" :intensity="2" />
+          <!-- <TresPerspectiveCamera :position="[
+            paddlePos(gs.posX),
             5,
-            gameMetrics.fieldDepth
+            gm.fieldDepth
+          ]" :fov="45" :aspect="1" :near="0.1" :far="1000" /> -->
+          <TresPerspectiveCamera :position="[
+            10,
+            40,
+            5
           ]" :fov="45" :aspect="1" :near="0.1" :far="1000" />
           <!-- <TresGroup ref="groupRef">
             <TresMesh :position="[-1, -2, 1]" :scale="1.25">
@@ -29,47 +34,53 @@
           <TresMeshToonMaterial color="beige" />
           </TresMesh>
           </TresGroup> -->
-          <TresMesh>
-            <TresBoxGeometry :args="[gameMetrics.fieldWidth, gameMetrics.fieldHeight, gameMetrics.fieldDepth]" />
-            <TresMeshToonMaterial color="#005" />
-          </TresMesh>
+          <TresGroup>
+            <TresMesh>
+              <TresBoxGeometry :args="[gm.fieldWidth, gm.fieldHeight, gm.fieldDepth]" />
+              <TresMeshToonMaterial color="#f80" />
+            </TresMesh>
+            <TresMesh :rotate-x="-Math.PI * 0.5" :position-y="gm.fieldHeight * 0.5 + 0.01">
+              <TresPlaneGeometry :args="[gm.fieldWidth, 1]" />
+              <TresMeshToonMaterial color="#fff" />
+            </TresMesh>
+          </TresGroup>
           <TresMesh :position="[
-            paddlePos(gameState.posX),
-            gameMetrics.fieldHeight,
-            gameMetrics.fieldDepth / 2 + gameMetrics.paddleDepth / 2
-          ]">
+            paddlePos(gs.posX),
+            gm.fieldHeight,
+            gm.fieldDepth * 0.5 + gm.paddleDepth * 0.5
+          ]" ref="paddle1Ref">
             <TresBoxGeometry :args="[
-              gameMetrics.paddleRatio * gameMetrics.fieldWidth,
-              gameMetrics.paddleHeight,
-              gameMetrics.paddleDepth
+              gm.paddleRatio * gm.fieldWidth,
+              gm.paddleHeight,
+              gm.paddleDepth
             ]" />
-            <TresMeshToonMaterial color="red" />
+            <TresMeshToonMaterial color="#fff" />
           </TresMesh>
           <TresMesh :position="[
             0,
-            gameMetrics.fieldHeight,
-            -gameMetrics.fieldDepth / 2 - gameMetrics.paddleDepth / 2
-          ]">
+            gm.fieldHeight,
+            -gm.fieldDepth * 0.5 - gm.paddleDepth * 0.5
+          ]" ref="paddle2Ref">
             <TresBoxGeometry :args="[
-              gameMetrics.paddleRatio * gameMetrics.fieldWidth,
-              gameMetrics.paddleHeight,
-              gameMetrics.paddleDepth
+              gm.paddleRatio * gm.fieldWidth,
+              gm.paddleHeight,
+              gm.paddleDepth
             ]" />
-            <TresMeshToonMaterial color="blue" />
+            <TresMeshToonMaterial color="#fff" />
           </TresMesh>
           <TresMesh :position="[
             0,
-            gameMetrics.fieldHeight + gameMetrics.ballRadius / 2,
+            gm.fieldHeight + gm.ballRadius * 0.5,
             0
-          ]">
-            <TresSphereGeometry :args="[gameMetrics.ballRadius]" />
+          ]" ref="ballRef">
+            <TresSphereGeometry :args="[gm.ballRadius]" />
             <TresMeshToonMaterial color="yellow" />
           </TresMesh>
           <!-- <Suspense>
             <Environment ref="envRef" :files="'game/environment.hdr'" />
           </Suspense> -->
         </TresScene>
-        <!-- <OrbitControls /> -->
+        <OrbitControls />
       </TresCanvas>
     </div>
   </div>
@@ -79,13 +90,28 @@
 import { type ShallowRef, shallowRef, reactive } from 'vue'
 import { useRenderLoop } from '@tresjs/core'
 import { OrbitControls } from '@tresjs/cientos'
+import type { Object3D } from 'three';
+import { gm, renderPong } from '@/includes/gameEngine'
 
-const groupRef: ShallowRef = shallowRef(null)
+// const groupRef: ShallowRef = shallowRef(null)
 // const envRef: ShallowRef = shallowRef(null)
+
+interface SimObject3D extends Object3D {
+  velocity: {
+    x: number,
+    y: number,
+    z: number,
+  },
+  stopped: boolean,
+}
+
+const ballRef: ShallowRef<SimObject3D | null> = shallowRef(null)
+const paddle1Ref: ShallowRef<SimObject3D | null> = shallowRef(null)
+const paddle2Ref: ShallowRef<SimObject3D | null> = shallowRef(null)
 
 const { onLoop } = useRenderLoop()
 
-const gameState = reactive({
+const gs = reactive({
   score: 0,
   lives: 3,
   level: 1,
@@ -96,34 +122,21 @@ const gameState = reactive({
   posY: 0,
 })
 
-const gameMetrics = {
-  canvasHeight: 480,
-  canvasWidth: 720,
-  fieldWidth: 20,
-  fieldHeight: 1,
-  fieldDepth: 40,
-  paddleRatio: 0.4,
-  paddleHeight: 1,
-  paddleDepth: 1,
-  ballRadius: 0.8,
-}
-
 const paddlePos = (x: number): number => {
-  const newMin = -gameMetrics.fieldWidth / 2 + (gameMetrics.paddleRatio * gameMetrics.fieldWidth / 2);
-  const newMax = gameMetrics.fieldWidth / 2 - (gameMetrics.paddleRatio * gameMetrics.fieldWidth / 2);
-  return x * (newMax - newMin) / gameMetrics.canvasWidth + newMin;
+  const newMin = -gm.fieldWidth * 0.5 + (gm.paddleRatio * gm.fieldWidth * 0.5);
+  const newMax = gm.fieldWidth * 0.5 - (gm.paddleRatio * gm.fieldWidth * 0.5);
+  return x * (newMax - newMin) / gm.canvasWidth + newMin;
 }
 
 const MovePaddle = (e: MouseEvent): void => {
-  gameState.posX = e.offsetX
-  gameState.posY = e.offsetY
+  gs.posX = e.offsetX
+  gs.posY = e.offsetY
 }
 
-onLoop(({ delta, elapsed }) => {
-  console.log(delta, elapsed)
-  if (groupRef.value != null) {
-    groupRef.value.rotateX(delta)
-    groupRef.value.rotateY(-delta)
+onLoop(() => {
+  if (ballRef.value != null && paddle1Ref.value != null && paddle2Ref.value != null) {
+    renderPong(ballRef.value, paddle1Ref.value, paddle2Ref.value)
   }
 })
+
 </script>
