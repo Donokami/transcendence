@@ -12,15 +12,12 @@ import {
 } from 'typeorm';
 
 import { Channel } from '@/modules/channels/entities/channel.entity';
-
-import { Friend } from '@/modules/social/entities/friend.entity';
-import { BlockedUser } from '@/modules/social/entities/blockedUser.entity';
-import { PendingRequest } from '@/modules/social/entities/pendingRequest.entity';
-
+import { Friendship } from '@/modules/social/entities/friendship.entity';
 import { Message } from '@/modules/channels/entities/message.entity';
 
 @Entity()
 export class User {
+  // USER IDENTIFIERS
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -34,11 +31,23 @@ export class User {
   password: string;
 
   @Column({ nullable: true })
-  profile_picture: string;
+  profilePicture: string;
 
-  @Column({ default: false })
-  is_admin: boolean;
+  // OTHER INFORMATIONS
+  @Column({ default: 'offline' })
+  status: string;
 
+  // FRIENDSHIP RELATED INFORMATIONS
+  @Column({ default: 0 })
+  nFriends: number;
+
+  @OneToMany(() => Friendship, (friendship) => friendship.userOneId)
+  sentRequests: Array<Friendship>;
+
+  @OneToMany(() => Friendship, (friendship) => friendship.userTwoId)
+  receivedRequests: Array<Friendship>;
+
+  // CHAT RELATED INFORMATIONS
   @JoinTable()
   @ManyToOne(() => Channel, (channel: Channel) => channel.members)
   channel: Channel;
@@ -49,17 +58,18 @@ export class User {
   })
   bannedChannels: Array<Channel>;
 
+  @Column({ default: false })
+  is_admin: boolean;
+
   @OneToMany(() => Channel, (channel: Channel) => channel.messages)
   messages: Array<Message>;
 
-  @Column({ default: 'offline' })
-  status: string;
-
+  // STATS RELATED INFORMATIONS
   @Column({ nullable: true })
   rank: number;
 
   @Column({ default: 0 })
-  games_played: number;
+  gamesPlayed: number;
 
   @Column({ default: 0 })
   win: number;
@@ -68,32 +78,18 @@ export class User {
   loss: number;
 
   @Column({ default: 0 })
-  win_rate: number;
+  winRate: number;
 
   @Column({ default: 0 })
-  points_scored: number;
+  pointsScored: number;
 
   @Column({ default: 0 })
-  points_conceded: number;
+  pointsConceded: number;
 
   @Column({ default: 0 })
-  points_difference: number;
+  pointsDifference: number;
 
-  @OneToMany(() => Friend, (friend) => friend.userA)
-  @JoinTable()
-  friends: Array<Friend>;
-
-  @OneToMany(() => PendingRequest, (pendingRequest) => pendingRequest.user)
-  @JoinTable()
-  pendingRequests: Array<PendingRequest>;
-
-  @OneToMany(() => BlockedUser, (friend) => friend.currentUser)
-  @JoinTable()
-  blockedUsers: BlockedUser[];
-
-  @Column({ default: 0 })
-  n_friends: number;
-
+  // UTILS
   @AfterInsert()
   logInsert() {
     console.log(`User with id ${this.id} inserted`);

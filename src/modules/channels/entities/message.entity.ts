@@ -22,7 +22,7 @@ export class Message {
   messageBody: string;
 
   @CreateDateColumn()
-  created_at: Date;
+  createdAt: Date;
 
   @JoinTable()
   @ManyToOne(() => Channel, (channel: Channel) => channel.messages)
