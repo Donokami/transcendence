@@ -18,7 +18,7 @@ export enum FriendshipStatus {
 @Entity()
 export class Friendship {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: string;
 
   @ManyToOne(() => User, (user) => user.sentRequests)
   userA: User;
@@ -27,7 +27,7 @@ export class Friendship {
   userB: User;
 
   @Column()
-  inActionUserId: number;
+  inActionUserId: string;
 
   @Column({
     type: process.env.NODE_ENV === 'production' ? 'enum' : 'text',
