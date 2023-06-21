@@ -21,18 +21,16 @@ export class Friendship {
   id: number;
 
   @ManyToOne(() => User, (user) => user.sentRequests)
-  @JoinColumn({ name: 'user_one_id' })
   userA: User;
 
   @ManyToOne(() => User, (user) => user.receivedRequests)
-  @JoinColumn({ name: 'user_two_id' })
   userB: User;
 
   @Column()
   inActionUserId: number;
 
   @Column({
-    type: 'enum',
+    type: process.env.NODE_ENV === 'production' ? 'enum' : 'text',
     enum: FriendshipStatus,
     default: FriendshipStatus.PENDING,
   })

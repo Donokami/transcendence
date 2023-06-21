@@ -41,10 +41,10 @@ export class User {
   @Column({ default: 0 })
   nFriends: number;
 
-  @OneToMany(() => Friendship, (friendship) => friendship.userOneId)
+  @OneToMany(() => Friendship, (friendship) => friendship.userA)
   sentRequests: Array<Friendship>;
 
-  @OneToMany(() => Friendship, (friendship) => friendship.userTwoId)
+  @OneToMany(() => Friendship, (friendship) => friendship.userB)
   receivedRequests: Array<Friendship>;
 
   // CHAT RELATED INFORMATIONS

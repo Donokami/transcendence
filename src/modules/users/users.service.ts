@@ -3,19 +3,21 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common';
-
 import { Repository } from 'typeorm';
-
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { User } from './user.entity';
+
 import { Channel } from '@/modules/channels/entities/channel.entity';
+import { Friendship } from '@/modules/social/entities/friendship.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(Friendship)
+    private friendshipRepository: Repository<Friendship>,
   ) {}
 
   create(email: string, password: string, username: string) {
