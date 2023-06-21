@@ -1,21 +1,21 @@
 <template>
   <div class="">
-    <p class="">{{ gs.posX + ' - ' + gs.posY }}</p>
+    <p class="">{{ scoring }} ({{ Math.round(1 / gs.fps) }} fps)</p>
     <div class="w-[720px] h-[480px]">
-      <TresCanvas shadows @mousemove="MovePaddle">
+      <TresCanvas clear-color="#005" shadows @mousemove="MovePaddle">
         <TresScene>
           <TresAmbientLight color="#ffffff" :intensity="1" />
           <TresDirectionalLight color="#ffffff" :intensity="2" />
-          <!-- <TresPerspectiveCamera :position="[
+          <TresPerspectiveCamera :position="[
             paddlePos(gs.posX),
             5,
             gm.fieldDepth
-          ]" :fov="45" :aspect="1" :near="0.1" :far="1000" /> -->
-          <TresPerspectiveCamera :position="[
+          ]" :fov="30" :aspect="1" :near="0.1" :far="1000" />
+          <!-- <TresPerspectiveCamera :position="[
             10,
             40,
             5
-          ]" :fov="45" :aspect="1" :near="0.1" :far="1000" />
+          ]" :fov="45" :aspect="1" :near="0.1" :far="1000" /> -->
           <!-- <TresGroup ref="groupRef">
             <TresMesh :position="[-1, -2, 1]" :scale="1.25">
               <TresSphereGeometry />
@@ -39,10 +39,10 @@
               <TresBoxGeometry :args="[gm.fieldWidth, gm.fieldHeight, gm.fieldDepth]" />
               <TresMeshToonMaterial color="#f80" />
             </TresMesh>
-            <TresMesh :rotate-x="-Math.PI * 0.5" :position-y="gm.fieldHeight * 0.5 + 0.01">
+            <!-- <TresMesh :rotate-x="-Math.PI * 0.5" :position-y="gm.fieldHeight * 0.5 + 0.01">
               <TresPlaneGeometry :args="[gm.fieldWidth, 1]" />
               <TresMeshToonMaterial color="#fff" />
-            </TresMesh>
+            </TresMesh> -->
           </TresGroup>
           <TresMesh :position="[
             paddlePos(gs.posX),
@@ -68,59 +68,58 @@
             ]" />
             <TresMeshToonMaterial color="#fff" />
           </TresMesh>
-          <TresMesh :position="[
-            0,
-            gm.fieldHeight + gm.ballRadius * 0.5,
-            0
-          ]" ref="ballRef">
+          <TresMesh ref="ballRef">
             <TresSphereGeometry :args="[gm.ballRadius]" />
             <TresMeshToonMaterial color="yellow" />
           </TresMesh>
+          <Suspense>
+            <Text3D :size="3" :height="0.01" :position="[0, gm.fieldHeight * 0.5, 0]" ref="textRef"
+              :rotate-x="-Math.PI * 0.5" :text="scoring" center need-updates
+              font="https://raw.githubusercontent.com/Tresjs/assets/main/fonts/FiraCodeRegular.json">
+
+              <TresMeshToonMaterial color="#fff" />
+            </Text3D>
+          </Suspense>
+
           <!-- <Suspense>
             <Environment ref="envRef" :files="'game/environment.hdr'" />
           </Suspense> -->
         </TresScene>
-        <OrbitControls />
+        <Stars :size="1" />
+        <!-- <OrbitControls /> -->
       </TresCanvas>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { type ShallowRef, shallowRef, reactive } from 'vue'
+import { type ShallowRef, shallowRef, computed } from 'vue';
 import { useRenderLoop } from '@tresjs/core'
-import { OrbitControls } from '@tresjs/cientos'
-import type { Object3D } from 'three';
-import { gm, renderPong } from '@/includes/gameEngine'
+import { Text3D, Stars } from '@tresjs/cientos'
+import { gm, gs, renderPong, type SimObject3D } from '@/includes/gameEngine'
 
 // const groupRef: ShallowRef = shallowRef(null)
 // const envRef: ShallowRef = shallowRef(null)
+const textRef: ShallowRef<null> = shallowRef(null)
 
-interface SimObject3D extends Object3D {
-  velocity: {
-    x: number,
-    y: number,
-    z: number,
-  },
-  stopped: boolean,
-}
+// interface SimObject3D extends Object3D {
+//   velocity: {
+//     x: number,
+//     y: number,
+//     z: number,
+//   },
+//   stopped: boolean,
+// }
+
+const scoring = computed(() => {
+  return `${gs.score1} - ${gs.score2}`
+})
 
 const ballRef: ShallowRef<SimObject3D | null> = shallowRef(null)
 const paddle1Ref: ShallowRef<SimObject3D | null> = shallowRef(null)
 const paddle2Ref: ShallowRef<SimObject3D | null> = shallowRef(null)
 
 const { onLoop } = useRenderLoop()
-
-const gs = reactive({
-  score: 0,
-  lives: 3,
-  level: 1,
-  gameOver: false,
-  paused: false,
-  started: false,
-  posX: 0,
-  posY: 0,
-})
 
 const paddlePos = (x: number): number => {
   const newMin = -gm.fieldWidth * 0.5 + (gm.paddleRatio * gm.fieldWidth * 0.5);
@@ -133,7 +132,8 @@ const MovePaddle = (e: MouseEvent): void => {
   gs.posY = e.offsetY
 }
 
-onLoop(() => {
+onLoop(({ delta }) => {
+  gs.fps = delta
   if (ballRef.value != null && paddle1Ref.value != null && paddle2Ref.value != null) {
     renderPong(ballRef.value, paddle1Ref.value, paddle2Ref.value)
   }
