@@ -7,7 +7,8 @@ const gs = reactive({
   gameOver: false,
   posX: 0,
   posY: 0,
-  fps: 0
+  fps: 0,
+  activeCanvas: false
 })
 
 const gm = {
@@ -59,18 +60,20 @@ function hitBallBack(ball: SimObject3D, paddle: SimObject3D): void {
   ball.velocity.z *= -1
 }
 
-function isPastPaddle1(ball: SimObject3D, paddle1: SimObject3D): boolean {
-  return ball.position.z > paddle1.position.z + gm.paddleDepth * 0.5
+function isPastPaddle1(ball: SimObject3D): boolean {
+  return ball.position.z > gm.fieldDepth * 0.5 + gm.paddleDepth * 0.5
 }
 
-function isPastPaddle2(ball: SimObject3D, paddle2: SimObject3D): boolean {
-  return ball.position.z < paddle2.position.z - gm.paddleDepth * 0.5
+function isPastPaddle2(ball: SimObject3D): boolean {
+  return ball.position.z < gm.fieldDepth * -0.5 - gm.paddleDepth * 0.5
 }
 
 function isSideCollision(ball: SimObject3D): boolean {
   const ballX = ball.position.x
   const halfFieldWidth = gm.fieldWidth * 0.5
-  return ballX - gm.ballRadius < -halfFieldWidth || ballX + gm.ballRadius > halfFieldWidth
+  return (
+    ballX - gm.ballRadius * 0.5 < -halfFieldWidth || ballX + gm.ballRadius * 0.5 > halfFieldWidth
+  )
 }
 
 function isPaddle1Collision(ball: SimObject3D, paddle1: SimObject3D): boolean {
@@ -95,6 +98,10 @@ function isBallAlignedWithPaddle(ball: SimObject3D, paddle: SimObject3D): boolea
 }
 
 function processBallMovement(ball: SimObject3D, paddle1: SimObject3D, paddle2: SimObject3D): void {
+  if (ball.stopped) {
+    return
+  }
+
   if (
     ball.velocity === undefined ||
     (ball.velocity.x === 0 && ball.velocity.y === 0 && ball.velocity.z === 0)
@@ -102,14 +109,11 @@ function processBallMovement(ball: SimObject3D, paddle1: SimObject3D, paddle2: S
     startBallMov(ball)
   }
 
-  if (ball.stopped) {
-    return
-  }
-
   updateBallPosition(ball)
 
   if (isSideCollision(ball)) {
     ball.velocity.x *= -1
+    ball.velocity.y *= -1
   }
 
   if (isPaddle1Collision(ball, paddle1)) {
@@ -120,33 +124,48 @@ function processBallMovement(ball: SimObject3D, paddle1: SimObject3D, paddle2: S
     hitBallBack(ball, paddle2)
   }
 
-  if (isPastPaddle1(ball, paddle1)) {
+  if (isPastPaddle1(ball)) {
     console.log('player2 scored', gs.score2)
     gs.score2 += 1
     resetBall(ball)
+    setTimeout(() => {
+      ball.stopped = false
+    }, 1000)
   }
 
-  if (isPastPaddle2(ball, paddle2)) {
+  if (isPastPaddle2(ball)) {
     console.log('player1 scored', gs.score1)
     gs.score1 += 1
     resetBall(ball)
+    // After 2s, the ballRef will start moving again.
+    setTimeout(() => {
+      ball.stopped = false
+    }, 2000)
   }
 }
 
 function processCpuPaddle(ball: SimObject3D, paddle2: SimObject3D): void {
   const ballPos = ball.position
   const cpuPos = paddle2.position
+  let newPos = cpuPos.x
 
-  if (cpuPos.x - 100 > ballPos.x) {
-    cpuPos.x -= Math.min(cpuPos.x - ballPos.x, 6)
-  } else if (cpuPos.x - 100 < ballPos.x) {
-    cpuPos.x += Math.min(ballPos.x - cpuPos.x, 6)
+  if (cpuPos.x - gm.paddleRatio * gm.fieldWidth * 0.5 > ballPos.x) {
+    newPos -= cpuPos.x - ballPos.x
+  } else if (cpuPos.x - gm.paddleRatio * gm.fieldWidth * 0.5 < ballPos.x) {
+    newPos += ballPos.x - cpuPos.x
   }
+
+  // To prevent the bot from going out of bounds, we need to clamp the new position.
+  if (newPos < 0)
+    newPos = Math.max(newPos, -gm.fieldWidth * 0.5 + gm.paddleRatio * gm.fieldWidth * 0.5)
+  else newPos = Math.min(newPos, gm.fieldWidth * 0.5 - gm.paddleRatio * gm.fieldWidth * 0.5)
+  cpuPos.x = newPos
 }
 
 function resetBall(ball: SimObject3D): void {
-  ball.position.set(0, gm.fieldHeight, 0)
+  ball.position.set(0, gm.fieldHeight + gm.ballRadius * 0.5, 0)
   ball.velocity.x = ball.velocity.y = ball.velocity.z = 0
+  ball.stopped = true
 }
 
 function renderPong(ball: SimObject3D, paddle1: SimObject3D, paddle2: SimObject3D): void {

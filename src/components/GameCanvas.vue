@@ -10,7 +10,8 @@
             paddlePos(gs.posX),
             5,
             gm.fieldDepth
-          ]" :fov="30" :aspect="1" :near="0.1" :far="1000" />
+          ]
+            " :fov="30" :aspect="1" :near="0.1" :far="1000" />
           <!-- <TresPerspectiveCamera :position="[
             10,
             40,
@@ -39,33 +40,37 @@
               <TresBoxGeometry :args="[gm.fieldWidth, gm.fieldHeight, gm.fieldDepth]" />
               <TresMeshToonMaterial color="#f80" />
             </TresMesh>
-            <!-- <TresMesh :rotate-x="-Math.PI * 0.5" :position-y="gm.fieldHeight * 0.5 + 0.01">
+            <TresMesh :rotate-x="-Math.PI * 0.5" :position-y="gm.fieldHeight * 0.5 + 0.01">
               <TresPlaneGeometry :args="[gm.fieldWidth, 1]" />
               <TresMeshToonMaterial color="#fff" />
-            </TresMesh> -->
+            </TresMesh>
           </TresGroup>
           <TresMesh :position="[
             paddlePos(gs.posX),
             gm.fieldHeight,
             gm.fieldDepth * 0.5 + gm.paddleDepth * 0.5
-          ]" ref="paddle1Ref">
+          ]
+            " ref="paddle1Ref">
             <TresBoxGeometry :args="[
               gm.paddleRatio * gm.fieldWidth,
               gm.paddleHeight,
               gm.paddleDepth
-            ]" />
+            ]
+              " />
             <TresMeshToonMaterial color="#fff" />
           </TresMesh>
           <TresMesh :position="[
             0,
             gm.fieldHeight,
             -gm.fieldDepth * 0.5 - gm.paddleDepth * 0.5
-          ]" ref="paddle2Ref">
+          ]
+            " ref="paddle2Ref">
             <TresBoxGeometry :args="[
               gm.paddleRatio * gm.fieldWidth,
               gm.paddleHeight,
               gm.paddleDepth
-            ]" />
+            ]
+              " />
             <TresMeshToonMaterial color="#fff" />
           </TresMesh>
           <TresMesh ref="ballRef">
@@ -73,8 +78,8 @@
             <TresMeshToonMaterial color="yellow" />
           </TresMesh>
           <Suspense>
-            <Text3D :size="3" :height="0.01" :position="[0, gm.fieldHeight * 0.5, 0]" ref="textRef"
-              :rotate-x="-Math.PI * 0.5" :text="scoring" center need-updates
+            <Text3D :size="3" :height="1" :position="[0, (gm.fieldHeight + gm.paddleHeight) * 4, -gm.fieldDepth * 0.5]"
+              ref="textRef" :text="scoring" center need-updates
               font="https://raw.githubusercontent.com/Tresjs/assets/main/fonts/FiraCodeRegular.json">
 
               <TresMeshToonMaterial color="#fff" />
@@ -100,16 +105,6 @@ import { gm, gs, renderPong, type SimObject3D } from '@/includes/gameEngine'
 
 // const groupRef: ShallowRef = shallowRef(null)
 // const envRef: ShallowRef = shallowRef(null)
-const textRef: ShallowRef<null> = shallowRef(null)
-
-// interface SimObject3D extends Object3D {
-//   velocity: {
-//     x: number,
-//     y: number,
-//     z: number,
-//   },
-//   stopped: boolean,
-// }
 
 const scoring = computed(() => {
   return `${gs.score1} - ${gs.score2}`
