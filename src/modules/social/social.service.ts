@@ -42,7 +42,10 @@ export class SocialService {
     }
 
     const existingFriendship = await this.friendshipRepository.findOne({
-      where: { userA: { id: sender.id }, userB: { id: receiver.id } },
+      where: {
+        userA: { id: sender.id },
+        userB: { id: receiver.id },
+      },
     });
     if (existingFriendship) {
       throw new Error('Friendship request already sent.');
@@ -60,9 +63,9 @@ export class SocialService {
     return friendship;
   }
 
-  //  *******************  //
-  //  acceptFriendRequest  //
-  //  *******************  //
+  //  ******************* //
+  //  acceptFriendRequest //
+  //  ******************* //
 
   async acceptFriendRequest(
     userId: string,
@@ -89,5 +92,150 @@ export class SocialService {
     await this.friendshipRepository.save(friendshipRequest);
 
     return friendshipRequest;
+  }
+
+  //  ********  //
+  //  blockUser //
+  //  ********  //
+
+  async blockUser(userId: string, userIdToBlock: string): Promise<Friendship> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+    const userToBlock = await this.usersRepository.findOne({
+      where: { id: userIdToBlock },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${userId} not found.`);
+    }
+    if (!userToBlock) {
+      throw new NotFoundException(`User with id ${userIdToBlock} not found.`);
+    }
+
+    const existingFriendship = await this.friendshipRepository.findOne({
+      where: [
+        {
+          userA: { id: user.id },
+          userB: { id: userToBlock.id },
+        },
+        {
+          userA: { id: userToBlock.id },
+          userB: { id: user.id },
+        },
+      ],
+    });
+
+    if (existingFriendship) {
+      existingFriendship.status = FriendshipStatus.BLOCKED;
+      existingFriendship.inActionUserId = userId;
+      await this.friendshipRepository.save(existingFriendship);
+      return existingFriendship;
+    } else {
+      const friendship = this.friendshipRepository.create({
+        userA: user,
+        userB: userToBlock,
+        status: FriendshipStatus.BLOCKED,
+        inActionUserId: userId,
+      });
+
+      await this.friendshipRepository.save(friendship);
+
+      return friendship;
+    }
+  }
+
+  //  *********** //
+  //  unblockUser //
+  //  *********** //
+
+  async unblockUser(
+    userId: string,
+    userIdToUnblock: string,
+  ): Promise<Friendship> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+    const userToUnblock = await this.usersRepository.findOne({
+      where: { id: userIdToUnblock },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${userId} not found.`);
+    }
+    if (!userToUnblock) {
+      throw new NotFoundException(`User with id ${userIdToUnblock} not found.`);
+    }
+
+    const existingFriendship = await this.friendshipRepository.findOne({
+      where: [
+        { userA: { id: user.id }, userB: { id: userToUnblock.id } },
+        { userA: { id: userToUnblock.id }, userB: { id: user.id } },
+      ],
+    });
+
+    if (
+      existingFriendship &&
+      existingFriendship.status === FriendshipStatus.BLOCKED
+    ) {
+      existingFriendship.status = FriendshipStatus.ACCEPTED;
+      existingFriendship.inActionUserId = userId;
+      await this.friendshipRepository.save(existingFriendship);
+      return existingFriendship;
+    } else {
+      throw new Error(
+        `User with id ${userIdToUnblock} is not blocked and thus can't be unblocked.`,
+      );
+    }
+  }
+
+  //  ***************** //
+  //  getFriendRequests //
+  //  ***************** //
+
+  async getFriendRequests(userId: string): Promise<Friendship[]> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${userId} not found.`);
+    }
+
+    const friendRequests = await this.friendshipRepository.find({
+      where: {
+        userB: { id: userId },
+        status: FriendshipStatus.PENDING,
+      },
+    });
+
+    return friendRequests;
+  }
+
+  //  **********  //
+  //  getFriends  //
+  //  **********  //
+
+  async getFriends(userId: string): Promise<User[]> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with id ${userId} not found.`);
+    }
+
+    const friendships = await this.friendshipRepository.find({
+      where: [
+        { userA: { id: userId }, status: FriendshipStatus.ACCEPTED },
+        { userB: { id: userId }, status: FriendshipStatus.ACCEPTED },
+      ],
+    });
+
+    const friends = friendships.map((friendship) =>
+      friendship.userA.id === userId ? friendship.userB : friendship.userA,
+    );
+
+    return friends;
   }
 }
