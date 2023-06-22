@@ -19,9 +19,9 @@ export class SocialService {
     private friendshipRepository: Repository<Friendship>,
   ) {}
 
-  //  *****************  //
-  //  sendFriendRequest  //
-  //  *****************  //
+  // ***************** //
+  // sendFriendRequest //
+  // ***************** //
 
   async sendFriendRequest(
     senderId: string,
@@ -63,9 +63,9 @@ export class SocialService {
     return friendship;
   }
 
-  //  ******************* //
-  //  acceptFriendRequest //
-  //  ******************* //
+  // ******************* //
+  // acceptFriendRequest //
+  // ******************* //
 
   async acceptFriendRequest(
     userId: string,
@@ -94,9 +94,9 @@ export class SocialService {
     return friendshipRequest;
   }
 
-  //  ********  //
-  //  blockUser //
-  //  ********  //
+  // ********* //
+  // blockUser //
+  // ********* //
 
   async blockUser(userId: string, userIdToBlock: string): Promise<Friendship> {
     const user = await this.usersRepository.findOne({
@@ -145,9 +145,9 @@ export class SocialService {
     }
   }
 
-  //  *********** //
-  //  unblockUser //
-  //  *********** //
+  // *********** //
+  // unblockUser //
+  // *********** //
 
   async unblockUser(
     userId: string,
@@ -189,9 +189,9 @@ export class SocialService {
     }
   }
 
-  //  ***************** //
-  //  getFriendRequests //
-  //  ***************** //
+  // ***************** //
+  // getFriendRequests //
+  // ***************** //
 
   async getFriendRequests(userId: string): Promise<Friendship[]> {
     const user = await this.usersRepository.findOne({
@@ -212,9 +212,9 @@ export class SocialService {
     return friendRequests;
   }
 
-  //  **********  //
-  //  getFriends  //
-  //  **********  //
+  // ********** //
+  // getFriends //
+  // ********** //
 
   async getFriends(userId: string): Promise<User[]> {
     const user = await this.usersRepository.findOne({

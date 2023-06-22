@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 
 import { AuthGuard } from '@/core/guards/auth.guard';
+import { SocialService } from '@/modules/social/social.service';
 
 import { User } from './user.entity';
 import { UserDto } from './dtos/user.dto';
@@ -23,12 +24,27 @@ import { Serialize } from '@/core/interceptors/serialize.interceptor';
 @Controller('user')
 @Serialize(UserDto)
 export class UsersController {
-  constructor(private usersService: UsersService) { }
+  constructor(
+    private usersService: UsersService,
+    private readonly socialService: SocialService,
+  ) {}
 
   @Get('/me')
   @UseGuards(AuthGuard)
   whoAmI(@CurrentUser() user: User) {
     return user;
+  }
+
+  @Get('/:id/friends')
+  @UseGuards(AuthGuard)
+  async getFriends(@Param('id') id: string) {
+    return this.socialService.getFriends(id);
+  }
+
+  @Get('/:id/friend-requests')
+  @UseGuards(AuthGuard)
+  async getFriendRequests(@Param('id') id: string) {
+    return this.socialService.getFriendRequests(id);
   }
 
   @Get('/:id')
