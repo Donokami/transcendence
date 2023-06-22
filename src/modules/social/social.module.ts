@@ -11,5 +11,6 @@ import { SocialService } from './social.service';
   imports: [TypeOrmModule.forFeature([Friendship, User])],
   controllers: [SocialController],
   providers: [SocialService],
+  exports: [SocialService],
 })
 export class SocialModule {}

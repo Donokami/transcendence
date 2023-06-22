@@ -9,9 +9,10 @@ import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 
 import { CurrentUserInterceptor } from './interceptors/current-user.interceptor';
+import { SocialModule } from '../social/social.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Friendship])],
+  imports: [TypeOrmModule.forFeature([User, Friendship]), SocialModule],
   controllers: [UsersController],
   providers: [
     UsersService,
