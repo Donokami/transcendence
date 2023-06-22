@@ -14,10 +14,12 @@ import { GameModule } from '@/modules/game/game.module';
 import { UsersModule } from '@/modules/users/users.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
+import { UserSerializer } from '@/modules/auth/user.serializer';
 
 import config from './core/config';
 import { TypeOrmConfigService } from './core/config/database.config';
 import { RequestHandler } from 'express';
+import * as passport from 'passport';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const session: RequestHandler = require('cookie-session')({
@@ -42,6 +44,7 @@ export const session: RequestHandler = require('cookie-session')({
   ],
   controllers: [AppController],
   providers: [
+    UserSerializer,
     AppService,
     {
       provide: APP_PIPE,
@@ -54,5 +57,6 @@ export const session: RequestHandler = require('cookie-session')({
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(session).forRoutes('*');
+    consumer.apply(passport.initialize(), passport.session()).forRoutes('*');
   }
 }

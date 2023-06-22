@@ -23,7 +23,7 @@ import { Serialize } from '@/core/interceptors/serialize.interceptor';
 @Controller('user')
 @Serialize(UserDto)
 export class UsersController {
-  constructor(private usersService: UsersService) { }
+  constructor(private usersService: UsersService) {}
 
   @Get('/me')
   @UseGuards(AuthGuard)

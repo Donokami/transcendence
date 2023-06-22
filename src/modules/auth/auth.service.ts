@@ -6,12 +6,22 @@ import {
 import { UsersService } from '@/modules/users/users.service';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 import { promisify } from 'util';
+import { UserDetails } from './utils/types';
 
 const scrypt = promisify(_scrypt);
 
 @Injectable()
 export class AuthService {
   constructor(private usersService: UsersService) {}
+
+  async validateUser(details: UserDetails) {
+    const [user] = await this.usersService.find(details.email);
+    if (!user) {
+      const newUser = await this.usersService.createOauth(details);
+      return newUser;
+    }
+    return user;
+  }
 
   async register(email: string, password: string, username: string) {
     const users = await this.usersService.find(email);

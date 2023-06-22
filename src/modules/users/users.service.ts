@@ -10,6 +10,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { User } from './user.entity';
 import { Channel } from '@/modules/channels/entities/channel.entity';
+import { UserDetails } from '@/modules/auth/utils/types';
 
 @Injectable()
 export class UsersService {
@@ -17,6 +18,11 @@ export class UsersService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
   ) {}
+
+  createOauth(details: UserDetails) {
+    const user = this.userRepository.create(details);
+    return this.userRepository.save(user);
+  }
 
   create(email: string, password: string, username: string) {
     const user = this.userRepository.create({ email, password, username });
