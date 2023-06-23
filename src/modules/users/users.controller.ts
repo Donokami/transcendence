@@ -29,26 +29,22 @@ export class UsersController {
     private readonly socialService: SocialService,
   ) {}
 
+  // ****** //
+  // whoAmI //
+  // ****** //
+
   @Get('/me')
   @UseGuards(AuthGuard)
   whoAmI(@CurrentUser() user: User) {
     return user;
   }
 
-  @Get('/:id/friends')
-  @UseGuards(AuthGuard)
-  async getFriends(@Param('id') id: string) {
-    return this.socialService.getFriends(id);
-  }
-
-  @Get('/:id/friend-requests')
-  @UseGuards(AuthGuard)
-  async getFriendRequests(@Param('id') id: string) {
-    return this.socialService.getFriendRequests(id);
-  }
+  // ************ //
+  // findUserById //
+  // ************ //
 
   @Get('/:id')
-  async findUser(@Param('id') id: string) {
+  async findUserById(@Param('id') id: string) {
     const user = await this.usersService.findOne(id);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -56,18 +52,50 @@ export class UsersController {
     return user;
   }
 
-  @Get()
-  findAllUsers(@Query('email') email: string) {
-    return this.usersService.find(email);
+  // ********** //
+  // getFriends //
+  // ********** //
+
+  @Get('/:id/friends')
+  @UseGuards(AuthGuard)
+  async getFriends(@Param('id') id: string) {
+    return this.socialService.getFriends(id);
   }
+
+  // ***************** //
+  // getFriendRequests //
+  // ***************** //
+
+  @Get('/:id/friend-requests')
+  @UseGuards(AuthGuard)
+  async getFriendRequests(@Param('id') id: string) {
+    return this.socialService.getFriendRequests(id);
+  }
+
+  // ********** //
+  // updateUser //
+  // ********** //
+
+  @Patch('/:id')
+  updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
+    return this.usersService.update(id, body);
+  }
+
+  // ********** //
+  // removeUser //
+  // ********** //
 
   @Delete('/:id')
   removeUser(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
 
-  @Patch('/:id')
-  updateUser(@Param('id') id: string, @Body() body: UpdateUserDto) {
-    return this.usersService.update(id, body);
+  // ************ //
+  // findAllUsers //
+  // ************ //
+
+  @Get()
+  findAllUsers(@Query('email') email: string) {
+    return this.usersService.find(email);
   }
 }
