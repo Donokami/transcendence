@@ -36,7 +36,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     component: ProfileView,
-    path: '/profile',
+    path: '/profile/:id',
     name: 'profile'
   },
   {

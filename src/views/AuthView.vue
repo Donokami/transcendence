@@ -24,10 +24,6 @@ import AuthSignInForm from '../components/AuthSignInForm.vue'
 import AuthRegisterForm from '../components/AuthRegisterForm.vue'
 import AuthBallCanvas from '../components/AuthBallCanvas.vue'
 
-const props = defineProps({
-  formState: { type: String, default: 'signIn'},
-})
-
-props.formState
+const formState = ref('signIn')
 
 </script>

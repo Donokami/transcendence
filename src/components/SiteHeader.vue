@@ -37,7 +37,7 @@
           tabindex="0"
           class="menu menu-compact dropdown-content shadow bg-base-100 -ml-[75px] mt-1"
         >
-          <li><router-link to="/profile">Profile</router-link></li>
+          <li><router-link :to="{ name: 'profile', params: { id: userStore.loggedUser.id }}">Profile</router-link></li>
           <li><a @click="logout">Logout</a></li>
         </ul>
       </div>
@@ -49,15 +49,16 @@
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router'
+  import { useUserStore } from '../stores/UserStore'
 
   const router = useRouter()
+  const userStore = useUserStore()
     
   const logout = async () => {
     try {
       const response = await fetch('http://localhost:3000/auth/signout', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        // body: JSON.stringify(values)
       })
       if (response.ok) {      
         await router.push('/auth')

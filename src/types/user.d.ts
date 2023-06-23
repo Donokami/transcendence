@@ -2,7 +2,7 @@ import type { Channel } from './Channel'
 
 export interface User {
   // USER IDENTIFIERS
-  id: number
+  id: string;
   username: string
   email: string
   password: string

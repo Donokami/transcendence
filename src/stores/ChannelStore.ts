@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import type { Channel } from '../types/Channel.js'
-import type { User } from '../types/user.js'
+import type { User } from '../types/User.js'
 
 export const useChannelStore = defineStore('channels', {
   state: () => ({

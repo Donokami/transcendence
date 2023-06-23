@@ -1,4 +1,4 @@
-import type { User } from './user'
+import type { User } from './User'
 
 export interface Channel {
   // CHANNEL INFORMATIONS INSPIRED BY BACKEND CHANNEL ENTITY
