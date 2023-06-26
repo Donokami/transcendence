@@ -52,7 +52,7 @@ export class UserDto {
 
   @ApiProperty()
   @Expose()
-  is_admin: boolean;
+  isAdmin: boolean;
 
   @ApiProperty()
   @Expose()

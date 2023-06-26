@@ -20,23 +20,40 @@ export class UsersService {
     private friendshipRepository: Repository<Friendship>,
   ) {}
 
-  create(email: string, password: string, username: string) {
+  // ****** //
+  // create //
+  // ****** //
+
+  create(email: string, password: string, username: string): Promise<User> {
     const user = this.userRepository.create({ email, password, username });
     return this.userRepository.save(user);
   }
 
-  find(email: string) {
-    return this.userRepository.find({ where: { email } });
+  // ******* //
+  // findAll //
+  // ******* //
+  async findAll(): Promise<User[]> {
+    const users = await this.userRepository.find();
+    return users;
   }
 
-  findOne(id: string) {
+  // ******* //
+  // findOne //
+  // ******* //
+
+  async findOne(id: string): Promise<User> {
     if (!id) {
       return null;
     }
-    return this.userRepository.findOneBy({ id });
+    const user = await this.userRepository.findOneBy({ id });
+    return user;
   }
 
-  async remove(id: string) {
+  // ****** //
+  // remove //
+  // ****** //
+
+  async remove(id: string): Promise<User> {
     const user = await this.findOne(id);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -44,7 +61,11 @@ export class UsersService {
     return this.userRepository.remove(user);
   }
 
-  async update(id: string, attrs: Partial<User>) {
+  // ****** //
+  // update //
+  // ****** //
+
+  async update(id: string, attrs: Partial<User>): Promise<User> {
     const user = await this.findOne(id);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -53,7 +74,11 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
-  async updateUserChannel(id: string, channel: Channel) {
+  // ***************** //
+  // updateUserChannel //
+  // ***************** //
+
+  async updateUserChannel(id: string, channel: Channel): Promise<User> {
     const user = await this.userRepository.preload({
       id,
       channel,

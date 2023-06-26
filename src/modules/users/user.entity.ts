@@ -59,7 +59,7 @@ export class User {
   bannedChannels: Array<Channel>;
 
   @Column({ default: false })
-  is_admin: boolean;
+  isAdmin: boolean;
 
   @OneToMany(() => Channel, (channel: Channel) => channel.messages)
   messages: Array<Message>;
