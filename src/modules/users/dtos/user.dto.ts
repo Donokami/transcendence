@@ -9,4 +9,12 @@ export class UserDto {
   @ApiProperty()
   @Expose()
   email: string;
+
+  @ApiProperty()
+  @Expose()
+  username: string;
+
+  @ApiProperty()
+  @Expose()
+  profile_picture: string;
 }

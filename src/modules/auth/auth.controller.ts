@@ -31,7 +31,9 @@ export class AuthController {
   @Get('42/callback')
   @UseGuards(AuthGuard('42'))
   fortyTwoAuthCallback(@Req() request: any, @Session() session: any) {
-    session.userId = request.user.id;
+    if (request.user && request.user.id) {
+      session.userId = request.user.id;
+    }
   }
 
   @Post('/register')
