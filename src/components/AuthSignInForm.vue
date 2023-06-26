@@ -65,7 +65,7 @@
   const userStore = useUserStore();
 
   const router = useRouter()
-  const emit = defineEmits(['form-state-changed', 'register'])
+  const emit = defineEmits(['form-state-changed'])
 
   const signInSchema = {
     email: 'required|min:3|max:100|email',
@@ -98,7 +98,7 @@
     }
   } 
     
-  const toggleForm = () => {
+  const toggleForm = (): void => {
     emit('form-state-changed', 'register')
   }
 </script>

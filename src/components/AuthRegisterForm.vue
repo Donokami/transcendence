@@ -94,7 +94,7 @@
 
   const userStore = useUserStore();
 
-  const emit = defineEmits(['form-state-changed', 'signIn'])
+  const emit = defineEmits(['form-state-changed'])
 
   const registerSchema = {
     username: 'required|min:3|max:100',
@@ -132,7 +132,7 @@
     }
   }
 
-  const toggleForm = () => {
+  const toggleForm = (): void => {
     emit('form-state-changed', 'signIn')
   }
 </script>

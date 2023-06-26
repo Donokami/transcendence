@@ -3,34 +3,23 @@
     <site-header></site-header>
     <div class="border-2 border-black items-center mx-2 my-3 mt-1 p-5 text-justify relative">
       <stats-ranking-table
-        @table-state-changed="table_state = $event"
-        v-show="table_state === 'ranking'"
+        @table-state-changed="tableState = $event"
+        v-show="tableState === 'ranking'"
       ></stats-ranking-table>
       <stats-match-history-table
-        @table-state-changed="table_state = $event"
-        v-show="table_state === 'matchHistory'"
+        @table-state-changed="tableState = $event"
+        v-show="tableState === 'matchHistory'"
       ></stats-match-history-table>
     </div>
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+import { ref } from 'vue'
 import SiteHeader from '../components/SiteHeader.vue'
 import StatsRankingTable from '../components/StatsRankingTable.vue'
 import StatsMatchHistoryTable from '../components/StatsMatchHistoryTable.vue'
 
-export default {
-  name: 'StatsView',
-  components: {
-    SiteHeader,
-    StatsRankingTable,
-    StatsMatchHistoryTable
-  },
-  data() {
-    return {
-      table_state: 'ranking'
-    }
-  },
-  methods: {}
-}
+const tableState = ref('ranking');
 </script>
+

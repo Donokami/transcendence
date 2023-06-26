@@ -34,7 +34,7 @@
         ></iconify-icon>
       </div>
       <div class="stat-value text-xl">Win Rate</div>
-      <div class="stat-value text-primary">{{ observedUser.win_rate ?? '-' }} %</div>
+      <div class="stat-value text-primary">{{ observedUser.winRate }} %</div>
     </div>
 
     <div 
@@ -44,10 +44,10 @@
       <div class="stat-figure text-primary tooltip tooltip-top" data-tip="Add friend">
         <iconify-icon
           class="w-10 h-10"
-          :icon="hoverIconAdd"
+          :icon="iconAdd"
           style="color: #5d4df8"
-          @mouseover="hoverIconAdd = 'mdi:account-plus'"
-          @mouseout="hoverIconAdd = 'mdi:account-plus-outline'"
+          @mouseover="iconAdd = 'mdi:account-plus'"
+          @mouseout="iconAdd = 'mdi:account-plus-outline'"
         ></iconify-icon>
       </div>
       <div class="stat-value text-xl">Friends</div>
@@ -57,15 +57,15 @@
       class="stat border-black !border-l-2"
       v-else="observedUser.id === loggedUser.id"
     >
-    <div class="stat-figure text-primary">
+    <div class="stat-figure text-primary" v-if="nFriendRequests > 0">
     <div class="indicator">
       <span class="badge badge-secondary indicator-item text-white">{{ nFriendRequests }}</span>
         <iconify-icon
           class="w-10 h-10"
-          :icon="hoverIconRequest"
+          :icon="iconRequest"
           style="color: 5d4df8"
-          @mouseover="hoverIconRequest = 'mdi:account-alert'"
-          @mouseout="hoverIconRequest = 'mdi:account-alert-outline'"
+          @mouseover="iconRequest = 'mdi:account-alert'"
+          @mouseout="iconRequest = 'mdi:account-alert-outline'"
         ></iconify-icon>
       </div>
     </div>
@@ -81,11 +81,13 @@ import type { User } from '@/types/User';
 import { useUserStore } from '../stores/UserStore' 
 import { storeToRefs } from 'pinia';
 
-const hoverIconAdd = ref('mdi:account-plus-outline');
-const hoverIconRequest = ref('mdi:account-alert-outline');
+const iconAdd = ref('mdi:account-plus-outline');
+const iconRequest = ref('mdi:account-alert-outline');
 
 const userStore = useUserStore();
+
 const {loggedUser} = storeToRefs(userStore);
+
 const props = defineProps({
   observedUser: {
     type: Object as PropType<User>,
@@ -93,8 +95,10 @@ const props = defineProps({
     default: () => ({}),
   }
 });
+
 let observedUser = props.observedUser;
-const nFriends = computed(() => observedUser.n_friends ?? 0);
+
+const nFriends = computed(() => observedUser.nFriends);
 
 const statusColor = computed(() => {
   if (observedUser.status === 'online') return 'text-[#62D49A]';
@@ -103,6 +107,7 @@ const statusColor = computed(() => {
 });
 
 const nFriendRequests = ref(0);
+
 const getFriendRequestsNumber = async () => {
   try {
     const response = await userStore.fetchFriendRequests(loggedUser.value.id);
@@ -111,7 +116,6 @@ const getFriendRequestsNumber = async () => {
     console.error('Failed to fetch friend requests:', error);
   }
 };
+
 onMounted(getFriendRequestsNumber);
-
-
 </script>

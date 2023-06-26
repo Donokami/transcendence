@@ -6,29 +6,29 @@ export interface User {
   username: string
   email: string
   password: string
-  profile_picture: string
+  profilePicture: string
   
   // OTHER INFORMATIONS
   status: string
 
   // FRIENDSHIP RELATED INFORMATIONS
   friends: string[]
-  n_friends: number
+  nFriends: number
 
   // CHAT RELATED INFORMATIONS
   channels: Array<Channel>
   bannedChannels: Array<Channel>
-  is_admin: boolean
+  isAdmin: boolean
   messages: Array<Message>
 
   // STATS RELATED INFORMATIONS
   rank: number
-  games_played: number
+  gamesPlayed: number
   win: number
   loss: number
-  win_rate: number
-  points_scored: number
-  points_conceded: number
-  points_difference: number
+  winRate: number
+  pointsScored: number
+  pointsConceded: number
+  pointsDifference: number
   
 }

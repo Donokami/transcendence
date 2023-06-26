@@ -43,19 +43,31 @@ export const useUserStore = defineStore('users', {
     // fetchUser //
     // ********* //
 
-    async fetchUser() {
+    async fetchUser():Promise<User> {
       const response = await fetch(`http://localhost:3000/api/user/me`, {
         method: 'GET',
         credentials: 'include',
       })
-    return response;
+    return response.json();
+    },
+
+    // ************* //
+    // fetchAllUsers //
+    // ************* //
+
+    async fetchAllUsers(): Promise<User[]> {
+      const response = await fetch(`http://localhost:3000/api/user/all`, {
+        method: 'GET',
+        credentials: 'include',
+      })
+    return response.json();
     },
 
     // ************* //
     // fetchUserByID //
     // ************* //
 
-    async fetchUserById(id: string) {
+    async fetchUserById(id: string): Promise<User> {
       const response = await fetch(`http://localhost:3000/api/user/${id}`, {
         method: 'GET',
         credentials: 'include',
@@ -63,7 +75,7 @@ export const useUserStore = defineStore('users', {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return await response.json();
+      return response.json();
     },
   
     // ******************* //
@@ -78,7 +90,7 @@ export const useUserStore = defineStore('users', {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return await response.json();
+      return response.json();
     }
   }
 });
