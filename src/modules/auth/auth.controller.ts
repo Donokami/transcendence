@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Session } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Get,
+  Session,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 
 import { Serialize } from '@/core/interceptors/serialize.interceptor';
 import { UserDto } from '@/modules/users/dtos/user.dto';
@@ -6,16 +14,30 @@ import { RegisterUserDto } from '@/modules/users/dtos/register-user.dto';
 import { SignInUserDto } from '@/modules/users/dtos/signin-user.dto';
 
 import { AuthService } from './auth.service';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('auth')
 @Serialize(UserDto)
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Get('42/signIn')
+  @UseGuards(AuthGuard('42'))
+  fortyTwoAuth() {
+    return { msg: '42 Authentification' };
+  }
+
+  @Get('42/callback')
+  @UseGuards(AuthGuard('42'))
+  fortyTwoAuthCallback(@Req() request: any, @Session() session: any) {
+    if (request.user && request.user.id) {
+      session.userId = request.user.id;
+    }
+  }
+
   @Post('/register')
   async createUser(@Body() body: RegisterUserDto, @Session() session: any) {
     const { email, password, username } = body;
-
     const user = await this.authService.register(email, password, username);
     session.userId = user.id;
     return user;

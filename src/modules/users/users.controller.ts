@@ -24,6 +24,7 @@ import { CurrentUser } from './decorators/current-user.decorator';
 @Controller('user')
 @Serialize(UserDto)
 export class UsersController {
+  constructor(private usersService: UsersService) {}
   constructor(
     private usersService: UsersService,
     private readonly socialService: SocialService,
