@@ -16,15 +16,14 @@ import { Friendship } from '@/modules/social/entities/friendship.entity';
 import { SocialService } from '@/modules/social/social.service';
 
 import { User } from './user.entity';
-import { UserDto } from './dtos/user.dto';
 import { UsersService } from './users.service';
+import { UserDto } from './dtos/user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { CurrentUser } from './decorators/current-user.decorator';
 
 @Controller('user')
 @Serialize(UserDto)
 export class UsersController {
-  constructor(private usersService: UsersService) {}
   constructor(
     private usersService: UsersService,
     private readonly socialService: SocialService,

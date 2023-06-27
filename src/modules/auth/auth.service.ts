@@ -8,8 +8,6 @@ import { promisify } from 'util';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 
 import { UsersService } from '@/modules/users/users.service';
-import { randomBytes, scrypt as _scrypt } from 'crypto';
-import { promisify } from 'util';
 import { UserDetails } from './utils/types';
 
 const scrypt = promisify(_scrypt);
@@ -18,14 +16,22 @@ const scrypt = promisify(_scrypt);
 export class AuthService {
   constructor(private usersService: UsersService) {}
 
+  // ************ //
+  // validateUser //
+  // ************ //
+
   async validateUser(details: UserDetails) {
-    const [user] = await this.usersService.find(details.email);
+    const [user] = await this.usersService.findOneByEmail(details.email);
     if (!user) {
       const newUser = await this.usersService.createOauth(details);
       return newUser;
     }
     return user;
   }
+
+  // ******** //
+  // register //
+  // ******** //
 
   async register(email: string, password: string, username: string) {
     const users = await this.usersService.findOneByEmail(email);
@@ -45,6 +51,10 @@ export class AuthService {
 
     return user;
   }
+
+  // ****** //
+  // signIn //
+  // ****** //
 
   async signIn(email: string, password: string) {
     const [user] = await this.usersService.findOneByEmail(email);
