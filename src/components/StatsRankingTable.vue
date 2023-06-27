@@ -22,7 +22,9 @@
         <tbody>
           <tr v-for="user in users" :key="user.rank">
             <th class="text-center">{{ user.rank }}</th>
-            <td class="text-center">{{ user.username }}</td>
+            <th>
+              <router-link :to="{ name: 'profile', params: { id: user.id } }"> {{ user.username }} </router-link>
+            </th>
             <td class="text-center">{{ user.winRate }} %</td>
             <td class="text-center">{{ user.win }}</td>
             <td class="text-center">{{ user.loss }}</td>
@@ -40,9 +42,9 @@
 <script setup lang="ts">
 import type { User } from '@/types/User'
 import { useUserStore } from '@/stores/UserStore';
-import { ref, onMounted } from 'vue';
+import { ref, onBeforeMount } from 'vue';
 
-const emit = defineEmits(['table-state-changed'])
+const emit = defineEmits(['table-state-changed', 'go-to-profile-triggered'])
 const userStore = useUserStore();
 
 const toggleTable = (): void => {
@@ -51,7 +53,7 @@ const toggleTable = (): void => {
 
 let users = ref<User[]>([]);
 
-onMounted(async () => {
+onBeforeMount(async () => {
     users.value = await userStore.fetchAllUsers();
 
     // Sort users by winRate in descending order

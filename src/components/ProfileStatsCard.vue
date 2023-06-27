@@ -51,7 +51,7 @@
         ></iconify-icon>
       </div>
       <div class="stat-value text-xl">Friends</div>
-      <div class="stat-value text-primary">{{ nFriends }}</div>
+      <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
     </div>
     <div 
       class="stat border-black !border-l-2"
@@ -70,13 +70,13 @@
       </div>
     </div>
       <div class="stat-value text-xl">Friends</div>
-      <div class="stat-value text-primary">{{ nFriends }}</div>
+      <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, type PropType} from 'vue';
+import { computed, onMounted, ref, toRef, type PropType} from 'vue';
 import type { User } from '@/types/User';
 import { useUserStore } from '../stores/UserStore' 
 import { storeToRefs } from 'pinia';
@@ -96,13 +96,11 @@ const props = defineProps({
   }
 });
 
-let observedUser = props.observedUser;
-
-const nFriends = computed(() => observedUser.nFriends);
+const observedUser = computed(() => props.observedUser);
 
 const statusColor = computed(() => {
-  if (observedUser.status === 'online') return 'text-[#62D49A]';
-  if (observedUser.status === 'offline') return 'text-red-500';
+  if (observedUser.value.status === 'online') return 'text-[#62D49A]';
+  if (observedUser.value.status === 'offline') return 'text-red-500';
   return 'text-gray-500';
 });
 

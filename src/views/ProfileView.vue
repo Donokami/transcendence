@@ -6,8 +6,8 @@
       <profile-stats-card v-if="observedUser" :observedUser="observedUser"></profile-stats-card>
       <div class="form-control">
         <label class="cursor-pointer p-6">
-          <span class="stat-value text-xl">{{ authentication_msg }}</span>
-          <span class="px-6 align-middle" @click="switchAuthenticationMsg">
+          <span class="stat-value text-xl">{{ authMessage }}</span>
+          <span class="px-6 align-middle" @click="switchAuthMessage">
             <input type="checkbox" class="toggle rounded-none" />
           </span>
         </label>
@@ -17,12 +17,12 @@
     <div class="border-2 border-black items-center mx-2 my-3 mt-1 p-5 text-justify relative">
       <h2 class="text-2xl font-bold mb-8 text-black">Stats</h2>
       <stats-ranking-table
-        @table-state-changed="table_state = $event"
-        v-show="table_state === 'ranking'"
+        @table-state-changed="tableState = $event"
+        v-show="tableState === 'ranking'"
       ></stats-ranking-table>
       <stats-match-history-table
-        @table-state-changed="table_state = $event"
-        v-show="table_state === 'matchHistory'"
+        @table-state-changed="tableState = $event"
+        v-show="tableState === 'matchHistory'"
       ></stats-match-history-table>
     </div>
   </div>
@@ -31,8 +31,8 @@
 <script setup lang="ts">
 import type { User } from '@/types/User';
 
-import { onMounted, ref, type Ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { onBeforeMount, ref, watch, type Ref, getCurrentInstance } from 'vue';
+import { onBeforeRouteUpdate, useRoute } from 'vue-router';
 
 import { useUserStore } from '@/stores/UserStore';
 
@@ -44,12 +44,12 @@ import StatsMatchHistoryTable from '@/components/StatsMatchHistoryTable.vue'
 const route = useRoute();
 const userStore = useUserStore();
 
-const authentication_msg = ref('Activate 2FA')
-const table_state = ref('ranking')
+const authMessage = ref('Activate 2FA')
+const tableState = ref('ranking')
 
 const observedUser = ref(null) as Ref<User | null>;
 
-onMounted(async () => {
+onBeforeMount(async () => {
   if (route.params.id) {
     if (typeof route.params.id === 'string') {
       observedUser.value = await userStore.fetchUserById(route.params.id);
@@ -62,11 +62,21 @@ onMounted(async () => {
   }
 });
 
-const switchAuthenticationMsg = () => {
-  if (authentication_msg.value === 'Activate 2FA') {
-    authentication_msg.value = 'Deactivate 2FA'
+onBeforeRouteUpdate(async (to, from)=> {
+  console.log(to, from)
+  const id = to.path.split("/").pop()
+  console.log('Profile View - id : ', id)
+  if (id) observedUser.value = await userStore.fetchUserById(id);
+  else observedUser.value = userStore.loggedUser;
+
+  console.log('Profile View - observedUser : ',observedUser)
+})
+
+const switchAuthMessage = () => {
+  if (authMessage.value === 'Activate 2FA') {
+    authMessage.value = 'Deactivate 2FA'
   } else {
-    authentication_msg.value = 'Activate 2FA'
+    authMessage.value = 'Activate 2FA'
   }
 }
 
