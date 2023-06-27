@@ -89,7 +89,7 @@ export class ChannelsService {
 
     const channel = await this.findOne(channelId);
 
-    const user = await this.userService.findOne(userId);
+    const user = await this.userService.findOneById(userId);
 
     const newMessage = this.messageRepository.create({
       messageBody,
@@ -103,7 +103,7 @@ export class ChannelsService {
   }
 
   async banUserFromChannel(banUserDto: BanUserDto) {
-    const user = await this.userService.findOne(banUserDto.userId);
+    const user = await this.userService.findOneById(banUserDto.userId);
 
     const channel = await this.findOne(banUserDto.channelId);
 

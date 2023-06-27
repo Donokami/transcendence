@@ -64,7 +64,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('message')
   async onMessage(client: Socket, addMessageDto: AddMessageDto) {
     const userId = this.connectedUsers.get(client.id);
-    const user = await this.userService.findOne(userId);
+    const user = await this.userService.findOneById(userId);
 
     if (!user.channel) {
       return;

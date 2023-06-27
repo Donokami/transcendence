@@ -41,7 +41,7 @@ export class UsersService {
   // findOne //
   // ******* //
 
-  async findOne(id: string): Promise<User> {
+  async findOneById(id: string): Promise<User> {
     if (!id) {
       return null;
     }
@@ -49,12 +49,23 @@ export class UsersService {
     return user;
   }
 
+  // ************** //
+  // findOneByEmail //
+  // ************** //
+
+  async findOneByEmail(email: string) {
+    if (!email) {
+      return null;
+    }
+    return this.userRepository.find({ where: { email } });
+  }
+
   // ****** //
   // remove //
   // ****** //
 
   async remove(id: string): Promise<User> {
-    const user = await this.findOne(id);
+    const user = await this.findOneById(id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
@@ -66,7 +77,7 @@ export class UsersService {
   // ****** //
 
   async update(id: string, attrs: Partial<User>): Promise<User> {
-    const user = await this.findOne(id);
+    const user = await this.findOneById(id);
     if (!user) {
       throw new NotFoundException('User not found');
     }
