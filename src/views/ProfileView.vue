@@ -66,8 +66,12 @@ onBeforeRouteUpdate(async (to, from)=> {
   console.log(to, from)
   const id = to.path.split("/").pop()
   console.log('Profile View - id : ', id)
-  if (id) observedUser.value = await userStore.fetchUserById(id);
-  else observedUser.value = userStore.loggedUser;
+  if (id) {
+    observedUser.value = await userStore.fetchUserById(id);
+  }
+  else {
+    observedUser.value = userStore.loggedUser;
+  }
 
   console.log('Profile View - observedUser : ',observedUser)
 })

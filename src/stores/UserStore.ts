@@ -11,15 +11,6 @@ export const useUserStore = defineStore('users', {
     // register //
     // ******** //
 
-    async refreshUser() {
-      const response = await this.fetchUser();
-      if (response.ok) {
-        const user: User = await response.json();
-        console.log('user', user);
-        if (user) this.loggedUser = user;
-      }
-    },
-
     async register(values: Record<string, any>) {
       const response = await fetch(`http://localhost:3000/api/auth/register`, {
         method: 'POST',
@@ -53,12 +44,25 @@ export const useUserStore = defineStore('users', {
     // fetchUser //
     // ********* //
 
-    async fetchUser():Promise<User> {
+    async fetchUser():Promise<Response> {
       const response = await fetch(`http://localhost:3000/api/user/me`, {
         method: 'GET',
         credentials: 'include',
       })
-    return response.json();
+    return response;
+    },
+
+    // *********** //
+    // refreshUser //
+    // *********** //
+
+    async refreshUser() {
+      const response = await this.fetchUser();
+      if (response.ok) {
+        const user: User = await response.json();
+        console.log('user', user);
+        if (user) this.loggedUser = user;
+      }
     },
 
     // ************* //
