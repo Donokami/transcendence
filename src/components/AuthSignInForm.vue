@@ -43,7 +43,7 @@
     </Form>
     <div class="divider before:bg-gray-400 after:bg-gray-400 m-8">or</div>
     <div class="flex justify-center">
-      <button class="btn bg-zinc-900 text-white" type="submit" :disabled="inSubmission">
+      <button @click="handleOauth" class="btn bg-zinc-900 text-white" type="submit" :disabled="inSubmission">
         Sign in with
         <img class="icon mx-3 h-2/4" src="../assets/42-logo.svg" alt="42 Logo" />
       </button>
@@ -101,4 +101,32 @@
   const toggleForm = (): void => {
     emit('form-state-changed', 'register')
   }
+
+
+  const handleOauth = async () => {
+    inSubmission.value = true;
+
+    const authUrl = 'http://localhost:3000/api/auth/42/signIn';
+    const popup = window.open(authUrl, '_blank', 'width=500,height=600');
+
+    const intervalId = setInterval(async () => {
+      try {
+        const response = await userStore.fetchUser();
+        
+        if (response.ok) {      
+          clearInterval(intervalId);
+          if (popup) {
+            popup.close();
+          }
+          await userStore.refreshUser();
+          router.push('/home');
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    }, 1000);
+
+    inSubmission.value = false;
+  };
+
 </script>
