@@ -118,6 +118,7 @@ export const useUserStore = defineStore('users', {
       console.log('UserStore - sendFriendRequest - receiverId = ', receiverId);
       const response = await fetch(`http://localhost:3000/api/social/friendship/request`, {
         method: 'POST',
+        headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({receiverId}),
         credentials: 'include',
       })

@@ -77,13 +77,21 @@
 </template>
 
 <script setup lang="ts">
+
+// ******* //
+// Imports //
+// ******* //
+
 import { computed, onBeforeMount, ref, type PropType} from 'vue';
-import type { User } from '@/types/User';
-import { useUserStore } from '../stores/UserStore' 
 import { storeToRefs } from 'pinia';
 
-const iconSendRequest = ref('mdi:account-plus-outline');
-const iconSeeRequests = ref('mdi:account-alert-outline');
+import type { User } from '@/types/User';
+
+import { useUserStore } from '../stores/UserStore' 
+
+// ******************** //
+// Variable definitions //
+// ******************** //
 
 const userStore = useUserStore();
 
@@ -92,13 +100,13 @@ const {loggedUser} = storeToRefs(userStore);
 const props = defineProps({
   observedUser: {
     type: Object as PropType<User>,
-    required: true,
-    default: () => ({}),
-  }
-});
+      required: true,
+      default: () => ({}),
+    }
+  });
 
 const observedUser = computed(() => props.observedUser);
-
+  
 const statusColor = computed(() => {
   if (observedUser.value.status === 'online') return 'text-[#62D49A]';
   if (observedUser.value.status === 'offline') return 'text-red-500';
@@ -107,26 +115,45 @@ const statusColor = computed(() => {
 
 const nFriendRequests = ref(0);
 
+const iconSendRequest = ref('mdi:account-plus-outline');
+const iconSeeRequests = ref('mdi:account-alert-outline');
+
+// ******************** //
+// Function definitions //
+// ******************** //
+
+// ***************** //
+// sendFriendRequest //
+// ***************** //
+
 const sendFriendRequest = async () => {
   try {
-    console.log('ProfileStatsCard - sendFriendRequest - observedUser.value.id = ', observedUser.value.id);
     const response = await userStore.sendFriendRequest(observedUser.value.id);
-    console.log('ProfileStatsCard - sendFriendRequest - Friend request sent = ', response);
+    console.log('[ProfileStatsCard] - Friend request sent !');
   }
   catch(error) {
-    console.error('ProfileStatsCard - sendFriendRequest - Failed to send friend requests = ', error);
+    console.error('[ProfileStatsCard] - Failed to send friend requests ! Error : ', error);
   }
 }
+
+// *********************** //
+// getFriendRequestsNumber //
+// *********************** //
 
 const getFriendRequestsNumber = async () => {
   try {
     const response = await userStore.fetchFriendRequests(loggedUser.value.id);
-    console.log('ProfileStatsCard - getFriendRequestsNumber - response = ', response);
     nFriendRequests.value = response.length;
+    console.log('[ProfileStatsCard] - Number of friend requests : ', nFriendRequests.value);
   } catch (error) {
-    console.error('ProfileStatsCard - getFriendRequestsNumber - Failed to fetch friend requests = ', error);
+    console.error('[ProfileStatsCard] - Failed to fetch friend requests ! Error : ', error);
   }
 };
 
+// ********************* //
+// VueJs Lifecycle Hooks //
+// ********************* //
+
 onBeforeMount(getFriendRequestsNumber);
+
 </script>

@@ -29,10 +29,15 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '@/types/User';
+
+// ******* //
+// Imports //
+// ******* //
 
 import { onBeforeMount, ref, type Ref} from 'vue';
 import { onBeforeRouteUpdate, useRoute } from 'vue-router';
+
+import type { User } from '@/types/User';
 
 import { useUserStore } from '@/stores/UserStore';
 
@@ -40,6 +45,10 @@ import SiteHeader from '@/components/SiteHeader.vue'
 import ProfileStatsCard from '@/components/ProfileStatsCard.vue'
 import StatsRankingTable from '@/components/StatsRankingTable.vue'
 import StatsMatchHistoryTable from '@/components/StatsMatchHistoryTable.vue'
+
+// ******************** //
+// Variable definitions //
+// ******************** //
 
 const route = useRoute();
 const userStore = useUserStore();
@@ -49,41 +58,54 @@ const tableState = ref('ranking')
 
 const observedUser = ref(null) as Ref<User | null>;
 
-onBeforeMount(async () => {
-  if (route.params.id) {
-    if (typeof route.params.id === 'string') {
-      observedUser.value = await userStore.fetchUserById(route.params.id);
-      console.log('ProfileView - onBeforeMount - observedUser = ', observedUser);
-    }
-    else {
-      console.error('ProfileView - onBeforeMount - [ERROR] This id is not a string = ', route.params.id);
-    }
-  }
-  else {
-    observedUser.value = userStore.loggedUser;
-    console.log('ProfileView - observedUser = ', observedUser);
-  }
-});
+// ******************** //
+// Function definitions //
+// ******************** //
 
-onBeforeRouteUpdate(async (to, from)=> {
-  const id = to.path.split("/").pop()
-  if (id) {
-    observedUser.value = await userStore.fetchUserById(id);
-  }
-  else {
-    observedUser.value = userStore.loggedUser;
-  }
-  console.log('ProfileView - onBeforeRouteUpdate - observedUser = ', observedUser);
-})
+// ***************** //
+// switchAuthMessage //
+// ***************** //
 
 const switchAuthMessage = () => {
   if (authMessage.value === 'Activate 2FA') {
     authMessage.value = 'Deactivate 2FA'
-  } 
+  }
   else {
     authMessage.value = 'Activate 2FA'
   }
   console.log('ProfileView - switchAuthMessage - authMessage = ', authMessage.value);
 }
+
+// ********* //
+// fetchUser //
+// ********* //
+
+const fetchUser = async (id: string | undefined) => {
+  if (id) {
+    observedUser.value = await userStore.fetchUserById(id);
+    console.log('ProfileView - fetchUser - observedUser = ', observedUser);
+  }
+  else {
+    observedUser.value = userStore.loggedUser;
+    console.log('ProfileView - fetchUser - observedUser = ', observedUser);
+  }
+};
+
+// ********************* //
+// VueJs Lifecycle Hooks //
+// ********************* //
+
+onBeforeMount(async () => {
+  let id = route.params.id;
+  if (Array.isArray(id)) {
+    id = id[0];
+  }
+  await fetchUser(id);
+});
+
+onBeforeRouteUpdate(async (to, from)=> {
+  const id = to.path.split("/").pop();
+  await fetchUser(id);
+})
 
 </script>
