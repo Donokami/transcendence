@@ -1,6 +1,7 @@
 import { Body, Controller, Param, Post, Put, Session } from '@nestjs/common';
 
 import { SocialService } from './social.service';
+import { FriendRequestDto } from './dtos/friend-request.dto';
 
 @Controller('social')
 export class SocialController {
@@ -12,12 +13,15 @@ export class SocialController {
 
   @Post('/friendship/request')
   async sendFriendRequest(
-    @Body('receiverId') receiverId: string,
+    @Body() friendRequestDto: FriendRequestDto,
     @Session() session: any,
   ) {
     const senderId = session.userId;
 
-    return this.socialService.sendFriendRequest(senderId, receiverId);
+    return this.socialService.sendFriendRequest(
+      senderId,
+      friendRequestDto.receiverId,
+    );
   }
 
   // ******************* //

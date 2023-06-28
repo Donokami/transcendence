@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -27,11 +28,19 @@ export class SocialService {
     senderId: string,
     receiverId: string,
   ): Promise<Friendship> {
+    console.log('senderId = ', senderId);
+    console.log('receiverId = ', receiverId);
+    if (senderId === receiverId) {
+      throw new BadRequestException(
+        'You cannot send a friend request to yourself.',
+      );
+    }
+
     const sender = await this.usersRepository.findOne({
       where: { id: senderId },
     });
     const receiver = await this.usersRepository.findOne({
-      where: { id: senderId },
+      where: { id: receiverId },
     });
 
     if (!sender) {
@@ -48,7 +57,7 @@ export class SocialService {
       },
     });
     if (existingFriendship) {
-      throw new Error('Friendship request already sent.');
+      throw new BadRequestException('Friendship request already sent.');
     }
 
     const friendship = this.friendshipRepository.create({
