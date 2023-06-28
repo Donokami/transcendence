@@ -123,7 +123,7 @@
       }
     }
     catch (error) {
-      console.log(error)
+      console.log('[AuthRegisterForm] - Register failed ! Error : ',error)
       throw error
     }
     finally {

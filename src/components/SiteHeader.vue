@@ -46,12 +46,30 @@
 </template>
 
 <script setup lang="ts">
+  
+  // ******* //
+  // Imports //
+  // ******* //
+
   import { useRouter } from 'vue-router'
+
   import { useUserStore } from '../stores/UserStore'
+
+  // ******************** //
+  // Variable definitions //
+  // ******************** //
 
   const router = useRouter()
   const userStore = useUserStore()
-    
+  
+  // ******************** //
+  // Function definitions //
+  // ******************** //
+
+  // ****** //
+  // logout //
+  // ****** //
+
   const logout = async () => {
     try {
       const response = await fetch('http://localhost:3000/auth/signout', {
@@ -60,11 +78,13 @@
       })
       if (response.ok) {      
         await router.push('/auth')
-      } else {
+      }
+      else {
         throw new Error('Something went wrong');
       } 
-    } catch (error) {
-      console.log(error)
+    }
+    catch (error) {
+      console.log('[SiteHeader] - Failed to logout ! Error : ', error)
       throw error
     }
   } 

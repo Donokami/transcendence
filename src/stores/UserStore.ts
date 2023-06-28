@@ -34,8 +34,8 @@ export const useUserStore = defineStore('users', {
       })
     if (response.ok) {
       const user: User = await response.json();
-      console.log('UserStore - signIn - user = ', user);
       this.loggedUser = user;
+      console.log(`[UserStore] - ${this.loggedUser.username} successfully signed in !`);
     }
     return response;
     },
@@ -60,7 +60,6 @@ export const useUserStore = defineStore('users', {
       const response = await this.fetchUser();
       if (response.ok) {
         const responseBody = await response.text();
-        console.log("UserStore - refreshUser - response body = ", responseBody);
         if (responseBody) {
           const user: User = JSON.parse(responseBody);
           if (user) this.loggedUser = user;
@@ -115,7 +114,6 @@ export const useUserStore = defineStore('users', {
     // ***************** //
 
     async sendFriendRequest(receiverId: string) {
-      console.log('UserStore - sendFriendRequest - receiverId = ', receiverId);
       const response = await fetch(`http://localhost:3000/api/social/friendship/request`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -125,6 +123,7 @@ export const useUserStore = defineStore('users', {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
+      console.log(`[UserStore] - Friend request successfully sent to ${receiverId} !`);
       return response.json();
     }
   }

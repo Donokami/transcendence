@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
   import { computed } from 'vue'
-  import type { User } from '../types/user.js'
+  import type { User } from '../types/User'
   import type { Channel } from '../types/Channel.js'
   import { useUserStore } from '@/stores/UserStore.js'
 
@@ -30,7 +30,6 @@
       if (channel.type === 'direct') {
         return true
       }
-      console.log(userStore.loggedUser.channels);
       return userStore.loggedUser.channels
     })
   })

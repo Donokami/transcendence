@@ -73,7 +73,6 @@ const switchAuthMessage = () => {
   else {
     authMessage.value = 'Activate 2FA'
   }
-  console.log('ProfileView - switchAuthMessage - authMessage = ', authMessage.value);
 }
 
 // ********* //
@@ -83,12 +82,11 @@ const switchAuthMessage = () => {
 const fetchUser = async (id: string | undefined) => {
   if (id) {
     observedUser.value = await userStore.fetchUserById(id);
-    console.log('ProfileView - fetchUser - observedUser = ', observedUser);
   }
   else {
     observedUser.value = userStore.loggedUser;
-    console.log('ProfileView - fetchUser - observedUser = ', observedUser);
   }
+  console.log(`[ProfileView] The current observed user is ${observedUser.value.username}`);
 };
 
 // ********************* //
