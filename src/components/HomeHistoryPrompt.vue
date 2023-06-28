@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onBeforeMount } from 'vue';
 
 const consoleText = ref('');
 const text = `Pong is a 2D table tennis–themed video game.
@@ -30,5 +30,5 @@ const type = () => {
   }
 };
 
-onMounted(type);
+onBeforeMount(type);
 </script>

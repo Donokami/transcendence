@@ -54,12 +54,8 @@ const toggleTable = (): void => {
 let users = ref<User[]>([]);
 
 onBeforeMount(async () => {
-    users.value = await userStore.fetchAllUsers();
-
-    // Sort users by winRate in descending order
-    users.value.sort((a, b) => b.winRate - a.winRate);
-
-    // Assign new rank to each user based on the sorted order
-    users.value.forEach((user, index) => (user.rank = index + 1));
+  users.value = await userStore.fetchAllUsers();
+  users.value.sort((a, b) => b.winRate - a.winRate);
+  users.value.forEach((user, index) => (user.rank = index + 1));
 })
 </script>

@@ -44,10 +44,11 @@
       <div class="stat-figure text-primary tooltip tooltip-top" data-tip="Add friend">
         <iconify-icon
           class="w-10 h-10"
-          :icon="iconAdd"
+          :icon="iconSendRequest"
           style="color: #5d4df8"
-          @mouseover="iconAdd = 'mdi:account-plus'"
-          @mouseout="iconAdd = 'mdi:account-plus-outline'"
+          @click="sendFriendRequest"
+          @mouseover="iconSendRequest = 'mdi:account-plus'"
+          @mouseout="iconSendRequest = 'mdi:account-plus-outline'"
         ></iconify-icon>
       </div>
       <div class="stat-value text-xl">Friends</div>
@@ -62,10 +63,10 @@
       <span class="badge badge-secondary indicator-item text-white">{{ nFriendRequests }}</span>
         <iconify-icon
           class="w-10 h-10"
-          :icon="iconRequest"
+          :icon="iconSeeRequests"
           style="color: 5d4df8"
-          @mouseover="iconRequest = 'mdi:account-alert'"
-          @mouseout="iconRequest = 'mdi:account-alert-outline'"
+          @mouseover="iconSeeRequests = 'mdi:account-alert'"
+          @mouseout="iconSeeRequests = 'mdi:account-alert-outline'"
         ></iconify-icon>
       </div>
     </div>
@@ -76,13 +77,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, toRef, type PropType} from 'vue';
+import { computed, onBeforeMount, ref, type PropType} from 'vue';
 import type { User } from '@/types/User';
 import { useUserStore } from '../stores/UserStore' 
 import { storeToRefs } from 'pinia';
 
-const iconAdd = ref('mdi:account-plus-outline');
-const iconRequest = ref('mdi:account-alert-outline');
+const iconSendRequest = ref('mdi:account-plus-outline');
+const iconSeeRequests = ref('mdi:account-alert-outline');
 
 const userStore = useUserStore();
 
@@ -106,14 +107,26 @@ const statusColor = computed(() => {
 
 const nFriendRequests = ref(0);
 
+const sendFriendRequest = async () => {
+  try {
+    console.log('ProfileStatsCard - sendFriendRequest - observedUser.value.id = ', observedUser.value.id);
+    const response = await userStore.sendFriendRequest(observedUser.value.id);
+    console.log('ProfileStatsCard - sendFriendRequest - Friend request sent = ', response);
+  }
+  catch(error) {
+    console.error('ProfileStatsCard - sendFriendRequest - Failed to send friend requests = ', error);
+  }
+}
+
 const getFriendRequestsNumber = async () => {
   try {
     const response = await userStore.fetchFriendRequests(loggedUser.value.id);
+    console.log('ProfileStatsCard - getFriendRequestsNumber - response = ', response);
     nFriendRequests.value = response.length;
   } catch (error) {
-    console.error('Failed to fetch friend requests:', error);
+    console.error('ProfileStatsCard - getFriendRequestsNumber - Failed to fetch friend requests = ', error);
   }
 };
 
-onMounted(getFriendRequestsNumber);
+onBeforeMount(getFriendRequestsNumber);
 </script>

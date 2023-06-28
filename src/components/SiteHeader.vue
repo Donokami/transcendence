@@ -6,7 +6,7 @@
           <iconify-icon icon="ri:menu-2-line" class="h-5 w-5"></iconify-icon>
         </label>
         <ul tabindex="0" class="menu menu-compact dropdown-content shadow bg-base-100">
-          <li><router-link to="/home">Home</router-link></li>
+          <li><router-link to="/">Home</router-link></li>
           <li><router-link to="/chat">Chat</router-link></li>
           <li><router-link to="/stats">Stats</router-link></li>
         </ul>
@@ -15,7 +15,7 @@
     <div class="navbar-start border-2 border-black border-r-0 flex-grow hidden md:flex">
       <ul class="menu menu-horizontal">
         <li>
-          <router-link to="/home" class="h-[60px] border-black border-r-2">Home</router-link>
+          <router-link to="/" class="h-[60px] border-black border-r-2">Home</router-link>
         </li>
         <li><router-link to="/chat" class="h-[60px] border-black border-r-2">Chat</router-link></li>
         <li>
@@ -44,8 +44,6 @@
     </div>
   </div>
 </template>
-
-// COMPOSITION API
 
 <script setup lang="ts">
   import { useRouter } from 'vue-router'

@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import type { User } from '@/types/User';
 
-import { onBeforeMount, ref, watch, type Ref, getCurrentInstance } from 'vue';
+import { onBeforeMount, ref, type Ref} from 'vue';
 import { onBeforeRouteUpdate, useRoute } from 'vue-router';
 
 import { useUserStore } from '@/stores/UserStore';
@@ -53,35 +53,37 @@ onBeforeMount(async () => {
   if (route.params.id) {
     if (typeof route.params.id === 'string') {
       observedUser.value = await userStore.fetchUserById(route.params.id);
-      console.log('ProfileView - observedUser:', observedUser);
-    } else {
-      console.error('id is not a string:', route.params.id);
+      console.log('ProfileView - onBeforeMount - observedUser = ', observedUser);
     }
-  } else {
+    else {
+      console.error('ProfileView - onBeforeMount - [ERROR] This id is not a string = ', route.params.id);
+    }
+  }
+  else {
     observedUser.value = userStore.loggedUser;
+    console.log('ProfileView - observedUser = ', observedUser);
   }
 });
 
 onBeforeRouteUpdate(async (to, from)=> {
-  console.log(to, from)
   const id = to.path.split("/").pop()
-  console.log('Profile View - id : ', id)
   if (id) {
     observedUser.value = await userStore.fetchUserById(id);
   }
   else {
     observedUser.value = userStore.loggedUser;
   }
-
-  console.log('Profile View - observedUser : ',observedUser)
+  console.log('ProfileView - onBeforeRouteUpdate - observedUser = ', observedUser);
 })
 
 const switchAuthMessage = () => {
   if (authMessage.value === 'Activate 2FA') {
     authMessage.value = 'Deactivate 2FA'
-  } else {
+  } 
+  else {
     authMessage.value = 'Activate 2FA'
   }
+  console.log('ProfileView - switchAuthMessage - authMessage = ', authMessage.value);
 }
 
 </script>

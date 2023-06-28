@@ -106,29 +106,29 @@
   const submitForm = async (values: Record<string, any>) => {
     showAlert.value = true
     inSubmission.value = true
-    alertMsg.value = 'Your account is being created...'
+    alertMsg.value = 'Account is being created...'
     alertColor.value = 'bg-blue-500'
     
     try {
       const response = await userStore.register(values)
       if(response.ok) {
         alertColor.value = 'bg-green-500'
-        alertMsg.value = 'Your account has been created!'
-        setTimeout( () => toggleForm(), 1000);
-      } else {
-        console.log(response)
+        alertMsg.value = 'Account created!'
+        setTimeout( () => toggleForm(), 2000);
+      }
+      else {
         alertColor.value = 'bg-red-500'
         alertMsg.value = 'Email already in use!'
         throw new Error('Something went wrong');
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.log(error)
-      alertColor.value = 'bg-red-500'
-      alertMsg.value = 'Something went wrong!'
       throw error
     }
     finally {
       inSubmission.value = false
+      setTimeout(() => {showAlert.value = false;}, 2000);
     }
   }
 

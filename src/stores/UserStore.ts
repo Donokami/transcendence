@@ -11,7 +11,7 @@ export const useUserStore = defineStore('users', {
     // register //
     // ******** //
 
-    async register(values: Record<string, any>) {
+    async register(values: Record<string, any>): Promise<Response> {
       const response = await fetch(`http://localhost:3000/api/auth/register`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -25,7 +25,7 @@ export const useUserStore = defineStore('users', {
     // signIn //
     // ****** //
 
-    async signIn(values: Record<string, any>) {
+    async signIn(values: Record<string, any>): Promise<Response> {
       const response = await fetch(`http://localhost:3000/api/auth/signIn`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -34,7 +34,7 @@ export const useUserStore = defineStore('users', {
       })
     if (response.ok) {
       const user: User = await response.json();
-      console.log('user SignIn', user);
+      console.log('UserStore - signIn - user = ', user);
       this.loggedUser = user;
     }
     return response;
@@ -59,9 +59,12 @@ export const useUserStore = defineStore('users', {
     async refreshUser() {
       const response = await this.fetchUser();
       if (response.ok) {
-        const user: User = await response.json();
-        console.log('user', user);
-        if (user) this.loggedUser = user;
+        const responseBody = await response.text();
+        console.log("UserStore - refreshUser - response body = ", responseBody);
+        if (responseBody) {
+          const user: User = JSON.parse(responseBody);
+          if (user) this.loggedUser = user;
+        }
       }
     },
 
@@ -99,6 +102,23 @@ export const useUserStore = defineStore('users', {
     async fetchFriendRequests(id: string) {
       const response = await fetch(`http://localhost:3000/api/user/${id}/friend-requests`, {
         method: 'GET',
+        credentials: 'include',
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    },
+
+    // ***************** //
+    // sendFriendRequest //
+    // ***************** //
+
+    async sendFriendRequest(receiverId: string) {
+      console.log('UserStore - sendFriendRequest - receiverId = ', receiverId);
+      const response = await fetch(`http://localhost:3000/api/social/friendship/request`, {
+        method: 'POST',
+        body: JSON.stringify({receiverId}),
         credentials: 'include',
       })
       if (!response.ok) {

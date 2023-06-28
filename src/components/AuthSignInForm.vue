@@ -24,6 +24,13 @@
         />
         <ErrorMessage class="font-normal text-base text-red-600" name="password" />
       </div>
+      <div
+        class="text-white text-center font-bold p-4 rounded mb-4"
+        v-if="showAlert"
+        :class="alertColor"
+      >
+        {{ alertMsg }}
+      </div>
       <div class="flex items-center justify-between mt-8">
         <button
           class="btn border-zinc-900 bg-zinc-900 text-white"
@@ -75,26 +82,29 @@
   const submitForm = async (values: Record<string, any>) => {
     showAlert.value = true
     inSubmission.value = true
-    alertMsg.value = 'Looking for your account in database...'
+    alertMsg.value = 'Searching for account in database...'
     alertColor.value = 'bg-blue-500'
-        
+
     try {
       const response = await userStore.signIn(values)
       if (response.ok) {      
         alertColor.value = 'bg-green-500'
-        alertMsg.value = 'Your account has been found in database!'
-        router.push('/home')
-      } else {
+        alertMsg.value = 'Account found in database!'
+        setTimeout(() => {router.push('/')}, 2000);
+      }
+      else {
         alertColor.value = 'bg-red-500'
-        alertMsg.value = 'Your account is not found in database!'
+        alertMsg.value = 'Account not found in database!'
         throw new Error('Something went wrong');
       } 
-    } catch (error) {
+    }
+    catch (error) {
       console.log(error)
       throw error
     }
     finally {
       inSubmission.value = false
+      setTimeout(() => {showAlert.value = false;}, 2000);
     }
   } 
     
@@ -119,7 +129,7 @@
             popup.close();
           }
           await userStore.refreshUser();
-          router.push('/home');
+          router.push('/');
         }
       } catch (error) {
         console.error('Error fetching user data:', error);

@@ -5,8 +5,9 @@ import AuthView from '../views/AuthView.vue'
 import ChatView from '../views/ChatView.vue'
 import GameView from '../views/GameView.vue'
 import HomeView from '../views/HomeView.vue'
-import StatsView from '../views/StatsView.vue'
+import NotFoundView from '../views/NotFoundView.vue'
 import ProfileView from '../views/ProfileView.vue'
+import StatsView from '../views/StatsView.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -16,7 +17,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     component: HomeView,
-    path: '/home',
+    path: '/',
     name: 'home'
   },
   {
@@ -40,8 +41,9 @@ const routes: Array<RouteRecordRaw> = [
     name: 'profile'
   },
   {
+    component: NotFoundView,
     path: '/:pathMatch(.*)*',
-    redirect: { name: 'auth' }
+    name: 'NotFound',
   }
 ]
 
@@ -53,20 +55,15 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore();
-  const response = await userStore.fetchUser();
-  if (response.ok) {
-    const user = await response.json();
-    if (to.name !== "auth" && !user) {
+  if (!userStore.loggedUser) {
+    await userStore.refreshUser();
+  }
+  if (to.name !== "auth" && !userStore.loggedUser) {
       next({ name: "auth" });
-    } else {
-      next();
-    }
-  } else {
-    if (to.name !== "auth") {
-      next({ name: "auth" });
-    } else {
-      next();
-    }
+  } 
+  else {
+    next();
   }
 })
+
 export default router
