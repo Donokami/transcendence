@@ -34,6 +34,12 @@ export class User {
   @Column({ default: false })
   is_admin: boolean;
 
+  @Column({ nullable: true })
+  twoFactorSecret: string;
+
+  @Column({ default: false })
+  isTwoFactorEnabled: boolean;
+
   @JoinTable()
   @ManyToOne(() => Channel, (channel: Channel) => channel.members)
   channel: Channel;

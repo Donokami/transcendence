@@ -2,11 +2,14 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { UsersService } from '@/modules/users/users.service';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 import { promisify } from 'util';
 import { UserDetails } from './utils/types';
+import { authenticator } from 'otplib';
+import * as qrcode from 'qrcode';
 
 const scrypt = promisify(_scrypt);
 
@@ -20,6 +23,41 @@ export class AuthService {
       const newUser = await this.usersService.createOauth(details);
       return newUser;
     }
+    return user;
+  }
+
+  async enableTwoFactor(userId: string) {
+    const user = await this.usersService.findOne(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const secret = authenticator.generateSecret();
+    user.twoFactorSecret = secret;
+    user.isTwoFactorEnabled = true;
+    await this.usersService.update(user.id, user);
+
+    const otpauth = authenticator.keyuri(user.email, 'Transcendence', secret);
+    const dataUrl = await qrcode.toDataURL(otpauth);
+
+    return dataUrl;
+  }
+
+  async verifyTwoFactorToken(userId: string, token: string) {
+    const user = await this.usersService.findOne(userId);
+    if (!user || !user.isTwoFactorEnabled) {
+      throw new UnauthorizedException('Invalid user or 2FA not enabled');
+    }
+
+    const isValid = authenticator.verify({
+      token,
+      secret: user.twoFactorSecret,
+    });
+
+    if (!isValid) {
+      throw new UnauthorizedException('Invalid token');
+    }
+
     return user;
   }
 
