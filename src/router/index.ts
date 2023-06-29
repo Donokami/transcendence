@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import type { RouteRecordRaw } from "vue-router";
+import type { RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '../stores/UserStore'
 import AuthView from '../views/AuthView.vue'
 import ChatView from '../views/ChatView.vue'
@@ -7,12 +7,18 @@ import GameView from '../views/GameView.vue'
 import HomeView from '../views/HomeView.vue'
 import StatsView from '../views/StatsView.vue'
 import ProfileView from '../views/ProfileView.vue'
+import MfaView from '../views/MfaView.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
     component: AuthView,
     path: '/auth',
     name: 'auth'
+  },
+  {
+    component: MfaView,
+    path: '/mfa',
+    name: 'mfa'
   },
   {
     component: HomeView,
@@ -52,13 +58,12 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  const userStore = useUserStore();
-  const user = await userStore.fetchUser();
+  const userStore = useUserStore()
+  const user = await userStore.refreshUser()
   console.log(user)
   if (to.name !== 'auth' && !user) {
     next({ name: 'auth' })
-  }
-  else next()
+  } else next()
 })
 
 export default router

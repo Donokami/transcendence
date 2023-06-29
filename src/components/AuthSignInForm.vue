@@ -80,10 +80,15 @@
         
     try {
       const response = await userStore.signIn(values)
-      if (response.ok) {      
-        alertColor.value = 'bg-green-500'
-        alertMsg.value = 'Your account has been found in database!'
-        router.push('/home')
+
+      if (response.ok) {
+        if (userStore.twoFactorEnabled) {
+          router.push('/mfa')
+        } else {
+          alertColor.value = 'bg-green-500'
+          alertMsg.value = 'Your account has been found in database!'
+          router.push('/home')
+        }
       } else {
         alertColor.value = 'bg-red-500'
         alertMsg.value = 'Your account is not found in database!'
@@ -97,6 +102,7 @@
       inSubmission.value = false
     }
   } 
+
     
   const toggleForm = () => {
     emit('form-state-changed', 'register')
@@ -119,7 +125,11 @@
             popup.close();
           }
           await userStore.refreshUser();
-          router.push('/home');
+          if (userStore.twoFactorEnabled) {
+            router.push('/mfa');
+          } else {
+            router.push('/home');
+          }
         }
       } catch (error) {
         console.error('Error fetching user data:', error);

@@ -6,6 +6,7 @@ export interface User {
   password: string
   profile_picture: string
   status: string
+  isTwoFactorEnabled: boolean
   // USER STATS INFORMATIONS
   rank: number
   games_played: number

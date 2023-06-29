@@ -6,11 +6,20 @@
       <profile-stats-card></profile-stats-card>
       <div class="form-control">
         <label class="cursor-pointer p-6">
-          <span class="stat-value text-xl">{{ authentication_msg }}</span>
-          <span class="px-6 align-middle" @click="switchAuthenticationMsg">
-            <input type="checkbox" class="toggle rounded-none" />
+          <span class="stat-value text-xl">2FA</span>
+          <span class="px-6 align-middle">
+            <input 
+              type="checkbox" 
+              class="toggle rounded-none" 
+              v-model="userStore.twoFactorEnabled" 
+              @click="switchAuthenticationMsg" 
+              :disabled="userStore.twoFactorEnabled"
+            />
           </span>
         </label>
+        <div class="px-2">
+          <img v-if="qrCodeUrl" :src="qrCodeUrl" alt="QR Code">
+        </div>
       </div>
     </div>
 
@@ -33,6 +42,7 @@ import SiteHeader from '../components/SiteHeader.vue'
 import ProfileStatsCard from '../components/ProfileStatsCard.vue'
 import StatsRankingTable from '../components/StatsRankingTable.vue'
 import StatsMatchHistoryTable from '../components/StatsMatchHistoryTable.vue'
+import { useUserStore } from '../stores/UserStore' 
 
 export default {
   name: 'ProfileView',
@@ -45,14 +55,19 @@ export default {
   data() {
     return {
       table_state: 'ranking',
-      authentication_msg: 'Activate 2FA'
+      qrCodeUrl: '',
+      userStore: useUserStore()
     }
   },
   methods: {
-    switchAuthenticationMsg(): void {
-      if (this.authentication_msg === 'Activate 2FA') this.authentication_msg = 'Deactivate 2FA'
-      else this.authentication_msg = 'Activate 2FA'
+    async switchAuthenticationMsg(): void {
+      try {
+        this.qrCodeUrl = await this.userStore.enableTwoFactor();
+      } catch (error) {
+        console.error(error);
+      }
     }
+
   }
 }
 </script>
