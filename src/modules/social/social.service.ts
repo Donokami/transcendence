@@ -59,11 +59,12 @@ export class SocialService {
     }
 
     const friendship = this.friendshipRepository.create({
+      blockerId: null,
+      receiverId: receiver.id,
+      senderId: sender.id,
+      status: FriendshipStatus.PENDING,
       userA: sender,
       userB: receiver,
-      status: FriendshipStatus.PENDING,
-      receiverId: receiverId,
-      senderId: senderId,
     });
 
     await this.friendshipRepository.save(friendship);
@@ -172,46 +173,62 @@ export class SocialService {
   // blockUser //
   // ********* //
 
-  async blockUser(userId: string, userIdToBlock: string): Promise<Friendship> {
+  async blockUser(userId: string, userToBlockId: string): Promise<Friendship> {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
     });
-    const userToBlock = await this.usersRepository.findOne({
-      where: { id: userIdToBlock },
-    });
-
     if (!user) {
       throw new NotFoundException(`User with id ${userId} not found.`);
     }
+
+    const userToBlock = await this.usersRepository.findOne({
+      where: { id: userToBlockId },
+    });
     if (!userToBlock) {
-      throw new NotFoundException(`User with id ${userIdToBlock} not found.`);
+      throw new NotFoundException(`User with id ${userToBlockId} not found.`);
     }
 
     const existingFriendship = await this.friendshipRepository.findOne({
       where: [
         {
-          userA: { id: user.id },
-          userB: { id: userToBlock.id },
+          userA: { id: userId },
+          userB: { id: userToBlockId },
         },
         {
-          userA: { id: userToBlock.id },
-          userB: { id: user.id },
+          userA: { id: userToBlockId },
+          userB: { id: userId },
         },
       ],
     });
 
     if (existingFriendship) {
       existingFriendship.status = FriendshipStatus.BLOCKED;
-      existingFriendship.receiverId = userId;
+
+      existingFriendship.blockerId = userId;
+
+      const userToBlockIndex = user.friends.indexOf(userToBlock, 0);
+      if (userToBlockIndex > -1) {
+        user.friends.splice(userToBlockIndex, 1);
+      }
+
+      const userIndex = userToBlock.friends.indexOf(user, 0);
+      if (userIndex > -1) {
+        userToBlock.friends.splice(userIndex, 1);
+      }
+
       await this.friendshipRepository.save(existingFriendship);
+      await this.usersRepository.save(user);
+      await this.usersRepository.save(userToBlock);
+
       return existingFriendship;
     } else {
       const friendship = this.friendshipRepository.create({
+        blockerId: userId,
+        receiverId: userToBlockId,
+        senderId: userId,
+        status: FriendshipStatus.BLOCKED,
         userA: user,
         userB: userToBlock,
-        status: FriendshipStatus.BLOCKED,
-        receiverId: userId,
-        senderId: userIdToBlock,
       });
 
       await this.friendshipRepository.save(friendship);
@@ -226,20 +243,20 @@ export class SocialService {
 
   async unblockUser(
     userId: string,
-    userIdToUnblock: string,
+    userToUnblockId: string,
   ): Promise<Friendship> {
     const user = await this.usersRepository.findOne({
       where: { id: userId },
     });
-    const userToUnblock = await this.usersRepository.findOne({
-      where: { id: userIdToUnblock },
-    });
-
     if (!user) {
       throw new NotFoundException(`User with id ${userId} not found.`);
     }
+
+    const userToUnblock = await this.usersRepository.findOne({
+      where: { id: userToUnblockId },
+    });
     if (!userToUnblock) {
-      throw new NotFoundException(`User with id ${userIdToUnblock} not found.`);
+      throw new NotFoundException(`User with id ${userToUnblockId} not found.`);
     }
 
     const existingFriendship = await this.friendshipRepository.findOne({
@@ -249,19 +266,22 @@ export class SocialService {
       ],
     });
 
-    if (
-      existingFriendship &&
-      existingFriendship.status === FriendshipStatus.BLOCKED
-    ) {
-      existingFriendship.status = FriendshipStatus.ACCEPTED;
-      existingFriendship.receiverId = userId;
-      await this.friendshipRepository.save(existingFriendship);
-      return existingFriendship;
-    } else {
-      throw new Error(
-        `User with id ${userIdToUnblock} is not blocked and thus can't be unblocked.`,
-      );
+    if (!existingFriendship) {
+      throw new Error(`Cannot unblock a user you have no relationship with.`);
     }
+
+    if (
+      existingFriendship.blockerId !== userId ||
+      existingFriendship.status !== FriendshipStatus.BLOCKED
+    ) {
+      throw new Error(`User with id ${userToUnblockId} is not blocked.`);
+    }
+
+    existingFriendship.status = FriendshipStatus.ACCEPTED;
+
+    await this.friendshipRepository.save(existingFriendship);
+
+    return existingFriendship;
   }
 
   // ***************** //

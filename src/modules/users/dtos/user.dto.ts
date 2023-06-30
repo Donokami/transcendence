@@ -1,12 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 
-import { Friendship } from '@/modules/social/entities/friendship.entity';
 import { Channel } from '@/modules/channels/entities/channel.entity';
+import { Friendship } from '@/modules/social/entities/friendship.entity';
 import { Message } from '@/modules/channels/entities/message.entity';
+import { User } from '@/modules/users/user.entity';
 
 export class UserDto {
-  // USER IDENTIFIERS
+  // **************** //
+  // USER IDENTIFIERS //
+  // **************** //
+
   @ApiProperty()
   @Expose()
   id: string;
@@ -23,15 +27,29 @@ export class UserDto {
   @Expose()
   profilePicture: string;
 
-  // OTHER INFORMATIONS
+  // ****************** //
+  // OTHER INFORMATIONS //
+  // ****************** //
+
   @ApiProperty()
   @Expose()
   status: string;
 
-  // FRIENDSHIP RELATED INFORMATIONS
+  // ******************************* //
+  // FRIENDSHIP RELATED INFORMATIONS //
+  // ******************************* //
+
   @ApiProperty()
   @Expose()
   nFriends: number;
+
+  @ApiProperty()
+  @Expose()
+  friends: Array<User>;
+
+  @Expose()
+  @Expose()
+  blockedUser: Array<User>;
 
   @ApiProperty()
   @Expose()
@@ -41,7 +59,10 @@ export class UserDto {
   @Expose()
   receivedRequests: Array<Friendship>;
 
-  // CHAT RELATED INFORMATIONS
+  // ************************* //
+  // CHAT RELATED INFORMATIONS //
+  // ************************* //
+
   @ApiProperty()
   @Expose()
   channel: Channel;
@@ -50,15 +71,18 @@ export class UserDto {
   @Expose()
   bannedChannels: Array<Channel>;
 
-  @ApiProperty()
-  @Expose()
-  isAdmin: boolean;
+  // @ApiProperty()
+  // @Expose()
+  // isAdmin: boolean;
 
   @ApiProperty()
   @Expose()
   messages: Array<Message>;
 
-  // STATS RELATED INFORMATIONS
+  // ************************** //
+  // STATS RELATED INFORMATIONS //
+  // ************************** //
+
   @ApiProperty()
   @Expose()
   rank: number;

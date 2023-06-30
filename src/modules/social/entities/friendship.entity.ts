@@ -14,6 +14,9 @@ export class Friendship {
   @PrimaryGeneratedColumn()
   id: string;
 
+  @Column({ nullable: true })
+  blockerId: string;
+
   @Column()
   senderId: string;
 

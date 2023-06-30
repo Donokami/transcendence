@@ -74,27 +74,27 @@ export class SocialController {
   // blockUser //
   // ********* //
 
-  @Put('/friendship/:userId/block')
+  @Put('/friendship/:userToBlockId/block')
   async blockUser(
-    @Param('userId') userIdToBlock: string,
+    @Param('userToBlockId') userToBlockId: string,
     @Session() session: any,
   ) {
     const userId = session.userId;
 
-    return this.socialService.blockUser(userId, userIdToBlock);
+    return this.socialService.blockUser(userId, userToBlockId);
   }
 
   // *********** //
   // unblockUser //
   // *********** //
 
-  @Put('/friendship/:userId/unblock')
+  @Put('/friendship/:userToUnblockId/unblock')
   async unblockUser(
-    @Param('userId') userIdToUnblock: string,
+    @Param('userId') userToUnblockId: string,
     @Session() session: any,
   ) {
     const userId = session.userId;
 
-    return this.socialService.unblockUser(userId, userIdToUnblock);
+    return this.socialService.unblockUser(userId, userToUnblockId);
   }
 }

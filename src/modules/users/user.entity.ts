@@ -18,7 +18,7 @@ import { Message } from '@/modules/channels/entities/message.entity';
 @Entity()
 export class User {
   // **************** //
-  // User Identifiers //
+  // USER IDENTIFIERS //
   // **************** //
 
   @PrimaryGeneratedColumn('uuid')
@@ -37,14 +37,14 @@ export class User {
   profilePicture: string;
 
   // ****************** //
-  // Other Informations //
+  // OTHER INFORMATIONS //
   // ****************** //
 
   @Column({ default: 'offline' })
   status: string;
 
   // ******************************* //
-  // Friendship Related Informations //
+  // FRIENDSHIP RELATED INFORMATIONS //
   // ******************************* //
 
   @Column({ default: 0 })
@@ -53,6 +53,9 @@ export class User {
   @Column('simple-array', { nullable: true })
   friends: Array<User>;
 
+  @Column('simple-array', { nullable: true })
+  blockedUser: Array<User>;
+
   @OneToMany(() => Friendship, (friendship) => friendship.userA)
   sentRequests: Array<Friendship>;
 
@@ -60,7 +63,7 @@ export class User {
   receivedRequests: Array<Friendship>;
 
   // ************************* //
-  // Chat Related Informations //
+  // CHAT RELATED INFORMATIONS //
   // ************************* //
 
   @JoinTable()
@@ -73,14 +76,14 @@ export class User {
   })
   bannedChannels: Array<Channel>;
 
-  @Column({ default: false })
-  isAdmin: boolean;
+  // @Column({ default: false })
+  // isAdmin: boolean;
 
   @OneToMany(() => Channel, (channel: Channel) => channel.messages)
   messages: Array<Message>;
 
   // ************************** //
-  // Stats Related Informations //
+  // STATS RELATED INFORMATIONS //
   // ************************** //
 
   @Column({ nullable: true })
@@ -108,7 +111,7 @@ export class User {
   pointsDifference: number;
 
   // ***** //
-  // Utils //
+  // UTILS //
   // ***** //
 
   @AfterInsert()
