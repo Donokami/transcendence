@@ -22,6 +22,7 @@
                     <span class="block">{{ request.userA.username }}</span>
                     <button @click="acceptRequest(request.userA.id)">Accept</button>
                     <button @click="rejectRequest(request.userA.id)">Reject</button>
+                    <button @click="blockUser(request.userA.id)">Block User</button>
                 </a>
                 </li>
             </ul>
@@ -34,19 +35,18 @@
 <script setup lang="ts">
 
 // ******* //
-// Imports //
+// IMPORTS //
 // ******* //
 
 import { onBeforeMount, ref } from 'vue';
 import { storeToRefs } from 'pinia'
 
-import type { User } from '@/types/User'
 import type { Friendship } from '@/types/Friendship'
 
 import { useUserStore } from '@/stores/UserStore.js'
 
 // ******************** //
-// Variable definitions //
+// VARIABLE DEFINITIONS //
 // ******************** //
 
 const userStore = useUserStore() 
@@ -58,7 +58,7 @@ const friendRequests = ref<Friendship[]>([]);
 const emit = defineEmits(['friendRequestAccepted'])
 
 // ******************** //
-// Function definitions //
+// FUNCTION DEFINITIONS //
 // ******************** //
 
 // ***************** //
@@ -107,8 +107,23 @@ const rejectRequest = async (requestId: string) => {
   }
 };
 
+// ************* //
+// blockUser //
+// ************* //
+
+const blockUser = async (userToBlockId: string) => {
+  try {
+    await userStore.blockUser(userToBlockId);
+    console.log(`[ProfileFriendRequestListModal] - Friend request rejected successfully`);
+    getFriendRequests();
+  }
+  catch (error) {
+    console.error(`[ProfileFriendRequestListModal] - Failed to reject friend request. Error: `, error);
+  }
+};
+
 // ********************* //
-// VueJs Lifecycle Hooks //
+// VueJs LIFECYCLE HOOKS //
 // ********************* //
 
 onBeforeMount(getFriendRequests);

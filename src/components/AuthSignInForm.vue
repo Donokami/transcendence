@@ -121,9 +121,9 @@
 
     const intervalId = setInterval(async () => {
       try {
-        const response = await userStore.fetchUser();
+        const user = await userStore.fetchUser();
         
-        if (response.ok) {      
+        if (user) {      
           clearInterval(intervalId);
           if (popup) {
             popup.close();

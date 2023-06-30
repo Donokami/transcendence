@@ -48,7 +48,7 @@
 <script setup lang="ts">
   
   // ******* //
-  // Imports //
+  // IMPORTS //
   // ******* //
 
   import { useRouter } from 'vue-router'
@@ -56,14 +56,14 @@
   import { useUserStore } from '../stores/UserStore'
 
   // ******************** //
-  // Variable definitions //
+  // VARIABLE DEFINITIONS //
   // ******************** //
 
   const router = useRouter()
   const userStore = useUserStore()
   
   // ******************** //
-  // Function definitions //
+  // FUNCTION DEFINITIONS //
   // ******************** //
 
   // ****** //

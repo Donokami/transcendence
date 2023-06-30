@@ -81,7 +81,7 @@
 <script setup lang="ts">
 
 // ******* //
-// Imports //
+// IMPORTS //
 // ******* //
 
 import { computed, onBeforeMount, ref, type PropType} from 'vue';
@@ -92,7 +92,7 @@ import type { User } from '@/types/User';
 import { useUserStore } from '../stores/UserStore' 
 
 // ******************** //
-// Variable definitions //
+// VARIABLE DEFINITIONS //
 // ******************** //
 
 const userStore = useUserStore();
@@ -121,7 +121,7 @@ const iconSendRequest = ref('mdi:account-plus-outline');
 const iconSeeRequests = ref('mdi:account-alert-outline');
 
 // ******************** //
-// Function definitions //
+// FUNCTION DEFINITIONS //
 // ******************** //
 
 // ***************** //
@@ -153,7 +153,7 @@ const getFriendRequestsNumber = async () => {
 };
 
 // ********************* //
-// VueJs Lifecycle Hooks //
+// VueJs LIFECYCLE HOOKS //
 // ********************* //
 
 onBeforeMount(getFriendRequestsNumber);

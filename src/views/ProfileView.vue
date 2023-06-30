@@ -33,7 +33,7 @@
 <script setup lang="ts">
 
 // ******* //
-// Imports //
+// IMPORTS //
 // ******* //
 
 import { onBeforeMount, ref, type Ref} from 'vue';
@@ -50,7 +50,7 @@ import StatsRankingTable from '@/components/StatsRankingTable.vue'
 import StatsMatchHistoryTable from '@/components/StatsMatchHistoryTable.vue'
 
 // ******************** //
-// Variable definitions //
+// VARIABLE DEFINITIONS //
 // ******************** //
 
 const route = useRoute();
@@ -62,7 +62,7 @@ const tableState = ref('ranking')
 const observedUser = ref(null) as Ref<User | null>;
 
 // ******************** //
-// Function definitions //
+// FUNCTION DEFINITIONS //
 // ******************** //
 
 // ***************** //
@@ -93,7 +93,7 @@ const fetchUser = async (id: string | undefined) => {
 };
 
 // ********************* //
-// VueJs Lifecycle Hooks //
+// VueJs LIFECYCLE HOOKS //
 // ********************* //
 
 onBeforeMount(async () => {

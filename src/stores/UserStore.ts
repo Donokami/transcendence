@@ -44,7 +44,7 @@ export const useUserStore = defineStore('users', {
     // fetchUser //
     // ********* //
 
-    async fetchUser():Promise<Response> {
+    async fetchUser(): Promise<User> {
       const response = await fetch(`http://localhost:3000/api/user/me`, {
         method: 'GET',
         credentials: 'include',
@@ -52,7 +52,7 @@ export const useUserStore = defineStore('users', {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      return response;
+      return await response.json();
     },
 
     // *********** //
@@ -60,14 +60,13 @@ export const useUserStore = defineStore('users', {
     // *********** //
 
     async refreshUser() {
-      const response = await this.fetchUser();
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      try {
+        const user = await this.fetchUser();
+        if (user) {
+        this.loggedUser = user;
       }
-      const responseBody = await response.text();
-      if (responseBody) {
-        const user: User = JSON.parse(responseBody);
-        if (user) this.loggedUser = user;
+      } catch (error) {
+        console.log(error);
       }
     },
 
@@ -155,6 +154,21 @@ export const useUserStore = defineStore('users', {
 
     async rejectFriendRequest(senderId: string) {
       const response = await fetch(`http://localhost:3000/api/social/friendship/request/${senderId}/reject`, {
+        method: 'PUT',
+        credentials: 'include',
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    },
+
+    // ********* //
+    // blockUser //
+    // ********* //
+
+    async blockUser(userToBlockId: string) {
+      const response = await fetch(`http://localhost:3000/api/social/friendship/${userToBlockId}/block`, {
         method: 'PUT',
         credentials: 'include',
       })
