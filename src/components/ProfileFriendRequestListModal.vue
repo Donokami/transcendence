@@ -1,0 +1,117 @@
+<template>
+    <input type="checkbox" id="my-modal-3" class="modal-toggle" />
+    <div class="modal">
+      <div class="modal-box rounded-none">
+        <div class="flex items-center justify-end">
+          <label
+            for="my-modal-3"
+            class="btn bg-white border-black border-2 text-black hover:bg-black hover:border-black hover:text-white"
+            >X</label
+          >
+        </div>
+        <div class="py-4">
+          <h3 class="font-bold text-lg">Friend request list</h3>
+        </div>
+        <div class="collapse collapse-arrow border-2 border-black rounded-none">
+          <input type="checkbox" />
+          <div class="collapse-title text-base">Select a request</div>
+          <div class="collapse-content text-base">
+            <ul class="menu bg-base-100 w-full">
+                <li v-for="request in friendRequests" :key="request.id">
+                <a class="flex p-1">
+                    <span class="block">{{ request.userA.username }}</span>
+                    <button @click="acceptRequest(request.userA.id)">Accept</button>
+                    <button @click="rejectRequest(request.userA.id)">Reject</button>
+                </a>
+                </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+</template>
+  
+<script setup lang="ts">
+
+// ******* //
+// Imports //
+// ******* //
+
+import { onBeforeMount, ref } from 'vue';
+import { storeToRefs } from 'pinia'
+
+import type { User } from '@/types/User'
+import type { Friendship } from '@/types/Friendship'
+
+import { useUserStore } from '@/stores/UserStore.js'
+
+// ******************** //
+// Variable definitions //
+// ******************** //
+
+const userStore = useUserStore() 
+
+const {loggedUser} = storeToRefs(userStore);
+
+const friendRequests = ref<Friendship[]>([]);
+
+const emit = defineEmits(['friendRequestAccepted'])
+
+// ******************** //
+// Function definitions //
+// ******************** //
+
+// ***************** //
+// getFriendRequests //
+// ***************** //
+
+const getFriendRequests = async () => {
+    try {
+        const response = await userStore.fetchFriendRequests(loggedUser.value.id);
+        friendRequests.value = response;
+        console.log(`[ProfileFriendRequestListModal] - Friend request fetched successfully`);
+    }
+    catch (error) {
+        console.error(`[ProfileStatsCard] - Failed to fetch friend requests ! Error : `, error);
+    }
+};
+
+// ************* //
+// acceptRequest //
+// ************* //
+
+const acceptRequest = async (requestId: string) => {
+  try {
+    await userStore.acceptFriendRequest(requestId);
+    console.log(`[ProfileFriendRequestListModal] - Friend request accepted successfully`);
+    getFriendRequests();
+    emit('friendRequestAccepted');
+  }
+  catch (error) {
+    console.error(`[ProfileFriendRequestListModal] - Failed to accept friend request. Error: `, error);
+  }
+};
+
+// ************* //
+// rejectRequest //
+// ************* //
+
+const rejectRequest = async (requestId: string) => {
+  try {
+    await userStore.rejectFriendRequest(requestId);
+    console.log(`[ProfileFriendRequestListModal] - Friend request rejected successfully`);
+    getFriendRequests();
+  }
+  catch (error) {
+    console.error(`[ProfileFriendRequestListModal] - Failed to reject friend request. Error: `, error);
+  }
+};
+
+// ********************* //
+// VueJs Lifecycle Hooks //
+// ********************* //
+
+onBeforeMount(getFriendRequests);
+
+</script>
+  

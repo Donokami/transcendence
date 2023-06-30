@@ -100,7 +100,7 @@ const addUserToChannel = (username: string) => {
   if (!usersToAdd.value.includes(username))
     usersToAdd.value.push(username)
   else
-    console.log('[ChatChannelModal] - Failed to add user to channel ! User already in channel')
+    console.log(`[ChatChannelModal] - Failed to add user to channel ! User already in channel`)
 }
 
 const cancelAddToChannel = (username: string) => {

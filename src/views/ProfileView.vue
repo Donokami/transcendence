@@ -14,6 +14,8 @@
       </div>
     </div>
 
+    <profile-friend-request-list-modal @friend-request-accepted="fetchUser"></profile-friend-request-list-modal>
+
     <div class="border-2 border-black items-center mx-2 my-3 mt-1 p-5 text-justify relative">
       <h2 class="text-2xl font-bold mb-8 text-black">Stats</h2>
       <stats-ranking-table
@@ -41,8 +43,9 @@ import type { User } from '@/types/User';
 
 import { useUserStore } from '@/stores/UserStore';
 
-import SiteHeader from '@/components/SiteHeader.vue'
 import ProfileStatsCard from '@/components/ProfileStatsCard.vue'
+import ProfileFriendRequestListModal from '@/components/ProfileFriendRequestListModal.vue'
+import SiteHeader from '@/components/SiteHeader.vue'
 import StatsRankingTable from '@/components/StatsRankingTable.vue'
 import StatsMatchHistoryTable from '@/components/StatsMatchHistoryTable.vue'
 
@@ -86,7 +89,7 @@ const fetchUser = async (id: string | undefined) => {
   else {
     observedUser.value = userStore.loggedUser;
   }
-  console.log(`[ProfileView] The current observed user is ${observedUser.value.username}`);
+  console.log(`[ProfileView] - The current observed user is ${observedUser.value.username}`);
 };
 
 // ********************* //

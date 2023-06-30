@@ -99,7 +99,7 @@
       } 
     }
     catch (error) {
-      console.log('[AuthSignInForm] - Sign In failed ! Error : ',error)
+      console.log(`[AuthSignInForm] - Sign In failed ! Error : `,error)
       throw error
     }
     finally {

@@ -1,27 +1,45 @@
 import type { Channel } from './Channel'
+import type { Friendship } from './Friendship';
 
 export interface User {
-  // USER IDENTIFIERS
+  // **************** //
+  // User Identifiers //
+  // **************** //
+
   id: string;
   username: string
   email: string
   password: string
   profilePicture: string
   
-  // OTHER INFORMATIONS
+  // ****************** //
+  // Other Informations //
+  // ****************** //
+
   status: string
 
-  // FRIENDSHIP RELATED INFORMATIONS
-  friends: string[]
-  nFriends: number
+  // ******************************* //
+  // Friendship Related Informations //
+  // ******************************* //
 
-  // CHAT RELATED INFORMATIONS
+  friends: Array<User>
+  nFriends: number
+  sentRequest: Array<Friendship>
+  receivedRequest: Array<Friendship>
+
+  // ************************* //
+  // Chat Related Informations //
+  // ************************* //
+
   channels: Array<Channel>
   bannedChannels: Array<Channel>
   isAdmin: boolean
   messages: Array<Message>
 
-  // STATS RELATED INFORMATIONS
+  // ************************** //
+  // Stats Related Informations //
+  // ************************** //
+
   rank: number
   gamesPlayed: number
   win: number

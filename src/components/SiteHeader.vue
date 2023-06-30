@@ -84,7 +84,7 @@
       } 
     }
     catch (error) {
-      console.log('[SiteHeader] - Failed to logout ! Error : ', error)
+      console.log(`[SiteHeader] - Failed to logout ! Error : `, error)
       throw error
     }
   } 

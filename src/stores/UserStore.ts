@@ -49,7 +49,10 @@ export const useUserStore = defineStore('users', {
         method: 'GET',
         credentials: 'include',
       })
-    return response;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response;
     },
 
     // *********** //
@@ -58,12 +61,13 @@ export const useUserStore = defineStore('users', {
 
     async refreshUser() {
       const response = await this.fetchUser();
-      if (response.ok) {
-        const responseBody = await response.text();
-        if (responseBody) {
-          const user: User = JSON.parse(responseBody);
-          if (user) this.loggedUser = user;
-        }
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const responseBody = await response.text();
+      if (responseBody) {
+        const user: User = JSON.parse(responseBody);
+        if (user) this.loggedUser = user;
       }
     },
 
@@ -76,7 +80,10 @@ export const useUserStore = defineStore('users', {
         method: 'GET',
         credentials: 'include',
       })
-    return response.json();
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
     },
 
     // ************* //
@@ -99,7 +106,7 @@ export const useUserStore = defineStore('users', {
     // ******************* //
 
     async fetchFriendRequests(id: string) {
-      const response = await fetch(`http://localhost:3000/api/user/${id}/friend-requests`, {
+      const response = await fetch(`http://localhost:3000/api/social/${id}/friend-requests`, {
         method: 'GET',
         credentials: 'include',
       })
@@ -125,6 +132,36 @@ export const useUserStore = defineStore('users', {
       }
       console.log(`[UserStore] - Friend request successfully sent to ${receiverId} !`);
       return response.json();
-    }
+    },
+
+    // ******************* //
+    // acceptFriendRequest //
+    // ******************* //
+
+    async acceptFriendRequest(senderId: string) {
+      const response = await fetch(`http://localhost:3000/api/social/friendship/request/${senderId}/accept`, {
+        method: 'PUT',
+        credentials: 'include',
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    },
+
+    // ******************* //
+    // rejectFriendRequest //
+    // ******************* //
+
+    async rejectFriendRequest(senderId: string) {
+      const response = await fetch(`http://localhost:3000/api/social/friendship/request/${senderId}/reject`, {
+        method: 'PUT',
+        credentials: 'include',
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    },
   }
 });

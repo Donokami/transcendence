@@ -80,8 +80,6 @@
   </div>
 </template>
 
-// COMPOSITION API
-
 <script setup lang="ts">
   import { ref } from 'vue'
   import { Form, Field, ErrorMessage } from 'vee-validate'
@@ -123,7 +121,7 @@
       }
     }
     catch (error) {
-      console.log('[AuthRegisterForm] - Register failed ! Error : ',error)
+      console.log(`[AuthRegisterForm] - Register failed ! Error : `,error)
       throw error
     }
     finally {

@@ -60,7 +60,8 @@
     >
     <div class="stat-figure text-primary" v-if="nFriendRequests > 0">
     <div class="indicator">
-      <span class="badge badge-secondary indicator-item text-white">{{ nFriendRequests }}</span>
+      <label for="my-modal-3">
+        <span class="badge badge-secondary indicator-item text-white">{{ nFriendRequests }}</span>
         <iconify-icon
           class="w-10 h-10"
           :icon="iconSeeRequests"
@@ -68,7 +69,8 @@
           @mouseover="iconSeeRequests = 'mdi:account-alert'"
           @mouseout="iconSeeRequests = 'mdi:account-alert-outline'"
         ></iconify-icon>
-      </div>
+      </label>
+    </div>
     </div>
       <div class="stat-value text-xl">Friends</div>
       <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
@@ -129,10 +131,10 @@ const iconSeeRequests = ref('mdi:account-alert-outline');
 const sendFriendRequest = async () => {
   try {
     const response = await userStore.sendFriendRequest(observedUser.value.id);
-    console.log('[ProfileStatsCard] - Friend request sent !');
+    console.log(`[ProfileStatsCard] - Friend request sent !`);
   }
   catch(error) {
-    console.error('[ProfileStatsCard] - Failed to send friend requests ! Error : ', error);
+    console.error(`[ProfileStatsCard] - Failed to send friend requests ! Error : `, error);
   }
 }
 
@@ -144,9 +146,9 @@ const getFriendRequestsNumber = async () => {
   try {
     const response = await userStore.fetchFriendRequests(loggedUser.value.id);
     nFriendRequests.value = response.length;
-    console.log('[ProfileStatsCard] - Number of friend requests : ', nFriendRequests.value);
+    console.log(`[ProfileStatsCard] - Number of friend requests : `, nFriendRequests.value);
   } catch (error) {
-    console.error('[ProfileStatsCard] - Failed to fetch friend requests ! Error : ', error);
+    console.error(`[ProfileStatsCard] - Failed to fetch friend requests ! Error : `, error);
   }
 };
 
