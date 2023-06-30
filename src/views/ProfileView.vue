@@ -13,7 +13,6 @@
               class="toggle rounded-none" 
               v-model="userStore.twoFactorEnabled" 
               @click="switchAuthenticationMsg" 
-              :disabled="userStore.twoFactorEnabled"
             />
           </span>
         </label>
@@ -60,9 +59,14 @@ export default {
     }
   },
   methods: {
-    async switchAuthenticationMsg(): void {
+    async switchAuthenticationMsg(): Promise<void> {
       try {
-        this.qrCodeUrl = await this.userStore.enableTwoFactor();
+        const data = await this.userStore.enableTwoFactor();
+        console.log('DATA', data);
+        if (data.isTwoFactorEnabled) {
+          console.log('2FA enabled', data);
+          this.qrCodeUrl = data.dataUrl;
+        }
       } catch (error) {
         console.error(error);
       }

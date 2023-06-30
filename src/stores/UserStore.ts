@@ -23,6 +23,7 @@ export const useUserStore = defineStore('users', {
       if (response.ok) {
         const user: User = await response.json()
         if (user) this.loggedUser = user
+        this.twoFactorEnabled = user.isTwoFactorEnabled
       }
       return response
     },
@@ -65,7 +66,7 @@ export const useUserStore = defineStore('users', {
 
       if (response.ok) {
         const data = await response.json()
-        return data.dataUrl
+        return data
       } else {
         throw new Error(`HTTP error status: ${response.status}`)
       }
