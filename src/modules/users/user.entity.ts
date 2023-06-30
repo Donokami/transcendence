@@ -17,7 +17,10 @@ import { Message } from '@/modules/channels/entities/message.entity';
 
 @Entity()
 export class User {
-  // USER IDENTIFIERS
+  // **************** //
+  // User Identifiers //
+  // **************** //
+
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -33,13 +36,22 @@ export class User {
   @Column({ nullable: true })
   profilePicture: string;
 
-  // OTHER INFORMATIONS
+  // ****************** //
+  // Other Informations //
+  // ****************** //
+
   @Column({ default: 'offline' })
   status: string;
 
-  // FRIENDSHIP RELATED INFORMATIONS
+  // ******************************* //
+  // Friendship Related Informations //
+  // ******************************* //
+
   @Column({ default: 0 })
   nFriends: number;
+
+  @Column('simple-array', { nullable: true })
+  friends: Array<User>;
 
   @OneToMany(() => Friendship, (friendship) => friendship.userA)
   sentRequests: Array<Friendship>;
@@ -47,7 +59,10 @@ export class User {
   @OneToMany(() => Friendship, (friendship) => friendship.userB)
   receivedRequests: Array<Friendship>;
 
-  // CHAT RELATED INFORMATIONS
+  // ************************* //
+  // Chat Related Informations //
+  // ************************* //
+
   @JoinTable()
   @ManyToOne(() => Channel, (channel: Channel) => channel.members)
   channel: Channel;
@@ -64,7 +79,10 @@ export class User {
   @OneToMany(() => Channel, (channel: Channel) => channel.messages)
   messages: Array<Message>;
 
-  // STATS RELATED INFORMATIONS
+  // ************************** //
+  // Stats Related Informations //
+  // ************************** //
+
   @Column({ nullable: true })
   rank: number;
 
@@ -89,7 +107,10 @@ export class User {
   @Column({ default: 0 })
   pointsDifference: number;
 
-  // UTILS
+  // ***** //
+  // Utils //
+  // ***** //
+
   @AfterInsert()
   logInsert() {
     console.log(`User with id ${this.id} inserted`);

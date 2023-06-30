@@ -1,4 +1,12 @@
-import { Body, Controller, Param, Post, Put, Session } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Put,
+  Session,
+} from '@nestjs/common';
 
 import { SocialService } from './social.service';
 import { FriendRequestDto } from './dtos/friend-request.dto';
@@ -24,18 +32,42 @@ export class SocialController {
     );
   }
 
+  // ***************** //
+  // getFriendRequests //
+  // ***************** //
+
+  @Get('/:id/friend-requests')
+  async getFriendRequests(@Param('id') id: string) {
+    const friendRequests = await this.socialService.getFriendRequests(id);
+    return friendRequests;
+  }
+
   // ******************* //
   // acceptFriendRequest //
   // ******************* //
 
-  @Put('/friendship/request/:requestId/accept')
+  @Put('/friendship/request/:senderId/accept')
   async acceptFriendRequest(
-    @Param('requestId') requestId: string,
+    @Param('senderId') senderId: string,
     @Session() session: any,
   ) {
-    const userId = session.userId;
+    const receiverId = session.userId;
 
-    return this.socialService.acceptFriendRequest(userId, requestId);
+    return this.socialService.acceptFriendRequest(receiverId, senderId);
+  }
+
+  // ******************* //
+  // rejectFriendRequest //
+  // ******************* //
+
+  @Put('/friendship/request/:senderId/reject')
+  async rejectFriendRequest(
+    @Param('senderId') senderId: string,
+    @Session() session: any,
+  ) {
+    const receiverId = session.userId;
+
+    return this.socialService.rejectFriendRequest(receiverId, senderId);
   }
 
   // ********* //

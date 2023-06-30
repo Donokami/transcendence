@@ -73,17 +73,6 @@ export class UsersController {
     return friends;
   }
 
-  // ***************** //
-  // getFriendRequests //
-  // ***************** //
-
-  @Get('/:id/friend-requests')
-  @UseGuards(AuthGuard)
-  async getFriendRequests(@Param('id') id: string): Promise<Friendship[]> {
-    const friendRequests = await this.socialService.getFriendRequests(id);
-    return friendRequests;
-  }
-
   // ********** //
   // updateUser //
   // ********** //

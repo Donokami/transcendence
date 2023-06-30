@@ -28,8 +28,6 @@ export class SocialService {
     senderId: string,
     receiverId: string,
   ): Promise<Friendship> {
-    console.log('senderId = ', senderId);
-    console.log('receiverId = ', receiverId);
     if (senderId === receiverId) {
       throw new BadRequestException(
         'You cannot send a friend request to yourself.',
@@ -64,7 +62,8 @@ export class SocialService {
       userA: sender,
       userB: receiver,
       status: FriendshipStatus.PENDING,
-      inActionUserId: senderId,
+      receiverId: receiverId,
+      senderId: senderId,
     });
 
     await this.friendshipRepository.save(friendship);
@@ -77,26 +76,92 @@ export class SocialService {
   // ******************* //
 
   async acceptFriendRequest(
-    userId: string,
-    requestId: string,
+    receiverId: string,
+    senderId: string,
   ): Promise<Friendship> {
-    const friendshipRequest = await this.friendshipRepository.findOne({
-      where: { id: requestId },
+    const sender = await this.usersRepository.findOne({
+      where: { id: senderId },
     });
+    if (!sender) {
+      throw new NotFoundException(`Sender not found.`);
+    }
 
+    const receiver = await this.usersRepository.findOne({
+      where: { id: receiverId },
+    });
+    if (!receiver) {
+      throw new NotFoundException(`Receiver not found.`);
+    }
+
+    const friendshipRequest = await this.friendshipRepository.findOne({
+      where: {
+        userA: { id: senderId },
+        userB: { id: receiverId },
+        status: FriendshipStatus.PENDING,
+      },
+    });
     if (!friendshipRequest) {
       throw new NotFoundException(
-        `Friendship request with id ${requestId} not found.`,
+        `Friendship request sent by ${senderId} not found.`,
       );
     }
 
-    if (friendshipRequest.userB.id !== userId) {
+    if (friendshipRequest.receiverId !== receiverId) {
       throw new UnauthorizedException(
         'You cannot accept a friend request that is not addressed to you.',
       );
     }
 
     friendshipRequest.status = FriendshipStatus.ACCEPTED;
+
+    if (!receiver.friends) {
+      receiver.friends = [];
+    }
+    receiver.friends.push(sender);
+    receiver.nFriends = receiver.nFriends + 1;
+
+    if (!sender.friends) {
+      sender.friends = [];
+    }
+    sender.friends.push(receiver);
+    sender.nFriends = sender.nFriends + 1;
+
+    await this.friendshipRepository.save(friendshipRequest);
+    await this.usersRepository.save(sender);
+    await this.usersRepository.save(receiver);
+
+    return friendshipRequest;
+  }
+
+  // ******************* //
+  // rejectFriendRequest //
+  // ******************* //
+
+  async rejectFriendRequest(
+    receiverId: string,
+    senderId: string,
+  ): Promise<Friendship> {
+    const friendshipRequest = await this.friendshipRepository.findOne({
+      where: {
+        userA: { id: senderId },
+        userB: { id: receiverId },
+        status: FriendshipStatus.PENDING,
+      },
+    });
+
+    if (!friendshipRequest) {
+      throw new NotFoundException(
+        `Friendship request sent by ${senderId} not found.`,
+      );
+    }
+
+    if (friendshipRequest.receiverId !== receiverId) {
+      throw new Error(
+        'You cannot reject a friend request that is not addressed to you.',
+      );
+    }
+
+    friendshipRequest.status = FriendshipStatus.REJECTED;
 
     await this.friendshipRepository.save(friendshipRequest);
 
@@ -137,7 +202,7 @@ export class SocialService {
 
     if (existingFriendship) {
       existingFriendship.status = FriendshipStatus.BLOCKED;
-      existingFriendship.inActionUserId = userId;
+      existingFriendship.receiverId = userId;
       await this.friendshipRepository.save(existingFriendship);
       return existingFriendship;
     } else {
@@ -145,7 +210,8 @@ export class SocialService {
         userA: user,
         userB: userToBlock,
         status: FriendshipStatus.BLOCKED,
-        inActionUserId: userId,
+        receiverId: userId,
+        senderId: userIdToBlock,
       });
 
       await this.friendshipRepository.save(friendship);
@@ -188,7 +254,7 @@ export class SocialService {
       existingFriendship.status === FriendshipStatus.BLOCKED
     ) {
       existingFriendship.status = FriendshipStatus.ACCEPTED;
-      existingFriendship.inActionUserId = userId;
+      existingFriendship.receiverId = userId;
       await this.friendshipRepository.save(existingFriendship);
       return existingFriendship;
     } else {
@@ -216,6 +282,7 @@ export class SocialService {
         userB: { id: userId },
         status: FriendshipStatus.PENDING,
       },
+      relations: ['userA', 'userB'],
     });
 
     return friendRequests;
