@@ -63,8 +63,8 @@ export class AuthController {
 
   @Post('/enableTwoFactor')
   async enableTwoFactor(@Session() session: any) {
-    const dataUrl = await this.authService.enableTwoFactor(session.userId);
-    return JSON.stringify({ dataUrl });
+    const result = await this.authService.toggleTwoFactor(session.userId);
+    return result;
   }
 
   @Post('/verifyToken')

@@ -21,4 +21,8 @@ export class UserDto {
   @ApiProperty()
   @Expose()
   isTwoFactorEnabled: string;
+
+  @ApiProperty()
+  @Expose()
+  dataUrl?: string;
 }

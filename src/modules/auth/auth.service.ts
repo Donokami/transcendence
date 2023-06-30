@@ -26,21 +26,26 @@ export class AuthService {
     return user;
   }
 
-  async enableTwoFactor(userId: string) {
+  async toggleTwoFactor(userId: string) {
     const user = await this.usersService.findOne(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
+
+    if (user.isTwoFactorEnabled) {
+      user.isTwoFactorEnabled = false;
+      user.twoFactorSecret = null;
+      await this.usersService.update(user.id, user);
+
+      return { isTwoFactorEnabled: false };
+    } else {
+      const secret = authenticator.generateSecret();
+      user.twoFactorSecret = secret;
+      user.isTwoFactorEnabled = true;
+      await this.usersService.update(user.id, user);
+
+      const otpauth = authenticator.keyuri(user.email, 'YourService', secret);
+      const dataUrl = await qrcode.toDataURL(otpauth);
+
+      return { isTwoFactorEnabled: true, dataUrl: dataUrl };
     }
-
-    const secret = authenticator.generateSecret();
-    user.twoFactorSecret = secret;
-    user.isTwoFactorEnabled = true;
-    await this.usersService.update(user.id, user);
-
-    const otpauth = authenticator.keyuri(user.email, 'Transcendence', secret);
-    const dataUrl = await qrcode.toDataURL(otpauth);
-
-    return dataUrl;
   }
 
   async verifyTwoFactorToken(userId: string, token: string) {
