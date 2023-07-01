@@ -14,10 +14,10 @@ const gs = reactive({
 const gm = {
   canvasHeight: 480,
   canvasWidth: 720,
-  fieldWidth: 20,
+  fieldWidth: 30,
   fieldHeight: 1,
-  fieldDepth: 40,
-  paddleRatio: 0.4,
+  fieldDepth: 60,
+  paddleRatio: 0.3,
   paddleHeight: 1,
   paddleDepth: 1,
   ballRadius: 0.8
@@ -34,7 +34,8 @@ type SimObject3D = Object3D & {
 
 function startBallMov(ball: SimObject3D): void {
   ball.position.x = ball.position.z
-  ball.position.y = gm.fieldHeight + gm.ballRadius * 0.5
+  ball.position.y = -((0 - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 + 1.4 * gm.fieldDepth * 0.1
+
   const direction: number = Math.random() > 0.5 ? -1 : 1
   ball.velocity = {
     x: 0,
@@ -53,6 +54,9 @@ function updateBallPosition(ball: SimObject3D): void {
 
   // add an arc to the ballRef's flight. Comment this out for boring, flat pong.
   // ballPos.y = -(((ballPos.z - 1) * (ballPos.z - 1)) / 5000) + 2
+  ballPos.y = -((ballPos.z - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 + 1.4 * gm.fieldDepth * 0.1
+
+  // -(((0 - 1) * (0 - 1)) / (60 * 60)) * 60 * 0.5 + 1.4 * 60 * 0.1
 }
 
 function hitBallBack(ball: SimObject3D, paddle: SimObject3D): void {
@@ -72,20 +76,20 @@ function isSideCollision(ball: SimObject3D): boolean {
   const ballX = ball.position.x
   const halfFieldWidth = gm.fieldWidth * 0.5
   return (
-    ballX - gm.ballRadius * 0.5 < -halfFieldWidth || ballX + gm.ballRadius * 0.5 > halfFieldWidth
+    ballX >= halfFieldWidth - gm.ballRadius * 0.5 || ballX <= -halfFieldWidth + gm.ballRadius * 0.5
   )
 }
 
 function isPaddle1Collision(ball: SimObject3D, paddle1: SimObject3D): boolean {
   return (
-    ball.position.z + gm.ballRadius >= paddle1.position.z - gm.paddleDepth &&
+    ball.position.z + gm.ballRadius > paddle1.position.z - gm.paddleDepth &&
     isBallAlignedWithPaddle(ball, paddle1)
   )
 }
 
 function isPaddle2Collision(ball: SimObject3D, paddle2: SimObject3D): boolean {
   return (
-    ball.position.z - gm.ballRadius <= paddle2.position.z + gm.paddleDepth &&
+    ball.position.z - gm.ballRadius < paddle2.position.z + gm.paddleDepth &&
     isBallAlignedWithPaddle(ball, paddle2)
   )
 }
@@ -163,14 +167,15 @@ function processCpuPaddle(ball: SimObject3D, paddle2: SimObject3D): void {
 }
 
 function resetBall(ball: SimObject3D): void {
-  ball.position.set(0, gm.fieldHeight + gm.ballRadius * 0.5, 0)
+  ball.position.x = ball.position.z = 0
+  ball.position.y = -((0 - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 + 1.4 * gm.fieldDepth * 0.1
   ball.velocity.x = ball.velocity.y = ball.velocity.z = 0
   ball.stopped = true
 }
 
 function renderPong(ball: SimObject3D, paddle1: SimObject3D, paddle2: SimObject3D): void {
-  processBallMovement(ball, paddle1, paddle2)
   processCpuPaddle(ball, paddle2)
+  processBallMovement(ball, paddle1, paddle2)
 }
 
 export { gm, gs, renderPong, resetBall, type SimObject3D }

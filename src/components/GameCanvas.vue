@@ -1,17 +1,18 @@
 <template>
   <div class="">
-    <p class="">{{ scoring }} ({{ Math.round(1 / gs.fps) }} fps)</p>
+    <p class="">{{ scoring }} ({{ Math.round(1 / gs.fps) }} fps) - {{ Math.round(ballRef?.position.z) + " - " + Math.round(ballRef?.position.y * 100) / 100 + " - " + Math.round(ballRef?.position.x * 100) / 100 }}</p>
     <div class="w-[720px] h-[480px]">
       <TresCanvas clear-color="#005" shadows @mousemove="MovePaddle">
         <TresScene>
-          <TresAmbientLight color="#ffffff" :intensity="1" />
+          <TresAmbientLight color="#ffffff" :position="[0, 3, 0]" :intensity="1" />
           <TresDirectionalLight color="#ffffff" :intensity="2" />
+          <!-- <TresDirectionalLight color="#ffaaaa" :position="[0, 5, 3]" :intensity="0.5" /> -->
           <TresPerspectiveCamera :position="[
             paddlePos(gs.posX),
             5,
             gm.fieldDepth
           ]
-            " :fov="30" :aspect="1" :near="0.1" :far="1000" />
+            " :fov="25" :aspect="1" :near="0.1" :far="1000" />
           <!-- <TresPerspectiveCamera :position="[
             10,
             40,
