@@ -16,8 +16,8 @@
             />
           </span>
         </label>
-        <div class="px-2">
-          <img v-if="qrCodeUrl" :src="qrCodeUrl" alt="QR Code">
+        <div v-if="qrCodeUrl" class="px-2">
+          <img :src="qrCodeUrl" alt="QR Code">
         </div>
       </div>
     </div>
@@ -62,10 +62,10 @@ export default {
     async switchAuthenticationMsg(): Promise<void> {
       try {
         const data = await this.userStore.enableTwoFactor();
-        console.log('DATA', data);
         if (data.isTwoFactorEnabled) {
-          console.log('2FA enabled', data);
-          this.qrCodeUrl = data.dataUrl;
+          this.qrCodeUrl = data.dataUrl
+        } else {
+          this.qrCodeUrl = '';
         }
       } catch (error) {
         console.error(error);
