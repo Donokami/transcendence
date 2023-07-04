@@ -57,7 +57,7 @@
       if (response.ok) {      
         alertColor.value = 'bg-green-500'
         alertMsg.value = 'Your 2FA code has been verified!'
-        router.push('/home')
+        router.push('/')
       } else {
         alertColor.value = 'bg-red-500'
         alertMsg.value = 'Your 2FA code could not be verified!'

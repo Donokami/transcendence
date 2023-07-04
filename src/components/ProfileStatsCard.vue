@@ -40,7 +40,7 @@
 
     <div 
       class="stat border-black !border-l-2"
-      v-if="observedUser.id !== loggedUser.id"
+      v-if="loggedUser && (observedUser.id !== loggedUser.id)"
     >
       <div class="stat-figure text-primary tooltip tooltip-top" v-if="isFriend === false" data-tip="Add friend">
         <iconify-icon
@@ -71,7 +71,7 @@
 
     <div 
       class="stat border-black !border-l-2"
-      v-else="observedUser.id === loggedUser.id"
+      v-if="loggedUser && (observedUser.id === loggedUser.id)"
     >
     <div class="stat-figure text-primary" v-if="nFriendRequests > 0">
     <div class="indicator">

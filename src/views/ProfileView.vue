@@ -6,7 +6,7 @@
       <profile-stats-card v-if="observedUser" :observedUser="observedUser"></profile-stats-card>
       <div class="form-control">
         <label class="cursor-pointer p-6">
-          <span class="stat-value text-xl">2FA</span>
+          <span class="stat-value text-xl">{{ authMessage }}</span>
           <span class="px-6 align-middle">
             <input 
               type="checkbox" 
@@ -78,14 +78,6 @@ const observedUser = ref(null) as Ref<User | null>;
 // ***************** //
 // switchAuthMessage //
 // ***************** //
-
-// const switchAuthMessage = () => {
-//   if (authMessage.value === 'Activate 2FA') {
-  //   }
-  //   else {
-    //     authMessage.value = 'Activate 2FA'
-    //   }
-    // }
     
 const switchAuthMessage = async () => {
   try {
