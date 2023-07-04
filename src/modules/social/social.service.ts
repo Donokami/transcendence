@@ -52,12 +52,12 @@ export class SocialService {
     const existingFriendship = await this.friendshipRepository.findOne({
       where: [
         {
-          userA: { id: sender.id },
-          userB: { id: receiver.id },
+          sender: { id: sender.id },
+          receiver: { id: receiver.id },
         },
         {
-          userA: { id: receiver.id },
-          userB: { id: sender.id },
+          sender: { id: receiver.id },
+          receiver: { id: sender.id },
         },
       ],
     });
@@ -86,11 +86,9 @@ export class SocialService {
     else {
       const friendship = this.friendshipRepository.create({
         blockerId: null,
-        receiverId: receiver.id,
-        senderId: sender.id,
         status: FriendshipStatus.PENDING,
-        userA: sender,
-        userB: receiver,
+        sender: sender,
+        receiver: receiver,
       });
       await this.friendshipRepository.save(friendship);
 
@@ -129,8 +127,8 @@ export class SocialService {
     // Check if friendship request exists in database
     const friendshipRequest = await this.friendshipRepository.findOne({
       where: {
-        userA: { id: senderId },
-        userB: { id: receiverId },
+        sender: { id: senderId },
+        receiver: { id: receiverId },
         status: FriendshipStatus.PENDING,
       },
     });
@@ -140,26 +138,14 @@ export class SocialService {
       );
     }
     // Check if friendship request is well addressed to receiver
-    if (friendshipRequest.receiverId !== receiverId) {
+    if (friendshipRequest.receiver.id !== receiverId) {
       throw new UnauthorizedException(
-        `${friendshipRequest.receiverId} cannot accept a friend request addressed to ${receiverId}`,
+        `${friendshipRequest.receiver.id} cannot accept a friend request addressed to ${receiverId}`,
       );
     }
     // Change friendship request status to accepted
     friendshipRequest.status = FriendshipStatus.ACCEPTED;
-    // Create friends array for receiver and sender if it does not exist
-    if (!receiver.friends) {
-      receiver.friends = [];
-    }
-    if (!sender.friends) {
-      sender.friends = [];
-    }
-    // Add sender to receiver friends array and receiver to sender friends array
-    receiver.friends.push(sender);
-    sender.friends.push(receiver);
-    // Increment nFriends for receiver and sender
-    receiver.nFriends = receiver.nFriends + 1;
-    sender.nFriends = sender.nFriends + 1;
+
     // Save changes in the database
     await this.usersRepository.save(receiver);
     await this.usersRepository.save(sender);
@@ -178,8 +164,8 @@ export class SocialService {
   ): Promise<Friendship> {
     const friendshipRequest = await this.friendshipRepository.findOne({
       where: {
-        userA: { id: senderId },
-        userB: { id: receiverId },
+        sender: { id: senderId },
+        receiver: { id: receiverId },
         status: FriendshipStatus.PENDING,
       },
     });
@@ -189,9 +175,9 @@ export class SocialService {
       );
     }
 
-    if (friendshipRequest.receiverId !== receiverId) {
+    if (friendshipRequest.receiver.id !== receiverId) {
       throw new UnauthorizedException(
-        `${friendshipRequest.receiverId} cannot reject a friend request addressed to ${receiverId}`,
+        `${friendshipRequest.receiver.id} cannot reject a friend request addressed to ${receiverId}`,
       );
     }
 
@@ -228,12 +214,12 @@ export class SocialService {
     const existingFriendship = await this.friendshipRepository.findOne({
       where: [
         {
-          userA: { id: userId },
-          userB: { id: userToBlockId },
+          sender: { id: userId },
+          receiver: { id: userToBlockId },
         },
         {
-          userA: { id: userToBlockId },
-          userB: { id: userId },
+          sender: { id: userToBlockId },
+          receiver: { id: userId },
         },
       ],
     });
@@ -249,50 +235,11 @@ export class SocialService {
       existingFriendship.status = FriendshipStatus.BLOCKED;
       // Set blockerId to userId
       existingFriendship.blockerId = userId;
-      // CHECK FRIENDS ARRAY HERE
-      console.log(`[BEFORE BLOCK]`);
-      console.log(
-        `user friends : ${user.friends
-          .map((friend) => friend.username)
-          .join(', ')}`,
-      );
-      console.log(
-        `userToBlock friends : ${userToBlock.friends
-          .map((friend) => friend.username)
-          .join(', ')}`,
-      );
-      // Remove userToBlockId from user friends array
-      const userToBlockIndex = user.friends.indexOf(userToBlock, 0);
-      if (userToBlockIndex > -1) {
-        user.friends.splice(userToBlockIndex, 1);
-      }
-      // Remove userId from userToBlock friends array
-      const userIndex = userToBlock.friends.indexOf(user, 0);
-      if (userIndex > -1) {
-        userToBlock.friends.splice(userIndex, 1);
-      }
-      // Create blockedUser array if it does not exist
-      if (!user.blockedUser) {
-        user.blockedUser = [];
-      }
-      // Add userToBlock to user blockedUser array
-      user.blockedUser.push(userToBlock);
+
       // Save changes in the database
       await this.usersRepository.save(user);
       await this.usersRepository.save(userToBlock);
       await this.friendshipRepository.save(existingFriendship);
-      // CHECK FRIENDS ARRAY HERE
-      console.log(`[AFTER BLOCK]`);
-      console.log(
-        `user friends : ${user.friends
-          .map((friend) => friend.username)
-          .join(', ')}`,
-      );
-      console.log(
-        `userToBlock friends : ${userToBlock.friends
-          .map((friend) => friend.username)
-          .join(', ')}`,
-      );
 
       return existingFriendship;
     }
@@ -301,18 +248,11 @@ export class SocialService {
       // Create friendship
       const friendship = this.friendshipRepository.create({
         blockerId: userId,
-        receiverId: userToBlockId,
-        senderId: userId,
         status: FriendshipStatus.BLOCKED,
-        userA: user,
-        userB: userToBlock,
+        sender: user,
+        receiver: userToBlock,
       });
-      // Create blockedUser array if it does not exist
-      if (!user.blockedUser) {
-        user.blockedUser = [];
-      }
-      // Add userToBlock to user blockedUser array
-      user.blockedUser.push(userToBlock);
+
       // Save changes in the database
       await this.usersRepository.save(user);
       await this.friendshipRepository.save(friendship);
@@ -345,8 +285,8 @@ export class SocialService {
 
     const existingFriendship = await this.friendshipRepository.findOne({
       where: [
-        { userA: { id: user.id }, userB: { id: userToUnblock.id } },
-        { userA: { id: userToUnblock.id }, userB: { id: user.id } },
+        { sender: { id: user.id }, receiver: { id: userToUnblock.id } },
+        { sender: { id: userToUnblock.id }, receiver: { id: user.id } },
       ],
     });
     if (!existingFriendship) {
@@ -385,10 +325,10 @@ export class SocialService {
 
     const friendRequests = await this.friendshipRepository.find({
       where: {
-        userB: { id: userId },
+        receiver: { id: userId },
         status: FriendshipStatus.PENDING,
       },
-      relations: ['userA', 'userB'],
+      relations: ['sender', 'receiver'],
     });
 
     return friendRequests;
@@ -408,30 +348,61 @@ export class SocialService {
 
     const friendships = await this.friendshipRepository.find({
       where: [
-        { userA: { id: userId }, status: FriendshipStatus.ACCEPTED },
-        { userB: { id: userId }, status: FriendshipStatus.ACCEPTED },
+        { sender: { id: userId }, status: FriendshipStatus.ACCEPTED },
+        { receiver: { id: userId }, status: FriendshipStatus.ACCEPTED },
       ],
+      relations: ['sender', 'receiver'],
     });
     if (!friendships) {
       throw new NotFoundException(`No friendships found for ${userId}.`);
     }
 
-    const friends = await Promise.all(
-      friendships.map(async (friendship) => {
-        if (friendship.senderId === userId) {
-          return await this.usersRepository.findOne({
-            where: { id: friendship.receiverId },
-          });
-        } else {
-          return await this.usersRepository.findOne({
-            where: { id: friendship.senderId },
-          });
-        }
-      }),
-    );
+    const friendList = friendships.map((friendship) => {
+      if (friendship.sender.id === userId) {
+        return friendship.receiver;
+      } else {
+        return friendship.sender;
+      }
+    });
 
-    console.log(friends);
+    console.log(friendList);
 
-    return friends;
+    return friendList;
+  }
+
+  // ************** //
+  // getBlockedList //
+  // ************** //
+
+  async getBlockedList(userId: string): Promise<User[]> {
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException(`User with id ${userId} not found.`);
+    }
+
+    const friendships = await this.friendshipRepository.find({
+      where: [
+        { sender: { id: userId }, status: FriendshipStatus.BLOCKED },
+        { receiver: { id: userId }, status: FriendshipStatus.BLOCKED },
+      ],
+      relations: ['sender', 'receiver'],
+    });
+    if (!friendships) {
+      throw new NotFoundException(`No friendships found for ${userId}.`);
+    }
+
+    const blockedList = friendships.map((friendship) => {
+      if (friendship.sender.id === userId) {
+        return friendship.receiver;
+      } else {
+        return friendship.sender;
+      }
+    });
+
+    console.log(blockedList);
+
+    return blockedList;
   }
 }

@@ -53,19 +53,12 @@ export class User {
   // FRIENDSHIP RELATED INFORMATIONS //
   // ******************************* //
 
-  @Column({ default: 0 })
   nFriends: number;
 
-  @Column('simple-array', { nullable: true })
-  friends: Array<User>;
-
-  @Column('simple-array', { nullable: true })
-  blockedUser: Array<User>;
-
-  @OneToMany(() => Friendship, (friendship) => friendship.userA)
+  @OneToMany(() => Friendship, (friendship) => friendship.sender)
   sentRequests: Array<Friendship>;
 
-  @OneToMany(() => Friendship, (friendship) => friendship.userB)
+  @OneToMany(() => Friendship, (friendship) => friendship.receiver)
   receivedRequests: Array<Friendship>;
 
   // ************************* //

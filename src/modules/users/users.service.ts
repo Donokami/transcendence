@@ -8,9 +8,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Channel } from '@/modules/channels/entities/channel.entity';
 import { UserDetails } from '@/modules/auth/utils/types';
-import { Friendship } from '@/modules/social/entities/friendship.entity';
+import {
+  Friendship,
+  FriendshipStatus,
+} from '@/modules/social/entities/friendship.entity';
 
 import { User } from './user.entity';
+import { UserDto } from './dtos/user.dto';
 
 @Injectable()
 export class UsersService {
@@ -47,15 +51,24 @@ export class UsersService {
     return users;
   }
 
-  // ******* //
-  // findOne //
-  // ******* //
+  // *********** //
+  // findOneById //
+  // *********** //
 
   async findOneById(id: string): Promise<User> {
     if (!id) {
       return null;
     }
-    const user = await this.userRepository.findOneBy({ id });
+    const user = await this.userRepository.findOneBy({
+      id,
+    });
+    if (user)
+      user.nFriends = await this.friendshipRepository.count({
+        where: [
+          { sender: { id }, status: FriendshipStatus.ACCEPTED },
+          { receiver: { id }, status: FriendshipStatus.ACCEPTED },
+        ],
+      });
     return user;
   }
 

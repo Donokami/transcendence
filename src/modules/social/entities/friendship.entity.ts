@@ -17,12 +17,6 @@ export class Friendship {
   @Column({ nullable: true })
   blockerId: string;
 
-  @Column()
-  senderId: string;
-
-  @Column()
-  receiverId: string;
-
   @Column({
     type: process.env.NODE_ENV === 'production' ? 'enum' : 'text',
     enum: FriendshipStatus,
@@ -30,9 +24,9 @@ export class Friendship {
   })
   status: FriendshipStatus;
 
-  @ManyToOne(() => User, (user) => user.sentRequests)
-  userA: User;
+  @ManyToOne(() => User, (user) => user.sentRequests, { eager: true })
+  sender: User;
 
-  @ManyToOne(() => User, (user) => user.receivedRequests)
-  userB: User;
+  @ManyToOne(() => User, (user) => user.receivedRequests, { eager: true })
+  receiver: User;
 }

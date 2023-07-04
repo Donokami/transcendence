@@ -52,6 +52,16 @@ export class SocialController {
     return friendList;
   }
 
+  // ************** //
+  // getBlockedList //
+  // ************** //
+
+  @Get('/:id/blocked-list')
+  async getBlockedList(@Param('id') id: string) {
+    const blockedList = await this.socialService.getBlockedList(id);
+    return blockedList;
+  }
+
   // ******************* //
   // acceptFriendRequest //
   // ******************* //
