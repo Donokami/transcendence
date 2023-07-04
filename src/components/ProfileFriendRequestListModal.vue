@@ -20,9 +20,9 @@
                 <li v-for="request in friendRequests" :key="request.id">
                 <a class="flex p-1">
                     <span class="block">{{ request.userA.username }}</span>
-                    <button @click="acceptRequest(request.userA.id)">Accept</button>
-                    <button @click="rejectRequest(request.userA.id)">Reject</button>
-                    <button @click="blockUser(request.userA.id)">Block User</button>
+                    <button class="hover:bg-black hover:text-white" @click="acceptRequest(request.userA.id)">Accept</button>
+                    <button class="hover:bg-black hover:text-white" @click="rejectRequest(request.userA.id)">Reject</button>
+                    <button class="hover:bg-black hover:text-white" @click="blockUser(request.userA.id)">Block User</button>
                 </a>
                 </li>
             </ul>

@@ -1,5 +1,6 @@
 <template>
   <div class="stats rounded-none">
+
     <div class="stat border-black border-r-2">
       <div class="stat-figure text-secondary">
         <div class="avatar online">
@@ -41,19 +42,33 @@
       class="stat border-black !border-l-2"
       v-if="observedUser.id !== loggedUser.id"
     >
-      <div class="stat-figure text-primary tooltip tooltip-top" data-tip="Add friend">
+      <div class="stat-figure text-primary tooltip tooltip-top" v-if="isFriend === false" data-tip="Add friend">
         <iconify-icon
-          class="w-10 h-10"
-          :icon="iconSendRequest"
-          style="color: #5d4df8"
-          @click="sendFriendRequest"
-          @mouseover="iconSendRequest = 'mdi:account-plus'"
-          @mouseout="iconSendRequest = 'mdi:account-plus-outline'"
+        class="w-10 h-10"
+        :icon="iconSendRequest"
+        style="color: #5d4df8"
+        @click="sendFriendRequest"
+        @mouseover="iconSendRequest = 'mdi:account-plus'"
+        @mouseout="iconSendRequest = 'mdi:account-plus-outline'"
         ></iconify-icon>
       </div>
+        
+      <div class="stat-figure text-primary tooltip tooltip-top" v-else data-tip="Block user">
+        <iconify-icon
+          class="w-10 h-10"
+          :icon="iconBlockUser"
+          style="color: #5d4df8"
+          @click="blockUser"
+          @mouseover="iconBlockUser = 'mdi:account-cancel'"
+          @mouseout="iconBlockUser = 'mdi:account-cancel-outline'"
+        ></iconify-icon>
+      </div>
+
       <div class="stat-value text-xl">Friends</div>
       <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
+
     </div>
+
     <div 
       class="stat border-black !border-l-2"
       v-else="observedUser.id === loggedUser.id"
@@ -85,6 +100,8 @@
 // ******* //
 
 import { computed, onBeforeMount, ref, type PropType} from 'vue';
+import { onBeforeRouteUpdate } from 'vue-router';
+
 import { storeToRefs } from 'pinia';
 
 import type { User } from '@/types/User';
@@ -97,7 +114,18 @@ import { useUserStore } from '../stores/UserStore'
 
 const userStore = useUserStore();
 
+// **************************** //
+// loggedUser related variables //
+// **************************** //
+
 const {loggedUser} = storeToRefs(userStore);
+const nFriendRequests = ref(0);
+const friendList = ref([]);
+const isFriend = ref(false);
+
+// ****************************** //
+// observedUser related variables //
+// ****************************** //
 
 const props = defineProps({
   observedUser: {
@@ -108,17 +136,20 @@ const props = defineProps({
   });
 
 const observedUser = computed(() => props.observedUser);
-  
+
 const statusColor = computed(() => {
   if (observedUser.value.status === 'online') return 'text-[#62D49A]';
   if (observedUser.value.status === 'offline') return 'text-red-500';
   return 'text-gray-500';
 });
 
-const nFriendRequests = ref(0);
+// *************** //
+// Other variables //
+// *************** //
 
 const iconSendRequest = ref('mdi:account-plus-outline');
 const iconSeeRequests = ref('mdi:account-alert-outline');
+const iconBlockUser = ref('mdi:account-cancel-outline');
 
 // ******************** //
 // FUNCTION DEFINITIONS //
@@ -152,10 +183,71 @@ const getFriendRequestsNumber = async () => {
   }
 };
 
+// ************* //
+// getFriendList //
+// ************* //
+
+const getFriendList = async () => {
+  try {
+    const response = await userStore.fetchFriendList(loggedUser.value.id);
+    friendList.value = response;
+    console.log(`[ProfileStatsCard] - friendList : `, friendList.value);
+  } catch (error) {
+    console.error(`[ProfileStatsCard] - Failed to fetch friends! Error: `, error);
+  }
+};
+
+// ************* //
+// checkIsFriend //
+// ************* //
+
+// const checkIsFriend = () => {
+//   console.log(`friendList value :`, friendList.value);
+//   const friend = friendList.value.find((friend: User) => friend.id === observedUser.value.id);
+//   isFriend.value = !!friend;
+//   console.log(`[ProfileStatsCard] - isFriend : `, isFriend.value);
+// };
+
+const checkIsFriend = async () => {
+  try {
+    const response = await userStore.fetchFriendList(loggedUser.value.id);
+    friendList.value = response;
+    console.log(`[ProfileStatsCard] - friendList : `, friendList.value);
+
+    const friend = friendList.value.find((friend: User) => friend.id === observedUser.value.id);
+    isFriend.value = !!friend;
+    console.log(`[ProfileStatsCard] - isFriend : `, isFriend.value);
+  } catch (error) {
+    console.error(`[ProfileStatsCard] - Failed to fetch friends and check friendship! Error: `, error);
+  }
+};
+
+// ********* //
+// blockUser //
+// ********* //
+
+const blockUser = async () => {
+  try {
+    const response = await userStore.blockUser(observedUser.value.id);
+    console.log(`[ProfileStatsCard] - User blocked !`);
+  } catch (error) {
+    console.log(`[ProfileStatsCard] - Failed to block user! Error : `, error);
+  }
+};
+
 // ********************* //
 // VueJs LIFECYCLE HOOKS //
 // ********************* //
 
 onBeforeMount(getFriendRequestsNumber);
+onBeforeMount(getFriendList);
+onBeforeMount(checkIsFriend);
+
+onBeforeRouteUpdate(async (to, from) => {
+  await getFriendRequestsNumber();
+  await getFriendList();
+  await checkIsFriend();
+});
+
 
 </script>

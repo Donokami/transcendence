@@ -115,6 +115,21 @@ export const useUserStore = defineStore('users', {
       return response.json();
     },
 
+    // *************** //
+    // fetchFriendList //
+    // *************** //
+
+    async fetchFriendList(id: string) {
+      const response = await fetch(`http://localhost:3000/api/social/${id}/friend-list`, {
+        method: 'GET',
+        credentials: 'include',
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    },
+
     // ***************** //
     // sendFriendRequest //
     // ***************** //
