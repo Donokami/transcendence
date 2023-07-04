@@ -13,20 +13,9 @@
   </div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import SiteHeader from '../components/SiteHeader.vue'
 import HomeHistoryPrompt from '../components/HomeHistoryPrompt.vue'
 import HomeGameModeSelection from '../components/HomeGameModeSelection.vue'
 import HomeRoomSelection from '../components/HomeRoomSelection.vue'
-
-export default {
-  name: 'HomeView',
-  components: {
-    SiteHeader,
-    HomeHistoryPrompt,
-    HomeGameModeSelection,
-    HomeRoomSelection
-  },
-  data() {}
-}
 </script>

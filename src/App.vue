@@ -2,21 +2,9 @@
   <div class="bg-white min-h-[calc(100vh-92px)] flex flex-col">
     <router-view></router-view>
   </div>
-  <app-footer class="bg-zinc-900 py-4 px-6 relative text-white"></app-footer>
+  <app-footer class="relative px-6 py-4 text-white bg-zinc-900"></app-footer>
 </template>
 
-<script>
-import AppFooter from "./components/AppFooter.vue";
-
-export default {
-  name: "App",
-  components: {
-    AppFooter,
-  },
-  data() {
-    return {
-      isRegisterForm: false,
-    };
-  },
-};
+<script setup lang="ts">
+import AppFooter from './components/AppFooter.vue'
 </script>
