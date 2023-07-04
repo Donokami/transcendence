@@ -63,17 +63,6 @@ export class UsersController {
   }
 
   // ********** //
-  // getFriends //
-  // ********** //
-
-  @Get('/:id/friends')
-  @UseGuards(AuthGuard)
-  async getFriends(@Param('id') id: string): Promise<User[]> {
-    const friends = await this.socialService.getFriends(id);
-    return friends;
-  }
-
-  // ********** //
   // updateUser //
   // ********** //
 

@@ -42,6 +42,16 @@ export class SocialController {
     return friendRequests;
   }
 
+  // ************* //
+  // getFriendList //
+  // ************* //
+
+  @Get('/:id/friend-list')
+  async getFriendList(@Param('id') id: string) {
+    const friendList = await this.socialService.getFriendList(id);
+    return friendList;
+  }
+
   // ******************* //
   // acceptFriendRequest //
   // ******************* //
