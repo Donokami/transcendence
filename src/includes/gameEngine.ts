@@ -8,6 +8,7 @@ const gs = reactive({
   posY: 0,
   fps: 0,
   activeCanvas: false,
+  testBallPos: new Vector3(0, 5, 0)
 })
 
 const gm = {
@@ -33,7 +34,8 @@ type SimObject3D = Object3D & {
 
 function startBallMov(ball: SimObject3D): void {
   ball.position.x = ball.position.z
-  ball.position.y = -((0 - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 + 1.4 * gm.fieldDepth * 0.1
+  ball.position.y =
+    -((0 - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 + 1.4 * gm.fieldDepth * 0.1
 
   const direction: number = Math.random() > 0.5 ? -1 : 1
   ball.velocity = {
@@ -53,7 +55,8 @@ function updateBallPosition(delta: number, ball: SimObject3D): void {
 
   // add an arc to the ballRef's flight. Comment this out for boring, flat pong.
   // ballPos.y = -(((ballPos.z - 1) * (ballPos.z - 1)) / 5000) + 2
-  ballPos.y = -((ballPos.z - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 + 1.4 * gm.fieldDepth * 0.1
+  ballPos.y =
+    -((ballPos.z - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 + 1.4 * gm.fieldDepth * 0.1
 
   // -(((0 - 1) * (0 - 1)) / (60 * 60)) * 60 * 0.5 + 1.4 * 60 * 0.1
 }
@@ -100,7 +103,12 @@ function isBallAlignedWithPaddle(ball: SimObject3D, paddle: SimObject3D): boolea
   return ballX > paddleX - halfPaddleWidth && ballX < paddleX + halfPaddleWidth
 }
 
-function processBallMovement(delta: number, ball: SimObject3D, paddle1: SimObject3D, paddle2: SimObject3D): void {
+function processBallMovement(
+  delta: number,
+  ball: SimObject3D,
+  paddle1: SimObject3D,
+  paddle2: SimObject3D
+): void {
   if (ball.stopped) {
     return
   }
@@ -151,39 +159,40 @@ function processBallMovement(delta: number, ball: SimObject3D, paddle1: SimObjec
 function processCpuPaddle(delta: number, ball: SimObject3D, paddle2: SimObject3D): void {
   const ballPos = ball.position
   const cpuPos = paddle2.position
-
+  // let newPos = ballPos
   // if (cpuPos.x - gm.paddleRatio * gm.fieldWidth * 0.5 > ballPos.x) {
-
+  //   newPos.x -= ballPos.x + cpuPos.x
   // } else if (cpuPos.x - gm.paddleRatio * gm.fieldWidth * 0.5 < ballPos.x) {
-  //   newPos += (ballPos.x - cpuPos.x)
+  //   newPos.x += ballPos.x - cpuPos.x
   // }
-
   // const nextPos: Vector3 = new Vector3(ballPos.x, cpuPos.y, cpuPos.z)
-  cpuPos.x = cpuPos.x * (1 - delta) + ballPos.x * delta
-
+  // cpuPos.x = newPos.x
   // To prevent the bot from going out of bounds, we need to clamp the new position.
   // if (newPos < 0)
   //   newPos = Math.max(newPos, -gm.fieldWidth * 0.5 + gm.paddleRatio * gm.fieldWidth * 0.5)
   // else newPos = Math.min(newPos, gm.fieldWidth * 0.5 - gm.paddleRatio * gm.fieldWidth * 0.5)
-  // cpuPos.x = newPos
+  cpuPos.x = ballPos.x
 }
 
 function resetBall(ball: SimObject3D): void {
   ball.position.x = ball.position.z = 0
-  ball.position.y = -((0 - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 + 1.4 * gm.fieldDepth * 0.1
+  ball.position.y =
+    -((0 - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 + 1.4 * gm.fieldDepth * 0.1
   ball.velocity.x = ball.velocity.y = ball.velocity.z = 0
   ball.stopped = true
 }
 
-function renderPong(delta: number, ball: SimObject3D, paddle1: SimObject3D, paddle2: SimObject3D): void {
+function renderPong(
+  delta: number,
+  ball: SimObject3D,
+  testBall: SimObject3D,
+  paddle1: SimObject3D,
+  paddle2: SimObject3D
+): void {
+  // testBall.position.set(gs.testBallPos.x, gs.testBallPos.y, gs.testBallPos.z)
+  testBall.position.lerp(gs.testBallPos, 0.1)
   processCpuPaddle(delta, ball, paddle2)
   processBallMovement(delta, ball, paddle1, paddle2)
 }
 
-export {
-  gm,
-  gs,
-  renderPong,
-  resetBall,
-  type SimObject3D
-}
+export { gm, gs, renderPong, resetBall, type SimObject3D }

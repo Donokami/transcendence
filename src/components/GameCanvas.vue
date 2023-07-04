@@ -1,20 +1,18 @@
 <template>
   <div class="">
-    <p class="">{{ scoring }} ({{ Math.round(1 / gs.fps) }} fps) - {{ Math.round(ballRef?.position.z) + " - " + Math.round(ballRef?.position.y * 100) / 100 + " - " + Math.round(ballRef?.position.x * 100) / 100 }}</p>
+    <p class="">{{ scoring }} ({{ Math.round(1 / gs.fps) }} fps) - {{ Math.round(ballRef?.position.z) + " - " +
+      Math.round(ballRef?.position.y * 100) / 100 + " - " + Math.round(ballRef?.position.x * 100) / 100 }}</p>
     <div class="w-[720px] h-[480px]">
       <TresCanvas clear-color="#005" shadows @mousemove="MovePaddle">
         <TresScene>
           <TresAmbientLight color="#ffffff" :position="[0, 3, 0]" :intensity="1" />
           <TresDirectionalLight color="#ffffff" :intensity="2" />
           <!-- <TresDirectionalLight color="#ffaaaa" :position="[0, 5, 3]" :intensity="0.5" /> -->
-          <TresPerspectiveCamera
-            :position="[
-              paddlePos(gs.posX),
-              5,
-              gm.fieldDepth
-            ]"
-            ref="cameraRef"
-            :fov="25" :aspect="1" :near="0.1" :far="1000" />
+          <TresPerspectiveCamera :position="[
+            paddlePos(gs.posX),
+            5,
+            gm.fieldDepth
+          ]" ref="cameraRef" :fov="25" :aspect="1" :near="0.1" :far="1000" />
           <!-- <TresPerspectiveCamera :position="[
             10,
             40,
@@ -80,6 +78,10 @@
             <TresSphereGeometry :args="[gm.ballRadius]" />
             <TresMeshToonMaterial color="yellow" />
           </TresMesh>
+          <TresMesh ref="testBallRef">
+            <TresSphereGeometry :args="[gm.ballRadius]" />
+            <TresMeshToonMaterial color="red" />
+          </TresMesh>
           <Suspense>
             <Text3D :size="3" :height="1" :position="[0, (gm.fieldHeight + gm.paddleHeight) * 4, -gm.fieldDepth * 0.5]"
               ref="textRef" :text="scoring" center need-updates
@@ -103,7 +105,7 @@
 <script setup lang="ts">
 import { type ShallowRef, shallowRef, computed } from 'vue';
 import { useRenderLoop } from '@tresjs/core'
-import { Text3D, Stars } from '@tresjs/cientos'
+import { Text3D, Stars, OrbitControls } from '@tresjs/cientos'
 import { gm, gs, renderPong, type SimObject3D } from '@/includes/gameEngine'
 import type { Object3D } from 'three'
 
@@ -116,6 +118,7 @@ const scoring = computed(() => {
 
 const cameraRef: ShallowRef<Object3D | null> = shallowRef(null)
 const ballRef: ShallowRef<SimObject3D | null> = shallowRef(null)
+const testBallRef: ShallowRef<SimObject3D | null> = shallowRef(null)
 const paddle1Ref: ShallowRef<SimObject3D | null> = shallowRef(null)
 const paddle2Ref: ShallowRef<SimObject3D | null> = shallowRef(null)
 
@@ -132,10 +135,28 @@ const MovePaddle = (e: MouseEvent): void => {
   gs.posY = e.offsetY
 }
 
+// A loop that switch the TestBall position each second
+setInterval(() => {
+  gs.testBallPos.x = Math.random() * gm.fieldWidth - gm.fieldWidth * 0.5
+  gs.testBallPos.z = Math.random() * gm.fieldDepth - gm.fieldDepth * 0.5
+}, 1000)
+
+
 onLoop(({ delta }) => {
   gs.fps = delta
-  if (ballRef.value != null && paddle1Ref.value != null && paddle2Ref.value != null) {
-    renderPong(delta, ballRef.value, paddle1Ref.value, paddle2Ref.value)
+  if (
+    ballRef.value != null
+    && testBallRef.value != null
+    && paddle1Ref.value != null
+    && paddle2Ref.value != null
+  ) {
+    renderPong(
+      delta,
+      ballRef.value,
+      testBallRef.value,
+      paddle1Ref.value,
+      paddle2Ref.value
+    )
   }
 })
 
