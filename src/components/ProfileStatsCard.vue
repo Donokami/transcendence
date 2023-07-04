@@ -115,16 +115,15 @@ import { useUserStore } from '../stores/UserStore'
 const userStore = useUserStore();
 
 // **************************** //
-// loggedUser related variables //
+// loggedUser RELATED VARIABLES //
 // **************************** //
 
 const {loggedUser} = storeToRefs(userStore);
 const nFriendRequests = ref(0);
-const friendList = ref([]);
 const isFriend = ref(false);
 
 // ****************************** //
-// observedUser related variables //
+// observedUser RELATED VARIABLES //
 // ****************************** //
 
 const props = defineProps({
@@ -144,7 +143,7 @@ const statusColor = computed(() => {
 });
 
 // *************** //
-// Other variables //
+// OTHER VARIABLES //
 // *************** //
 
 const iconSendRequest = ref('mdi:account-plus-outline');
@@ -174,6 +173,8 @@ const sendFriendRequest = async () => {
 // *********************** //
 
 const getFriendRequestsNumber = async () => {
+  if (!loggedUser.value)
+    return 0;
   try {
     const response = await userStore.fetchFriendRequests(loggedUser.value.id);
     nFriendRequests.value = response.length;
@@ -184,37 +185,12 @@ const getFriendRequestsNumber = async () => {
 };
 
 // ************* //
-// getFriendList //
-// ************* //
-
-const getFriendList = async () => {
-  try {
-    const response = await userStore.fetchFriendList(loggedUser.value.id);
-    friendList.value = response;
-    console.log(`[ProfileStatsCard] - friendList : `, friendList.value);
-  } catch (error) {
-    console.error(`[ProfileStatsCard] - Failed to fetch friends! Error: `, error);
-  }
-};
-
-// ************* //
 // checkIsFriend //
 // ************* //
 
-// const checkIsFriend = () => {
-//   console.log(`friendList value :`, friendList.value);
-//   const friend = friendList.value.find((friend: User) => friend.id === observedUser.value.id);
-//   isFriend.value = !!friend;
-//   console.log(`[ProfileStatsCard] - isFriend : `, isFriend.value);
-// };
-
 const checkIsFriend = async () => {
   try {
-    const response = await userStore.fetchFriendList(loggedUser.value.id);
-    friendList.value = response;
-    console.log(`[ProfileStatsCard] - friendList : `, friendList.value);
-
-    const friend = friendList.value.find((friend: User) => friend.id === observedUser.value.id);
+    const friend = userStore.friendList.find((friend: User) => friend.id === observedUser.value.id);
     isFriend.value = !!friend;
     console.log(`[ProfileStatsCard] - isFriend : `, isFriend.value);
   } catch (error) {
@@ -240,12 +216,11 @@ const blockUser = async () => {
 // ********************* //
 
 onBeforeMount(getFriendRequestsNumber);
-onBeforeMount(getFriendList);
 onBeforeMount(checkIsFriend);
 
 onBeforeRouteUpdate(async (to, from) => {
   await getFriendRequestsNumber();
-  await getFriendList();
+  await userStore.refreshFriendList();
   await checkIsFriend();
 });
 

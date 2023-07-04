@@ -4,6 +4,7 @@ import type { User } from '@/types/User'
 export const useUserStore = defineStore('users', {
   state: () => ({
     loggedUser: null as unknown as User | null,
+    friendList: [] as User[],
     twoFactorEnabled: false,
     tempUserId: null as unknown as string | null
     // selectedUser: null as unknown as User,
@@ -74,7 +75,7 @@ export const useUserStore = defineStore('users', {
         if (user) {
         this.loggedUser = user;
         this.twoFactorEnabled = user.isTwoFactorEnabled
-      }
+        }
       } catch (error) {
         console.log(error);
       }
@@ -125,12 +126,43 @@ export const useUserStore = defineStore('users', {
       return response.json();
     },
 
+    // ***************** //
+    // refreshFriendList //
+    // ***************** //
+
+    async refreshFriendList() {
+      if (!this.loggedUser)
+        return [];
+      try {
+        const response = await this.fetchFriendList(this.loggedUser.id);
+        this.friendList = response;
+        console.log(`[UserStore] - friendList : `, this.friendList);
+      } catch (error) {
+        console.error(`[UserStore] - Failed to fetch friends! Error: `, error);
+      }
+    },
+
     // *************** //
     // fetchFriendList //
     // *************** //
 
     async fetchFriendList(id: string) {
       const response = await fetch(`http://localhost:3000/api/social/${id}/friend-list`, {
+        method: 'GET',
+        credentials: 'include',
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    },
+
+    // **************** //
+    // fetchBlockedList //
+    // **************** //
+
+    async fetchBlockedList(id: string) {
+      const response = await fetch(`http://localhost:3000/api/social/${id}/blocked-list`, {
         method: 'GET',
         credentials: 'include',
       })

@@ -11,6 +11,6 @@ export interface Friendship {
   id: string;
   inActionUserId: string;
   status: FriendshipStatus;
-  userA: User;
-  userB: User;
+  sender: User;
+  receiver: User;
 }

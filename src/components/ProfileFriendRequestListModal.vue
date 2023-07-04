@@ -19,10 +19,10 @@
             <ul class="menu bg-base-100 w-full">
                 <li v-for="request in friendRequests" :key="request.id">
                 <a class="flex p-1">
-                    <span class="block">{{ request.userA.username }}</span>
-                    <button class="hover:bg-black hover:text-white" @click="acceptRequest(request.userA.id)">Accept</button>
-                    <button class="hover:bg-black hover:text-white" @click="rejectRequest(request.userA.id)">Reject</button>
-                    <button class="hover:bg-black hover:text-white" @click="blockUser(request.userA.id)">Block User</button>
+                    <span class="block">{{ request.sender.username }}</span>
+                    <button class="hover:bg-black hover:text-white" @click="acceptRequest(request.sender.id)">Accept</button>
+                    <button class="hover:bg-black hover:text-white" @click="rejectRequest(request.sender.id)">Reject</button>
+                    <button class="hover:bg-black hover:text-white" @click="blockUser(request.sender.id)">Block User</button>
                 </a>
                 </li>
             </ul>
@@ -66,14 +66,16 @@ const emit = defineEmits(['friendRequestAccepted'])
 // ***************** //
 
 const getFriendRequests = async () => {
-    try {
-        const response = await userStore.fetchFriendRequests(loggedUser.value.id);
-        friendRequests.value = response;
-        console.log(`[ProfileFriendRequestListModal] - Friend request fetched successfully`);
-    }
-    catch (error) {
-        console.error(`[ProfileStatsCard] - Failed to fetch friend requests ! Error : `, error);
-    }
+  if (!loggedUser.value)
+    return 0
+  try {
+    const response = await userStore.fetchFriendRequests(loggedUser.value.id);
+    friendRequests.value = response;
+    console.log(`[ProfileFriendRequestListModal] - Friend request fetched successfully`);
+  }
+  catch (error) {
+    console.error(`[ProfileStatsCard] - Failed to fetch friend requests ! Error : `, error);
+  }
 };
 
 // ************* //
