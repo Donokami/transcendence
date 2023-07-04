@@ -17,9 +17,9 @@ import { Message } from '@/modules/channels/entities/message.entity';
 
 @Entity()
 export class User {
-  // **************** //
-  // USER IDENTIFIERS //
-  // **************** //
+  // ******************* //
+  // USER AUTHENTICATION //
+  // ******************* //
 
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -35,6 +35,12 @@ export class User {
 
   @Column({ nullable: true })
   profilePicture: string;
+
+  @Column({ nullable: true })
+  twoFactorSecret: string;
+
+  @Column({ default: false })
+  isTwoFactorEnabled: boolean;
 
   // ****************** //
   // OTHER INFORMATIONS //
@@ -65,12 +71,6 @@ export class User {
   // ************************* //
   // CHAT RELATED INFORMATIONS //
   // ************************* //
-
-  @Column({ nullable: true })
-  twoFactorSecret: string;
-
-  @Column({ default: false })
-  isTwoFactorEnabled: boolean;
 
   @JoinTable()
   @ManyToOne(() => Channel, (channel: Channel) => channel.members)

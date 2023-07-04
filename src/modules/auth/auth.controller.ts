@@ -14,9 +14,9 @@ import { Serialize } from '@/core/interceptors/serialize.interceptor';
 import { UserDto } from '@/modules/users/dtos/user.dto';
 import { RegisterUserDto } from '@/modules/users/dtos/register-user.dto';
 import { SignInUserDto } from '@/modules/users/dtos/signin-user.dto';
-import { VerifyTokenDto } from './dtos/verify-token.dto';
 
 import { AuthService } from './auth.service';
+import { VerifyTokenDto } from './dtos/verify-token.dto';
 
 @Controller('auth')
 @Serialize(UserDto)

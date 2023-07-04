@@ -5,13 +5,13 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 
+import * as qrcode from 'qrcode';
+import { authenticator } from 'otplib';
 import { promisify } from 'util';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 
 import { UsersService } from '@/modules/users/users.service';
 import { UserDetails } from './utils/types';
-import { authenticator } from 'otplib';
-import * as qrcode from 'qrcode';
 
 const scrypt = promisify(_scrypt);
 
