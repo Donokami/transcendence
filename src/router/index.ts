@@ -1,10 +1,11 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import type { RouteRecordRaw } from "vue-router";
+import type { RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '../stores/UserStore'
 import AuthView from '../views/AuthView.vue'
 import ChatView from '../views/ChatView.vue'
 import GameView from '../views/GameView.vue'
 import HomeView from '../views/HomeView.vue'
+import MfaView from '../views/MfaView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import StatsView from '../views/StatsView.vue'
@@ -14,6 +15,11 @@ const routes: Array<RouteRecordRaw> = [
     component: AuthView,
     path: '/auth',
     name: 'auth'
+  },
+  {
+    component: MfaView,
+    path: '/mfa',
+    name: 'mfa'
   },
   {
     component: HomeView,

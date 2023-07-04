@@ -2,24 +2,25 @@ import type { Channel } from './Channel'
 import type { Friendship } from './Friendship';
 
 export interface User {
-  // **************** //
-  // User Identifiers //
-  // **************** //
+  // ******************* //
+  // USER AUTHENTICATION //
+  // ******************* //
 
   id: string;
   username: string
   email: string
   password: string
   profilePicture: string
+  isTwoFactorEnabled: boolean
   
   // ****************** //
-  // Other Informations //
+  // OTHER INFORMATIONS //
   // ****************** //
 
   status: string
 
   // ******************************* //
-  // Friendship Related Informations //
+  // FRIENDSHIP RELATED INFORMATIONS //
   // ******************************* //
 
   friends: Array<User>
@@ -28,7 +29,7 @@ export interface User {
   receivedRequest: Array<Friendship>
 
   // ************************* //
-  // Chat Related Informations //
+  // CHAT RELATED INFORMATIONS //
   // ************************* //
 
   channels: Array<Channel>
@@ -37,7 +38,7 @@ export interface User {
   messages: Array<Message>
 
   // ************************** //
-  // Stats Related Informations //
+  // STATS RELATED INFORMATIONS //
   // ************************** //
 
   rank: number

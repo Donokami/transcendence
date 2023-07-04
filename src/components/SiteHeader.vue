@@ -34,6 +34,7 @@
           </div>
         </label>
         <ul
+          v-if="userStore.loggedUser"
           tabindex="0"
           class="menu menu-compact dropdown-content shadow bg-base-100 -ml-[75px] mt-1"
         >
@@ -52,8 +53,7 @@
   // ******* //
 
   import { useRouter } from 'vue-router'
-
-  import { useUserStore } from '../stores/UserStore'
+  import { useUserStore } from '../stores/UserStore' 
 
   // ******************** //
   // VARIABLE DEFINITIONS //
@@ -69,23 +69,9 @@
   // ****** //
   // logout //
   // ****** //
-
+    
   const logout = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/auth/signout', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-      })
-      if (response.ok) {      
-        await router.push('/auth')
-      }
-      else {
-        throw new Error('Something went wrong');
-      } 
-    }
-    catch (error) {
-      console.log(`[SiteHeader] - Failed to logout ! Error : `, error)
-      throw error
-    }
-  } 
+    await userStore.signOut()
+    router.push('/auth')
+  }
 </script>

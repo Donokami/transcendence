@@ -87,10 +87,15 @@
 
     try {
       const response = await userStore.signIn(values)
-      if (response.ok) {      
-        alertColor.value = 'bg-green-500'
-        alertMsg.value = 'Account found in database!'
-        setTimeout(() => {router.push('/')}, 2000);
+
+      if (response.ok) {
+        if (userStore.twoFactorEnabled) {
+          router.push('/mfa')
+        } else {
+          alertColor.value = 'bg-green-500'
+          alertMsg.value = 'Account found in database!'
+          setTimeout(() => {router.push('/')}, 2000);
+        }
       }
       else {
         alertColor.value = 'bg-red-500'
@@ -129,7 +134,11 @@
             popup.close();
           }
           await userStore.refreshUser();
-          router.push('/');
+          if (userStore.twoFactorEnabled) {
+            router.push('/mfa');
+          } else {
+            router.push('/');
+          }
         }
       } catch (error) {
         console.error('Error fetching user data:', error);

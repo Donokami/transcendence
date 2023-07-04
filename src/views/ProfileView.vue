@@ -6,11 +6,19 @@
       <profile-stats-card v-if="observedUser" :observedUser="observedUser"></profile-stats-card>
       <div class="form-control">
         <label class="cursor-pointer p-6">
-          <span class="stat-value text-xl">{{ authMessage }}</span>
-          <span class="px-6 align-middle" @click="switchAuthMessage">
-            <input type="checkbox" class="toggle rounded-none" />
+          <span class="stat-value text-xl">2FA</span>
+          <span class="px-6 align-middle">
+            <input 
+              type="checkbox" 
+              class="toggle rounded-none" 
+              v-model="userStore.twoFactorEnabled" 
+              @click="switchAuthMessage" 
+            />
           </span>
         </label>
+        <div v-if="qrCodeUrl" class="px-2">
+          <img :src="qrCodeUrl" alt="QR Code">
+        </div>
       </div>
     </div>
 
@@ -57,6 +65,8 @@ const route = useRoute();
 const userStore = useUserStore();
 
 const authMessage = ref('Activate 2FA')
+const qrCodeUrl= ref('')
+
 const tableState = ref('ranking')
 
 const observedUser = ref(null) as Ref<User | null>;
@@ -69,14 +79,30 @@ const observedUser = ref(null) as Ref<User | null>;
 // switchAuthMessage //
 // ***************** //
 
-const switchAuthMessage = () => {
-  if (authMessage.value === 'Activate 2FA') {
-    authMessage.value = 'Deactivate 2FA'
+// const switchAuthMessage = () => {
+//   if (authMessage.value === 'Activate 2FA') {
+  //   }
+  //   else {
+    //     authMessage.value = 'Activate 2FA'
+    //   }
+    // }
+    
+const switchAuthMessage = async () => {
+  try {
+    const data = await userStore.enableTwoFactor();
+    if (data.isTwoFactorEnabled) {
+      qrCodeUrl.value = data.dataUrl
+      authMessage.value = 'Deactivate 2FA'
+    }
+    else {
+      qrCodeUrl.value = '';
+      authMessage.value = 'Activate 2FA'
+    }
   }
-  else {
-    authMessage.value = 'Activate 2FA'
+  catch (error) {
+    console.error(error);
   }
-}
+};
 
 // ********* //
 // fetchUser //
