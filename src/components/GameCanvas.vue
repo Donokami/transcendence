@@ -7,12 +7,14 @@
           <TresAmbientLight color="#ffffff" :position="[0, 3, 0]" :intensity="1" />
           <TresDirectionalLight color="#ffffff" :intensity="2" />
           <!-- <TresDirectionalLight color="#ffaaaa" :position="[0, 5, 3]" :intensity="0.5" /> -->
-          <TresPerspectiveCamera :position="[
-            paddlePos(gs.posX),
-            5,
-            gm.fieldDepth
-          ]
-            " :fov="25" :aspect="1" :near="0.1" :far="1000" />
+          <TresPerspectiveCamera
+            :position="[
+              paddlePos(gs.posX),
+              5,
+              gm.fieldDepth
+            ]"
+            ref="cameraRef"
+            :fov="25" :aspect="1" :near="0.1" :far="1000" />
           <!-- <TresPerspectiveCamera :position="[
             10,
             40,
@@ -103,6 +105,7 @@ import { type ShallowRef, shallowRef, computed } from 'vue';
 import { useRenderLoop } from '@tresjs/core'
 import { Text3D, Stars } from '@tresjs/cientos'
 import { gm, gs, renderPong, type SimObject3D } from '@/includes/gameEngine'
+import type { Object3D } from 'three'
 
 // const groupRef: ShallowRef = shallowRef(null)
 // const envRef: ShallowRef = shallowRef(null)
@@ -111,6 +114,7 @@ const scoring = computed(() => {
   return `${gs.score1} - ${gs.score2}`
 })
 
+const cameraRef: ShallowRef<Object3D | null> = shallowRef(null)
 const ballRef: ShallowRef<SimObject3D | null> = shallowRef(null)
 const paddle1Ref: ShallowRef<SimObject3D | null> = shallowRef(null)
 const paddle2Ref: ShallowRef<SimObject3D | null> = shallowRef(null)
@@ -131,7 +135,7 @@ const MovePaddle = (e: MouseEvent): void => {
 onLoop(({ delta }) => {
   gs.fps = delta
   if (ballRef.value != null && paddle1Ref.value != null && paddle2Ref.value != null) {
-    renderPong(ballRef.value, paddle1Ref.value, paddle2Ref.value)
+    renderPong(delta, ballRef.value, paddle1Ref.value, paddle2Ref.value)
   }
 })
 

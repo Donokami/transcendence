@@ -1,14 +1,13 @@
-import type { Object3D } from 'three'
+import { Vector3, type Object3D } from 'three'
 import { reactive } from 'vue'
 
 const gs = reactive({
   score1: 0,
   score2: 0,
-  gameOver: false,
   posX: 0,
   posY: 0,
   fps: 0,
-  activeCanvas: false
+  activeCanvas: false,
 })
 
 const gm = {
@@ -45,12 +44,12 @@ function startBallMov(ball: SimObject3D): void {
   ball.stopped = false
 }
 
-function updateBallPosition(ball: SimObject3D): void {
+function updateBallPosition(delta: number, ball: SimObject3D): void {
   const ballPos = ball.position
 
   // update the ballRef's position.
-  ballPos.x += ball.velocity.x
-  ballPos.z += ball.velocity.z
+  ballPos.x += ball.velocity.x * delta * 60
+  ballPos.z += ball.velocity.z * delta * 60
 
   // add an arc to the ballRef's flight. Comment this out for boring, flat pong.
   // ballPos.y = -(((ballPos.z - 1) * (ballPos.z - 1)) / 5000) + 2
@@ -76,7 +75,7 @@ function isSideCollision(ball: SimObject3D): boolean {
   const ballX = ball.position.x
   const halfFieldWidth = gm.fieldWidth * 0.5
   return (
-    ballX >= halfFieldWidth - gm.ballRadius * 0.5 || ballX <= -halfFieldWidth + gm.ballRadius * 0.5
+    ballX >= halfFieldWidth + gm.ballRadius * 0.5 || ballX <= -halfFieldWidth - gm.ballRadius * 0.5
   )
 }
 
@@ -101,7 +100,7 @@ function isBallAlignedWithPaddle(ball: SimObject3D, paddle: SimObject3D): boolea
   return ballX > paddleX - halfPaddleWidth && ballX < paddleX + halfPaddleWidth
 }
 
-function processBallMovement(ball: SimObject3D, paddle1: SimObject3D, paddle2: SimObject3D): void {
+function processBallMovement(delta: number, ball: SimObject3D, paddle1: SimObject3D, paddle2: SimObject3D): void {
   if (ball.stopped) {
     return
   }
@@ -113,9 +112,10 @@ function processBallMovement(ball: SimObject3D, paddle1: SimObject3D, paddle2: S
     startBallMov(ball)
   }
 
-  updateBallPosition(ball)
+  updateBallPosition(delta, ball)
 
   if (isSideCollision(ball)) {
+    console.log('side collision')
     ball.velocity.x *= -1
     ball.velocity.y *= -1
   }
@@ -148,22 +148,24 @@ function processBallMovement(ball: SimObject3D, paddle1: SimObject3D, paddle2: S
   }
 }
 
-function processCpuPaddle(ball: SimObject3D, paddle2: SimObject3D): void {
+function processCpuPaddle(delta: number, ball: SimObject3D, paddle2: SimObject3D): void {
   const ballPos = ball.position
   const cpuPos = paddle2.position
-  let newPos = cpuPos.x
 
-  if (cpuPos.x - gm.paddleRatio * gm.fieldWidth * 0.5 > ballPos.x) {
-    newPos -= cpuPos.x - ballPos.x
-  } else if (cpuPos.x - gm.paddleRatio * gm.fieldWidth * 0.5 < ballPos.x) {
-    newPos += ballPos.x - cpuPos.x
-  }
+  // if (cpuPos.x - gm.paddleRatio * gm.fieldWidth * 0.5 > ballPos.x) {
+
+  // } else if (cpuPos.x - gm.paddleRatio * gm.fieldWidth * 0.5 < ballPos.x) {
+  //   newPos += (ballPos.x - cpuPos.x)
+  // }
+
+  // const nextPos: Vector3 = new Vector3(ballPos.x, cpuPos.y, cpuPos.z)
+  cpuPos.x = cpuPos.x * (1 - delta) + ballPos.x * delta
 
   // To prevent the bot from going out of bounds, we need to clamp the new position.
-  if (newPos < 0)
-    newPos = Math.max(newPos, -gm.fieldWidth * 0.5 + gm.paddleRatio * gm.fieldWidth * 0.5)
-  else newPos = Math.min(newPos, gm.fieldWidth * 0.5 - gm.paddleRatio * gm.fieldWidth * 0.5)
-  cpuPos.x = newPos
+  // if (newPos < 0)
+  //   newPos = Math.max(newPos, -gm.fieldWidth * 0.5 + gm.paddleRatio * gm.fieldWidth * 0.5)
+  // else newPos = Math.min(newPos, gm.fieldWidth * 0.5 - gm.paddleRatio * gm.fieldWidth * 0.5)
+  // cpuPos.x = newPos
 }
 
 function resetBall(ball: SimObject3D): void {
@@ -173,9 +175,15 @@ function resetBall(ball: SimObject3D): void {
   ball.stopped = true
 }
 
-function renderPong(ball: SimObject3D, paddle1: SimObject3D, paddle2: SimObject3D): void {
-  processCpuPaddle(ball, paddle2)
-  processBallMovement(ball, paddle1, paddle2)
+function renderPong(delta: number, ball: SimObject3D, paddle1: SimObject3D, paddle2: SimObject3D): void {
+  processCpuPaddle(delta, ball, paddle2)
+  processBallMovement(delta, ball, paddle1, paddle2)
 }
 
-export { gm, gs, renderPong, resetBall, type SimObject3D }
+export {
+  gm,
+  gs,
+  renderPong,
+  resetBall,
+  type SimObject3D
+}
