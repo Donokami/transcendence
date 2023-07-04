@@ -7,9 +7,9 @@ import { Message } from '@/modules/channels/entities/message.entity';
 import { User } from '@/modules/users/user.entity';
 
 export class UserDto {
-  // **************** //
-  // USER IDENTIFIERS //
-  // **************** //
+  // ******************* //
+  // USER AUTHENTICATION //
+  // ******************* //
 
   @ApiProperty()
   @Expose()
@@ -26,6 +26,14 @@ export class UserDto {
   @ApiProperty()
   @Expose()
   profilePicture: string;
+
+  @ApiProperty()
+  @Expose()
+  isTwoFactorEnabled: string;
+
+  @ApiProperty()
+  @Expose()
+  dataUrl?: string;
 
   // ****************** //
   // OTHER INFORMATIONS //

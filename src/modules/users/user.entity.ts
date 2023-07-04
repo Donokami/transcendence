@@ -66,6 +66,12 @@ export class User {
   // CHAT RELATED INFORMATIONS //
   // ************************* //
 
+  @Column({ nullable: true })
+  twoFactorSecret: string;
+
+  @Column({ default: false })
+  isTwoFactorEnabled: boolean;
+
   @JoinTable()
   @ManyToOne(() => Channel, (channel: Channel) => channel.members)
   channel: Channel;
