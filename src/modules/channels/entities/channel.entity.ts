@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   ManyToMany,
+  OneToOne,
 } from 'typeorm';
 
 import { User } from '@/modules/users/user.entity';
@@ -14,13 +15,13 @@ import { Message } from './message.entity';
 
 @Entity()
 export class Channel {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   name: string;
 
-  @Column()
+  @OneToOne(() => User)
   ownerId: string;
 
   @OneToMany(() => User, (user: User) => user.channel)

@@ -14,12 +14,12 @@ import { ChannelsService } from './channels.service';
 import { CreateChannelDto } from './dtos/create-channel.dto';
 import { UpdateChannelDto } from './dtos/update-channel.dto';
 
-import { RequestWithUser } from './interfaces/request-with-user.interface';
+import { RequestWithUser } from '@/core/types/request-with-user';
 import { OwnershipGuard } from './guards/ownership.guard';
 
 @Controller('channels')
 export class ChannelsController {
-  constructor(private readonly channelsService: ChannelsService) {}
+  constructor(private readonly channelsService: ChannelsService) { }
 
   @Get(':id')
   async findOne(@Param('id') id: string) {

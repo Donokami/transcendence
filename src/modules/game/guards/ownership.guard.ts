@@ -4,11 +4,11 @@ import { Observable } from 'rxjs';
 
 import { type RequestWithUser } from '@/core/types/request-with-user';
 
-import { ChannelsService } from '../channels.service';
+import { GameService } from '../game.service';
 
 @Injectable()
 export class OwnershipGuard implements CanActivate {
-  constructor(private readonly channelsService: ChannelsService) { }
+  constructor(private readonly gameService: GameService) { }
 
   canActivate(
     context: ExecutionContext,
@@ -16,11 +16,11 @@ export class OwnershipGuard implements CanActivate {
     return new Promise(async (resolve) => {
       try {
         const req = context.switchToHttp().getRequest<RequestWithUser>();
-        const channelId = req.params.id;
+        const gameId = req.params.id;
 
-        const channel = await this.channelsService.findOne(channelId);
+        const game = await this.gameService.findOne(gameId);
 
-        if (channel.ownerId === req.user.id) {
+        if (game.ownerId === req.user.id) {
           resolve(true);
         }
 

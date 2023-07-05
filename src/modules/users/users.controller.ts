@@ -21,13 +21,15 @@ import { UserDto } from './dtos/user.dto';
 import { UpdateUserDto } from './dtos/update-user.dto';
 import { CurrentUser } from './decorators/current-user.decorator';
 
+import { OwnershipGuard } from './guards/ownership.guard';
+
 @Controller('user')
 @Serialize(UserDto)
 export class UsersController {
   constructor(
     private usersService: UsersService,
     private readonly socialService: SocialService,
-  ) {}
+  ) { }
 
   // ****** //
   // whoAmI //
@@ -54,6 +56,7 @@ export class UsersController {
   // ************ //
 
   @Get('/:id')
+  @UseGuards(AuthGuard)
   async findUserById(@Param('id') id: string): Promise<User> {
     const user = await this.usersService.findOneById(id);
     if (!user) {
@@ -67,6 +70,7 @@ export class UsersController {
   // ********** //
 
   @Patch('/:id')
+  @UseGuards(AuthGuard)
   updateUser(
     @Param('id') id: string,
     @Body() body: UpdateUserDto,
@@ -79,6 +83,8 @@ export class UsersController {
   // ********** //
 
   @Delete('/:id')
+  @UseGuards(AuthGuard)
+  @UseGuards(OwnershipGuard)
   removeUser(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
