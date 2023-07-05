@@ -1,7 +1,11 @@
 import { Vector3, type Object3D } from 'three'
 import { reactive } from 'vue'
+import { io } from 'socket.io-client'
+
+const socket = io('http://localhost:5000')
 
 const gs = reactive({
+  connected: false,
   score1: 0,
   score2: 0,
   posX: 0,
@@ -22,6 +26,20 @@ const gm = {
   paddleDepth: 1,
   ballRadius: 0.8
 }
+
+socket.on('connect', () => {
+  gs.connected = true
+  console.log('connected')
+})
+
+socket.on('coordinates', (...args) => {
+  console.log(args)
+  // gs.testBallPos = new Vector3(x, y, z)
+})
+
+socket.onAny((eventName, ...args) => {
+  console.log(eventName, args)
+})
 
 type SimObject3D = Object3D & {
   velocity: {

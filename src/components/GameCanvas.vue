@@ -136,10 +136,10 @@ const MovePaddle = (e: MouseEvent): void => {
 }
 
 // A loop that switch the TestBall position each second
-setInterval(() => {
-  gs.testBallPos.x = Math.random() * gm.fieldWidth - gm.fieldWidth * 0.5
-  gs.testBallPos.z = Math.random() * gm.fieldDepth - gm.fieldDepth * 0.5
-}, 1000)
+// setInterval(() => {
+//   gs.testBallPos.x = Math.random() * gm.fieldWidth - gm.fieldWidth * 0.5
+//   gs.testBallPos.z = Math.random() * gm.fieldDepth - gm.fieldDepth * 0.5
+// }, 1000)
 
 
 onLoop(({ delta }) => {

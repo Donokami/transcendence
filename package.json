@@ -19,12 +19,11 @@
     "@vee-validate/rules": "^4.9.6",
     "daisyui": "^2.52.0",
     "pinia": "^2.1.4",
-    "socket.io-client": "^4.6.2",
+    "socket.io-client": "^4.7.1",
     "three": "^0.153.0",
     "vee-validate": "^4.9.6",
     "vue": "^3.3.4",
-    "vue-router": "^4.2.2",
-    "vue-socket.io": "^3.0.10"
+    "vue-router": "^4.2.2"
   },
   "devDependencies": {
     "@iconify/tailwind": "^0.1.3",
