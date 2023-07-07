@@ -173,11 +173,11 @@ const blockUser = async () => {
   }
 };
 
-// **************** //
-// checkIsBlockedBy //
-// **************** //
+// ****************** //
+// checkBlockedStatus //
+// ****************** //
 
-const checkIsBlockedBy = async () => {
+const checkBlockedStatus = async () => {
   if (!loggedUser.value || !observedUser.value)
     return;
   try {
@@ -201,11 +201,11 @@ const checkIsBlockedBy = async () => {
   }
 }
 
-// ************* //
-// checkIsFriend //
-// ************* //
+// ****************** //
+// searchInFriendList //
+// ****************** //
 
-const checkIsFriend = async (user: User) => {
+const searchInFriendList = async (user: User) => {
   if (!user)
     return;
   try {
@@ -272,8 +272,8 @@ onBeforeMount(async () => {
   await userStore.refreshFriendList();
 
   if (loggedUser.value && observedUser.value && (observedUser.value.id !== loggedUser.value.id)) {
-    await checkIsFriend(observedUser.value);
-    await checkIsBlockedBy();
+    await searchInFriendList(observedUser.value);
+    await checkBlockedStatus();
   }
 
   await getFriendRequestsNumber();
@@ -283,8 +283,8 @@ onBeforeRouteUpdate(async (to, from) => {
   await userStore.refreshFriendList();
 
   if (loggedUser.value && observedUser.value && (observedUser.value.id !== loggedUser.value.id)) {
-    await checkIsFriend(observedUser.value);
-    await checkIsBlockedBy();
+    await searchInFriendList(observedUser.value);
+    await checkBlockedStatus();
   }
 
   await getFriendRequestsNumber();
