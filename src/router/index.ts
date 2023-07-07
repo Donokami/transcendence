@@ -60,15 +60,14 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  const userStore = useUserStore();
+  const userStore = useUserStore()
   if (!userStore.loggedUser) {
-    await userStore.refreshUser();
+    await userStore.refreshUser()
   }
-  if (to.name !== "auth" && !userStore.loggedUser) {
-      next({ name: "auth" });
-  } 
-  else {
-    next();
+  if (to.name !== 'auth' && to.name !== 'mfa' && !userStore.loggedUser) {
+    next({ name: 'auth' })
+  } else {
+    next()
   }
 })
 

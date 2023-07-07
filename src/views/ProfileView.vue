@@ -47,6 +47,8 @@
 import { onBeforeMount, ref, type Ref} from 'vue';
 import { onBeforeRouteUpdate, useRoute } from 'vue-router';
 
+import { storeToRefs } from 'pinia';
+
 import type { User } from '@/types/User';
 
 import { useUserStore } from '@/stores/UserStore';
@@ -56,6 +58,7 @@ import ProfileFriendRequestListModal from '@/components/ProfileFriendRequestList
 import SiteHeader from '@/components/SiteHeader.vue'
 import StatsRankingTable from '@/components/StatsRankingTable.vue'
 import StatsMatchHistoryTable from '@/components/StatsMatchHistoryTable.vue'
+
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -69,11 +72,30 @@ const qrCodeUrl= ref('')
 
 const tableState = ref('ranking')
 
-const observedUser = ref(null) as Ref<User | null>;
+const {observedUser} = storeToRefs(userStore);
+const {loggedUser} = storeToRefs(userStore);
 
 // ******************** //
 // FUNCTION DEFINITIONS //
 // ******************** //
+
+// ********* //
+// fetchUser //
+// ********* //
+
+const fetchUser = async (id: string | undefined) => {
+  if (id) {
+    observedUser.value = await userStore.fetchUserById(id);
+    console.log(`[ProfileView] - The current observed user is ${observedUser.value.username}`);
+  }
+  else if (loggedUser.value){
+    observedUser.value = loggedUser.value;
+    console.log(`[ProfileView] - The current observed user is ${observedUser.value.username}`);
+  }
+  else {
+    console.log(`[ProfileView] - The current observed user is not defined`);
+  }
+};
 
 // ***************** //
 // switchAuthMessage //
@@ -94,20 +116,6 @@ const switchAuthMessage = async () => {
   catch (error) {
     console.error(error);
   }
-};
-
-// ********* //
-// fetchUser //
-// ********* //
-
-const fetchUser = async (id: string | undefined) => {
-  if (id) {
-    observedUser.value = await userStore.fetchUserById(id);
-  }
-  else {
-    observedUser.value = userStore.loggedUser;
-  }
-  console.log(`[ProfileView] - The current observed user is ${observedUser.value.username}`);
 };
 
 // ********************* //

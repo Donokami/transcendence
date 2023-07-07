@@ -27,6 +27,7 @@ export interface User {
   nFriends: number
   sentRequest: Array<Friendship>
   receivedRequest: Array<Friendship>
+  isBlockedBy: boolean;
 
   // ************************* //
   // CHAT RELATED INFORMATIONS //

@@ -9,9 +9,9 @@
           </div>
         </div>
       </div>
-      <div class="stat-value text-black text-xl">{{ observedUser.username }}</div>
+      <div v-if="observedUser" class="stat-value text-black text-xl">{{ observedUser.username }}</div>
       <div class="stat-title text-md">Status:</div>
-      <div class="stat-desc" :class="statusColor">{{ observedUser.status }}</div>
+      <div v-if="observedUser" class="stat-desc" :class="statusColor">{{ observedUser.status }}</div>
     </div>
 
     <div class="stat border-none">
@@ -23,7 +23,7 @@
         ></iconify-icon>
       </div>
       <div class="stat-value text-xl">Rank</div>
-      <div class="stat-value text-primary">{{ observedUser.rank ?? '-' }}</div>
+      <div v-if="observedUser" class="stat-value text-primary">{{ observedUser.rank ?? '-' }}</div>
     </div>
 
     <div class="stat border-black !border-l-2">
@@ -35,14 +35,14 @@
         ></iconify-icon>
       </div>
       <div class="stat-value text-xl">Win Rate</div>
-      <div class="stat-value text-primary">{{ observedUser.winRate }} %</div>
+      <div v-if="observedUser" class="stat-value text-primary">{{ observedUser.winRate }} %</div>
     </div>
 
     <div 
       class="stat border-black !border-l-2"
-      v-if="loggedUser && (observedUser.id !== loggedUser.id)"
+      v-if="loggedUser && observedUser && (observedUser.id !== loggedUser.id)"
     >
-      <div class="stat-figure text-primary tooltip tooltip-top" v-if="isFriend === false" data-tip="Add friend">
+      <div class="stat-figure text-primary tooltip tooltip-top" v-if="isFriend === false && loggedUser.isBlockedBy == null && observedUser.isBlockedBy == null" data-tip="Add friend">
         <iconify-icon
         class="w-10 h-10"
         :icon="iconSendRequest"
@@ -53,7 +53,7 @@
         ></iconify-icon>
       </div>
         
-      <div class="stat-figure text-primary tooltip tooltip-top" v-else data-tip="Block user">
+      <div class="stat-figure text-primary tooltip tooltip-top" v-else-if="isFriend === true && loggedUser.isBlockedBy != true" data-tip="Block user">
         <iconify-icon
           class="w-10 h-10"
           :icon="iconBlockUser"
@@ -64,6 +64,17 @@
         ></iconify-icon>
       </div>
 
+      <div class="stat-figure text-primary tooltip tooltip-top" v-else-if="isFriend === false && observedUser.isBlockedBy == true" data-tip="Unblock user">
+        <iconify-icon
+          class="w-10 h-10"
+          :icon="iconUnblockUser"
+          style="color: #5d4df8"
+          @click="unblockUser"
+          @mouseover="iconUnblockUser = 'mdi:account-cancel-outline'"
+          @mouseout="iconUnblockUser = 'mdi:account-cancel'"
+        ></iconify-icon>
+      </div>
+
       <div class="stat-value text-xl">Friends</div>
       <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
 
@@ -71,7 +82,7 @@
 
     <div 
       class="stat border-black !border-l-2"
-      v-if="loggedUser && (observedUser.id === loggedUser.id)"
+      v-if="loggedUser && observedUser && (observedUser.id === loggedUser.id)"
     >
     <div class="stat-figure text-primary" v-if="nFriendRequests > 0">
     <div class="indicator">
@@ -126,19 +137,11 @@ const isFriend = ref(false);
 // observedUser RELATED VARIABLES //
 // ****************************** //
 
-const props = defineProps({
-  observedUser: {
-    type: Object as PropType<User>,
-      required: true,
-      default: () => ({}),
-    }
-  });
-
-const observedUser = computed(() => props.observedUser);
+const {observedUser} = storeToRefs(userStore);
 
 const statusColor = computed(() => {
-  if (observedUser.value.status === 'online') return 'text-[#62D49A]';
-  if (observedUser.value.status === 'offline') return 'text-red-500';
+  if (observedUser.value && observedUser.value.status === 'online') return 'text-[#62D49A]';
+  if (observedUser.value && observedUser.value.status === 'offline') return 'text-red-500';
   return 'text-gray-500';
 });
 
@@ -149,24 +152,70 @@ const statusColor = computed(() => {
 const iconSendRequest = ref('mdi:account-plus-outline');
 const iconSeeRequests = ref('mdi:account-alert-outline');
 const iconBlockUser = ref('mdi:account-cancel-outline');
+const iconUnblockUser = ref('mdi:account-cancel');
 
 // ******************** //
 // FUNCTION DEFINITIONS //
 // ******************** //
 
-// ***************** //
-// sendFriendRequest //
-// ***************** //
+// ********* //
+// blockUser //
+// ********* //
 
-const sendFriendRequest = async () => {
+const blockUser = async () => {
+  if (!observedUser.value)
+    return;
   try {
-    const response = await userStore.sendFriendRequest(observedUser.value.id);
-    console.log(`[ProfileStatsCard] - Friend request sent !`);
+    await userStore.blockUser(observedUser.value.id);
+    console.log(`[ProfileStatsCard] - User blocked !`);
+  } catch (error) {
+    console.log(`[ProfileStatsCard] - Failed to block user! Error : `, error);
   }
-  catch(error) {
-    console.error(`[ProfileStatsCard] - Failed to send friend requests ! Error : `, error);
+};
+
+// **************** //
+// checkIsBlockedBy //
+// **************** //
+
+const checkIsBlockedBy = async () => {
+  if (!loggedUser.value || !observedUser.value)
+    return;
+  try {
+    const response = await userStore.fetchBlockerId(loggedUser.value.id, observedUser.value.id);
+    console.log(`[ProfileStatsCard] - fetchBlockerId response : ${response}`);
+    if (!response) {
+      console.log(`[ProfileStatsCard] - No blocker found !`);
+      return;
+    }
+    else if (response === loggedUser.value.id) {
+      observedUser.value.isBlockedBy = true;
+      console.log(`[ProfileStatsCard] - ${observedUser.value.id} isBlockedBy : ${loggedUser.value.id}`);
+    }
+    else if (response === observedUser.value.id) {
+      loggedUser.value.isBlockedBy = true;
+      console.log(`[ProfileStatsCard] - ${loggedUser.value.id} isBlockedBy : ${observedUser.value.id}`);
+    }
+  }
+  catch (error) {
+    console.error(`[ProfileStatsCard] - Failed to fetch blocked user and check friendship! Error: `, error);
   }
 }
+
+// ************* //
+// checkIsFriend //
+// ************* //
+
+const checkIsFriend = async (user: User) => {
+  if (!user)
+    return;
+  try {
+    const friend = userStore.friendList.find((friend: User) => friend.id === user.id);
+    isFriend.value = !!friend;
+    console.log(`[ProfileStatsCard] - isFriend : `, isFriend.value);
+  } catch (error) {
+    console.error(`[ProfileStatsCard] - Failed to fetch friends and check friendship! Error: `, error);
+  }
+};
 
 // *********************** //
 // getFriendRequestsNumber //
@@ -184,30 +233,34 @@ const getFriendRequestsNumber = async () => {
   }
 };
 
-// ************* //
-// checkIsFriend //
-// ************* //
+// ***************** //
+// sendFriendRequest //
+// ***************** //
 
-const checkIsFriend = async () => {
+const sendFriendRequest = async () => {
+  if (!observedUser.value)
+    return;
   try {
-    const friend = userStore.friendList.find((friend: User) => friend.id === observedUser.value.id);
-    isFriend.value = !!friend;
-    console.log(`[ProfileStatsCard] - isFriend : `, isFriend.value);
-  } catch (error) {
-    console.error(`[ProfileStatsCard] - Failed to fetch friends and check friendship! Error: `, error);
+    await userStore.sendFriendRequest(observedUser.value.id);
+    console.log(`[ProfileStatsCard] - Friend request sent !`);
   }
-};
+  catch(error) {
+    console.error(`[ProfileStatsCard] - Failed to send friend requests ! Error : `, error);
+  }
+}
 
-// ********* //
-// blockUser //
-// ********* //
+// *********** //
+// unblockUser //
+// *********** //
 
-const blockUser = async () => {
+const unblockUser = async () => {
+  if (!observedUser.value)
+    return;
   try {
-    const response = await userStore.blockUser(observedUser.value.id);
-    console.log(`[ProfileStatsCard] - User blocked !`);
+    await userStore.unblockUser(observedUser.value.id);
+    console.log(`[ProfileStatsCard] - User unblocked !`);
   } catch (error) {
-    console.log(`[ProfileStatsCard] - Failed to block user! Error : `, error);
+    console.log(`[ProfileStatsCard] - Failed to unblock user! Error : `, error);
   }
 };
 
@@ -215,13 +268,26 @@ const blockUser = async () => {
 // VueJs LIFECYCLE HOOKS //
 // ********************* //
 
-onBeforeMount(getFriendRequestsNumber);
-onBeforeMount(checkIsFriend);
+onBeforeMount(async () => {
+  await userStore.refreshFriendList();
+
+  if (loggedUser.value && observedUser.value && (observedUser.value.id !== loggedUser.value.id)) {
+    await checkIsFriend(observedUser.value);
+    await checkIsBlockedBy();
+  }
+
+  await getFriendRequestsNumber();
+});
 
 onBeforeRouteUpdate(async (to, from) => {
-  await getFriendRequestsNumber();
   await userStore.refreshFriendList();
-  await checkIsFriend();
+
+  if (loggedUser.value && observedUser.value && (observedUser.value.id !== loggedUser.value.id)) {
+    await checkIsFriend(observedUser.value);
+    await checkIsBlockedBy();
+  }
+
+  await getFriendRequestsNumber();
 });
 
 
