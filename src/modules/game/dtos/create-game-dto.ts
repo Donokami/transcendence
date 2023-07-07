@@ -1,5 +1,6 @@
-import { IsString, IsNumber, IsBoolean } from 'class-validator';
+import { IsString, IsNumber, IsBoolean, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { User } from '@/modules/users/user.entity';
 
 export class CreateGameDto {
   @ApiProperty()
@@ -8,7 +9,8 @@ export class CreateGameDto {
 
   @ApiProperty()
   @IsString()
-  ownerId: string;
+  @IsOptional()
+  owner?: User;
 
   @ApiProperty()
   @IsBoolean()
@@ -16,9 +18,11 @@ export class CreateGameDto {
 
   @ApiProperty()
   @IsNumber()
-  members?: number;
+  @IsOptional()
+  users?: User[];
 
   @ApiProperty()
   @IsNumber()
+  @IsOptional()
   maxMembers?: number;
 }

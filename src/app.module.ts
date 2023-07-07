@@ -23,13 +23,14 @@ import { AppService } from './app.service';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const session: RequestHandler = require('cookie-session')({
   name: 'session',
-  keys: ['cookieString'],
+  keys: [config().cookieSessionKey],
 });
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      expandVariables: true,
       load: [config],
     }),
     TypeOrmModule.forRootAsync({

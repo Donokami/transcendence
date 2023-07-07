@@ -1,4 +1,9 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  Logger,
+} from '@nestjs/common';
 
 import { Observable } from 'rxjs';
 
@@ -10,6 +15,8 @@ import { GameService } from '../game.service';
 export class OwnershipGuard implements CanActivate {
   constructor(private readonly gameService: GameService) { }
 
+  private logger = new Logger(OwnershipGuard.name);
+
   canActivate(
     context: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
@@ -20,7 +27,13 @@ export class OwnershipGuard implements CanActivate {
 
         const game = await this.gameService.findOne(gameId);
 
-        if (game.ownerId === req.user.id) {
+        if (!game) {
+          this.logger.warn(`Game ${gameId} not found`);
+          resolve(false);
+        }
+
+        if (game.owner.id === req.session.userId) {
+          this.logger.verbose(`User ${req.session.userId} owns game ${gameId}`);
           resolve(true);
         }
 

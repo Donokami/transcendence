@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -19,7 +20,7 @@ import { CreateGameDto } from './dtos/create-game-dto';
 import { UpdateGameDto } from './dtos/update-game-dto';
 import { OwnershipGuard } from './guards/ownership.guard';
 import { AuthGuard } from '@/core/guards/auth.guard';
-import { PaginationDTO } from '@/core/dtos/pagination-dto';
+import { PaginationDTO } from '@/core/dtos/pagination.dto';
 
 @Controller('games')
 export class GameController {
@@ -28,7 +29,13 @@ export class GameController {
   @Get(':id')
   @UseGuards(AuthGuard)
   async findOne(@Param('id') id: string) {
-    return this.gameService.findOne(id);
+    const game = await this.gameService.findOneWithRelations(id);
+
+    if (!game) {
+      throw new NotFoundException(`There is no game under id ${id}`);
+    }
+
+    return game;
   }
 
   @Get()
@@ -55,7 +62,7 @@ export class GameController {
     @Req() req: RequestWithUser,
     @Body() createGameDto: CreateGameDto,
   ) {
-    createGameDto.ownerId = req.session.userId;
+    createGameDto.owner = req.session.userId;
     return this.gameService.create(createGameDto);
   }
 
@@ -71,5 +78,24 @@ export class GameController {
   @UseGuards(OwnershipGuard)
   async remove(@Param('id') id: string) {
     return this.gameService.remove(id);
+  }
+
+  @Post(':id/join')
+  @UseGuards(AuthGuard)
+  async join(@Param('id') id: string, @Req() req: RequestWithUser) {
+    return this.gameService.join(id, req.session.userId);
+  }
+
+  @Post(':id/leave')
+  @UseGuards(AuthGuard)
+  async leave(@Param('id') id: string, @Req() req: RequestWithUser) {
+    return this.gameService.leave(id, req.session.userId);
+  }
+
+  @Post(':id/kick/:userId')
+  @UseGuards(AuthGuard)
+  @UseGuards(OwnershipGuard)
+  async kick(@Param('id') id: string, @Param('userId') userId: string) {
+    return this.gameService.kick(id, userId);
   }
 }

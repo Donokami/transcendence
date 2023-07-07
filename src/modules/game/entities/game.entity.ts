@@ -6,13 +6,19 @@ import {
   PrimaryGeneratedColumn,
   OneToOne,
   JoinColumn,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 
 import { User } from '@/modules/users/user.entity';
+import { Logger } from '@nestjs/common';
+import { MAX_PLAYERS } from '@/core/constants';
+
+const logger = new Logger('GameEntity');
 
 export enum RoomStatus {
   OPEN = 'open',
-  CLOSED = 'closed',
+  FULL = 'full',
   INGAME = 'ingame',
 }
 
@@ -26,22 +32,25 @@ export class Game {
 
   @OneToOne(() => User)
   @JoinColumn()
-  ownerId: string;
+  owner: User;
 
   @Column({
     default: false,
   })
   isPrivate: boolean;
 
-  @Column({
-    default: 1,
-  })
-  members: number;
+  @ManyToMany(() => User)
+  @JoinTable()
+  players: User[];
+
+  @ManyToMany(() => User)
+  @JoinTable()
+  observers: User[];
 
   @Column({
-    default: 2,
+    default: MAX_PLAYERS,
   })
-  maxMembers: number;
+  maxPlayers: number;
 
   @Column({
     // type: 'enum',
@@ -52,11 +61,11 @@ export class Game {
 
   @AfterInsert()
   logInsert() {
-    console.log(`Room with id ${this.id} inserted`);
+    logger.verbose(`Game with id ${this.id} inserted`);
   }
 
   @AfterRemove()
   logRemove() {
-    console.log(`Room with id ${this.id} removed`);
+    logger.verbose(`An game has been removed`);
   }
 }
