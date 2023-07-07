@@ -44,7 +44,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     private readonly userService: UsersService,
     private readonly channelService: ChannelsService,
-  ) {}
+  ) { }
 
   async handleConnection(client: UserSocket): Promise<void> {
     const { user } = client.request;

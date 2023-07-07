@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   ManyToMany,
+  OneToOne,
 } from 'typeorm';
 
 import { User } from '@/modules/users/user.entity';
@@ -21,13 +22,17 @@ export class Channel {
 
   private logger = new Logger(Channel.name);
 
-  @PrimaryGeneratedColumn()
+  // ************* //
+  // ENTITY FIELDS //
+  // ************* //
+
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
   name: string;
 
-  @Column()
+  @OneToOne(() => User)
   ownerId: string;
 
   @OneToMany(() => User, (user: User) => user.channel)

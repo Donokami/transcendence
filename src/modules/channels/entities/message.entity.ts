@@ -27,7 +27,7 @@ export class Message {
   // ENTITY FIELDS //
   // ************* //
 
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
