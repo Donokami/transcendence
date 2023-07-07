@@ -11,12 +11,24 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
+import { Logger } from '@nestjs/common';
+
 import { Channel } from '@/modules/channels/entities/channel.entity';
 import { Friendship } from '@/modules/social/entities/friendship.entity';
 import { Message } from '@/modules/channels/entities/message.entity';
 
 @Entity()
 export class User {
+  // ****** //
+  // LOGGER //
+  // ****** //
+
+  private logger = new Logger(User.name);
+
+  // ************* //
+  // ENTITY FIELDS //
+  // ************* //
+
   // ******************* //
   // USER AUTHENTICATION //
   // ******************* //
@@ -115,16 +127,16 @@ export class User {
 
   @AfterInsert()
   logInsert() {
-    console.log(`User with id ${this.id} inserted`);
+    this.logger.verbose(`User with id ${this.id} inserted`);
   }
 
   @AfterRemove()
   logRemove() {
-    console.log(`User with id ${this.id} removed`, this.id);
+    this.logger.verbose(`User with id ${this.id} removed`, this.id);
   }
 
   @AfterUpdate()
   logUpdate() {
-    console.log(`User with id ${this.id} updated`, this.id);
+    this.logger.verbose(`User with id ${this.id} updated`, this.id);
   }
 }

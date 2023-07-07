@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   NotFoundException,
   Param,
   Patch,
@@ -24,10 +25,24 @@ import { CurrentUser } from './decorators/current-user.decorator';
 @Controller('user')
 @Serialize(UserDto)
 export class UsersController {
+  // *********** //
+  // CONSTRUCTOR //
+  // *********** //
+
   constructor(
     private usersService: UsersService,
     private readonly socialService: SocialService,
   ) {}
+
+  // ****** //
+  // LOGGER //
+  // ****** //
+
+  private logger = new Logger(UsersController.name);
+
+  // ***************** //
+  // ROUTE DEFINITIONS //
+  // ***************** //
 
   // ****** //
   // whoAmI //
@@ -57,7 +72,8 @@ export class UsersController {
   async findUserById(@Param('id') id: string): Promise<User> {
     const user = await this.usersService.findOneById(id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      this.logger.error(`User with ID : ${id} not found.`);
+      throw new NotFoundException(`User with ID : ${id} not found.`);
     }
     return user;
   }

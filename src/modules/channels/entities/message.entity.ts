@@ -9,12 +9,24 @@ import {
   JoinTable,
 } from 'typeorm';
 
+import { Logger } from '@nestjs/common';
+
 import { User } from '@/modules/users/user.entity';
 
 import { Channel } from './channel.entity';
 
 @Entity()
 export class Message {
+  // ****** //
+  // LOGGER //
+  // ****** //
+
+  private logger = new Logger(Message.name);
+
+  // ************* //
+  // ENTITY FIELDS //
+  // ************* //
+
   @PrimaryGeneratedColumn()
   id: string;
 
@@ -34,11 +46,11 @@ export class Message {
 
   @AfterInsert()
   logInsert() {
-    console.log(`Message with id ${this.id} inserted`);
+    this.logger.verbose(`Message with id ${this.id} inserted`);
   }
 
   @AfterRemove()
   logRemove() {
-    console.log(`Message with id ${this.id} removed`);
+    this.logger.verbose(`Message with id ${this.id} removed`);
   }
 }

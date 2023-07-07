@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -25,14 +26,15 @@ export class UsersService {
     private friendshipRepository: Repository<Friendship>,
   ) {}
 
-  // *********** //
-  // createOauth //
-  // *********** //
+  // ****** //
+  // LOGGER //
+  // ****** //
 
-  createOauth(details: UserDetails) {
-    const user = this.userRepository.create(details);
-    return this.userRepository.save(user);
-  }
+  private logger: Logger = new Logger(UsersService.name);
+
+  // ******************** //
+  // FUNCTION DEFINITIONS //
+  // ******************** //
 
   // ****** //
   // create //
@@ -43,12 +45,33 @@ export class UsersService {
     return this.userRepository.save(user);
   }
 
+  // *********** //
+  // createOauth //
+  // *********** //
+
+  createOauth(details: UserDetails) {
+    const user = this.userRepository.create(details);
+    return this.userRepository.save(user);
+  }
+
   // ******* //
   // findAll //
   // ******* //
+
   async findAll(): Promise<User[]> {
     const users = await this.userRepository.find();
     return users;
+  }
+
+  // ************** //
+  // findOneByEmail //
+  // ************** //
+
+  async findOneByEmail(email: string) {
+    if (!email) {
+      return null;
+    }
+    return this.userRepository.find({ where: { email } });
   }
 
   // *********** //
@@ -72,17 +95,6 @@ export class UsersService {
     return user;
   }
 
-  // ************** //
-  // findOneByEmail //
-  // ************** //
-
-  async findOneByEmail(email: string) {
-    if (!email) {
-      return null;
-    }
-    return this.userRepository.find({ where: { email } });
-  }
-
   // ****** //
   // remove //
   // ****** //
@@ -90,7 +102,8 @@ export class UsersService {
   async remove(id: string): Promise<User> {
     const user = await this.findOneById(id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      this.logger.warn(`User with ID : ${id} not found`);
+      throw new NotFoundException(`User with ID : ${id} not found`);
     }
     return this.userRepository.remove(user);
   }
@@ -102,7 +115,8 @@ export class UsersService {
   async update(id: string, attrs: Partial<User>): Promise<User> {
     const user = await this.findOneById(id);
     if (!user) {
-      throw new NotFoundException('User not found');
+      this.logger.warn(`User with ID : ${id} not found`);
+      throw new NotFoundException(`User with ID : ${id} not found`);
     }
     Object.assign(user, attrs);
     return this.userRepository.save(user);
@@ -119,7 +133,8 @@ export class UsersService {
     });
 
     if (!user) {
-      throw new NotFoundException(`There is no user under id ${id}`);
+      this.logger.warn(`User with ID : ${id} not found`);
+      throw new NotFoundException(`User with ID : ${id} not found`);
     }
 
     const isBanned = user.bannedChannels?.find(
@@ -127,7 +142,10 @@ export class UsersService {
     );
 
     if (isBanned) {
-      throw new ForbiddenException(`You have been banned from this channel`);
+      this.logger.warn(`User with ID : ${id} is banned from this channel`);
+      throw new ForbiddenException(
+        `User with ID : ${id} is banned from this channel`,
+      );
     }
 
     return this.userRepository.save(user);

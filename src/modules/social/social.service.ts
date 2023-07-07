@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -24,6 +25,16 @@ export class SocialService {
     private friendshipRepository: Repository<Friendship>,
   ) {}
 
+  // ****** //
+  // LOGGER //
+  // ****** //
+
+  private logger = new Logger(SocialService.name);
+
+  // ******************** //
+  // FUNCTION DEFINITIONS //
+  // ******************** //
+
   // ******************* //
   // acceptFriendRequest //
   // ******************* //
@@ -32,27 +43,44 @@ export class SocialService {
     receiverId: string,
     senderId: string,
   ): Promise<Friendship> {
-    // Check if sender and receiver are the same
-    if (senderId === receiverId) {
+    if (!receiverId || !senderId) {
+      this.logger.warn(
+        `A sender and a receiver must be provided to accept a friend request.`,
+      );
       throw new BadRequestException(
-        'You cannot send a friend request to yourself.',
+        'A sender and a receiver must be provided to accept a friend request.',
       );
     }
-    // Check if the sender with senderId exists in database
+
+    if (senderId === receiverId) {
+      this.logger.warn(`Sender and receiver cannot have the same id.`);
+      throw new BadRequestException(
+        'Sender and receiver cannot have the same ',
+      );
+    }
+
     const sender = await this.usersRepository.findOne({
       where: { id: senderId },
     });
     if (!sender) {
-      throw new NotFoundException(`Sender with id ${senderId} not found.`);
+      this.logger.warn(`Sender with ID : ${senderId} not found in database.`);
+      throw new NotFoundException(
+        `Sender with ID : ${senderId} not found in database.`,
+      );
     }
-    // Check if the receiver with receiverId exists in database
+
     const receiver = await this.usersRepository.findOne({
       where: { id: receiverId },
     });
     if (!receiver) {
-      throw new NotFoundException(`Receiver with id ${receiverId} not found.`);
+      this.logger.warn(
+        `Receiver with ID : ${receiverId} not found in database.`,
+      );
+      throw new NotFoundException(
+        `Receiver with ID : ${receiverId} not found in database`,
+      );
     }
-    // Check if a friendship request send by sender to receiver exists in database
+
     const friendshipRequest = await this.friendshipRepository.findOne({
       where: {
         sender: { id: senderId },
@@ -61,24 +89,32 @@ export class SocialService {
       },
     });
     if (!friendshipRequest) {
+      this.logger.warn(
+        `Pending friend request sent by : ${senderId} to : ${receiverId} not found.`,
+      );
       throw new NotFoundException(
-        `Friendship request sent by ${senderId} not found.`,
+        `Pending friend request sent by : ${senderId} to : ${receiverId} not found.`,
       );
     }
-    // Check if the friendship request is addressed to receiver
-    if (friendshipRequest.receiver.id !== receiverId) {
-      throw new UnauthorizedException(
-        `${friendshipRequest.receiver.id} cannot accept a friend request addressed to ${receiverId}`,
-      );
-    }
-    // Change the friendship request status to ACCEPTED
-    friendshipRequest.status = FriendshipStatus.ACCEPTED;
 
-    // Save changes in the database
+    if (friendshipRequest.receiver.id !== receiverId) {
+      this.logger.warn(
+        `Only the receiver : ${friendshipRequest.receiver.id} can accept this friend request.`,
+      );
+      throw new UnauthorizedException(
+        `Only the receiver : ${friendshipRequest.receiver.id} can accept this friend request.`,
+      );
+    }
+
+    friendshipRequest.status = FriendshipStatus.ACCEPTED;
+    this.logger.verbose(
+      `Friend request sent by : ${senderId} to : ${receiverId} accepted.`,
+    );
+
     await this.usersRepository.save(receiver);
     await this.usersRepository.save(sender);
     await this.friendshipRepository.save(friendshipRequest);
-    // Return
+
     return friendshipRequest;
   }
 
@@ -87,25 +123,42 @@ export class SocialService {
   // ********* //
 
   async blockUser(blockerId: string, toBlockId: string): Promise<Friendship> {
-    // Check if blockerId and toBlockId are the same
-    if (blockerId === toBlockId) {
-      throw new BadRequestException('You cannot block yourself.');
+    if (!blockerId || !toBlockId) {
+      this.logger.warn(
+        `IDs of the blocker and user to block are both required.`,
+      );
+      throw new BadRequestException(
+        'IDs of the blocker and user to block are both required.',
+      );
     }
-    // Check if blocker with blockerId exists in database
+
+    if (blockerId === toBlockId) {
+      this.logger.warn(`Users cannot block themselves`);
+      throw new BadRequestException('Users cannot block themselves');
+    }
+
     const blocker = await this.usersRepository.findOne({
       where: { id: blockerId },
     });
     if (!blocker) {
-      throw new NotFoundException(`User with id ${blockerId} not found.`);
+      this.logger.warn(`Blocker with ID : ${blockerId} not found in database.`);
+      throw new NotFoundException(
+        `Blocker with ID : ${blockerId} not found in database.`,
+      );
     }
-    // Check if toBlock with toBlockId exists in database
+
     const toBlock = await this.usersRepository.findOne({
       where: { id: toBlockId },
     });
     if (!toBlock) {
-      throw new NotFoundException(`User with id ${toBlockId} not found.`);
+      this.logger.warn(
+        `User to block with ID : ${toBlockId} not found in database.`,
+      );
+      throw new NotFoundException(
+        `User to block with ID : ${toBlockId} not found in database.`,
+      );
     }
-    // Check if the friendship between blocker and toBlock exists in database
+
     const existingFriendship = await this.friendshipRepository.findOne({
       where: [
         {
@@ -118,28 +171,30 @@ export class SocialService {
         },
       ],
     });
-    // If friendship exists
     if (existingFriendship) {
-      // Check if friendship is already blocked
       if (existingFriendship.status === FriendshipStatus.BLOCKED) {
-        throw new BadRequestException(
-          'Friendship already exists and is blocked.',
-        );
+        this.logger.warn(`Friendship status is already blocked.`);
+        throw new BadRequestException(`Friendship status is already blocked.`);
       }
-      //  Change existingFriendship status to BLOCKED
+
       existingFriendship.status = FriendshipStatus.BLOCKED;
-      // Set blockerId in existingFriendship to blockerId
+      this.logger.verbose(`Friendship status is now blocked.`);
+
       existingFriendship.blockerId = blockerId;
-      // Save changes in the database and return
+      this.logger.verbose(
+        `The blocker id : ${blockerId} is set in the database.`,
+      );
+
       await this.usersRepository.save(blocker);
       await this.usersRepository.save(toBlock);
       await this.friendshipRepository.save(existingFriendship);
-      // Return
+
+      this.logger.verbose(
+        `${toBlockId} has been successfully blocked by ${blockerId}`,
+      );
+
       return existingFriendship;
-    }
-    // Else (if friendship does not exists)
-    else {
-      // Create friendship
+    } else {
       const friendship = this.friendshipRepository.create({
         blockerId: blockerId,
         status: FriendshipStatus.BLOCKED,
@@ -147,10 +202,13 @@ export class SocialService {
         receiver: toBlock,
       });
 
-      // Save changes in the database
       await this.usersRepository.save(blocker);
       await this.friendshipRepository.save(friendship);
-      // Return
+
+      this.logger.verbose(
+        `${toBlockId} has been successfully blocked by ${blockerId}`,
+      );
+
       return friendship;
     }
   }
@@ -163,39 +221,57 @@ export class SocialService {
     loggedUserId: string,
     observedUserId: string,
   ): Promise<string> {
-    // Check if user with loggedUserId exists in database
+    if (!loggedUserId || !observedUserId) {
+      this.logger.warn(
+        `IDs of the logged and observed user are both required.`,
+      );
+      throw new BadRequestException(
+        'IDs of the logged and observed user are both required.',
+      );
+    }
+
     const loggedUser = await this.usersRepository.findOne({
       where: { id: loggedUserId },
     });
     if (!loggedUser) {
-      throw new NotFoundException(`User with id ${loggedUserId} not found.`);
+      throw new NotFoundException(
+        `Logged user with ID : ${loggedUserId} not found in the database.`,
+      );
     }
-    // Check if user with observedUserId exists in database
+
     const observedUser = await this.usersRepository.findOne({
       where: { id: observedUserId },
     });
     if (!observedUser) {
-      throw new NotFoundException(`User with id ${observedUserId} not found.`);
+      throw new NotFoundException(
+        `Observed user with ID : ${observedUserId} not found in the database.`,
+      );
     }
-    // Check if the friendship between loggedUser and observedUser
+
     const friendship = await this.friendshipRepository.findOne({
       where: [
         {
           sender: { id: loggedUser.id },
           receiver: { id: observedUser.id },
-          status: FriendshipStatus.BLOCKED,
         },
         {
           sender: { id: observedUser.id },
           receiver: { id: loggedUser.id },
-          status: FriendshipStatus.BLOCKED,
         },
       ],
     });
-    if (!friendship) {
-      return null;
+    if (friendship && FriendshipStatus.BLOCKED) {
+      this.logger.verbose(
+        `The friendship between ${loggedUserId} and ${observedUserId} is blocked by ${friendship.blockerId}`,
+      );
+      return friendship.blockerId;
     }
-    return friendship.blockerId;
+
+    this.logger.verbose(
+      `The friendship between ${loggedUserId} and ${observedUserId} is not blocked or does not exist. `,
+    );
+
+    return null;
   }
 
   // ************* //
@@ -203,14 +279,21 @@ export class SocialService {
   // ************* //
 
   async getFriendList(userId: string): Promise<User[]> {
-    // Check if user with userId exists in database
+    if (!userId) {
+      this.logger.warn(`ID of the user is required.`);
+      throw new BadRequestException('ID of the user is required.');
+    }
+
     const user = await this.usersRepository.findOne({
       where: { id: userId },
     });
     if (!user) {
-      throw new NotFoundException(`User with id ${userId} not found.`);
+      this.logger.warn(`User with ID : ${userId} not found in database.`);
+      throw new NotFoundException(
+        `User with ID : ${userId} not found in database.`,
+      );
     }
-    // Get all friendships of the user where status is ACCEPTED
+
     const friendships = await this.friendshipRepository.find({
       where: [
         { sender: { id: userId }, status: FriendshipStatus.ACCEPTED },
@@ -218,9 +301,14 @@ export class SocialService {
       ],
     });
     if (!friendships) {
-      throw new NotFoundException(`No friendships found for ${userId}.`);
+      this.logger.warn(
+        `No accepted friendships found in database for ${userId}.`,
+      );
+      throw new NotFoundException(
+        `No accepted friendships found in database for ${userId}.`,
+      );
     }
-    // Map the friendships (array of Friendship) to a friendList (array of User)
+
     const friendList = friendships.map((friendship) => {
       if (friendship.sender.id === userId) {
         return friendship.receiver;
@@ -228,7 +316,9 @@ export class SocialService {
         return friendship.sender;
       }
     });
-    // Return
+
+    this.logger.verbose(`Friend list of : ${userId} successfully retrieved.`);
+
     return friendList;
   }
 
@@ -237,21 +327,32 @@ export class SocialService {
   // ***************** //
 
   async getFriendRequests(userId: string): Promise<Friendship[]> {
-    // Check if user with userId exists in database
+    if (!userId) {
+      this.logger.warn(`ID of the user is required.`);
+      throw new BadRequestException('ID of the user is required.');
+    }
+
     const user = await this.usersRepository.findOne({
       where: { id: userId },
     });
     if (!user) {
-      throw new NotFoundException(`User with id ${userId} not found.`);
+      this.logger.warn(`User with ID : ${userId} not found in database.`);
+      throw new NotFoundException(
+        `User with ID : ${userId} not found in database.`,
+      );
     }
-    // Get all friendships of the user where status is PENDING
+
     const friendRequests = await this.friendshipRepository.find({
       where: {
         receiver: { id: userId },
         status: FriendshipStatus.PENDING,
       },
     });
-    // Return
+
+    this.logger.verbose(
+      `Friend requests sent to : ${userId} successfully retrieved.`,
+    );
+
     return friendRequests;
   }
 
@@ -263,13 +364,22 @@ export class SocialService {
     receiverId: string,
     senderId: string,
   ): Promise<Friendship> {
-    // Check if senderId and receiverId are the same
-    if (receiverId === senderId) {
+    if (!receiverId || !senderId) {
+      this.logger.warn(
+        `A sender and a receiver must be provided to reject a friend request`,
+      );
       throw new BadRequestException(
-        'You cannot reject a friend request to yourself.',
+        'A sender and a receiver must be provided to reject a friend request',
       );
     }
-    // Check if a friendship request sent by senderId to receiverId exists in database
+
+    if (receiverId === senderId) {
+      this.logger.warn(`Sender and receiver cannot have the same id.`);
+      throw new BadRequestException(
+        'Sender and receiver cannot have the same id.',
+      );
+    }
+
     const friendshipRequest = await this.friendshipRepository.findOne({
       where: {
         sender: { id: senderId },
@@ -278,21 +388,30 @@ export class SocialService {
       },
     });
     if (!friendshipRequest) {
+      this.logger.warn(
+        `Pending friend request sent by ${senderId} to ${receiverId} not found in database.`,
+      );
       throw new NotFoundException(
-        `Friendship request sent by ${senderId} to ${receiverId} not found.`,
+        `Pending friend request sent by ${senderId} to ${receiverId} not found in database.`,
       );
     }
-    // Check if the friendship request is addressed to receiver
+
     if (friendshipRequest.receiver.id !== receiverId) {
+      this.logger.warn(
+        `Only the receiver : ${friendshipRequest.receiver.id} can reject this friend request`,
+      );
       throw new UnauthorizedException(
-        `${friendshipRequest.receiver.id} cannot reject a friend request addressed to ${receiverId}`,
+        `Only the receiver : ${friendshipRequest.receiver.id} can reject this friend request.`,
       );
     }
-    // Change the friendship request status to REJECTED
+
     friendshipRequest.status = FriendshipStatus.REJECTED;
-    // Save changes in the database
+    this.logger.verbose(
+      `Friend request sent by ${senderId} to ${receiverId} successfuly rejected by ${receiverId}.`,
+    );
+
     await this.friendshipRepository.save(friendshipRequest);
-    // Return
+
     return friendshipRequest;
   }
 
@@ -304,27 +423,44 @@ export class SocialService {
     senderId: string,
     receiverId: string,
   ): Promise<Friendship> {
-    // Check if senderId and receiverId are the same
-    if (senderId === receiverId) {
+    if (!senderId || !receiverId) {
+      this.logger.warn(
+        `A sender and a receiver must be provided to send a friend request.`,
+      );
       throw new BadRequestException(
-        'You cannot send a friend request to yourself.',
+        'A sender and a receiver must be provided to send a friend request.',
       );
     }
-    // Check if a user with senderId exists in database
+
+    if (senderId === receiverId) {
+      this.logger.warn(`Sender and receiver cannot have the same id.`);
+      throw new BadRequestException(
+        'Sender and receiver cannot have the same id.',
+      );
+    }
+
     const sender = await this.usersRepository.findOne({
       where: { id: senderId },
     });
     if (!sender) {
-      throw new NotFoundException(`Sender with id ${senderId} not found.`);
+      this.logger.warn(`Sender with ID : ${senderId} not found in database.`);
+      throw new NotFoundException(
+        `Sender with ID : ${senderId} not found in database.`,
+      );
     }
-    // Check if a user with receiverId exists in database
+
     const receiver = await this.usersRepository.findOne({
       where: { id: receiverId },
     });
     if (!receiver) {
-      throw new NotFoundException(`Receiver with id ${receiverId} not found.`);
+      this.logger.warn(
+        `Receiver with ID : ${receiverId} not found in database.`,
+      );
+      throw new NotFoundException(
+        `Receiver with ID : ${receiverId} not found in database.`,
+      );
     }
-    // Check if a friendship already exists between sender and receiver in database
+
     const existingFriendship = await this.friendshipRepository.findOne({
       where: [
         {
@@ -337,39 +473,46 @@ export class SocialService {
         },
       ],
     });
-    // If friendship already exists, check status and handle accordingly
     if (existingFriendship) {
       if (existingFriendship.status === FriendshipStatus.PENDING) {
+        this.logger.warn(`A pending friendship already exists in database.`);
         throw new BadRequestException(
-          'Friendship already exists and is pending.',
+          'A pending friendship already exists in database.',
         );
       } else if (existingFriendship.status === FriendshipStatus.ACCEPTED) {
+        this.logger.warn(`An accepted friendship already exists in database`);
         throw new BadRequestException(
-          'Friendship already exists and is accepted',
+          'An accepted friendship already exists in database',
         );
       } else if (existingFriendship.status === FriendshipStatus.BLOCKED) {
+        this.logger.warn(`A blocked friendship already exists in database`);
         throw new BadRequestException(
-          'Friendship already exists and is blocked',
+          'A blocked friendship already exists in database',
         );
       } else if (existingFriendship.status === FriendshipStatus.REJECTED) {
         existingFriendship.status = FriendshipStatus.PENDING;
-        // Save changes in the database
+        this.logger.verbose(`Friendship status is now pending.`);
+
         await this.friendshipRepository.save(existingFriendship);
-        // Return
+
         return existingFriendship;
       }
-    }
-    // Else (if friendship does not exist, create it)
-    else {
+    } else {
       const friendship = this.friendshipRepository.create({
         blockerId: null,
         status: FriendshipStatus.PENDING,
         sender: sender,
         receiver: receiver,
       });
-      // Save changes in the database
+
+      this.logger.verbose(`A new pending request has been created.`);
+
       await this.friendshipRepository.save(friendship);
-      // Return
+
+      this.logger.verbose(
+        `Friend request successfully sent by ${senderId} to ${receiverId}.`,
+      );
+
       return friendship;
     }
   }
@@ -383,29 +526,37 @@ export class SocialService {
     toUnblockId: string,
   ): Promise<Friendship> {
     if (!unblockerId || !toUnblockId) {
+      this.logger.warn(
+        `IDs of the unblocker and user to unblock are both required.`,
+      );
       throw new BadRequestException(
-        'You must provide both unblockerId and toUnblockId.',
+        'IDs of the unblocker and user to unblock are both required.',
       );
     }
-    // Check if unblockerId and toUnblockId are the same
+
     if (unblockerId === toUnblockId) {
-      throw new BadRequestException('You cannot unblock yourself.');
+      this.logger.warn(`Users cannot unblock themselves`);
+      throw new BadRequestException('Users cannot unblock themselves');
     }
-    // Check if user with unblockerId exists in database
+
     const unblocker = await this.usersRepository.findOne({
       where: { id: unblockerId },
     });
     if (!unblocker) {
-      throw new NotFoundException(`User with id ${unblockerId} not found.`);
+      this.logger.warn(`User with ID : ${unblockerId} not found in database.`);
+      throw new NotFoundException(
+        `User with ID : ${unblockerId} not found in database.`,
+      );
     }
-    // Check if user with toUnblockId exists in database
+
     const toUnblock = await this.usersRepository.findOne({
       where: { id: toUnblockId },
     });
     if (!toUnblock) {
-      throw new NotFoundException(`User with id ${toUnblockId} not found.`);
+      this.logger.warn(`User with ID : ${toUnblockId} not found in database.`);
+      throw new NotFoundException(`User with ID ${toUnblockId} not found.`);
     }
-    // Check if a friendship between unblocker and toUnblock exists in database
+
     const friendship = await this.friendshipRepository.findOne({
       where: [
         { sender: { id: unblockerId }, receiver: { id: toUnblockId } },
@@ -413,26 +564,38 @@ export class SocialService {
       ],
     });
     if (!friendship) {
+      this.logger.warn(`Friendship to unblock not found in database.`);
       throw new UnauthorizedException(
-        `Cannot unblock a user you have no relationship with.`,
+        `Friendship to unblock not found in database.`,
       );
     }
-    // Check if the friendship is blocked and if the current unblocker was the initial blocker
-    if (
-      friendship.status !== FriendshipStatus.BLOCKED ||
-      unblockerId !== friendship.blockerId
-    ) {
+
+    if (friendship.status !== FriendshipStatus.BLOCKED) {
+      this.logger.warn(`The friendship is not blocked.`);
+      throw new UnauthorizedException(`The friendship is not blocked.`);
+    }
+
+    if (unblockerId !== friendship.blockerId) {
+      this.logger.warn(
+        `Only the ${friendship.blockerId} can unblock the friendship.`,
+      );
       throw new UnauthorizedException(
-        `User with id ${toUnblockId} is not blocked by ${unblockerId}.`,
+        `Only the ${friendship.blockerId} can unblock the friendship.`,
       );
     }
-    // Change the friendship status to ACCEPTED
+
     friendship.status = FriendshipStatus.ACCEPTED;
-    // Set blockerId to null
+    this.logger.verbose(`Friendship status is now accepted.`);
+
     friendship.blockerId = null;
-    // Save changes in the database
+    this.logger.verbose(`The blocker id is re-set to null in the database.`);
+
     await this.friendshipRepository.save(friendship);
-    // Return
+
+    this.logger.verbose(
+      `${toUnblockId} has been successfully unblocked by ${unblockerId}`,
+    );
+
     return friendship;
   }
 }

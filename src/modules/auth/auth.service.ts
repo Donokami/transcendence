@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -17,7 +18,21 @@ const scrypt = promisify(_scrypt);
 
 @Injectable()
 export class AuthService {
+  // *********** //
+  // CONSTRUCTOR //
+  // *********** //
+
   constructor(private usersService: UsersService) {}
+
+  // ****** //
+  // LOGGER //
+  // ****** //
+
+  private logger = new Logger(AuthService.name);
+
+  // ******************** //
+  // FUNCTION DEFINITIONS //
+  // ******************** //
 
   // ************ //
   // validateUser //
@@ -64,8 +79,13 @@ export class AuthService {
 
   async verifyTwoFactorToken(userId: string, token: string) {
     const user = await this.usersService.findOneById(userId);
-    if (!user || !user.isTwoFactorEnabled) {
-      throw new UnauthorizedException('Invalid user or 2FA not enabled');
+    if (!user) {
+      this.logger.warn('User not found');
+      throw new UnauthorizedException('User not found');
+    }
+    if (!user.isTwoFactorEnabled) {
+      this.logger.warn('2FA is disabled');
+      throw new UnauthorizedException('2FA is disabled');
     }
 
     const isValid = authenticator.verify({
@@ -74,7 +94,8 @@ export class AuthService {
     });
 
     if (!isValid) {
-      throw new UnauthorizedException('Invalid token');
+      this.logger.warn('Invalid 2FA token');
+      throw new UnauthorizedException('Invalid 2FA token');
     }
 
     return user;
@@ -87,6 +108,7 @@ export class AuthService {
   async register(email: string, password: string, username: string) {
     const users = await this.usersService.findOneByEmail(email);
     if (users.length) {
+      this.logger.warn('Email already in use');
       throw new BadRequestException('Email already in use');
     }
 
@@ -110,6 +132,7 @@ export class AuthService {
   async signIn(email: string, password: string) {
     const [user] = await this.usersService.findOneByEmail(email);
     if (!user) {
+      this.logger.warn('User not found');
       throw new NotFoundException('User not found');
     }
 
@@ -118,6 +141,7 @@ export class AuthService {
     const hash = (await scrypt(password, salt, 32)) as Buffer;
 
     if (storedHash !== hash.toString('hex')) {
+      this.logger.warn('Bad password');
       throw new BadRequestException('Bad password');
     }
 

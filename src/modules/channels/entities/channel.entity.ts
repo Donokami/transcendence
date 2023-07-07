@@ -11,9 +11,16 @@ import {
 import { User } from '@/modules/users/user.entity';
 
 import { Message } from './message.entity';
+import { Logger } from '@nestjs/common';
 
 @Entity()
 export class Channel {
+  // ****** //
+  // LOGGER //
+  // ****** //
+
+  private logger = new Logger(Channel.name);
+
   @PrimaryGeneratedColumn()
   id: string;
 
@@ -34,11 +41,11 @@ export class Channel {
 
   @AfterInsert()
   logInsert() {
-    console.log(`Channel with id ${this.id} inserted`);
+    this.logger.verbose(`Channel with id ${this.id} inserted`);
   }
 
   @AfterRemove()
   logRemove() {
-    console.log(`Channel with id ${this.id} removed`);
+    this.logger.verbose(`Channel with id ${this.id} removed`);
   }
 }
