@@ -13,88 +13,16 @@ import { Friendship, FriendshipStatus } from './entities/friendship.entity';
 
 @Injectable()
 export class SocialService {
+  // *********** //
+  // CONSTRUCTOR //
+  // *********** //
+
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(Friendship)
     private friendshipRepository: Repository<Friendship>,
   ) {}
-
-  // ***************** //
-  // sendFriendRequest //
-  // ***************** //
-
-  async sendFriendRequest(
-    senderId: string,
-    receiverId: string,
-  ): Promise<Friendship> {
-    // Check if sender and receiver are the same
-    if (senderId === receiverId) {
-      throw new BadRequestException(
-        'You cannot send a friend request to yourself.',
-      );
-    }
-    // Check if sender exists in database
-    const sender = await this.usersRepository.findOne({
-      where: { id: senderId },
-    });
-    if (!sender) {
-      throw new NotFoundException(`Sender with id ${senderId} not found.`);
-    }
-    // Check if receiver exists in database
-    const receiver = await this.usersRepository.findOne({
-      where: { id: receiverId },
-    });
-    if (!receiver) {
-      throw new NotFoundException(`Receiver with id ${receiverId} not found.`);
-    }
-    // Check if friendship already exists
-    const existingFriendship = await this.friendshipRepository.findOne({
-      where: [
-        {
-          sender: { id: sender.id },
-          receiver: { id: receiver.id },
-        },
-        {
-          sender: { id: receiver.id },
-          receiver: { id: sender.id },
-        },
-      ],
-    });
-    // If friendship already exists, check status and throw error if needed
-    if (existingFriendship) {
-      if (existingFriendship.status === FriendshipStatus.PENDING) {
-        throw new BadRequestException(
-          'Friendship already exists and is pending.',
-        );
-      } else if (existingFriendship.status === FriendshipStatus.ACCEPTED) {
-        throw new BadRequestException(
-          'Friendship already exists and is accepted',
-        );
-      } else if (existingFriendship.status === FriendshipStatus.BLOCKED) {
-        throw new BadRequestException(
-          'Friendship already exists and is blocked',
-        );
-      } else if (existingFriendship.status === FriendshipStatus.REJECTED) {
-        existingFriendship.status = FriendshipStatus.PENDING;
-        await this.friendshipRepository.save(existingFriendship);
-
-        return existingFriendship;
-      }
-    }
-    // If friendship does not exist, create it
-    else {
-      const friendship = this.friendshipRepository.create({
-        blockerId: null,
-        status: FriendshipStatus.PENDING,
-        sender: sender,
-        receiver: receiver,
-      });
-      await this.friendshipRepository.save(friendship);
-
-      return friendship;
-    }
-  }
 
   // ******************* //
   // acceptFriendRequest //
@@ -110,21 +38,21 @@ export class SocialService {
         'You cannot send a friend request to yourself.',
       );
     }
-    // Check if sender exists in database
+    // Check if the sender with senderId exists in database
     const sender = await this.usersRepository.findOne({
       where: { id: senderId },
     });
     if (!sender) {
       throw new NotFoundException(`Sender with id ${senderId} not found.`);
     }
-    // Check if receiver exists in database
+    // Check if the receiver with receiverId exists in database
     const receiver = await this.usersRepository.findOne({
       where: { id: receiverId },
     });
     if (!receiver) {
       throw new NotFoundException(`Receiver with id ${receiverId} not found.`);
     }
-    // Check if friendship request exists in database
+    // Check if a friendship request send by sender to receiver exists in database
     const friendshipRequest = await this.friendshipRepository.findOne({
       where: {
         sender: { id: senderId },
@@ -137,21 +65,194 @@ export class SocialService {
         `Friendship request sent by ${senderId} not found.`,
       );
     }
-    // Check if friendship request is well addressed to receiver
+    // Check if the friendship request is addressed to receiver
     if (friendshipRequest.receiver.id !== receiverId) {
       throw new UnauthorizedException(
         `${friendshipRequest.receiver.id} cannot accept a friend request addressed to ${receiverId}`,
       );
     }
-    // Change friendship request status to accepted
+    // Change the friendship request status to ACCEPTED
     friendshipRequest.status = FriendshipStatus.ACCEPTED;
 
     // Save changes in the database
     await this.usersRepository.save(receiver);
     await this.usersRepository.save(sender);
     await this.friendshipRepository.save(friendshipRequest);
-
+    // Return
     return friendshipRequest;
+  }
+
+  // ********* //
+  // blockUser //
+  // ********* //
+
+  async blockUser(blockerId: string, toBlockId: string): Promise<Friendship> {
+    // Check if blockerId and toBlockId are the same
+    if (blockerId === toBlockId) {
+      throw new BadRequestException('You cannot block yourself.');
+    }
+    // Check if blocker with blockerId exists in database
+    const blocker = await this.usersRepository.findOne({
+      where: { id: blockerId },
+    });
+    if (!blocker) {
+      throw new NotFoundException(`User with id ${blockerId} not found.`);
+    }
+    // Check if toBlock with toBlockId exists in database
+    const toBlock = await this.usersRepository.findOne({
+      where: { id: toBlockId },
+    });
+    if (!toBlock) {
+      throw new NotFoundException(`User with id ${toBlockId} not found.`);
+    }
+    // Check if the friendship between blocker and toBlock exists in database
+    const existingFriendship = await this.friendshipRepository.findOne({
+      where: [
+        {
+          sender: { id: blockerId },
+          receiver: { id: toBlockId },
+        },
+        {
+          sender: { id: toBlockId },
+          receiver: { id: blockerId },
+        },
+      ],
+    });
+    // If friendship exists
+    if (existingFriendship) {
+      // Check if friendship is already blocked
+      if (existingFriendship.status === FriendshipStatus.BLOCKED) {
+        throw new BadRequestException(
+          'Friendship already exists and is blocked.',
+        );
+      }
+      //  Change existingFriendship status to BLOCKED
+      existingFriendship.status = FriendshipStatus.BLOCKED;
+      // Set blockerId in existingFriendship to blockerId
+      existingFriendship.blockerId = blockerId;
+      // Save changes in the database and return
+      await this.usersRepository.save(blocker);
+      await this.usersRepository.save(toBlock);
+      await this.friendshipRepository.save(existingFriendship);
+      // Return
+      return existingFriendship;
+    }
+    // Else (if friendship does not exists)
+    else {
+      // Create friendship
+      const friendship = this.friendshipRepository.create({
+        blockerId: blockerId,
+        status: FriendshipStatus.BLOCKED,
+        sender: blocker,
+        receiver: toBlock,
+      });
+
+      // Save changes in the database
+      await this.usersRepository.save(blocker);
+      await this.friendshipRepository.save(friendship);
+      // Return
+      return friendship;
+    }
+  }
+
+  // ************ //
+  // getBlockerId //
+  // ************ //
+
+  async getBlockerId(
+    loggedUserId: string,
+    observedUserId: string,
+  ): Promise<string> {
+    // Check if user with loggedUserId exists in database
+    const loggedUser = await this.usersRepository.findOne({
+      where: { id: loggedUserId },
+    });
+    if (!loggedUser) {
+      throw new NotFoundException(`User with id ${loggedUserId} not found.`);
+    }
+    // Check if user with observedUserId exists in database
+    const observedUser = await this.usersRepository.findOne({
+      where: { id: observedUserId },
+    });
+    if (!observedUser) {
+      throw new NotFoundException(`User with id ${observedUserId} not found.`);
+    }
+    // Check if the friendship between loggedUser and observedUser
+    const friendship = await this.friendshipRepository.findOne({
+      where: [
+        {
+          sender: { id: loggedUser.id },
+          receiver: { id: observedUser.id },
+          status: FriendshipStatus.BLOCKED,
+        },
+        {
+          sender: { id: observedUser.id },
+          receiver: { id: loggedUser.id },
+          status: FriendshipStatus.BLOCKED,
+        },
+      ],
+    });
+    if (!friendship) {
+      return null;
+    }
+    return friendship.blockerId;
+  }
+
+  // ************* //
+  // getFriendList //
+  // ************* //
+
+  async getFriendList(userId: string): Promise<User[]> {
+    // Check if user with userId exists in database
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException(`User with id ${userId} not found.`);
+    }
+    // Get all friendships of the user where status is ACCEPTED
+    const friendships = await this.friendshipRepository.find({
+      where: [
+        { sender: { id: userId }, status: FriendshipStatus.ACCEPTED },
+        { receiver: { id: userId }, status: FriendshipStatus.ACCEPTED },
+      ],
+    });
+    if (!friendships) {
+      throw new NotFoundException(`No friendships found for ${userId}.`);
+    }
+    // Map the friendships (array of Friendship) to a friendList (array of User)
+    const friendList = friendships.map((friendship) => {
+      if (friendship.sender.id === userId) {
+        return friendship.receiver;
+      } else {
+        return friendship.sender;
+      }
+    });
+    // Return
+    return friendList;
+  }
+
+  // ***************** //
+  // getFriendRequests //
+  // ***************** //
+
+  async getFriendRequests(userId: string): Promise<Friendship[]> {
+    // Check if user with userId exists in database
+    const user = await this.usersRepository.findOne({
+      where: { id: userId },
+    });
+    if (!user) {
+      throw new NotFoundException(`User with id ${userId} not found.`);
+    }
+    // Get all friendships of the user where status is PENDING
+    const friendRequests = await this.friendshipRepository.find({
+      where: {
+        receiver: { id: userId },
+        status: FriendshipStatus.PENDING,
+      },
+    });
+    // Return
+    return friendRequests;
   }
 
   // ******************* //
@@ -162,6 +263,13 @@ export class SocialService {
     receiverId: string,
     senderId: string,
   ): Promise<Friendship> {
+    // Check if senderId and receiverId are the same
+    if (receiverId === senderId) {
+      throw new BadRequestException(
+        'You cannot reject a friend request to yourself.',
+      );
+    }
+    // Check if a friendship request sent by senderId to receiverId exists in database
     const friendshipRequest = await this.friendshipRepository.findOne({
       where: {
         sender: { id: senderId },
@@ -174,89 +282,94 @@ export class SocialService {
         `Friendship request sent by ${senderId} to ${receiverId} not found.`,
       );
     }
-
+    // Check if the friendship request is addressed to receiver
     if (friendshipRequest.receiver.id !== receiverId) {
       throw new UnauthorizedException(
         `${friendshipRequest.receiver.id} cannot reject a friend request addressed to ${receiverId}`,
       );
     }
-
+    // Change the friendship request status to REJECTED
     friendshipRequest.status = FriendshipStatus.REJECTED;
+    // Save changes in the database
     await this.friendshipRepository.save(friendshipRequest);
-
+    // Return
     return friendshipRequest;
   }
 
-  // ********* //
-  // blockUser //
-  // ********* //
+  // ***************** //
+  // sendFriendRequest //
+  // ***************** //
 
-  async blockUser(userId: string, userToBlockId: string): Promise<Friendship> {
-    // Check if userId and userToBlockId are the same
-    if (userId === userToBlockId) {
-      throw new BadRequestException('You cannot block yourself.');
+  async sendFriendRequest(
+    senderId: string,
+    receiverId: string,
+  ): Promise<Friendship> {
+    // Check if senderId and receiverId are the same
+    if (senderId === receiverId) {
+      throw new BadRequestException(
+        'You cannot send a friend request to yourself.',
+      );
     }
-    // Check if userId exists in database
-    const user = await this.usersRepository.findOne({
-      where: { id: userId },
+    // Check if a user with senderId exists in database
+    const sender = await this.usersRepository.findOne({
+      where: { id: senderId },
     });
-    if (!user) {
-      throw new NotFoundException(`User with id ${userId} not found.`);
+    if (!sender) {
+      throw new NotFoundException(`Sender with id ${senderId} not found.`);
     }
-    // Check if userToBlockId exists in database
-    const userToBlock = await this.usersRepository.findOne({
-      where: { id: userToBlockId },
+    // Check if a user with receiverId exists in database
+    const receiver = await this.usersRepository.findOne({
+      where: { id: receiverId },
     });
-    if (!userToBlock) {
-      throw new NotFoundException(`User with id ${userToBlockId} not found.`);
+    if (!receiver) {
+      throw new NotFoundException(`Receiver with id ${receiverId} not found.`);
     }
-    // Check if friendship exists
+    // Check if a friendship already exists between sender and receiver in database
     const existingFriendship = await this.friendshipRepository.findOne({
       where: [
         {
-          sender: { id: userId },
-          receiver: { id: userToBlockId },
+          sender: { id: sender.id },
+          receiver: { id: receiver.id },
         },
         {
-          sender: { id: userToBlockId },
-          receiver: { id: userId },
+          sender: { id: receiver.id },
+          receiver: { id: sender.id },
         },
       ],
     });
-    // If friendship exists
+    // If friendship already exists, check status and handle accordingly
     if (existingFriendship) {
-      // Check if friendship is already blocked
-      if (existingFriendship.status === FriendshipStatus.BLOCKED) {
+      if (existingFriendship.status === FriendshipStatus.PENDING) {
         throw new BadRequestException(
-          'Friendship already exists and is blocked.',
+          'Friendship already exists and is pending.',
         );
+      } else if (existingFriendship.status === FriendshipStatus.ACCEPTED) {
+        throw new BadRequestException(
+          'Friendship already exists and is accepted',
+        );
+      } else if (existingFriendship.status === FriendshipStatus.BLOCKED) {
+        throw new BadRequestException(
+          'Friendship already exists and is blocked',
+        );
+      } else if (existingFriendship.status === FriendshipStatus.REJECTED) {
+        existingFriendship.status = FriendshipStatus.PENDING;
+        // Save changes in the database
+        await this.friendshipRepository.save(existingFriendship);
+        // Return
+        return existingFriendship;
       }
-      //  Change friendship status to blocked
-      existingFriendship.status = FriendshipStatus.BLOCKED;
-      // Set blockerId to userId
-      existingFriendship.blockerId = userId;
-
-      // Save changes in the database
-      await this.usersRepository.save(user);
-      await this.usersRepository.save(userToBlock);
-      await this.friendshipRepository.save(existingFriendship);
-
-      return existingFriendship;
     }
-    // If friendship does not exists
+    // Else (if friendship does not exist, create it)
     else {
-      // Create friendship
       const friendship = this.friendshipRepository.create({
-        blockerId: userId,
-        status: FriendshipStatus.BLOCKED,
-        sender: user,
-        receiver: userToBlock,
+        blockerId: null,
+        status: FriendshipStatus.PENDING,
+        sender: sender,
+        receiver: receiver,
       });
-
       // Save changes in the database
-      await this.usersRepository.save(user);
       await this.friendshipRepository.save(friendship);
-
+      // Return
       return friendship;
     }
   }
@@ -266,143 +379,60 @@ export class SocialService {
   // *********** //
 
   async unblockUser(
-    userId: string,
-    userToUnblockId: string,
+    unblockerId: string,
+    toUnblockId: string,
   ): Promise<Friendship> {
-    const user = await this.usersRepository.findOne({
-      where: { id: userId },
-    });
-    if (!user) {
-      throw new NotFoundException(`User with id ${userId} not found.`);
+    if (!unblockerId || !toUnblockId) {
+      throw new BadRequestException(
+        'You must provide both unblockerId and toUnblockId.',
+      );
     }
-
-    const userToUnblock = await this.usersRepository.findOne({
-      where: { id: userToUnblockId },
-    });
-    if (!userToUnblock) {
-      throw new NotFoundException(`User with id ${userToUnblockId} not found.`);
+    // Check if unblockerId and toUnblockId are the same
+    if (unblockerId === toUnblockId) {
+      throw new BadRequestException('You cannot unblock yourself.');
     }
-
-    const existingFriendship = await this.friendshipRepository.findOne({
+    // Check if user with unblockerId exists in database
+    const unblocker = await this.usersRepository.findOne({
+      where: { id: unblockerId },
+    });
+    if (!unblocker) {
+      throw new NotFoundException(`User with id ${unblockerId} not found.`);
+    }
+    // Check if user with toUnblockId exists in database
+    const toUnblock = await this.usersRepository.findOne({
+      where: { id: toUnblockId },
+    });
+    if (!toUnblock) {
+      throw new NotFoundException(`User with id ${toUnblockId} not found.`);
+    }
+    // Check if a friendship between unblocker and toUnblock exists in database
+    const friendship = await this.friendshipRepository.findOne({
       where: [
-        { sender: { id: user.id }, receiver: { id: userToUnblock.id } },
-        { sender: { id: userToUnblock.id }, receiver: { id: user.id } },
+        { sender: { id: unblockerId }, receiver: { id: toUnblockId } },
+        { sender: { id: toUnblockId }, receiver: { id: unblockerId } },
       ],
     });
-    if (!existingFriendship) {
+    if (!friendship) {
       throw new UnauthorizedException(
         `Cannot unblock a user you have no relationship with.`,
       );
     }
-
+    // Check if the friendship is blocked and if the current unblocker was the initial blocker
     if (
-      existingFriendship.blockerId !== userId ||
-      existingFriendship.status !== FriendshipStatus.BLOCKED
+      friendship.status !== FriendshipStatus.BLOCKED ||
+      unblockerId !== friendship.blockerId
     ) {
       throw new UnauthorizedException(
-        `User with id ${userToUnblockId} is not blocked by ${userId}.`,
+        `User with id ${toUnblockId} is not blocked by ${unblockerId}.`,
       );
     }
-
-    existingFriendship.status = FriendshipStatus.ACCEPTED;
-
-    await this.friendshipRepository.save(existingFriendship);
-
-    return existingFriendship;
-  }
-
-  // ***************** //
-  // getFriendRequests //
-  // ***************** //
-
-  async getFriendRequests(userId: string): Promise<Friendship[]> {
-    const user = await this.usersRepository.findOne({
-      where: { id: userId },
-    });
-    if (!user) {
-      throw new NotFoundException(`User with id ${userId} not found.`);
-    }
-
-    const friendRequests = await this.friendshipRepository.find({
-      where: {
-        receiver: { id: userId },
-        status: FriendshipStatus.PENDING,
-      },
-      relations: ['sender', 'receiver'],
-    });
-
-    return friendRequests;
-  }
-
-  // ************* //
-  // getFriendList //
-  // ************* //
-
-  async getFriendList(userId: string): Promise<User[]> {
-    const user = await this.usersRepository.findOne({
-      where: { id: userId },
-    });
-    if (!user) {
-      throw new NotFoundException(`User with id ${userId} not found.`);
-    }
-
-    const friendships = await this.friendshipRepository.find({
-      where: [
-        { sender: { id: userId }, status: FriendshipStatus.ACCEPTED },
-        { receiver: { id: userId }, status: FriendshipStatus.ACCEPTED },
-      ],
-      relations: ['sender', 'receiver'],
-    });
-    if (!friendships) {
-      throw new NotFoundException(`No friendships found for ${userId}.`);
-    }
-
-    const friendList = friendships.map((friendship) => {
-      if (friendship.sender.id === userId) {
-        return friendship.receiver;
-      } else {
-        return friendship.sender;
-      }
-    });
-
-    console.log(friendList);
-
-    return friendList;
-  }
-
-  // ************** //
-  // getBlockedList //
-  // ************** //
-
-  async getBlockedList(userId: string): Promise<User[]> {
-    const user = await this.usersRepository.findOne({
-      where: { id: userId },
-    });
-    if (!user) {
-      throw new NotFoundException(`User with id ${userId} not found.`);
-    }
-
-    const friendships = await this.friendshipRepository.find({
-      where: [
-        { sender: { id: userId }, status: FriendshipStatus.BLOCKED },
-        { receiver: { id: userId }, status: FriendshipStatus.BLOCKED },
-      ],
-      relations: ['sender', 'receiver'],
-    });
-    if (!friendships) {
-      throw new NotFoundException(`No friendships found for ${userId}.`);
-    }
-
-    const blockedList = friendships.map((friendship) => {
-      if (friendship.sender.id === userId) {
-        return friendship.receiver;
-      } else {
-        return friendship.sender;
-      }
-    });
-
-    console.log(blockedList);
-
-    return blockedList;
+    // Change the friendship status to ACCEPTED
+    friendship.status = FriendshipStatus.ACCEPTED;
+    // Set blockerId to null
+    friendship.blockerId = null;
+    // Save changes in the database
+    await this.friendshipRepository.save(friendship);
+    // Return
+    return friendship;
   }
 }
