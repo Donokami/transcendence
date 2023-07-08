@@ -35,8 +35,20 @@ export class AuthController {
     if (request.user && request.user.id) {
       if (request.user.isTwoFactorEnabled) {
         session.twoFactorUserId = request.user.id;
+      } else {
+        session.userId = request.user.id;
       }
-      session.userId = request.user.id;
+    }
+  }
+
+  @Get('/authStatus')
+  authStatus(@Session() session: any) {
+    if (session.userId) {
+      return { status: 'authenticated' };
+    } else if (session.twoFactorUserId) {
+      return { status: 'requires_2fa' };
+    } else {
+      return { status: 'not_authenticated' };
     }
   }
 
