@@ -1,5 +1,5 @@
 <template>
-  <div class="navbar bg-base-100">
+  <div class="navbar bg-base-100 max-w-screen-xl min-w-[95%] mx-auto text-black">
     <div class="navbar-start p-[6px] border-2 border-black border-r-0 flex-grow md:hidden">
       <div class="dropdown flex">
         <label tabindex="0" class="p-[14px] hover:bg-gray-300">
@@ -47,13 +47,13 @@
 </template>
 
 <script setup lang="ts">
-  
+
   // ******* //
   // IMPORTS //
   // ******* //
 
   import { useRouter } from 'vue-router'
-  import { useUserStore } from '../stores/UserStore' 
+  import { useUserStore } from '../stores/UserStore'
 
   // ******************** //
   // VARIABLE DEFINITIONS //
@@ -61,7 +61,7 @@
 
   const router = useRouter()
   const userStore = useUserStore()
-  
+
   // ******************** //
   // FUNCTION DEFINITIONS //
   // ******************** //
@@ -69,7 +69,7 @@
   // ****** //
   // logout //
   // ****** //
-    
+
   const logout = async () => {
     await userStore.signOut()
     router.push('/auth')

@@ -1,6 +1,5 @@
 <template>
   <div class="max-w-screen-xl min-w-[95%] lg:mx-auto text-black">
-    <site-header></site-header>
     <div class="border-2 border-black items-center mx-2 my-3 mt-1 p-5 text-justify relative">
       <stats-ranking-table
         @table-state-changed="tableState = $event"
@@ -16,7 +15,6 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import SiteHeader from '../components/SiteHeader.vue'
 import StatsRankingTable from '../components/StatsRankingTable.vue'
 import StatsMatchHistoryTable from '../components/StatsMatchHistoryTable.vue'
 

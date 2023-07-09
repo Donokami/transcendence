@@ -9,6 +9,8 @@ import MfaView from '../views/MfaView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import StatsView from '../views/StatsView.vue'
+import RoomView from '../views/RoomView.vue'
+import CreateRoomView from '../views/CreateRoomView.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -45,6 +47,16 @@ const routes: Array<RouteRecordRaw> = [
     component: ProfileView,
     path: '/profile/:id',
     name: 'profile'
+  },
+  {
+    component: CreateRoomView,
+    path: '/room/create',
+    name: 'create-room'
+  },
+  {
+    component: RoomView,
+    path: '/room/:id',
+    name: 'room'
   },
   {
     component: NotFoundView,
