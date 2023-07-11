@@ -82,7 +82,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import type { User } from '../types/user.js'
+import type { User } from '../types/User'
 import { useUserStore } from '@/stores/UserStore.js'
 
 const userStore = useUserStore()
@@ -100,7 +100,7 @@ const addUserToChannel = (username: string) => {
   if (!usersToAdd.value.includes(username))
     usersToAdd.value.push(username)
   else
-    console.log('User already added to the channel')
+    console.log(`[ChatChannelModal] - Failed to add user to channel ! User already in channel`)
 }
 
 const cancelAddToChannel = (username: string) => {

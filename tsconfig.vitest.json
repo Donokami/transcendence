@@ -8,5 +8,5 @@
     "lib": [],
     "types": ["node", "jsdom"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*"]
 }

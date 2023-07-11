@@ -12,7 +12,8 @@ import {
   max,
   alpha_spaces as alphaSpaces,
   email,
-  confirmed
+  confirmed,
+  numeric
 } from '@vee-validate/rules'
 
 export default {
@@ -27,6 +28,7 @@ export default {
     defineRule('alpha_spaces', alphaSpaces)
     defineRule('email', email)
     defineRule('password_mismatch', confirmed)
+    defineRule('numeric', numeric)
 
     configure({
       generateMessage: (ctx) => {
@@ -36,7 +38,8 @@ export default {
           max: `The ${ctx.field} is too long.`,
           alpha_spaces: `The ${ctx.field} field may only contain alpha characters and spaces.`,
           email: `Your ${ctx.field} is invalid.`,
-          password_mismatch: `The passwords don't match.`
+          password_mismatch: `The passwords don't match.`,
+          numeric: `The ${ctx.field} field may only contain numeric characters.`
         }
 
         const message = messages[ctx.rule.name]

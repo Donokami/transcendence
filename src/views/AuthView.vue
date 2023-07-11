@@ -1,6 +1,5 @@
 <template>
   <div class="max-w-screen-xl min-w-[95%] mx-auto text-black">
-    <auth-header></auth-header>
     <div class="border-2 border-black flex items-center mx-2 my-3 mt-1 p-5 text-justify relative">
       <auth-ball-canvas></auth-ball-canvas>
       <div class="flex-grow flex items-center justify-center z-10">
@@ -18,16 +17,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue"
-import AuthHeader from '../components/AuthHeader.vue'
 import AuthSignInForm from '../components/AuthSignInForm.vue'
 import AuthRegisterForm from '../components/AuthRegisterForm.vue'
 import AuthBallCanvas from '../components/AuthBallCanvas.vue'
+import { ref } from 'vue'
 
-const props = defineProps({
-  formState: { type: String, default: 'signIn'},
-})
-
-props.formState
+const formState = ref('signIn')
 
 </script>

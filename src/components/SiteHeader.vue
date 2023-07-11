@@ -1,12 +1,12 @@
 <template>
-  <div class="navbar bg-base-100">
+  <div class="navbar bg-base-100 max-w-screen-xl min-w-[95%] mx-auto text-black">
     <div class="navbar-start p-[6px] border-2 border-black border-r-0 flex-grow md:hidden">
       <div class="dropdown flex">
         <label tabindex="0" class="p-[14px] hover:bg-gray-300">
           <iconify-icon icon="ri:menu-2-line" class="h-5 w-5"></iconify-icon>
         </label>
         <ul tabindex="0" class="menu menu-compact dropdown-content shadow bg-base-100">
-          <li><router-link to="/home">Home</router-link></li>
+          <li><router-link to="/">Home</router-link></li>
           <li><router-link to="/chat">Chat</router-link></li>
           <li><router-link to="/stats">Stats</router-link></li>
         </ul>
@@ -15,7 +15,7 @@
     <div class="navbar-start border-2 border-black border-r-0 flex-grow hidden md:flex">
       <ul class="menu menu-horizontal">
         <li>
-          <router-link to="/home" class="h-[60px] border-black border-r-2">Home</router-link>
+          <router-link to="/" class="h-[60px] border-black border-r-2">Home</router-link>
         </li>
         <li><router-link to="/chat" class="h-[60px] border-black border-r-2">Chat</router-link></li>
         <li>
@@ -34,10 +34,11 @@
           </div>
         </label>
         <ul
+          v-if="userStore.loggedUser"
           tabindex="0"
           class="menu menu-compact dropdown-content shadow bg-base-100 -ml-[75px] mt-1"
         >
-          <li><router-link to="/profile">Profile</router-link></li>
+          <li><router-link :to="{ name: 'profile', params: { id: userStore.loggedUser.id }}">Profile</router-link></li>
           <li><a @click="logout">Logout</a></li>
         </ul>
       </div>
@@ -45,28 +46,32 @@
   </div>
 </template>
 
-// COMPOSITION API
-
 <script setup lang="ts">
+
+  // ******* //
+  // IMPORTS //
+  // ******* //
+
   import { useRouter } from 'vue-router'
+  import { useUserStore } from '../stores/UserStore'
+
+  // ******************** //
+  // VARIABLE DEFINITIONS //
+  // ******************** //
 
   const router = useRouter()
-    
+  const userStore = useUserStore()
+
+  // ******************** //
+  // FUNCTION DEFINITIONS //
+  // ******************** //
+
+  // ****** //
+  // logout //
+  // ****** //
+
   const logout = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/auth/signout', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        // body: JSON.stringify(values)
-      })
-      if (response.ok) {      
-        await router.push('/auth')
-      } else {
-        throw new Error('Something went wrong');
-      } 
-    } catch (error) {
-      console.log(error)
-      throw error
-    }
-  } 
+    await userStore.signOut()
+    router.push('/auth')
+  }
 </script>

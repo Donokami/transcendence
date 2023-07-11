@@ -12,16 +12,22 @@
     CREATE A NEW CHANNEL
   </label>
     <chat-channels-modal></chat-channels-modal>
-    <chat-channels-list></chat-channels-list>
+    <chat-channels-list v-if="hasChannels"></chat-channels-list>
   </div>
 </template>
 
 <script setup lang="ts">
+  import { computed } from 'vue'
+  import { useUserStore } from '@/stores/UserStore.js'
   import ChatChannelsList from '../components/ChatChannelsList.vue'
   import ChatChannelsModal from '../components/ChatChannelsModal.vue'
 
   const emit = defineEmits(['list-state-changed'])
 
+  const userStore = useUserStore()
+  
+  const hasChannels = computed(() => userStore.loggedUser?.channels?.length > 0)
+  
   const toggleList = () => {
       emit('list-state-changed', 'dm')
     }

@@ -30,14 +30,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { User } from '../types/user.js'
 import { useUserStore } from '@/stores/UserStore.js'
 
 const userStore = useUserStore() 
-const filteredUsers = computed(() => {
-    return userStore.users.filter((user: User) => {
-      return user.id !== userStore.loggedUser.id
-    })
-  })
 </script>

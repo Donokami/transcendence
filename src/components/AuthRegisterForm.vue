@@ -17,7 +17,6 @@
         <label class="block font-medium mb-1" for="email">Email</label>
         <Field
           class="neobrutalist-input w-full text-black"
-          id="email"
           name="email"
           type="email"
           placeholder="Enter your email address"
@@ -28,10 +27,10 @@
         <label class="block font-medium mb-1" for="password">Password</label>
         <Field
           class="neobrutalist-input w-full text-black"
-          id="password"
           name="password"
           type="password"
           placeholder="Enter your password"
+          autocomplete
         />
         <ErrorMessage class="font-normal text-base text-red-600" name="password" />
       </div>
@@ -43,6 +42,7 @@
           name="confirmPassword"
           type="password"
           placeholder="Confirm your password"
+          autocomplete
         />
         <ErrorMessage class="font-normal text-base text-red-600" name="confirmPassword" />
       </div>
@@ -80,8 +80,6 @@
   </div>
 </template>
 
-// COMPOSITION API
-
 <script setup lang="ts">
   import { ref } from 'vue'
   import { Form, Field, ErrorMessage } from 'vee-validate'
@@ -94,7 +92,7 @@
 
   const userStore = useUserStore();
 
-  const emit = defineEmits(['form-state-changed', 'signIn'])
+  const emit = defineEmits(['form-state-changed'])
 
   const registerSchema = {
     username: 'required|min:3|max:100',
@@ -106,33 +104,33 @@
   const submitForm = async (values: Record<string, any>) => {
     showAlert.value = true
     inSubmission.value = true
-    alertMsg.value = 'Your account is being created...'
+    alertMsg.value = 'Account is being created...'
     alertColor.value = 'bg-blue-500'
     
     try {
       const response = await userStore.register(values)
       if(response.ok) {
         alertColor.value = 'bg-green-500'
-        alertMsg.value = 'Your account has been created!'
-        setTimeout( () => toggleForm(), 1000);
-      } else {
-        console.log(response)
+        alertMsg.value = 'Account created!'
+        setTimeout( () => toggleForm(), 2000);
+      }
+      else {
         alertColor.value = 'bg-red-500'
         alertMsg.value = 'Email already in use!'
         throw new Error('Something went wrong');
       }
-    } catch (error) {
-      console.log(error)
-      alertColor.value = 'bg-red-500'
-      alertMsg.value = 'Something went wrong!'
+    }
+    catch (error) {
+      console.log(`[AuthRegisterForm] - Register failed ! Error : `,error)
       throw error
     }
     finally {
       inSubmission.value = false
+      setTimeout(() => {showAlert.value = false;}, 2000);
     }
   }
 
-  const toggleForm = () => {
+  const toggleForm = (): void => {
     emit('form-state-changed', 'signIn')
   }
 </script>

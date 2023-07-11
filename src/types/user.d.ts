@@ -1,21 +1,53 @@
+import type { Channel } from './Channel'
+import type { Friendship } from './Friendship';
+
 export interface User {
-  // USER ID INFORMATIONS
-  id: number
+  // ******************* //
+  // USER AUTHENTICATION //
+  // ******************* //
+
+  id: string;
   username: string
   email: string
   password: string
-  profile_picture: string
+  profilePicture: string
+  isTwoFactorEnabled: boolean
+  
+  // ****************** //
+  // OTHER INFORMATIONS //
+  // ****************** //
+
   status: string
-  // USER STATS INFORMATIONS
+
+  // ******************************* //
+  // FRIENDSHIP RELATED INFORMATIONS //
+  // ******************************* //
+
+  friends: Array<User>
+  nFriends: number
+  sentRequest: Array<Friendship>
+  receivedRequest: Array<Friendship>
+
+  // ************************* //
+  // CHAT RELATED INFORMATIONS //
+  // ************************* //
+
+  channels: Array<Channel>
+  bannedChannels: Array<Channel>
+  isAdmin: boolean
+  messages: Array<Message>
+
+  // ************************** //
+  // STATS RELATED INFORMATIONS //
+  // ************************** //
+
   rank: number
-  games_played: number
+  gamesPlayed: number
   win: number
   loss: number
-  win_rate: number
-  points_scored: number
-  points_conceded: number
-  points_difference: number
-  // USER FRIENDS INFORMATIONS
-  friends: string[]
-  n_friends: number
+  winRate: number
+  pointsScored: number
+  pointsConceded: number
+  pointsDifference: number
+  
 }

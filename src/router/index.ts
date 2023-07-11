@@ -5,8 +5,12 @@ import AuthView from '../views/AuthView.vue'
 import ChatView from '../views/ChatView.vue'
 import GameView from '../views/GameView.vue'
 import HomeView from '../views/HomeView.vue'
-import StatsView from '../views/StatsView.vue'
+import MfaView from '../views/MfaView.vue'
+import NotFoundView from '../views/NotFoundView.vue'
 import ProfileView from '../views/ProfileView.vue'
+import StatsView from '../views/StatsView.vue'
+import RoomView from '../views/RoomView.vue'
+import CreateRoomView from '../views/CreateRoomView.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -15,8 +19,13 @@ const routes: RouteRecordRaw[] = [
     name: 'auth'
   },
   {
+    component: MfaView,
+    path: '/mfa',
+    name: 'mfa'
+  },
+  {
     component: HomeView,
-    path: '/home',
+    path: '/',
     name: 'home'
   },
   {
@@ -36,12 +45,23 @@ const routes: RouteRecordRaw[] = [
   },
   {
     component: ProfileView,
-    path: '/profile',
+    path: '/profile/:id',
     name: 'profile'
   },
   {
+    component: CreateRoomView,
+    path: '/room/create',
+    name: 'create-room'
+  },
+  {
+    component: RoomView,
+    path: '/room/:id',
+    name: 'room'
+  },
+  {
+    component: NotFoundView,
     path: '/:pathMatch(.*)*',
-    redirect: { name: 'auth' }
+    name: 'NotFound'
   }
 ]
 
@@ -52,16 +72,15 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  if (to.name === 'game') {
-    next()
-    return
-  }
   const userStore = useUserStore()
-  const user = await userStore.fetchUser()
-  console.log(user)
-  if (to.name !== 'auth' && user !== null) {
+  if (!userStore.loggedUser) {
+    await userStore.refreshUser()
+  }
+  if (to.name !== 'auth' && to.name !== 'mfa' && !userStore.loggedUser) {
     next({ name: 'auth' })
-  } else next()
+  } else {
+    next()
+  }
 })
 
 export default router

@@ -6,7 +6,6 @@
         <label class="block font-medium mb-1" for="email"> Email </label>
         <Field
           class="neobrutalist-input w-full text-black"
-          id="email"
           name="email"
           type="email"
           placeholder="Enter your email address"
@@ -17,12 +16,19 @@
         <label class="block font-medium mb-1" for="password">Password</label>
         <Field
           class="neobrutalist-input w-full text-black"
-          id="password"
           name="password"
           type="password"
           placeholder="Enter your password"
+          autocomplete
         />
         <ErrorMessage class="font-normal text-base text-red-600" name="password" />
+      </div>
+      <div
+        class="text-white text-center font-bold p-4 rounded mb-4"
+        v-if="showAlert"
+        :class="alertColor"
+      >
+        {{ alertMsg }}
       </div>
       <div class="flex items-center justify-between mt-8">
         <button
@@ -43,7 +49,7 @@
     </Form>
     <div class="divider before:bg-gray-400 after:bg-gray-400 m-8">or</div>
     <div class="flex justify-center">
-      <button class="btn bg-zinc-900 text-white" type="submit" :disabled="inSubmission">
+      <button @click="handleOauth" class="btn bg-zinc-900 text-white" type="submit" :disabled="inSubmission">
         Sign in with
         <img class="icon mx-3 h-2/4" src="../assets/42-logo.svg" alt="42 Logo" />
       </button>
@@ -65,7 +71,7 @@
   const userStore = useUserStore();
 
   const router = useRouter()
-  const emit = defineEmits(['form-state-changed', 'register'])
+  const emit = defineEmits(['form-state-changed'])
 
   const signInSchema = {
     email: 'required|min:3|max:100|email',
@@ -75,30 +81,72 @@
   const submitForm = async (values: Record<string, any>) => {
     showAlert.value = true
     inSubmission.value = true
-    alertMsg.value = 'Looking for your account in database...'
+    alertMsg.value = 'Searching for account in database...'
     alertColor.value = 'bg-blue-500'
-        
+
     try {
       const response = await userStore.signIn(values)
-      if (response.ok) {      
-        alertColor.value = 'bg-green-500'
-        alertMsg.value = 'Your account has been found in database!'
-        router.push('/home')
-      } else {
+
+      if (response.ok) {
+        if (userStore.twoFactorEnabled) {
+          router.push('/mfa')
+        } else {
+          alertColor.value = 'bg-green-500'
+          alertMsg.value = 'Account found in database!'
+          setTimeout(() => {router.push('/')}, 2000);
+        }
+      }
+      else {
         alertColor.value = 'bg-red-500'
-        alertMsg.value = 'Your account is not found in database!'
+        alertMsg.value = 'Account not found in database!'
         throw new Error('Something went wrong');
       } 
-    } catch (error) {
-      console.log(error)
+    }
+    catch (error) {
+      console.log(`[AuthSignInForm] - Sign In failed ! Error : `,error)
       throw error
     }
     finally {
       inSubmission.value = false
+      setTimeout(() => {showAlert.value = false;}, 2000);
     }
   } 
     
-  const toggleForm = () => {
+  const toggleForm = (): void => {
     emit('form-state-changed', 'register')
   }
+
+
+  const handleOauth = async () => {
+    inSubmission.value = true;
+
+    const authUrl = 'http://localhost:3000/api/auth/42/signIn';
+    const popup = window.open(authUrl, '_blank', 'width=500,height=600');
+
+    const intervalId = setInterval(async () => {
+      try {
+        const authStatus = await userStore.getAuthStatus();
+
+        if (authStatus.status === 'authenticated') {
+          clearInterval(intervalId);
+          if (popup) {
+            popup.close();
+          }
+          await userStore.refreshUser();
+          router.push('/');
+        } else if (authStatus.status === 'requires_2fa') {
+          clearInterval(intervalId);
+          if (popup) {
+            popup.close();
+          }
+          router.push('/mfa');
+        }
+      } catch (error) {
+        console.error('Error fetching auth status:', error);
+      }
+    }, 1000);
+
+    inSubmission.value = false;
+  };
+
 </script>

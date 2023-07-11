@@ -1,195 +1,313 @@
 import { defineStore } from 'pinia'
-import type { User } from '../types/user.js'
+import type { User } from '@/types/User'
 
 export const useUserStore = defineStore('users', {
   state: () => ({
-    loggedUser: null as unknown as User,
+    loggedUser: null as unknown as User | null,
+    friendList: [] as User[],
+    twoFactorEnabled: false,
+    tempUserId: null as unknown as string | null
     // selectedUser: null as unknown as User,
     // users: [] as User[]
   }),
   actions: {
-    async fetchUser() {
-      const response = await fetch('http://localhost:3000/api/user/me', {
-        method: 'GET',
-        credentials: 'include',
+    // ******** //
+    // register //
+    // ******** //
+
+    async register(values: Record<string, any>): Promise<Response> {
+      const response = await fetch(`http://localhost:3000/api/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+        credentials: 'include'
       })
-    return response;
+      return response
     },
 
-    async register(values: Record<string, any>) {
-      const response = await fetch('http://localhost:3000/api/auth/register', {
+    // ****** //
+    // signIn //
+    // ****** //
+
+    async signIn(values: Record<string, any>): Promise<Response> {
+      const response = await fetch(`http://localhost:3000/api/auth/signIn`, {
         method: 'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
-        credentials: 'include',
+        credentials: 'include'
       })
-    return response;
+      if (response.ok) {
+        const data = await response.json()
+        if (data.isTwoFactorEnabled) {
+          this.twoFactorEnabled = true
+          this.tempUserId = data.tempUserId
+        } else {
+          this.loggedUser = data.user
+        }
+      }
+      return response
     },
-    
-    async signIn(values: Record<string, any>) {
-      const response = await fetch('http://localhost:3000/api/auth/signIn', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(values),
-        credentials: 'include',
+
+    // ********* //
+    // fetchUser //
+    // ********* //
+
+    async fetchUser(): Promise<User> {
+      const response = await fetch(`http://localhost:3000/api/user/me`, {
+        method: 'GET',
+        credentials: 'include'
       })
-    if (response.ok) {
-      const user: User = await response.json();
-      this.loggedUser = user;
-    }
-    return response;
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return await response.json()
+    },
+
+    // *********** //
+    // refreshUser //
+    // *********** //
+
+    async refreshUser() {
+      try {
+        const user = await this.fetchUser()
+        if (user) {
+          this.loggedUser = user
+          this.twoFactorEnabled = user.isTwoFactorEnabled
+        }
+      } catch (error) {
+        console.log(error)
+      }
+    },
+
+    // ************* //
+    // fetchAllUsers //
+    // ************* //
+
+    async fetchAllUsers(): Promise<User[]> {
+      const response = await fetch(`http://localhost:3000/api/user/all`, {
+        method: 'GET',
+        credentials: 'include'
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return response.json()
+    },
+
+    // ************* //
+    // fetchUserByID //
+    // ************* //
+
+    async fetchUserById(id: string): Promise<User> {
+      const response = await fetch(`http://localhost:3000/api/user/${id}`, {
+        method: 'GET',
+        credentials: 'include'
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return response.json()
+    },
+
+    // ******************* //
+    // fetchFriendRequests //
+    // ******************* //
+
+    async fetchFriendRequests(id: string) {
+      const response = await fetch(`http://localhost:3000/api/social/${id}/friend-requests`, {
+        method: 'GET',
+        credentials: 'include'
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return response.json()
+    },
+
+    // ***************** //
+    // refreshFriendList //
+    // ***************** //
+
+    async refreshFriendList() {
+      if (!this.loggedUser) return []
+      try {
+        const response = await this.fetchFriendList(this.loggedUser.id)
+        this.friendList = response
+        console.log(`[UserStore] - friendList : `, this.friendList)
+      } catch (error) {
+        console.error(`[UserStore] - Failed to fetch friends! Error: `, error)
+      }
+    },
+
+    // *************** //
+    // fetchFriendList //
+    // *************** //
+
+    async fetchFriendList(id: string) {
+      const response = await fetch(`http://localhost:3000/api/social/${id}/friend-list`, {
+        method: 'GET',
+        credentials: 'include'
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return response.json()
+    },
+
+    // **************** //
+    // fetchBlockedList //
+    // **************** //
+
+    async fetchBlockedList(id: string) {
+      const response = await fetch(`http://localhost:3000/api/social/${id}/blocked-list`, {
+        method: 'GET',
+        credentials: 'include'
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return response.json()
+    },
+
+    // ***************** //
+    // sendFriendRequest //
+    // ***************** //
+
+    async sendFriendRequest(receiverId: string) {
+      const response = await fetch(`http://localhost:3000/api/social/friendship/request`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiverId }),
+        credentials: 'include'
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      console.log(`[UserStore] - Friend request successfully sent to ${receiverId} !`)
+      return response.json()
+    },
+
+    // ******************* //
+    // acceptFriendRequest //
+    // ******************* //
+
+    async acceptFriendRequest(senderId: string) {
+      const response = await fetch(
+        `http://localhost:3000/api/social/friendship/request/${senderId}/accept`,
+        {
+          method: 'PUT',
+          credentials: 'include'
+        }
+      )
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return response.json()
+    },
+
+    // ******************* //
+    // rejectFriendRequest //
+    // ******************* //
+
+    async rejectFriendRequest(senderId: string) {
+      const response = await fetch(
+        `http://localhost:3000/api/social/friendship/request/${senderId}/reject`,
+        {
+          method: 'PUT',
+          credentials: 'include'
+        }
+      )
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return response.json()
+    },
+
+    // ********* //
+    // blockUser //
+    // ********* //
+
+    async blockUser(userToBlockId: string) {
+      const response = await fetch(
+        `http://localhost:3000/api/social/friendship/${userToBlockId}/block`,
+        {
+          method: 'PUT',
+          credentials: 'include'
+        }
+      )
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return response.json()
+    },
+
+    // *************** //
+    // enableTwoFactor //
+    // *************** //
+
+    async enableTwoFactor() {
+      const response = await fetch('http://localhost:3000/api/auth/enableTwoFactor', {
+        method: 'POST',
+        credentials: 'include'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        return data
+      } else {
+        throw new Error(`HTTP error status: ${response.status}`)
+      }
+    },
+
+    // *************** //
+    // verifyTwoFactor //
+    // *************** //
+
+    async verifyTwoFactor(values: Record<string, any>) {
+      const response = await fetch('http://localhost:3000/api/auth/verifyToken', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+        credentials: 'include'
+      })
+
+      if (response.ok) {
+        const user: User = await response.json()
+        this.loggedUser = user
+        this.tempUserId = null
+      }
+      return response
+    },
+
+    // ******* //
+    // signOut //
+    // ******* //
+
+    async signOut() {
+      const response = await fetch('http://localhost:3000/api/auth/signout', {
+        method: 'POST',
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error status: ${response.status}`)
+      }
+
+      this.loggedUser = null
+      this.tempUserId = null
+    },
+
+    // ************* //
+    // getAuthStatus //
+    // ************* //
+
+    async getAuthStatus() {
+      const response = await fetch('http://localhost:3000/api/auth/authStatus', {
+        method: 'GET',
+        credentials: 'include'
+      })
+
+      return response.json()
     }
   }
 })
-
-// export const useUserStore = defineStore('users', {
-//   state: () => ({
-//     selectedUser: null as unknown as User,
-//     loggedUser: {
-//       id: 3,
-//       username: 'Mitsun0bu',
-//       email: '',
-//       password: '',
-//       profile_picture: '',
-//       status: '',
-//       rank: 0,
-//       games_played: 0,
-//       win: 0,
-//       loss: 0,
-//       win_rate: 0,
-//       points_scored: 0,
-//       points_conceded: 0,
-//       points_difference: 0,
-//       friends: ['Conobi', 'Hayce_', 'Narcisserael'],
-//       n_friends: 0
-//     },
-//     users: [
-//       {
-//         id: 1,
-//         username: 'Conobi',
-//         email: '',
-//         password: '',
-//         profile_picture: '',
-//         status: '',
-//         rank: 1,
-//         games_played: 10,
-//         win: 5,
-//         loss: 5,
-//         win_rate: 50,
-//         points_scored: 10,
-//         points_conceded: 10,
-//         points_difference: 0,
-//         friends: ['Mitsun0bu', 'Hayce_', 'Narcisserael'],
-//         n_friends: 0
-//       },
-//       {
-//         id: 2,
-//         username: 'Hayce_',
-//         email: '',
-//         password: '',
-//         profile_picture: '',
-//         status: '',
-//         rank: 2,
-//         games_played: 10,
-//         win: 4,
-//         loss: 6,
-//         win_rate: 40,
-//         points_scored: 8,
-//         points_conceded: 12,
-//         points_difference: -4,
-//         friends: ['Conobi', 'Mitsun0bu', 'Narcisserael'],
-//         n_friends: 0
-//       },
-//       {
-//         id: 3,
-//         username: 'Mitsun0bu',
-//         email: '',
-//         password: '',
-//         profile_picture: '',
-//         status: '',
-//         rank: 0,
-//         games_played: 0,
-//         win: 0,
-//         loss: 0,
-//         win_rate: 0,
-//         points_scored: 0,
-//         points_conceded: 0,
-//         points_difference: 0,
-//         friends: ['Conobi', 'Hayce_', 'Narcisserael'],
-//         n_friends: 0
-//       },
-//       {
-//         id: 4,
-//         username: 'Narcisserael',
-//         email: '',
-//         password: '',
-//         profile_picture: '',
-//         status: '',
-//         rank: 4,
-//         games_played: 10,
-//         win: 2,
-//         loss: 8,
-//         win_rate: 20,
-//         points_scored: 4,
-//         points_conceded: 25,
-//         points_difference: -21,
-//         friends: ['Conobi', 'Hayce_', 'Mitsun0bu'],
-//         n_friends: 0
-//       },
-//       {
-//         id: 5,
-//         username: 'User1',
-//         email: '',
-//         password: '',
-//         profile_picture: '',
-//         status: '',
-//         rank: 4,
-//         games_played: 10,
-//         win: 2,
-//         loss: 8,
-//         win_rate: 20,
-//         points_scored: 4,
-//         points_conceded: 25,
-//         points_difference: -21,
-//         friends: ['Conobi', 'Hayce_', 'Mitsun0bu'],
-//         n_friends: 0
-//       },
-//       {
-//         id: 6,
-//         username: 'User2',
-//         email: '',
-//         password: '',
-//         profile_picture: '',
-//         status: '',
-//         rank: 4,
-//         games_played: 10,
-//         win: 2,
-//         loss: 8,
-//         win_rate: 20,
-//         points_scored: 4,
-//         points_conceded: 25,
-//         points_difference: -21,
-//         friends: ['Conobi', 'Hayce_', 'Mitsun0bu'],
-//         n_friends: 0
-//       },
-//       {
-//         id: 7,
-//         username: 'User3',
-//         email: '',
-//         password: '',
-//         profile_picture: '',
-//         status: '',
-//         rank: 4,
-//         games_played: 10,
-//         win: 2,
-//         loss: 8,
-//         win_rate: 20,
-//         points_scored: 4,
-//         points_conceded: 25,
-//         points_difference: -21,
-//         friends: ['Conobi', 'Hayce_', 'Mitsun0bu'],
-//         n_friends: 0
-//       }
-//     ]
-//   })
-// })
