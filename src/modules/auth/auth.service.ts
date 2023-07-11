@@ -11,13 +11,13 @@ import { promisify } from 'util';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 
 import { UsersService } from '@/modules/users/users.service';
-import { UserDetails } from '@/core/types/user-details';
+import { type UserDetails } from '@/core/types/user-details';
 
 const scrypt = promisify(_scrypt);
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   // ************ //
   // validateUser //
@@ -54,7 +54,7 @@ export class AuthService {
       const otpauth = authenticator.keyuri(user.email, 'YourService', secret);
       const dataUrl = await qrcode.toDataURL(otpauth);
 
-      return { isTwoFactorEnabled: true, dataUrl: dataUrl };
+      return { isTwoFactorEnabled: true, dataUrl };
     }
   }
 
@@ -86,7 +86,7 @@ export class AuthService {
 
   async register(email: string, password: string, username: string) {
     const users = await this.usersService.findOneByEmail(email);
-    if (users.length) {
+    if (users.length > 0) {
       throw new BadRequestException('Email already in use');
     }
 

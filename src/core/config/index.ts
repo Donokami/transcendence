@@ -1,6 +1,6 @@
 import { registerAs } from '@nestjs/config';
 import { z } from 'zod';
-import { generateErrorMessage, ErrorMessageOptions } from 'zod-error';
+import { generateErrorMessage, type ErrorMessageOptions } from 'zod-error';
 import 'dotenv/config';
 
 export default registerAs('transcendence-config', () => {

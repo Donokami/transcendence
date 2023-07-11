@@ -1,4 +1,4 @@
-import { CanActivate, ExecutionContext } from '@nestjs/common';
+import { type CanActivate, type ExecutionContext } from '@nestjs/common';
 
 export class AuthGuard implements CanActivate {
   canActivate(context: ExecutionContext) {

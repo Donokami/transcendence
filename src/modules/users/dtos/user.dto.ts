@@ -2,9 +2,9 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 
 import { Channel } from '@/modules/channels/entities/channel.entity';
-import { Friendship } from '@/modules/social/entities/friendship.entity';
-import { Message } from '@/modules/channels/entities/message.entity';
-import { User } from '@/modules/users/user.entity';
+import { type Friendship } from '@/modules/social/entities/friendship.entity';
+import { type Message } from '@/modules/channels/entities/message.entity';
+import { type User } from '@/modules/users/user.entity';
 
 export class UserDto {
   // ******************* //
@@ -53,19 +53,19 @@ export class UserDto {
 
   @ApiProperty()
   @Expose()
-  friends: Array<User>;
+  friends: User[];
 
   @Expose()
   @Expose()
-  blockedUser: Array<User>;
-
-  @ApiProperty()
-  @Expose()
-  sentRequests: Array<Friendship>;
+  blockedUser: User[];
 
   @ApiProperty()
   @Expose()
-  receivedRequests: Array<Friendship>;
+  sentRequests: Friendship[];
+
+  @ApiProperty()
+  @Expose()
+  receivedRequests: Friendship[];
 
   // ************************* //
   // CHAT RELATED INFORMATIONS //
@@ -77,7 +77,7 @@ export class UserDto {
 
   @ApiProperty()
   @Expose()
-  bannedChannels: Array<Channel>;
+  bannedChannels: Channel[];
 
   // @ApiProperty()
   // @Expose()
@@ -85,7 +85,7 @@ export class UserDto {
 
   @ApiProperty()
   @Expose()
-  messages: Array<Message>;
+  messages: Message[];
 
   // ************************** //
   // STATS RELATED INFORMATIONS //

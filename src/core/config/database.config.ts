@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import {
+  type TypeOrmOptionsFactory,
+  type TypeOrmModuleOptions,
+} from '@nestjs/typeorm';
 
 import { Channel } from '@/modules/channels/entities/channel.entity';
 import { Friendship } from '@/modules/social/entities/friendship.entity';

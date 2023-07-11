@@ -1,7 +1,7 @@
 import {
-  NestInterceptor,
-  ExecutionContext,
-  CallHandler,
+  type NestInterceptor,
+  type ExecutionContext,
+  type CallHandler,
   Injectable,
 } from '@nestjs/common';
 
@@ -9,7 +9,7 @@ import { UsersService } from '@/modules/users/users.service';
 
 @Injectable()
 export class CurrentUserInterceptor implements NestInterceptor {
-  constructor(private usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {}
 
   async intercept(context: ExecutionContext, handler: CallHandler) {
     const request = context.switchToHttp().getRequest();

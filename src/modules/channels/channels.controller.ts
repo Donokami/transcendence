@@ -19,16 +19,16 @@ import { OwnershipGuard } from './guards/ownership.guard';
 
 @Controller('channels')
 export class ChannelsController {
-  constructor(private readonly channelsService: ChannelsService) { }
+  constructor(private readonly channelsService: ChannelsService) {}
 
   @Get(':id')
   async findOne(@Param('id') id: string) {
-    return this.channelsService.findOne(id);
+    return await this.channelsService.findOne(id);
   }
 
   @Get()
   async findAll() {
-    return this.channelsService.findAll();
+    return await this.channelsService.findAll();
   }
 
   @Post()
@@ -37,7 +37,7 @@ export class ChannelsController {
     @Body() createChannelDto: CreateChannelDto,
   ) {
     createChannelDto.ownerId = req.user.id;
-    return this.channelsService.create(createChannelDto);
+    return await this.channelsService.create(createChannelDto);
   }
 
   @UseGuards(OwnershipGuard)
@@ -46,12 +46,12 @@ export class ChannelsController {
     @Param('id') id: string,
     @Body() updateChannelDto: UpdateChannelDto,
   ) {
-    return this.channelsService.update(id, updateChannelDto);
+    return await this.channelsService.update(id, updateChannelDto);
   }
 
   @UseGuards(OwnershipGuard)
   @Delete(':id')
   async remove(@Param('id') id: string) {
-    return this.channelsService.remove(id);
+    return await this.channelsService.remove(id);
   }
 }

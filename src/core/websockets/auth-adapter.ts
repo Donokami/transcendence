@@ -1,12 +1,12 @@
-import { INestApplicationContext, Logger } from '@nestjs/common';
+import { type INestApplicationContext, Logger } from '@nestjs/common';
 import { isFunction, isNil } from '@nestjs/common/utils/shared.utils';
-import { ConfigService } from '@nestjs/config';
+import { type ConfigService } from '@nestjs/config';
 import {
   AbstractWsAdapter,
-  MessageMappingProperties,
+  type MessageMappingProperties,
 } from '@nestjs/websockets';
 import { DISCONNECT_EVENT } from '@nestjs/websockets/constants';
-import { fromEvent, Observable } from 'rxjs';
+import { fromEvent, type Observable } from 'rxjs';
 import { filter, first, map, mergeMap, share, takeUntil } from 'rxjs/operators';
 import { Server } from 'socket.io';
 import { session } from '@/app.module';
@@ -15,8 +15,8 @@ import { UsersService } from '@/modules/users/users.service';
 export class SocketIoAdapter extends AbstractWsAdapter {
   usersService: UsersService;
   constructor(
-    private app: INestApplicationContext,
-    private configService: ConfigService,
+    private readonly app: INestApplicationContext,
+    private readonly configService: ConfigService,
   ) {
     super(app);
     app.resolve<UsersService>(UsersService).then((usersService) => {

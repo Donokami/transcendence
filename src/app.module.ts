@@ -1,8 +1,12 @@
-import { Module, ValidationPipe, MiddlewareConsumer } from '@nestjs/common';
+import {
+  Module,
+  ValidationPipe,
+  type MiddlewareConsumer,
+} from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RequestHandler } from 'express';
+import { type RequestHandler } from 'express';
 
 import * as passport from 'passport';
 

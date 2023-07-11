@@ -21,7 +21,7 @@ import { VerifyTokenDto } from './dtos/verify-token.dto';
 @Controller('auth')
 @Serialize(UserDto)
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Get('42/signIn')
   @UseGuards(AuthGuard('42'))

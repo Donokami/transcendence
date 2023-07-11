@@ -15,9 +15,9 @@ import { Friendship, FriendshipStatus } from './entities/friendship.entity';
 export class SocialService {
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private readonly usersRepository: Repository<User>,
     @InjectRepository(Friendship)
-    private friendshipRepository: Repository<Friendship>,
+    private readonly friendshipRepository: Repository<Friendship>,
   ) {}
 
   // ***************** //
@@ -87,8 +87,8 @@ export class SocialService {
       const friendship = this.friendshipRepository.create({
         blockerId: null,
         status: FriendshipStatus.PENDING,
-        sender: sender,
-        receiver: receiver,
+        sender,
+        receiver,
       });
       await this.friendshipRepository.save(friendship);
 
@@ -291,7 +291,7 @@ export class SocialService {
     });
     if (!existingFriendship) {
       throw new UnauthorizedException(
-        `Cannot unblock a user you have no relationship with.`,
+        'Cannot unblock a user you have no relationship with.',
       );
     }
 

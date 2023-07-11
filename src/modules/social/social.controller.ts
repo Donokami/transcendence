@@ -26,7 +26,7 @@ export class SocialController {
   ) {
     const senderId = session.userId;
 
-    return this.socialService.sendFriendRequest(
+    return await this.socialService.sendFriendRequest(
       senderId,
       friendRequestDto.receiverId,
     );
@@ -73,7 +73,7 @@ export class SocialController {
   ) {
     const receiverId = session.userId;
 
-    return this.socialService.acceptFriendRequest(receiverId, senderId);
+    return await this.socialService.acceptFriendRequest(receiverId, senderId);
   }
 
   // ******************* //
@@ -87,7 +87,7 @@ export class SocialController {
   ) {
     const receiverId = session.userId;
 
-    return this.socialService.rejectFriendRequest(receiverId, senderId);
+    return await this.socialService.rejectFriendRequest(receiverId, senderId);
   }
 
   // ********* //
@@ -101,7 +101,7 @@ export class SocialController {
   ) {
     const userId = session.userId;
 
-    return this.socialService.blockUser(userId, userToBlockId);
+    return await this.socialService.blockUser(userId, userToBlockId);
   }
 
   // *********** //
@@ -115,6 +115,6 @@ export class SocialController {
   ) {
     const userId = session.userId;
 
-    return this.socialService.unblockUser(userId, userToUnblockId);
+    return await this.socialService.unblockUser(userId, userToUnblockId);
   }
 }

@@ -1,4 +1,4 @@
-import { User } from '@/modules/users/user.entity';
+import { type User } from '@/modules/users/user.entity';
 import type { IncomingMessage } from 'http';
 import type { Socket } from 'socket.io';
 

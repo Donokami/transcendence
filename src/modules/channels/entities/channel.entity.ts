@@ -25,13 +25,13 @@ export class Channel {
   ownerId: string;
 
   @OneToMany(() => User, (user: User) => user.channel)
-  members: Array<User>;
+  members: User[];
 
   @ManyToMany(() => User, (user: User) => user.bannedChannels)
-  bannedMembers: Array<User>;
+  bannedMembers: User[];
 
   @OneToMany(() => Message, (message: Message) => message.channel)
-  messages: Array<Message>;
+  messages: Message[];
 
   @AfterInsert()
   logInsert() {

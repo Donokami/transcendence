@@ -1,8 +1,7 @@
 import { MAX_PLAYERS } from '@/core/constants';
 import { Logger } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { User } from '../users/user.entity';
-import { GameGateway } from './game.gateway';
+import { type User } from '../users/user.entity';
 
 export enum RoomStatus {
   OPEN = 'open',
@@ -38,9 +37,10 @@ export class Room {
     status: RoomStatus.OPEN,
     maxPlayers: MAX_PLAYERS,
   };
-  private logger = new Logger(Room.name);
-  constructor(opts: RoomOpts, private gameGateway: GameGateway) {
-    if (!opts || !opts.owner) {
+
+  private readonly logger = new Logger(Room.name);
+  constructor({ name, owner, isPrivate }: RoomOpts) {
+    if (!owner) {
       throw new Error('Room must have an owner');
     }
 
@@ -48,13 +48,13 @@ export class Room {
 
     this.logger.log(`Creating room ${this.room.id}`);
 
-    this.room.name = opts.name || `${opts.owner.username}'s room`;
+    this.room.name = name || `${owner.username}'s room`;
 
-    this.room.isPrivate = opts.isPrivate || false;
+    this.room.isPrivate = isPrivate || false;
 
-    this.room.owner = opts.owner;
+    this.room.owner = owner;
 
-    this.room.players.push(opts.owner);
+    this.room.players.push(owner);
   }
 
   public getRoom() {
@@ -87,6 +87,10 @@ export class Room {
     } else {
       this.room.observers = this.room.observers.filter((u) => u !== user);
     }
+  }
+
+  public update(updatedRoom: RoomObject) {
+    this.room = updatedRoom;
   }
 
   public isFull() {

@@ -50,7 +50,7 @@ export class GameController {
     )
     query: PaginationDTO,
   ) {
-    return this.gameService.findAll({
+    return await this.gameService.findAll({
       limit: Number(query.limit) || 10,
       page: Number(query.page) || 1,
     });
@@ -63,39 +63,39 @@ export class GameController {
     @Body() createGameDto: CreateGameDto,
   ) {
     createGameDto.owner = req.session.userId;
-    return this.gameService.create(createGameDto);
+    return await this.gameService.create(createGameDto);
   }
 
   @Patch(':id')
   @UseGuards(AuthGuard)
   @UseGuards(OwnershipGuard)
   async update(@Param('id') id: string, @Body() updateGameDto: UpdateGameDto) {
-    return this.gameService.update(id, updateGameDto);
+    return await this.gameService.update(id, updateGameDto);
   }
 
   @Delete(':id')
   @UseGuards(AuthGuard)
   @UseGuards(OwnershipGuard)
   async remove(@Param('id') id: string) {
-    return this.gameService.remove(id);
+    return await this.gameService.remove(id);
   }
 
   @Post(':id/join')
   @UseGuards(AuthGuard)
   async join(@Param('id') id: string, @Req() req: RequestWithUser) {
-    return this.gameService.join(id, req.session.userId);
+    return await this.gameService.join(id, req.session.userId);
   }
 
   @Post(':id/leave')
   @UseGuards(AuthGuard)
   async leave(@Param('id') id: string, @Req() req: RequestWithUser) {
-    return this.gameService.leave(id, req.session.userId);
+    return await this.gameService.leave(id, req.session.userId);
   }
 
   @Post(':id/kick/:userId')
   @UseGuards(AuthGuard)
   @UseGuards(OwnershipGuard)
   async kick(@Param('id') id: string, @Param('userId') userId: string) {
-    return this.gameService.kick(id, userId);
+    return await this.gameService.kick(id, userId);
   }
 }

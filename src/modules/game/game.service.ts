@@ -10,23 +10,24 @@ import {
 
 import { UsersService } from '@/modules/users/users.service';
 
-import { CreateGameDto } from './dtos/create-game-dto';
-import { UpdateGameDto } from './dtos/update-game-dto';
-import { Pagination } from '@/core/types/pagination';
+import { type CreateGameDto } from './dtos/create-game-dto';
+import { type UpdateGameDto } from './dtos/update-game-dto';
+import { type Pagination } from '@/core/types/pagination';
 import { GameGateway } from './game.gateway';
 
-import { Room } from './room';
+import { Room, type RoomObject } from './room';
 
 @Injectable()
 export class GameService {
   private readonly games: Room[] = [];
+
   constructor(
     private readonly userService: UsersService,
     @Inject(forwardRef(() => GameGateway))
-    private gameGateway: GameGateway,
+    private readonly gameGateway: GameGateway,
   ) {}
 
-  private logger = new Logger(GameService.name);
+  private readonly logger = new Logger(GameService.name);
 
   async findOne(id: string) {
     return this.games.find((game) => game.getRoom().id === id);
@@ -59,14 +60,11 @@ export class GameService {
       );
     }
 
-    const game = new Room(
-      {
-        name: createGameDto.name,
-        owner: user,
-        isPrivate: createGameDto.isPrivate,
-      },
-      this.gameGateway,
-    );
+    const game = new Room({
+      name: createGameDto.name,
+      owner: user,
+      isPrivate: createGameDto.isPrivate,
+    });
 
     this.games.push(game);
 
@@ -83,7 +81,9 @@ export class GameService {
       throw new NotFoundException(`There is no game under id ${id}`);
     }
 
-    const updatedGame = { ...game.getRoom(), ...updateGameDto };
+    const updatedGame: RoomObject = { ...game.getRoom(), ...updateGameDto };
+
+    game.update(updatedGame);
 
     this.logger.verbose(`Updating game ${id}`);
 
@@ -143,7 +143,7 @@ export class GameService {
       userId,
     });
 
-    return data;
+    return await data;
   }
 
   async leave(id: string, userId: string) {

@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 
 import {
-  OnGatewayConnection,
-  OnGatewayDisconnect,
+  type OnGatewayConnection,
+  type OnGatewayDisconnect,
   ConnectedSocket,
   MessageBody,
   SubscribeMessage,
@@ -39,12 +39,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  connectedUsers: Map<string, string> = new Map();
+  connectedUsers = new Map<string, string>();
 
   constructor(
     private readonly userService: UsersService,
     private readonly channelService: ChannelsService,
-  ) { }
+  ) {}
 
   async handleConnection(client: UserSocket): Promise<void> {
     const { user } = client.request;
@@ -53,7 +53,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.connectedUsers.set(client.id, user.id);
 
     if (channel) {
-      return this.onChannelJoin(client, { channelId: channel.id });
+      await this.onChannelJoin(client, { channelId: channel.id });
     }
   }
 
@@ -116,13 +116,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
 
     if (userId !== channel.ownerId) {
-      throw new ForbiddenException(`You are not the owner of the channel!`);
+      throw new ForbiddenException('You are not the owner of the channel!');
     }
     if (userId === kickUserDto.userId) {
-      throw new ForbiddenException(`You can't kick yourself`);
+      throw new ForbiddenException("You can't kick yourself");
     }
     if (kickUserDto.userId === channel.ownerId) {
-      throw new ForbiddenException(`You can't kick the owner of the channel!`);
+      throw new ForbiddenException("You can't kick the owner of the channel!");
     }
 
     await this.userService.updateUserChannel(kickUserDto.userId, null);
@@ -146,13 +146,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
 
     if (userId !== channel.ownerId) {
-      throw new ForbiddenException(`You are not the owner of the channel!`);
+      throw new ForbiddenException('You are not the owner of the channel!');
     }
     if (userId === banUserDto.userId) {
-      throw new ForbiddenException(`You can't ban yourself`);
+      throw new ForbiddenException("You can't ban yourself");
     }
     if (banUserDto.userId === channel.ownerId) {
-      throw new ForbiddenException(`You can't ban the owner of the channel!`);
+      throw new ForbiddenException("You can't ban the owner of the channel!");
     }
 
     await this.channelService.banUserFromChannel(banUserDto);

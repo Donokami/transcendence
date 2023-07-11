@@ -1,8 +1,8 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { AuthService } from './auth.service';
-import { User } from './user.entity';
+import { type User } from './user.entity';
 import { NotFoundException } from '@nestjs/common';
 
 describe('UsersController', () => {
@@ -12,15 +12,15 @@ describe('UsersController', () => {
 
   beforeEach(async () => {
     fakeUsersService = {
-      findOne: (id: string) => {
-        return Promise.resolve({
+      findOne: async (id: string) => {
+        return await Promise.resolve({
           id,
           email: 'user@test.fr',
           password: 'password',
         } as User);
       },
-      find: (email: string) => {
-        return Promise.resolve([
+      find: async (email: string) => {
+        return await Promise.resolve([
           {
             id: 1,
             email,
@@ -33,8 +33,8 @@ describe('UsersController', () => {
     };
     fakeAuthService = {
       // register: () => {},
-      signIn: (email: string, password: string) => {
-        return Promise.resolve({
+      signIn: async (email: string, password: string) => {
+        return await Promise.resolve({
           id: 1,
           email,
           password,

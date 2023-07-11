@@ -8,10 +8,10 @@ import { UsersService } from '@/modules/users/users.service';
 import { Channel } from './entities/channel.entity';
 import { Message } from './entities/message.entity';
 
-import { AddMessageDto } from '@/modules/chat/dtos/add-message.dto';
-import { BanUserDto } from '@/modules/chat/dtos/ban-user.dto';
-import { CreateChannelDto } from './dtos/create-channel.dto';
-import { UpdateChannelDto } from './dtos/update-channel.dto';
+import { type AddMessageDto } from '@/modules/chat/dtos/add-message.dto';
+import { type BanUserDto } from '@/modules/chat/dtos/ban-user.dto';
+import { type CreateChannelDto } from './dtos/create-channel.dto';
+import { type UpdateChannelDto } from './dtos/update-channel.dto';
 
 @Injectable()
 export class ChannelsService {
@@ -39,7 +39,7 @@ export class ChannelsService {
     });
 
     if (!channels) {
-      throw new NotFoundException(`No channels found`);
+      throw new NotFoundException('No channels found');
     }
 
     return channels;
@@ -75,13 +75,13 @@ export class ChannelsService {
       throw new NotFoundException(`There is no channel under id ${id}`);
     }
 
-    return this.channelRepository.save(channel);
+    return await this.channelRepository.save(channel);
   }
 
   async remove(id: string) {
     const channel = await this.findOne(id);
 
-    return this.channelRepository.remove(channel);
+    return await this.channelRepository.remove(channel);
   }
 
   async addMessage(addMessageDto: AddMessageDto) {
@@ -115,6 +115,6 @@ export class ChannelsService {
       bannedMembers,
     });
 
-    return this.channelRepository.save(updatedChannel);
+    return await this.channelRepository.save(updatedChannel);
   }
 }

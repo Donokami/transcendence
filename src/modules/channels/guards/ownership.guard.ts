@@ -1,6 +1,10 @@
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  type CanActivate,
+  type ExecutionContext,
+  Injectable,
+} from '@nestjs/common';
 
-import { Observable } from 'rxjs';
+import { type Observable } from 'rxjs';
 
 import { type RequestWithUser } from '@/core/types/request-with-user';
 
@@ -8,7 +12,7 @@ import { ChannelsService } from '../channels.service';
 
 @Injectable()
 export class OwnershipGuard implements CanActivate {
-  constructor(private readonly channelsService: ChannelsService) { }
+  constructor(private readonly channelsService: ChannelsService) {}
 
   canActivate(
     context: ExecutionContext,
@@ -25,7 +29,7 @@ export class OwnershipGuard implements CanActivate {
         }
 
         resolve(false);
-      } catch (e) { }
+      } catch (e) {}
     });
   }
 }

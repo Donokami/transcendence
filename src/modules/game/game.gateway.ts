@@ -24,7 +24,7 @@ export class GameGateway {
     private gameService: GameService,
   ) {}
 
-  private logger = new Logger(GameService.name);
+  private readonly logger = new Logger(GameService.name);
 
   async handleConnection(client: Socket) {
     const gameId = client.handshake.query.gameId as string;
@@ -83,10 +83,16 @@ export class GameGateway {
   }
 
   @SubscribeMessage('move')
-  handleMove(
-    @MessageBody() move: string,
+  async handleMove(
+    @MessageBody('x') x: number,
+    @MessageBody('room_id') room_id: string,
     @ConnectedSocket() client: Socket,
-  ): void {
-    this.server.emit('move', client.id, move);
+  ): Promise<void> {
+    const room = await this.gameService.findOne(room_id);
+
+    // game.updatePos(client.request.user.id, x);
+    if (x < 0 || x > 1) {
+      client.emit('error', 'Invalid move');
+    }
   }
 }

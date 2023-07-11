@@ -27,9 +27,9 @@ import { OwnershipGuard } from './guards/ownership.guard';
 @Serialize(UserDto)
 export class UsersController {
   constructor(
-    private usersService: UsersService,
+    private readonly usersService: UsersService,
     private readonly socialService: SocialService,
-  ) { }
+  ) {}
 
   // ****** //
   // whoAmI //
@@ -71,11 +71,11 @@ export class UsersController {
 
   @Patch('/:id')
   @UseGuards(AuthGuard)
-  updateUser(
+  async updateUser(
     @Param('id') id: string,
     @Body() body: UpdateUserDto,
   ): Promise<User> {
-    return this.usersService.update(id, body);
+    return await this.usersService.update(id, body);
   }
 
   // ********** //
@@ -85,7 +85,7 @@ export class UsersController {
   @Delete('/:id')
   @UseGuards(AuthGuard)
   @UseGuards(OwnershipGuard)
-  removeUser(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  async removeUser(@Param('id') id: string) {
+    return await this.usersService.remove(id);
   }
 }
