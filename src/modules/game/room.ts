@@ -20,6 +20,7 @@ export interface RoomObject {
   name: string;
   players: User[];
   observers: User[];
+  invited: User[];
   owner: User;
   isPrivate: boolean;
   status: RoomStatus;
@@ -31,6 +32,7 @@ export class Room implements RoomObject {
   name = '';
   players = [];
   observers = [];
+  invited = [];
   owner = null;
   isPrivate = false;
   status = RoomStatus.OPEN;
@@ -61,6 +63,7 @@ export class Room implements RoomObject {
       name: this.name,
       players: this.players,
       observers: this.observers,
+      invited: this.invited,
       owner: this.owner,
       isPrivate: this.isPrivate,
       status: this.status,
@@ -70,10 +73,14 @@ export class Room implements RoomObject {
 
   public join(user: User) {
     if (this.players.find((u) => u.id === user.id)) {
-      return;
+      throw new Error('User is already in the room');
     }
 
-    if (this.players.length < MAX_PLAYERS) {
+    if (this.isPrivate && !this.invited.find((u) => u.id === user.id)) {
+      throw new Error('User is not invited');
+    }
+
+    if (this.players.length < MAX_PLAYERS && this.status === RoomStatus.OPEN) {
       this.players.push(user);
 
       if (this.players.length === MAX_PLAYERS) {
@@ -96,6 +103,14 @@ export class Room implements RoomObject {
     }
   }
 
+  public invite(user: User) {
+    if (this.invited.find((u) => u.id === user.id)) {
+      throw new Error('User is already invited');
+    }
+
+    this.invited.push(user);
+  }
+
   public update(updatedRoom: RoomObject) {
     Object.keys(updatedRoom).forEach((key) => {
       if (updatedRoom[key] !== undefined) {
@@ -106,18 +121,6 @@ export class Room implements RoomObject {
   }
 
   public isFull() {
-    return this.players.length >= MAX_PLAYERS;
-  }
-
-  public setOwner(user: User) {
-    this.owner = user;
-  }
-
-  public setName(name: string) {
-    this.name = name;
-  }
-
-  public setPrivate(isPrivate: boolean) {
-    this.isPrivate = isPrivate;
+    return this.players.length === MAX_PLAYERS;
   }
 }

@@ -111,15 +111,11 @@ export class GameService {
     const game = await this.findOne(id);
     const user = await this.userService.findOneById(userId);
 
-    // todo: check if game is private
-
     try {
       game.join(user);
     } catch (error) {
-      throw new HttpException(error.message, error.status);
+      throw new HttpException(error.message, 400);
     }
-
-    // todo: add spectator role
 
     this.logger.verbose(`Joining user ${userId} to game ${id}`);
 
