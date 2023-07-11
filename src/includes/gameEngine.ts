@@ -2,7 +2,7 @@ import { Vector3, type Object3D } from 'three'
 import { reactive } from 'vue'
 import { io } from 'socket.io-client'
 
-const socket = io('http://localhost:5000')
+const socket = io('http://localhost:5000/', { path: '/ws/socket.io' })
 
 const gs = reactive({
   connected: false,
@@ -32,9 +32,10 @@ socket.on('connect', () => {
   console.log('connected')
 })
 
-socket.on('coordinates', (...args) => {
-  console.log(args)
-  // gs.testBallPos = new Vector3(x, y, z)
+socket.on('coordinates', ({ x, y, z }) => {
+  // console.log(args)
+  console.log(x, y, z)
+  gs.testBallPos = new Vector3(x, y, z)
 })
 
 socket.onAny((eventName, ...args) => {

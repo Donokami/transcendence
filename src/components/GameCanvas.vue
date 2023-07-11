@@ -80,7 +80,7 @@
           </TresMesh>
           <TresMesh ref="testBallRef">
             <TresSphereGeometry :args="[gm.ballRadius]" />
-            <TresMeshToonMaterial color="red" />
+            <TresMeshToonMaterial color="blue" />
           </TresMesh>
           <Suspense>
             <Text3D :size="3" :height="1" :position="[0, (gm.fieldHeight + gm.paddleHeight) * 4, -gm.fieldDepth * 0.5]"
