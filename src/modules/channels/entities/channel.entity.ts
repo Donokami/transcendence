@@ -29,13 +29,16 @@ export class Channel {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ default: true })
+  isDm: boolean;
+
+  @Column({ default: '' })
   name: string;
 
   @OneToOne(() => User)
-  ownerId: string;
+  owner: User;
 
-  @OneToMany(() => User, (user: User) => user.channel)
+  @ManyToMany(() => User, (user: User) => user.channels)
   members: Array<User>;
 
   @ManyToMany(() => User, (user: User) => user.bannedChannels)

@@ -1,4 +1,7 @@
-// game.gateway.ts
+import { Inject, Logger, forwardRef } from '@nestjs/common';
+
+import { Server, Socket } from 'socket.io';
+
 import {
   ConnectedSocket,
   MessageBody,
@@ -6,10 +9,10 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
-import { GameService } from './game.service';
-import { Inject, Logger, forwardRef } from '@nestjs/common';
+
 import { UserSocket } from '@/core/types/socket';
+
+import { GameService } from './game.service';
 
 @WebSocketGateway({
   namespace: '/game',
@@ -19,12 +22,28 @@ export class GameGateway {
   @WebSocketServer()
   server: Server;
 
+  // ************ //
+  // CONSTRUCTORS //
+  // ************ //
+
   constructor(
     @Inject(forwardRef(() => GameService))
     private gameService: GameService,
-  ) { }
+  ) {}
+
+  // ****** //
+  // LOGGER //
+  // ****** //
 
   private logger = new Logger(GameService.name);
+
+  // ***************** //
+  // GATEWAY FUNCTIONS //
+  // ***************** //
+
+  // **************** //
+  // handleConnection //
+  // **************** //
 
   async handleConnection(client: Socket) {
     const gameId = client.handshake.query.gameId as string;
@@ -41,12 +60,20 @@ export class GameGateway {
     this.logger.verbose(`Client ${client.id} connected to game ${gameId}`);
   }
 
+  // **************** //
+  // handleDisconnect //
+  // **************** //
+
   handleDisconnect(client: UserSocket) {
     const gameId = client.handshake.query.gameId as string;
-    this.gameService.leave(gameId, client.request.user.id).catch((err) => { });
+    this.gameService.leave(gameId, client.request.user.id).catch((err) => {});
     this.logger.verbose(`Client ${client.id} disconnected`);
     client.emit('disconnection', 'Successfully disconnected from game server');
   }
+
+  // ********** //
+  // handleJoin //
+  // ********** //
 
   @SubscribeMessage('join')
   async handleJoin(
@@ -60,12 +87,16 @@ export class GameGateway {
       return;
     }
 
-    this.gameService.join(room, client.request.user.id).catch((err) => { });
+    this.gameService.join(room, client.request.user.id).catch((err) => {});
 
     client.join(room);
 
     this.server.to(room).emit('game:update', game);
   }
+
+  // *********** //
+  // handleLeave //
+  // *********** //
 
   @SubscribeMessage('leave')
   async handleLeave(
@@ -81,6 +112,10 @@ export class GameGateway {
 
     client.leave(room);
   }
+
+  // ********** //
+  // handleMove //
+  // ********** //
 
   @SubscribeMessage('move')
   handleMove(

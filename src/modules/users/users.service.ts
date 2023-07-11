@@ -129,7 +129,7 @@ export class UsersService {
   async updateUserChannel(id: string, channel: Channel): Promise<User> {
     const user = await this.userRepository.preload({
       id,
-      channel,
+      channels: [] as Channel[],
     });
 
     if (!user) {

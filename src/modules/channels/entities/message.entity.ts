@@ -36,11 +36,9 @@ export class Message {
   @CreateDateColumn()
   createdAt: Date;
 
-  @JoinTable()
   @ManyToOne(() => Channel, (channel: Channel) => channel.messages)
   channel: Channel;
 
-  @JoinTable()
   @ManyToOne(() => User, (user: User) => user.messages)
   user: User;
 

@@ -1,32 +1,427 @@
-import {
-  ForbiddenException,
-  UsePipes,
-  ValidationPipe,
-  Logger,
-} from '@nestjs/common';
+////////////////////////////////////
+// ARTHUR VERSION OF CHAT GATEWAY //
+////////////////////////////////////
+
+// import { Logger } from '@nestjs/common';
+
+// import { Server, Socket } from 'socket.io';
+
+// import {
+//   ConnectedSocket,
+//   MessageBody,
+//   SubscribeMessage,
+//   WebSocketGateway,
+//   WebSocketServer,
+// } from '@nestjs/websockets';
+
+// import { UserSocket } from '@/core/types/socket';
+
+// import { ChannelsService } from '@/modules/channels/channels.service';
+// import { UsersService } from '@/modules/users/users.service';
+
+// import { BanUserDto } from './dtos/ban-user.dto';
+// import { KickUserDto } from './dtos/kick-user.dto';
+
+// // @UsePipes(new ValidationPipe())
+// @WebSocketGateway({
+//   namespace: '/chat',
+//   transport: ['websocket', 'polling'],
+// })
+// export class ChatGateway {
+//   @WebSocketServer()
+//   server: Server;
+
+//   // todo: create a connectedUsers map
+//   // connectedUsers: Map<string, string> = new Map();
+
+//   // ************ //
+//   // CONSTRUCTORS //
+//   // ************ //
+
+//   constructor(
+//     private readonly userService: UsersService,
+//     private readonly channelService: ChannelsService,
+//   ) {}
+
+//   // ****** //
+//   // LOGGER //
+//   // ****** //
+
+//   private logger = new Logger(ChatGateway.name);
+
+//   // ***************** //
+//   // GATEWAY FUNCTIONS //
+//   // ***************** //
+
+//   // ***************** //
+//   // getClientByUserId //
+//   // ***************** //
+
+//   // **************** //
+//   // handleConnection //
+//   // **************** //
+
+//   async handleConnection(client: UserSocket): Promise<void> {
+//     const channelId = client.handshake.query.channelId as string;
+
+//     client.emit('connection', 'Successfully connected to chat server');
+
+//     const channel = await this.channelService.findOne(channelId);
+//     if (!channel) {
+//       client.emit('error', `Channel ${channelId} not found`);
+//       return;
+//     }
+
+//     client.join(channelId);
+
+//     this.logger.verbose(
+//       `Client ${client.id} connected to channel with ID : ${channelId}`,
+//     );
+//   }
+
+//   // **************** //
+//   // handleDisconnect //
+//   // **************** //
+
+//   async handleDisconnect(client: UserSocket) {
+//     // todo: implement leave function in channelService
+//     const channelId = client.handshake.query.channelId as string;
+//     this.channelService
+//       .leave(channelId, client.request.user.id)
+//       .catch((err) => {});
+//     this.logger.verbose(`Client ${client.id} disconnected`);
+//     client.emit('disconnection', 'Successfully disconnected from chat server');
+//   }
+
+//   // ********** //
+//   // handleJoin //
+//   // ********** //
+
+//   @SubscribeMessage('join')
+//   async handleJoin(
+//     @MessageBody() channelId: string,
+//     @ConnectedSocket() client: UserSocket,
+//   ): Promise<void> {
+//     const channel = await this.channelService.findOneWithRelations(channelId);
+
+//     if (!channel) {
+//       client.emit('error', `Channel with ID : ${channelId} not found`);
+//       return;
+//     }
+
+//     // todo: implement join function in channelService
+//     this.channelService
+//       .join(channelId, client.request.user.id)
+//       .catch((err) => {});
+
+//     client.join(channelId);
+
+//     this.server.to(channelId).emit('channel:update', channelId);
+//   }
+
+//   // *********** //
+//   // handleLeave //
+//   // *********** //
+
+//   @SubscribeMessage('leave')
+//   async handleLeave(
+//     @MessageBody() channelId: string,
+//     @ConnectedSocket() client: UserSocket,
+//   ): Promise<void> {
+//     const channel = await this.channelService.findOneWithRelations(channelId);
+//     if (!channel) {
+//       client.emit('error', `Channel with ID : ${channelId} not found`);
+//       return;
+//     }
+
+//     client.leave(channelId);
+//   }
+
+//   // ************* //
+//   // handleMessage //
+//   // ************* //
+
+//   @SubscribeMessage('message')
+//   async handleMessage(
+//     @MessageBody() senderId: string,
+//     @MessageBody() receiverId: string,
+//     @MessageBody() message: string,
+//     @MessageBody() channelId: string,
+//     @ConnectedSocket() client: Socket,
+//   ): Promise<void> {}
+
+//   // ************* //
+//   // handleUserBan //
+//   // ************* //
+
+//   @SubscribeMessage('user-ban')
+//   async handleUserBan(client: UserSocket, banUserDto: BanUserDto) {}
+
+//   // ************** //
+//   // handleUserKick //
+//   // ************** //
+
+//   @SubscribeMessage('user-kick')
+//   async handleUserKick(client: UserSocket, kickUserDto: KickUserDto) {}
+// }
+
+/////////////////////////////////////////
+// BOILERPLATE VERSION OF CHAT GATEWAY //
+/////////////////////////////////////////
+
+// import {
+//   ForbiddenException,
+//   Logger,
+//   UsePipes,
+//   ValidationPipe,
+// } from '@nestjs/common';
+
+// import { Server, Socket } from 'socket.io';
+
+// import {
+//   ConnectedSocket,
+//   MessageBody,
+//   OnGatewayConnection,
+//   OnGatewayDisconnect,
+//   SubscribeMessage,
+//   WebSocketGateway,
+//   WebSocketServer,
+// } from '@nestjs/websockets';
+
+// import { UserSocket } from '@/core/types/socket';
+
+// import { ChannelsService } from '@/modules/channels/channels.service';
+// import { UsersService } from '@/modules/users/users.service';
+
+// import { AddMessageDto } from './dtos/add-message.dto';
+// import { BanUserDto } from './dtos/ban-user.dto';
+// import { JoinChannelDto } from './dtos/join-channel.dto';
+// import { KickUserDto } from './dtos/kick-user.dto';
+// import { LeaveChannelDto } from './dtos/leave-channel.dto';
+
+// @UsePipes(new ValidationPipe())
+// @WebSocketGateway({
+//   namespace: '/chat',
+//   transport: ['websocket', 'polling'],
+// })
+// export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+//   @WebSocketServer()
+//   server: Server;
+
+//   connectedUsers: Map<string, string> = new Map();
+
+//   // ************ //
+//   // CONSTRUCTORS //
+//   // ************ //
+
+//   constructor(
+//     private readonly userService: UsersService,
+//     private readonly channelService: ChannelsService,
+//   ) {}
+
+//   // ****** //
+//   // LOGGER //
+//   // ****** //
+
+//   private logger = new Logger(ChatGateway.name);
+
+//   // ***************** //
+//   // GATEWAY FUNCTIONS //
+//   // ***************** //
+
+//   // ***************** //
+//   // getClientByUserId //
+//   // ***************** //
+
+//   private getClientByUserId(userId: string): Socket | null {
+//     for (const [key, value] of this.connectedUsers.entries()) {
+//       if (value === userId) {
+//         return this.server.sockets.sockets.get(key);
+//       }
+//     }
+//     return null;
+//   }
+
+//   // **************** //
+//   // handleConnection //
+//   // **************** //
+
+//   async handleConnection(client: UserSocket): Promise<void> {
+//     const { user } = client.request;
+//     const channel = user?.channel;
+//     this.connectedUsers.set(client.id, user.id);
+//     if (channel) {
+//       return this.handleJoin(client, { channelId: channel.id });
+//     }
+//   }
+
+//   // **************** //
+//   // handleDisconnect //
+//   // **************** //
+
+//   async handleDisconnect(client: UserSocket) {
+//     this.connectedUsers.delete(client.id);
+//   }
+
+//   // ********** //
+//   // handleJoin //
+//   // ********** //
+
+//   @SubscribeMessage('join')
+//   async handleJoin(client: UserSocket, joinChannelDto: JoinChannelDto) {
+//     const { channelId } = joinChannelDto;
+//     const limit = 10;
+
+//     const channel = await this.channelService.findOneWithRelations(channelId);
+
+//     if (!channel) return;
+
+//     const userId = this.connectedUsers.get(client.id);
+//     const messages = channel.messages.slice(limit * -1);
+
+//     await this.userService.updateUserChannel(userId, channel);
+
+//     client.join(channelId);
+
+//     client.emit('message', messages);
+//   }
+
+//   // *********** //
+//   // handleLeave //
+//   // *********** //
+
+//   @SubscribeMessage('leave')
+//   async handleLeave(client: UserSocket, leavechannelDto: LeaveChannelDto) {
+//     const { channelId } = leavechannelDto;
+//     const userId = this.connectedUsers.get(client.id);
+
+//     await this.userService.updateUserChannel(userId, null);
+
+//     client.leave(channelId);
+//   }
+
+//   // ************* //
+//   // handleMessage //
+//   // ************* //
+
+//   @SubscribeMessage('message')
+//   async handleMessage(client: UserSocket, addMessageDto: AddMessageDto) {
+//     const userId = this.connectedUsers.get(client.id);
+//     const user = await this.userService.findOneById(userId);
+
+//     if (!user.channel) {
+//       return;
+//     }
+
+//     addMessageDto.userId = userId;
+//     addMessageDto.channelId = user.channel.id;
+
+//     await this.channelService.addMessage(addMessageDto);
+
+//     client.to(user.channel.id).emit('message', addMessageDto.messageBody);
+//   }
+
+//   // ************* //
+//   // handleUserBan //
+//   // ************* //
+//   @SubscribeMessage('user-ban')
+//   async handleUserBan(client: UserSocket, banUserDto: BanUserDto) {
+//     const userId = this.connectedUsers.get(client.id);
+
+//     const channel = await this.channelService.findOneWithRelations(
+//       banUserDto.channelId,
+//     );
+
+//     if (userId !== channel.ownerId) {
+//       throw new ForbiddenException(`You are not the owner of the channel!`);
+//     }
+//     if (userId === banUserDto.userId) {
+//       throw new ForbiddenException(`You can't ban yourself`);
+//     }
+//     if (banUserDto.userId === channel.ownerId) {
+//       throw new ForbiddenException(`You can't ban the owner of the channel!`);
+//     }
+
+//     await this.channelService.banUserFromChannel(banUserDto);
+
+//     const bannedClient = this.getClientByUserId(banUserDto.userId);
+//     if (!bannedClient) {
+//       return;
+//     }
+
+//     client.to(bannedClient.id).emit('banned', banUserDto.reason);
+
+//     bannedClient.leave(banUserDto.channelId);
+//   }
+
+//   // ************** //
+//   // handleUserKick //
+//   // ************** //
+
+//   @SubscribeMessage('user-kick')
+//   async handleUserKick(client: UserSocket, kickUserDto: KickUserDto) {
+//     const userId = this.connectedUsers.get(client.id);
+
+//     const channel = await this.channelService.findOneWithRelations(
+//       kickUserDto.channelId,
+//     );
+
+//     if (userId !== channel.ownerId) {
+//       throw new ForbiddenException(`You are not the owner of the channel!`);
+//     }
+//     if (userId === kickUserDto.userId) {
+//       throw new ForbiddenException(`You can't kick yourself`);
+//     }
+//     if (kickUserDto.userId === channel.ownerId) {
+//       throw new ForbiddenException(`You can't kick the owner of the channel!`);
+//     }
+
+//     await this.userService.updateUserChannel(kickUserDto.userId, null);
+
+//     const kickedClient = this.getClientByUserId(kickUserDto.userId);
+//     if (!kickedClient) {
+//       return;
+//     }
+
+//     client.to(kickedClient.id).emit('kicked', kickUserDto.reason);
+
+//     kickedClient.leave(kickUserDto.channelId);
+//   }
+// }
+
+////////////////////////////////////
+// HYBRID VERSION OF CHAT GATEWAY //
+////////////////////////////////////
 
 import {
-  OnGatewayConnection,
-  OnGatewayDisconnect,
+  Logger,
+  NotFoundException,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
+
+import { Server, Socket } from 'socket.io';
+
+import {
   ConnectedSocket,
   MessageBody,
+  OnGatewayConnection,
+  OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
 
-import { Server, Socket } from 'socket.io';
+import { UserSocket } from '@/core/types/socket';
 
-import { session } from '@/app.module';
-import { type UserSocket } from '@/core/types/socket';
-import { UsersService } from '@/modules/users/users.service';
 import { ChannelsService } from '@/modules/channels/channels.service';
+import { UsersService } from '@/modules/users/users.service';
 
 import { AddMessageDto } from './dtos/add-message.dto';
-import { JoinChannelDto } from './dtos/join-channel.dto';
-import { LeaveChannelDto } from './dtos/leave-channel.dto';
-import { KickUserDto } from './dtos/kick-user.dto';
 import { BanUserDto } from './dtos/ban-user.dto';
+import { JoinChannelDto } from './dtos/join-channel.dto';
+import { KickUserDto } from './dtos/kick-user.dto';
+import { LeaveChannelDto } from './dtos/leave-channel.dto';
 
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
@@ -34,145 +429,80 @@ import { BanUserDto } from './dtos/ban-user.dto';
   transport: ['websocket', 'polling'],
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  private readonly logger = new Logger(ChatGateway.name);
-
   @WebSocketServer()
   server: Server;
 
   connectedUsers: Map<string, string> = new Map();
 
+  // ************ //
+  // CONSTRUCTORS //
+  // ************ //
+
   constructor(
     private readonly userService: UsersService,
     private readonly channelService: ChannelsService,
-  ) { }
+  ) {}
 
-  async handleConnection(client: UserSocket): Promise<void> {
-    const { user } = client.request;
-    const channel = user?.channel;
+  // ****** //
+  // LOGGER //
+  // ****** //
+
+  private logger = new Logger(ChatGateway.name);
+
+  // ***************** //
+  // GATEWAY FUNCTIONS //
+  // ***************** //
+
+  // **************** //
+  // handleConnection //
+  // **************** //
+
+  async handleConnection(@ConnectedSocket() client: UserSocket): Promise<void> {
+    const user = client.request.user;
 
     this.connectedUsers.set(client.id, user.id);
+    this.logger.verbose(
+      `User with ID : ${user.id} added to the map of connected users`,
+    );
 
-    if (channel) {
-      return this.onChannelJoin(client, { channelId: channel.id });
-    }
+    client.emit('connection', 'Successfully connected to chat server.');
   }
 
-  async handleDisconnect(client: Socket) {
+  // **************** //
+  // handleDisconnect //
+  // **************** //
+
+  async handleDisconnect(@ConnectedSocket() client: UserSocket): Promise<void> {
+    const userId = this.connectedUsers.get(client.id);
+    if (!userId) {
+      this.logger.warn(
+        `Client ${client.id} is already disconnected from chat server`,
+      );
+      throw new NotFoundException(
+        `Client ${client.id} is already disconnected from chat server)`,
+      );
+    }
+
     this.connectedUsers.delete(client.id);
-  }
+    this.logger.verbose(
+      `User with ID : ${userId} deleted from connected users map`,
+    );
 
-  @SubscribeMessage('message')
-  async onMessage(client: Socket, addMessageDto: AddMessageDto) {
-    const userId = this.connectedUsers.get(client.id);
     const user = await this.userService.findOneById(userId);
-
-    if (!user.channel) {
-      return;
+    if (!user) {
+      this.logger.warn(`User ${userId} not found in database`);
+      throw new NotFoundException(`User ${userId} not found in database)`);
     }
 
-    addMessageDto.userId = userId;
-    addMessageDto.channelId = user.channel.id;
-
-    await this.channelService.addMessage(addMessageDto);
-
-    client.to(user.channel.id).emit('message', addMessageDto.messageBody);
-  }
-
-  @SubscribeMessage('join')
-  async onChannelJoin(client: Socket, joinChannelDto: JoinChannelDto) {
-    const { channelId } = joinChannelDto;
-    const limit = 10;
-
-    const channel = await this.channelService.findOneWithRelations(channelId);
-
-    if (!channel) return;
-
-    const userId = this.connectedUsers.get(client.id);
-    const messages = channel.messages.slice(limit * -1);
-
-    await this.userService.updateUserChannel(userId, channel);
-
-    client.join(channelId);
-
-    client.emit('message', messages);
-  }
-
-  @SubscribeMessage('leave')
-  async onChannelLeave(client: Socket, leavechannelDto: LeaveChannelDto) {
-    const { channelId } = leavechannelDto;
-    const userId = this.connectedUsers.get(client.id);
-
-    await this.userService.updateUserChannel(userId, null);
-
-    client.leave(channelId);
-  }
-
-  @SubscribeMessage('user-kick')
-  async onUserKick(client: Socket, kickUserDto: KickUserDto) {
-    const userId = this.connectedUsers.get(client.id);
-
-    const channel = await this.channelService.findOneWithRelations(
-      kickUserDto.channelId,
-    );
-
-    if (userId !== channel.ownerId) {
-      throw new ForbiddenException(`You are not the owner of the channel!`);
+    if (user && user.channels) {
+      user.channels.forEach((channel) => {
+        this.server
+          .to(channel.id)
+          .emit(
+            'disconnect',
+            `User with ID : ${userId} disconnected from chat server`,
+          );
+      });
     }
-    if (userId === kickUserDto.userId) {
-      throw new ForbiddenException(`You can't kick yourself`);
-    }
-    if (kickUserDto.userId === channel.ownerId) {
-      throw new ForbiddenException(`You can't kick the owner of the channel!`);
-    }
-
-    await this.userService.updateUserChannel(kickUserDto.userId, null);
-
-    const kickedClient = this.getClientByUserId(kickUserDto.userId);
-    if (!kickedClient) {
-      return;
-    }
-
-    client.to(kickedClient.id).emit('kicked', kickUserDto.reason);
-
-    kickedClient.leave(kickUserDto.channelId);
-  }
-
-  @SubscribeMessage('user-ban')
-  async onUserBan(client: Socket, banUserDto: BanUserDto) {
-    const userId = this.connectedUsers.get(client.id);
-
-    const channel = await this.channelService.findOneWithRelations(
-      banUserDto.channelId,
-    );
-
-    if (userId !== channel.ownerId) {
-      throw new ForbiddenException(`You are not the owner of the channel!`);
-    }
-    if (userId === banUserDto.userId) {
-      throw new ForbiddenException(`You can't ban yourself`);
-    }
-    if (banUserDto.userId === channel.ownerId) {
-      throw new ForbiddenException(`You can't ban the owner of the channel!`);
-    }
-
-    await this.channelService.banUserFromChannel(banUserDto);
-
-    const bannedClient = this.getClientByUserId(banUserDto.userId);
-    if (!bannedClient) {
-      return;
-    }
-
-    client.to(bannedClient.id).emit('banned', banUserDto.reason);
-
-    bannedClient.leave(banUserDto.channelId);
-  }
-
-  private getClientByUserId(userId: string): Socket | null {
-    for (const [key, value] of this.connectedUsers.entries()) {
-      if (value === userId) {
-        return this.server.sockets.sockets.get(key);
-      }
-    }
-    return null;
   }
 }

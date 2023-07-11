@@ -36,7 +36,7 @@ export class ChannelsController {
     @Req() req: RequestWithUser,
     @Body() createChannelDto: CreateChannelDto,
   ) {
-    createChannelDto.ownerId = req.user.id;
+    createChannelDto.owner.id = req.user.id;
     return this.channelsService.create(createChannelDto);
   }
 

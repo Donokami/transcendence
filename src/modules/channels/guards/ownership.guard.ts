@@ -8,7 +8,7 @@ import { ChannelsService } from '../channels.service';
 
 @Injectable()
 export class OwnershipGuard implements CanActivate {
-  constructor(private readonly channelsService: ChannelsService) { }
+  constructor(private readonly channelsService: ChannelsService) {}
 
   canActivate(
     context: ExecutionContext,
@@ -20,12 +20,12 @@ export class OwnershipGuard implements CanActivate {
 
         const channel = await this.channelsService.findOne(channelId);
 
-        if (channel.ownerId === req.user.id) {
+        if (channel.owner.id === req.user.id) {
           resolve(true);
         }
 
         resolve(false);
-      } catch (e) { }
+      } catch (e) {}
     });
   }
 }

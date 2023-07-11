@@ -78,17 +78,16 @@ export class User {
   // ************************* //
 
   @JoinTable()
-  @ManyToOne(() => Channel, (channel: Channel) => channel.members)
-  channel: Channel;
+  @ManyToOne(() => Channel, (channel: Channel) => channel.members, {
+    eager: true,
+  })
+  channels: Array<Channel>;
 
   @JoinTable()
   @ManyToMany(() => Channel, (channel: Channel) => channel.bannedMembers, {
     eager: true,
   })
   bannedChannels: Array<Channel>;
-
-  // @Column({ default: false })
-  // isAdmin: boolean;
 
   @OneToMany(() => Channel, (channel: Channel) => channel.messages)
   messages: Array<Message>;

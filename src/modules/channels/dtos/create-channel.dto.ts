@@ -1,6 +1,8 @@
-import { IsString, IsNumber } from 'class-validator';
+import { IsString } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
+
+import { User } from '@/modules/users/user.entity';
 
 export class CreateChannelDto {
   @ApiProperty()
@@ -8,6 +10,5 @@ export class CreateChannelDto {
   readonly name: string;
 
   @ApiProperty()
-  @IsNumber()
-  ownerId: string;
+  owner: User;
 }
