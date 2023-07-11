@@ -24,12 +24,12 @@ import { PaginationDTO } from '@/core/dtos/pagination.dto';
 
 @Controller('games')
 export class GameController {
-  constructor(private readonly gameService: GameService) { }
+  constructor(private readonly gameService: GameService) {}
 
   @Get(':id')
   @UseGuards(AuthGuard)
   async findOne(@Param('id') id: string) {
-    const game = await this.gameService.findOneWithRelations(id);
+    const game = await this.gameService.findOne(id);
 
     if (!game) {
       throw new NotFoundException(`There is no game under id ${id}`);

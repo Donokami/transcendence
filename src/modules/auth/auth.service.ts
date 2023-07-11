@@ -11,13 +11,13 @@ import { promisify } from 'util';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 
 import { UsersService } from '@/modules/users/users.service';
-import { UserDetails } from './utils/types';
+import { UserDetails } from '@/core/types/user-details';
 
 const scrypt = promisify(_scrypt);
 
 @Injectable()
 export class AuthService {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService) { }
 
   // ************ //
   // validateUser //

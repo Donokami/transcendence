@@ -13,7 +13,7 @@ import { GameService } from '../game.service';
 
 @Injectable()
 export class OwnershipGuard implements CanActivate {
-  constructor(private readonly gameService: GameService) { }
+  constructor(private readonly gameService: GameService) {}
 
   private logger = new Logger(OwnershipGuard.name);
 
@@ -32,13 +32,13 @@ export class OwnershipGuard implements CanActivate {
           resolve(false);
         }
 
-        if (game.owner.id === req.session.userId) {
+        if (game.getRoom().owner.id === req.session.userId) {
           this.logger.verbose(`User ${req.session.userId} owns game ${gameId}`);
           resolve(true);
         }
 
         resolve(false);
-      } catch (e) { }
+      } catch (e) {}
     });
   }
 }

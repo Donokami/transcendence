@@ -7,72 +7,38 @@ import {
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-
-import { Repository } from 'typeorm';
 
 import { UsersService } from '@/modules/users/users.service';
-
-import { Game, RoomStatus } from './entities/game.entity';
 
 import { CreateGameDto } from './dtos/create-game-dto';
 import { UpdateGameDto } from './dtos/update-game-dto';
 import { Pagination } from '@/core/types/pagination';
 import { GameGateway } from './game.gateway';
 
-import { MAX_PLAYERS } from '@/core/constants';
-
-// todo: maybe delete all games after restart
+import { Room } from './room';
 
 @Injectable()
 export class GameService {
+  private readonly games: Room[] = [];
   constructor(
-    @InjectRepository(Game)
-    private readonly gameRepository: Repository<Game>,
     private readonly userService: UsersService,
     @Inject(forwardRef(() => GameGateway))
     private gameGateway: GameGateway,
-  ) { }
+  ) {}
 
   private logger = new Logger(GameService.name);
 
   async findOne(id: string) {
-    if (!id) {
-      return null;
-    }
-    const game = await this.gameRepository.findOne({
-      where: { id },
-      relations: ['owner'],
-    });
-
-    return game;
+    return this.games.find((game) => game.getRoom().id === id);
   }
 
   async findAll({ limit = 10, page = 1 }: Pagination) {
-    const games = await this.gameRepository.find({
-      take: limit,
-      skip: limit * (page - 1),
-      relations: ['owner', 'players'],
-    });
-
-    return games;
+    return this.games
+      .slice((page - 1) * limit, page * limit)
+      .map((g) => g.getRoom());
   }
 
   // todo: create a function to retrieve all games that are not full and another public
-
-  async findOneWithRelations(id: string) {
-    const game = await this.gameRepository.findOne({
-      where: { id },
-      relations: ['owner', 'players'],
-    });
-
-    if (!game) {
-      this.logger.warn(`Game ${id} not found`);
-      throw new NotFoundException(`There is no game under id ${id}`);
-    }
-
-    return game;
-  }
 
   async create(createGameDto: CreateGameDto) {
     const user = await this.userService.findOneById(
@@ -86,79 +52,86 @@ export class GameService {
       );
     }
 
-    const game = this.gameRepository.create({
-      ...createGameDto,
-      players: [user],
-    });
+    if (this.games.find((g) => g.getRoom().name === createGameDto.name)) {
+      this.logger.warn(`A game with name ${createGameDto.name} already exists`);
+      throw new BadRequestException(
+        `A game with name ${createGameDto.name} already exists`,
+      );
+    }
 
-    await this.gameRepository.save(game).catch((err) => {
-      if (err.code === '23505' || 'SQLITE_CONSTRAINT') {
-        this.logger.warn(`A game with name ${game.name} already exists`);
-        throw new BadRequestException(
-          `A game with name ${game.name} already exists`,
-        );
-      }
-      throw new HttpException(err, 500);
-    });
+    const game = new Room(
+      {
+        name: createGameDto.name,
+        owner: user,
+        isPrivate: createGameDto.isPrivate,
+      },
+      this.gameGateway,
+    );
 
-    this.gameGateway.server.emit('game:create', game);
+    this.games.push(game);
 
-    return game;
+    this.gameGateway.server.emit('game:create', game.getRoom());
+
+    return game.getRoom();
   }
 
   async update(id: string, updateGameDto: UpdateGameDto) {
-    const game = await this.gameRepository.preload({
-      id,
-      ...updateGameDto,
-    });
+    const game = await this.findOne(id);
 
     if (!game) {
       this.logger.warn(`Game ${id} not found`);
       throw new NotFoundException(`There is no game under id ${id}`);
     }
 
-    this.gameGateway.server.to(game.id).emit('game:update', game);
+    const updatedGame = { ...game.getRoom(), ...updateGameDto };
 
-    return this.gameRepository.save(game);
+    this.logger.verbose(`Updating game ${id}`);
+
+    this.gameGateway.server
+      .to(game.getRoom().id)
+      .emit('game:update', updatedGame);
+
+    return updatedGame;
   }
 
   async remove(id: string) {
     const game = await this.findOne(id);
 
-    this.logger.verbose(`Removing game ${game.id}`);
+    if (!game) {
+      this.logger.warn(`Game ${id} not found`);
+      throw new NotFoundException(`There is no game under id ${id}`);
+    }
 
-    return this.gameRepository.remove(game);
+    this.logger.verbose(`Removing game ${id}`);
+
+    this.gameGateway.server
+      .to(game.getRoom().id)
+      .emit('game:remove', game.getRoom());
+
+    return game.getRoom();
   }
 
   async join(id: string, userId: string) {
-    const game = await this.findOneWithRelations(id);
+    const game = await this.findOne(id);
     const user = await this.userService.findOneById(userId);
 
     // todo: check if game is private
 
-    if (game.players.find((u) => u.id === user.id)) {
-      this.logger.warn(`User ${userId} already joined game ${id}`);
-      throw new BadRequestException('User already joined');
-    }
-
-    if (game.players.length >= MAX_PLAYERS) {
-      this.logger.warn(`Game ${id} is full`);
-      throw new BadRequestException(`Game ${id} is full`);
+    try {
+      game.join(user);
+    } catch (error) {
+      throw new HttpException(error.message, error.status);
     }
 
     // todo: add spectator role
 
-    game.players.push(user);
-
-    if (game.players.length === MAX_PLAYERS) {
-      game.status = RoomStatus.FULL;
-    }
-
     this.logger.verbose(`Joining user ${userId} to game ${id}`);
 
-    this.gameGateway.server.to(game.id).emit('game:update', game);
+    this.gameGateway.server
+      .to(game.getRoom().id)
+      .emit('game:update', game.getRoom());
 
-    return this.gameRepository.save(game);
+    return game.getRoom();
   }
 
   async kick(id: string, userId: string) {
@@ -174,43 +147,49 @@ export class GameService {
   }
 
   async leave(id: string, userId: string) {
-    let game = await this.findOneWithRelations(id);
+    const game = await this.findOne(id);
     const user = await this.userService.findOneById(userId);
 
-    if (!game.players.find((u) => u.id === user.id)) {
-      this.logger.warn(`User ${userId} not joined game ${id}`);
-      throw new BadRequestException('User not joined');
+    if (!game) {
+      this.logger.warn(`Game ${id} not found`);
+      throw new NotFoundException(`There is no game under id ${id}`);
     }
 
-    game.players = game.players.filter((u) => u.id !== user.id);
+    if (!user) {
+      this.logger.warn(`User ${userId} not found`);
+      throw new NotFoundException(`There is no user under id ${userId}`);
+    }
 
-    if (game.players.length === 0) {
-      setTimeout(async () => {
-        game = await this.findOneWithRelations(id);
-        if (game.players.length > 0) {
+    game.leave(user);
+
+    if (game.getRoom().players.length === 0) {
+      setTimeout(() => {
+        if (game.getRoom().players.length > 0) {
           return;
         }
 
-        this.logger.verbose(`Removing game ${id} because no players left`);
+        this.logger.verbose(`Removing game ${user.id} because no players left`);
+
+        this.games.splice(this.games.indexOf(game), 1);
+
         this.gameGateway.server.emit('game:delete', {
-          id: game.id,
+          id: game.getRoom().id,
         });
-        return this.gameRepository.remove(game);
+
+        if (game.getRoom().owner.id === user.id) {
+          game.getRoom().owner = game.getRoom().players[0];
+        }
+
+        return game.getRoom();
       }, 5000);
     }
 
-    if (game.owner.id === user.id) {
-      game.owner = game.players[0];
-    }
-
-    if (game.players.length < MAX_PLAYERS) {
-      game.status = RoomStatus.OPEN;
-    }
-
-    this.gameGateway.server.to(game.id).emit('game:update', game);
+    this.gameGateway.server
+      .to(game.getRoom().id)
+      .emit('game:update', game.getRoom());
 
     this.logger.verbose(`Removing user ${userId} from game ${id}`);
 
-    return this.gameRepository.save(game);
+    return game.getRoom();
   }
 }

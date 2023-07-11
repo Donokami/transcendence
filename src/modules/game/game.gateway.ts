@@ -22,7 +22,7 @@ export class GameGateway {
   constructor(
     @Inject(forwardRef(() => GameService))
     private gameService: GameService,
-  ) { }
+  ) {}
 
   private logger = new Logger(GameService.name);
 
@@ -43,7 +43,7 @@ export class GameGateway {
 
   handleDisconnect(client: UserSocket) {
     const gameId = client.handshake.query.gameId as string;
-    this.gameService.leave(gameId, client.request.user.id).catch((err) => { });
+    this.gameService.leave(gameId, client.request.user.id).catch((err) => {});
     this.logger.verbose(`Client ${client.id} disconnected`);
     client.emit('disconnection', 'Successfully disconnected from game server');
   }
@@ -53,18 +53,18 @@ export class GameGateway {
     @MessageBody() room: string,
     @ConnectedSocket() client: UserSocket,
   ): Promise<void> {
-    const game = await this.gameService.findOneWithRelations(room);
+    const game = await this.gameService.findOne(room);
 
     if (!game) {
       client.emit('error', `Game ${room} not found`);
       return;
     }
 
-    this.gameService.join(room, client.request.user.id).catch((err) => { });
+    this.gameService.join(room, client.request.user.id).catch((err) => {});
 
     client.join(room);
 
-    this.server.to(room).emit('game:update', game);
+    this.server.to(room).emit('game:update', game.getRoom());
   }
 
   @SubscribeMessage('leave')
@@ -72,7 +72,7 @@ export class GameGateway {
     @MessageBody() room: string,
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
-    const game = await this.gameService.findOneWithRelations(room);
+    const game = await this.gameService.findOne(room);
 
     if (!game) {
       client.emit('error', `Game ${room} not found`);

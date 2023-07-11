@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Channel } from '@/modules/channels/entities/channel.entity';
-import { UserDetails } from '@/modules/auth/utils/types';
+import { UserDetails } from '@/core/types/user-details';
 import {
   Friendship,
   FriendshipStatus,
@@ -23,7 +23,7 @@ export class UsersService {
     private userRepository: Repository<User>,
     @InjectRepository(Friendship)
     private friendshipRepository: Repository<Friendship>,
-  ) {}
+  ) { }
 
   // *********** //
   // createOauth //
