@@ -17,7 +17,6 @@
         <label class="block font-medium mb-1" for="email">Email</label>
         <Field
           class="neobrutalist-input w-full text-black"
-          id="email"
           name="email"
           type="email"
           placeholder="Enter your email address"
@@ -28,10 +27,10 @@
         <label class="block font-medium mb-1" for="password">Password</label>
         <Field
           class="neobrutalist-input w-full text-black"
-          id="password"
           name="password"
           type="password"
           placeholder="Enter your password"
+          autocomplete
         />
         <ErrorMessage class="font-normal text-base text-red-600" name="password" />
       </div>
@@ -43,6 +42,7 @@
           name="confirmPassword"
           type="password"
           placeholder="Confirm your password"
+          autocomplete
         />
         <ErrorMessage class="font-normal text-base text-red-600" name="confirmPassword" />
       </div>

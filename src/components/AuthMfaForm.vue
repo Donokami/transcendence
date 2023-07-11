@@ -9,8 +9,16 @@
           name="token"
           type="text"
           placeholder="Enter the code"
+          autocomplete="off"
         />
         <ErrorMessage class="font-normal text-base text-red-600" name="token" />
+      </div>
+      <div
+        class="text-white text-center font-bold p-4 rounded mb-4"
+        v-if="showAlert"
+        :class="alertColor"
+      >
+        {{ alertMsg }}
       </div>
       <div class="mt-8">
         <button

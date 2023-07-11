@@ -39,6 +39,7 @@
 // ******* //
 
 import { onBeforeMount, ref } from 'vue';
+
 import { storeToRefs } from 'pinia'
 
 import type { Friendship } from '@/types/Friendship'

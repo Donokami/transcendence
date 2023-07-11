@@ -12,20 +12,23 @@ export const useUserStore = defineStore('users', {
     // users: [] as User[]
   }),
   actions: {
-    
+
     // ******************* //
     // acceptFriendRequest //
     // ******************* //
 
     async acceptFriendRequest(senderId: string) {
-      const response = await fetch(`http://localhost:3000/api/social/friendship/request/${senderId}/accept`, {
-        method: 'PUT',
-        credentials: 'include',
-      })
+      const response = await fetch(
+        `http://localhost:3000/api/social/friendship/request/${senderId}/accept`,
+        {
+          method: 'PUT',
+          credentials: 'include'
+        }
+      )
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json();
+      return response.json()
     },
 
     // ********* //
@@ -33,14 +36,17 @@ export const useUserStore = defineStore('users', {
     // ********* //
 
     async blockUser(userToBlockId: string) {
-      const response = await fetch(`http://localhost:3000/api/social/friendship/${userToBlockId}/block`, {
-        method: 'PUT',
-        credentials: 'include',
-      })
+      const response = await fetch(
+        `http://localhost:3000/api/social/friendship/${userToBlockId}/block`,
+        {
+          method: 'PUT',
+          credentials: 'include'
+        }
+      )
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json();
+      return response.json()
     },
 
     // *************** //
@@ -52,7 +58,7 @@ export const useUserStore = defineStore('users', {
         method: 'POST',
         credentials: 'include'
       })
-    
+
       if (response.ok) {
         const data = await response.json()
         return data
@@ -157,8 +163,9 @@ export const useUserStore = defineStore('users', {
     // ***************** //
 
     async refreshFriendList() {
-      if (!this.loggedUser)
+      if (!this.loggedUser) {
         return [];
+      }
       try {
         const response = await this.fetchFriendList(this.loggedUser.id);
         this.friendList = response;
@@ -308,5 +315,17 @@ export const useUserStore = defineStore('users', {
       }
       return response
     },
+    // ************* //
+    // getAuthStatus //
+    // ************* //
+
+    async getAuthStatus() {
+      const response = await fetch('http://localhost:3000/api/auth/authStatus', {
+        method: 'GET',
+        credentials: 'include'
+      })
+
+      return response.json()
+    }
   }
-});
+})
