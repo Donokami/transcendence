@@ -9,6 +9,8 @@ import MfaView from '../views/MfaView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import StatsView from '../views/StatsView.vue'
+import RoomView from '../views/RoomView.vue'
+import CreateRoomView from '../views/CreateRoomView.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -47,9 +49,19 @@ const routes: Array<RouteRecordRaw> = [
     name: 'profile'
   },
   {
+    component: CreateRoomView,
+    path: '/room/create',
+    name: 'create-room'
+  },
+  {
+    component: RoomView,
+    path: '/room/:id',
+    name: 'room'
+  },
+  {
     component: NotFoundView,
     path: '/:pathMatch(.*)*',
-    name: 'NotFound',
+    name: 'NotFound'
   }
 ]
 
@@ -60,15 +72,14 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from, next) => {
-  const userStore = useUserStore();
+  const userStore = useUserStore()
   if (!userStore.loggedUser) {
-    await userStore.refreshUser();
+    await userStore.refreshUser()
   }
-  if (to.name !== "auth" && !userStore.loggedUser) {
-      next({ name: "auth" });
-  } 
-  else {
-    next();
+  if (to.name !== 'auth' && to.name !== 'mfa' && !userStore.loggedUser) {
+    next({ name: 'auth' })
+  } else {
+    next()
   }
 })
 

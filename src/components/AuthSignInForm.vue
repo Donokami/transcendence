@@ -6,7 +6,6 @@
         <label class="block font-medium mb-1" for="email"> Email </label>
         <Field
           class="neobrutalist-input w-full text-black"
-          id="email"
           name="email"
           type="email"
           placeholder="Enter your email address"
@@ -17,10 +16,10 @@
         <label class="block font-medium mb-1" for="password">Password</label>
         <Field
           class="neobrutalist-input w-full text-black"
-          id="password"
           name="password"
           type="password"
           placeholder="Enter your password"
+          autocomplete
         />
         <ErrorMessage class="font-normal text-base text-red-600" name="password" />
       </div>
@@ -126,22 +125,24 @@
 
     const intervalId = setInterval(async () => {
       try {
-        const user = await userStore.fetchUser();
-        
-        if (user) {      
+        const authStatus = await userStore.getAuthStatus();
+
+        if (authStatus.status === 'authenticated') {
           clearInterval(intervalId);
           if (popup) {
             popup.close();
           }
           await userStore.refreshUser();
-          if (userStore.twoFactorEnabled) {
-            router.push('/mfa');
-          } else {
-            router.push('/');
+          router.push('/');
+        } else if (authStatus.status === 'requires_2fa') {
+          clearInterval(intervalId);
+          if (popup) {
+            popup.close();
           }
+          router.push('/mfa');
         }
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error('Error fetching auth status:', error);
       }
     }, 1000);
 

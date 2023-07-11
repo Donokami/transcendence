@@ -1,6 +1,5 @@
 <template>
   <div class="max-w-screen-xl min-w-[95%] lg:mx-auto text-black">
-    <site-header></site-header>
     <div class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify">
       <h2 class="text-2xl font-bold mb-8 text-black">Profile</h2>
       <profile-stats-card v-if="observedUser" :observedUser="observedUser"></profile-stats-card>
@@ -8,11 +7,11 @@
         <label class="cursor-pointer p-6">
           <span class="stat-value text-xl">{{ authMessage }}</span>
           <span class="px-6 align-middle">
-            <input 
-              type="checkbox" 
-              class="toggle rounded-none" 
-              v-model="userStore.twoFactorEnabled" 
-              @click="switchAuthMessage" 
+            <input
+              type="checkbox"
+              class="toggle rounded-none"
+              v-model="userStore.twoFactorEnabled"
+              @click="switchAuthMessage"
             />
           </span>
         </label>
@@ -53,7 +52,6 @@ import { useUserStore } from '@/stores/UserStore';
 
 import ProfileStatsCard from '@/components/ProfileStatsCard.vue'
 import ProfileFriendRequestListModal from '@/components/ProfileFriendRequestListModal.vue'
-import SiteHeader from '@/components/SiteHeader.vue'
 import StatsRankingTable from '@/components/StatsRankingTable.vue'
 import StatsMatchHistoryTable from '@/components/StatsMatchHistoryTable.vue'
 
@@ -78,7 +76,7 @@ const observedUser = ref(null) as Ref<User | null>;
 // ***************** //
 // switchAuthMessage //
 // ***************** //
-    
+
 const switchAuthMessage = async () => {
   try {
     const data = await userStore.enableTwoFactor();

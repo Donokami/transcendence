@@ -1,5 +1,13 @@
 <template>
-  <h2 class="text-2xl font-bold mb-8 text-black">Play a game</h2>
+  <div class="flex justify-between">
+    <h2 class="text-2xl font-bold mb-8 text-black">Play a game</h2>
+
+    <router-link to="/room/create" class="neobrutalist-box flex px-2">
+      <iconify-icon icon="tabler:plus" class="mr-2"></iconify-icon>
+      <span>Create a game</span>
+    </router-link>
+  </div>
+
   <div class="flex flex-grow items-center justify-center">
     <p class="font-bold text-l">PLEASE SELECT A MODE</p>
     <iconify-icon icon="fa6-solid:table-tennis-paddle-ball" class="mx-2"></iconify-icon>
@@ -34,6 +42,10 @@
 
 <script setup lang="ts">
 // import { ref } from 'vue';
+
+import { useRouter } from "vue-router";
+
+const router = useRouter();
 
 const selectFriendlyGame = () => {
   // handle the click event for PVE button

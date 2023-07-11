@@ -1,6 +1,5 @@
 <template>
   <div class="max-w-screen-xl min-w-[95%] mx-auto h-[86vh] text-black">
-    <site-header></site-header>
     <div class="flex h-[75vh]">
       <div
         class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify min-w-min w-1/4 overflow-y-auto"
@@ -33,7 +32,6 @@
   
   import io from 'socket.io-client'
 
-  import SiteHeader from '../components/SiteHeader.vue'
   import ChatChannels from '../components/ChatChannels.vue'
   import ChatDirectMessages from '../components/ChatDirectMessages.vue'
   import ChatDiscussion from '../components/ChatDiscussion.vue'
