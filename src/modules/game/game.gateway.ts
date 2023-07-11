@@ -64,7 +64,7 @@ export class GameGateway {
 
     client.join(room);
 
-    this.server.to(room).emit('game:update', game.getRoom());
+    this.server.to(room).emit('game:update', game.get());
   }
 
   @SubscribeMessage('leave')

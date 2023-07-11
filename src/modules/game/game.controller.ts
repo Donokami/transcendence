@@ -79,23 +79,4 @@ export class GameController {
   async remove(@Param('id') id: string) {
     return await this.gameService.remove(id);
   }
-
-  @Post(':id/join')
-  @UseGuards(AuthGuard)
-  async join(@Param('id') id: string, @Req() req: RequestWithUser) {
-    return await this.gameService.join(id, req.session.userId);
-  }
-
-  @Post(':id/leave')
-  @UseGuards(AuthGuard)
-  async leave(@Param('id') id: string, @Req() req: RequestWithUser) {
-    return await this.gameService.leave(id, req.session.userId);
-  }
-
-  @Post(':id/kick/:userId')
-  @UseGuards(AuthGuard)
-  @UseGuards(OwnershipGuard)
-  async kick(@Param('id') id: string, @Param('userId') userId: string) {
-    return await this.gameService.kick(id, userId);
-  }
 }

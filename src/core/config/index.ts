@@ -16,6 +16,10 @@ export default registerAs('transcendence-config', () => {
 
     cookieSessionKey: process.env.COOKIE_SESSION_KEY,
 
+    fortyTwoAppId: process.env.FORTYTWO_APP_ID,
+    fortyTwoAppSecret: process.env.FORTYTWO_APP_SECRET,
+    fortyTwoAppRedirectURI: process.env.FORTYTWO_APP_REDIRECT_URI,
+
     socketPort: parseInt(process.env.SOCKET_PORT),
     socketOrigin: process.env.SOCKET_ORIGIN,
   };
@@ -31,6 +35,10 @@ export default registerAs('transcendence-config', () => {
     dbPass: z.string(),
 
     cookieSessionKey: z.string(),
+
+    fortyTwoAppId: z.string(),
+    fortyTwoAppSecret: z.string(),
+    fortyTwoAppRedirectURI: z.string(),
 
     socketPort: z.number(),
     socketOrigin: z.string(),

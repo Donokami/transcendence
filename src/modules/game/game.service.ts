@@ -30,13 +30,13 @@ export class GameService {
   private readonly logger = new Logger(GameService.name);
 
   async findOne(id: string) {
-    return this.games.find((game) => game.getRoom().id === id);
+    return this.games.find((game) => game.get().id === id);
   }
 
   async findAll({ limit = 10, page = 1 }: Pagination) {
     return this.games
       .slice((page - 1) * limit, page * limit)
-      .map((g) => g.getRoom());
+      .map((g) => g.get());
   }
 
   // todo: create a function to retrieve all games that are not full and another public
@@ -53,7 +53,7 @@ export class GameService {
       );
     }
 
-    if (this.games.find((g) => g.getRoom().name === createGameDto.name)) {
+    if (this.games.find((g) => g.get().name === createGameDto.name)) {
       this.logger.warn(`A game with name ${createGameDto.name} already exists`);
       throw new BadRequestException(
         `A game with name ${createGameDto.name} already exists`,
@@ -68,9 +68,9 @@ export class GameService {
 
     this.games.push(game);
 
-    this.gameGateway.server.emit('game:create', game.getRoom());
+    this.gameGateway.server.emit('game:create', game.get());
 
-    return game.getRoom();
+    return game.get();
   }
 
   async update(id: string, updateGameDto: UpdateGameDto) {
@@ -81,15 +81,13 @@ export class GameService {
       throw new NotFoundException(`There is no game under id ${id}`);
     }
 
-    const updatedGame: RoomObject = { ...game.getRoom(), ...updateGameDto };
+    const updatedGame: RoomObject = { ...game.get(), ...updateGameDto };
 
     game.update(updatedGame);
 
     this.logger.verbose(`Updating game ${id}`);
 
-    this.gameGateway.server
-      .to(game.getRoom().id)
-      .emit('game:update', updatedGame);
+    this.gameGateway.server.to(game.id).emit('game:update', updatedGame);
 
     return updatedGame;
   }
@@ -104,11 +102,9 @@ export class GameService {
 
     this.logger.verbose(`Removing game ${id}`);
 
-    this.gameGateway.server
-      .to(game.getRoom().id)
-      .emit('game:remove', game.getRoom());
+    this.gameGateway.server.to(game.id).emit('game:remove', game.get());
 
-    return game.getRoom();
+    return game.get();
   }
 
   async join(id: string, userId: string) {
@@ -127,11 +123,9 @@ export class GameService {
 
     this.logger.verbose(`Joining user ${userId} to game ${id}`);
 
-    this.gameGateway.server
-      .to(game.getRoom().id)
-      .emit('game:update', game.getRoom());
+    this.gameGateway.server.to(game.id).emit('game:update', game.get());
 
-    return game.getRoom();
+    return game.get();
   }
 
   async kick(id: string, userId: string) {
@@ -162,9 +156,9 @@ export class GameService {
 
     game.leave(user);
 
-    if (game.getRoom().players.length === 0) {
+    if (game.players.length === 0) {
       setTimeout(() => {
-        if (game.getRoom().players.length > 0) {
+        if (game.players.length > 0) {
           return;
         }
 
@@ -173,23 +167,21 @@ export class GameService {
         this.games.splice(this.games.indexOf(game), 1);
 
         this.gameGateway.server.emit('game:delete', {
-          id: game.getRoom().id,
+          id: game.id,
         });
 
-        if (game.getRoom().owner.id === user.id) {
-          game.getRoom().owner = game.getRoom().players[0];
+        if (game.owner.id === user.id) {
+          game.owner = game.players[0];
         }
 
-        return game.getRoom();
+        return game.get();
       }, 5000);
     }
 
-    this.gameGateway.server
-      .to(game.getRoom().id)
-      .emit('game:update', game.getRoom());
+    this.gameGateway.server.to(game.id).emit('game:update', game.get());
 
     this.logger.verbose(`Removing user ${userId} from game ${id}`);
 
-    return game.getRoom();
+    return game.get();
   }
 }

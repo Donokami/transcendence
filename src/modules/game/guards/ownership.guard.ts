@@ -32,7 +32,7 @@ export class OwnershipGuard implements CanActivate {
           resolve(false);
         }
 
-        if (game.getRoom().owner.id === req.session.userId) {
+        if (game.owner.id === req.session.userId) {
           this.logger.verbose(`User ${req.session.userId} owns game ${gameId}`);
           resolve(true);
         }
