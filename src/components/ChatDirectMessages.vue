@@ -17,14 +17,31 @@
 </template>
 
 <script setup lang="ts">
+  // ******* //
+  // IMPORTS //
+  // ******* //
+
   import { computed } from 'vue'
+  
+  import { storeToRefs } from 'pinia'
   import { useUserStore } from '@/stores/UserStore.js'
+
   import ChatDirectMessagesList from '../components/ChatDirectMessagesList.vue'
   import ChatDirectMessagesModal from '../components/ChatDirectMessagesModal.vue'
 
+  // ******************** //
+  // VARIABLE DEFINITIONS //
+  // ******************** //
+
+  const userStore = useUserStore()
+
   const emit = defineEmits(['list-state-changed'])
   
-  const userStore = useUserStore()
+  // **************************** //
+  // loggedUser RELATED VARIABLES //
+  // **************************** //
+  
+  const {loggedUser} = storeToRefs(userStore);
   
   const hasChannels = computed(() => userStore.loggedUser?.channels?.length > 0)
 

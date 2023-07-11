@@ -28,7 +28,10 @@
 
 <script setup lang="ts">
   import { ref } from 'vue'
+  import { onBeforeRouteLeave, useRoute } from 'vue-router'
   import { useUserStore } from '@/stores/UserStore.js'
+  
+  import io from 'socket.io-client'
 
   import SiteHeader from '../components/SiteHeader.vue'
   import ChatChannels from '../components/ChatChannels.vue'
@@ -37,5 +40,29 @@
   import ChatInput from '../components/ChatInput.vue'
 
   const listState = ref('dm')
+  
+  const route = useRoute();
   const userStore = useUserStore() 
+  
+  const socket = io('http://localhost:3002/chat', {
+      withCredentials: true,
+      transports: ['websocket']
+    })
+
+    socket.on('connect', () => {
+      console.log('[ChatView] - Connected to the chat.')
+    })
+
+    socket.on('disconnect', async () => {
+      console.log('[ChatView] - Disconnected from the chat.')
+    })
+
+    socket.on('error', (error) => {
+      console.error('[ChatView] - Error : ', error)
+    })
+
+  onBeforeRouteLeave(async () => {
+    socket.disconnect()
+  })
+
 </script>
