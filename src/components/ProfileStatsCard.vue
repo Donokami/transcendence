@@ -4,8 +4,9 @@
     <div class="stat border-black border-r-2">
       <div class="stat-figure text-secondary">
         <div class="avatar online">
-          <div class="w-16 rounded-full">
-            <img src="../assets/profile-picture.jpg" />
+          <input type="file" ref="fileInput" @change="onFileChange" style="display: none" />
+          <div class="w-16 rounded-full cursor-pointer">
+            <img :src="userStore.loggedUser.profilePicture" @click="triggerFileInput" />
           </div>
         </div>
       </div>
@@ -113,6 +114,37 @@ import { useUserStore } from '../stores/UserStore'
 // ******************** //
 
 const userStore = useUserStore();
+
+const fileInput = ref(null);
+
+const triggerFileInput = () => {
+  fileInput.value.click();
+};
+
+const convertToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
+
+const onFileChange = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files) {
+    const file = target.files[0];
+    try {
+      const base64Picture = await convertToBase64(file);
+      await userStore.updateUser(userStore.loggedUser.id, { profilePicture: base64Picture });
+      location.reload();
+    } catch (error) {
+      console.error('Error updating profile picture:', error);
+    }
+  }
+};
+
+
 
 // **************************** //
 // loggedUser RELATED VARIABLES //
