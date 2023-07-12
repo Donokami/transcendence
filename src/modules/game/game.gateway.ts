@@ -4,95 +4,117 @@ import {
   MessageBody,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
-} from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
-import { GameService } from './game.service';
-import { Inject, Logger, forwardRef } from '@nestjs/common';
-import { UserSocket } from '@/core/types/socket';
+  WebSocketServer
+} from '@nestjs/websockets'
+import { Server, Socket } from 'socket.io'
+import { GameService } from './game.service'
+import { Inject, Logger, forwardRef } from '@nestjs/common'
+import { UserSocket } from '@/core/types/socket'
 
 @WebSocketGateway({
   namespace: '/game',
-  transport: ['websocket', 'polling'],
+  transport: ['websocket', 'polling']
 })
 export class GameGateway {
   @WebSocketServer()
-  server: Server;
+  server: Server
 
   constructor(
     @Inject(forwardRef(() => GameService))
-    private gameService: GameService,
+    private gameService: GameService
   ) {}
 
-  private readonly logger = new Logger(GameService.name);
+  private readonly logger = new Logger(GameService.name)
 
   async handleConnection(client: Socket) {
-    const gameId = client.handshake.query.gameId as string;
-    client.emit('connection', 'Successfully connected to game server');
-    const game = await this.gameService.findOne(gameId);
+    const roomId = client.handshake.query.roomId as string
+    client.emit('connection', 'Successfully connected to game server')
+    const room = await this.gameService.findOne(roomId)
 
-    if (!game) {
-      client.emit('error', `Game ${gameId} not found`);
-      return;
+    if (!room) {
+      client.emit('error', `Room ${roomId} not found`)
+      return
     }
 
-    client.join(gameId);
+    client.join(roomId)
 
-    this.logger.verbose(`Client ${client.id} connected to game ${gameId}`);
+    this.logger.verbose(`Client ${client.id} connected to room ${roomId}`)
   }
 
   handleDisconnect(client: UserSocket) {
-    const gameId = client.handshake.query.gameId as string;
-    this.gameService.leave(gameId, client.request.user.id).catch((err) => {});
-    this.logger.verbose(`Client ${client.id} disconnected`);
-    client.emit('disconnection', 'Successfully disconnected from game server');
+    const roomId = client.handshake.query.roomId as string
+    this.gameService.leave(roomId, client.request.user.id).catch((err) => {})
+    this.logger.verbose(`Client ${client.id} disconnected`)
+    client.emit('disconnection', 'Successfully disconnected from game server')
   }
 
   @SubscribeMessage('join')
   async handleJoin(
-    @MessageBody() room: string,
-    @ConnectedSocket() client: UserSocket,
+    @MessageBody() roomId: string,
+    @ConnectedSocket() client: UserSocket
   ): Promise<void> {
-    const game = await this.gameService.findOne(room);
+    const room = await this.gameService.findOne(roomId)
 
-    if (!game) {
-      client.emit('error', `Game ${room} not found`);
-      return;
+    if (!room) {
+      client.emit('error', `Game ${roomId} not found`)
+      return
     }
 
-    this.gameService.join(room, client.request.user.id).catch((err) => {});
+    this.gameService.join(roomId, client.request.user.id).catch((err) => {})
 
-    client.join(room);
+    client.join(roomId)
 
-    this.server.to(room).emit('game:update', game.get());
+    this.server.to(roomId).emit('game:update', room.get())
   }
 
   @SubscribeMessage('leave')
   async handleLeave(
-    @MessageBody() room: string,
-    @ConnectedSocket() client: Socket,
+    @MessageBody() roomId: string,
+    @ConnectedSocket() client: Socket
   ): Promise<void> {
-    const game = await this.gameService.findOne(room);
+    const room = await this.gameService.findOne(roomId)
 
-    if (!game) {
-      client.emit('error', `Game ${room} not found`);
-      return;
+    if (!room) {
+      client.emit('error', `Room ${roomId} not found`)
+      return
     }
 
-    client.leave(room);
+    client.leave(roomId)
   }
 
-  @SubscribeMessage('move')
-  async handleMove(
-    @MessageBody('x') x: number,
-    @MessageBody('room_id') room_id: string,
-    @ConnectedSocket() client: Socket,
+  @SubscribeMessage('start')
+  async handleStart(
+    @MessageBody() roomId: string,
+    @ConnectedSocket() client: UserSocket
   ): Promise<void> {
-    const room = await this.gameService.findOne(room_id);
+    const room = await this.gameService.findOne(roomId)
 
-    // game.updatePos(client.request.user.id, x);
-    if (x < 0 || x > 1) {
-      client.emit('error', 'Invalid move');
+    // todo: check if the room is full and not started
+
+    if (!room) {
+      client.emit('error', `Room ${roomId} not found`)
+      return
     }
+
+    if (room.get().owner.id !== client.request.user.id) {
+      client.emit('error', 'You are not the owner of this room')
+      return
+    }
+
+    room.start()
   }
+
+  // @SubscribeMessage('move')
+  // async handleMove(
+  //   @MessageBody('x') x: number,
+  //   @MessageBody('room_id') room_id: string,
+  //   @ConnectedSocket() client: Socket,
+  // ): Promise<void> {
+  //   const room = await this.gameService.findOne(room_id);
+
+  //   // game.updatePos(client.request.user.id, x);
+  //   if (x < 0 || x > 1) {
+  //     client.emit('error', 'Invalid move');
+  //   }
+  // }
 }
