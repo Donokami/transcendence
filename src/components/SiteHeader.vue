@@ -29,8 +29,17 @@
     <div class="navbar-end border-2 border-black border-l-0 flex-grow">
       <div class="dropdown flex">
         <label tabindex="0" class="hover:bg-gray-300">
-          <div class="w-16 flex justify-center items-center">
-            <iconify-icon icon="ri:account-circle-line" class="h-[60px] w-12"></iconify-icon>
+          <div class="flex justify-center items-center">
+            <div class="h-[60px] w-20">
+              <div class="h-full flex items-center justify-center">
+                <img
+                  v-if="userStore.loggedUser"
+                  :src="userStore.loggedUser.profilePicture"
+                  class="object-cover h-12 w-12 rounded-full"
+                />
+                <iconify-icon v-else icon="ri:account-circle-line" class="h-12 w-12"></iconify-icon>
+              </div>
+            </div>
           </div>
         </label>
         <ul
