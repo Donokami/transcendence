@@ -12,7 +12,7 @@
     SEND A NEW DM
   </label>
     <chat-direct-messages-modal></chat-direct-messages-modal>
-    <chat-direct-messages-list v-if="hasChannels"></chat-direct-messages-list>
+    <chat-direct-messages-list v-if="hasDms"></chat-direct-messages-list>
   </div>
 </template>
 
@@ -21,7 +21,7 @@
   // IMPORTS //
   // ******* //
 
-  import { computed } from 'vue'
+  import { computed, onBeforeMount, ref } from 'vue'
   
   import { storeToRefs } from 'pinia'
   import { useUserStore } from '@/stores/UserStore.js'
@@ -43,9 +43,46 @@
   
   const {loggedUser} = storeToRefs(userStore);
   
-  const hasChannels = computed(() => userStore.loggedUser?.channels?.length > 0)
+  let hasDms = ref(false);
+
+  
+  // ******************** //
+  // FUNCTION DEFINITIONS //
+  // ******************** //
+  
+  // ********* //
+  // getDmList //
+  // ********* //
+
+  const getDmList = async () => {
+    if (!loggedUser.value)
+      return 0;
+    try {
+      const dmList = await userStore.fetchDmList(loggedUser.value.id);
+      hasDms.value = !!dmList.length;
+
+      console.log(`[ChatDirectMessages] - DM list : `, dmList);
+      console.log(`[ChatDirectMessages] - hasDms : `, hasDms.value);
+
+    } catch (error) {
+      console.error(`[ProfileStatsCard] - Failed to fetch friend requests ! Error : `, error);
+    }
+  };
+
+  // ********** //
+  // toggleList //
+  // ********** //
 
   const toggleList = () => {
     emit('list-state-changed', 'channels')
   }
+  
+  // ********************* //
+  // VueJs LIFECYCLE HOOKS //
+  // ********************* //
+  
+  onBeforeMount(async () => {
+    await getDmList();
+  });
+
 </script>

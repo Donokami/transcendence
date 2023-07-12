@@ -97,6 +97,21 @@ export const useUserStore = defineStore('users', {
       return response.text();
     },
 
+    // *********** //
+    // fetchDmList //
+    // *********** //
+
+    async fetchDmList(id: string) {
+      const response = await fetch(`http://localhost:3000/api/channels/${id}/dm-list`, {
+      method: 'GET',
+      credentials: 'include',
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    },
+
     // *************** //
     // fetchFriendList //
     // *************** //
