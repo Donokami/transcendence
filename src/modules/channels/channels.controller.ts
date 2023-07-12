@@ -10,48 +10,60 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
+import { AuthGuard } from '@/core/guards/auth.guard';
 import { RequestWithUser } from '@/core/types/request-with-user';
-import { OwnershipGuard } from './guards/ownership.guard';
 
 import { ChannelsService } from './channels.service';
 import { CreateChannelDto } from './dtos/create-channel.dto';
 import { UpdateChannelDto } from './dtos/update-channel.dto';
+import { OwnershipGuard } from './guards/ownership.guard';
 
 @Controller('channels')
 export class ChannelsController {
-  constructor(private readonly channelsService: ChannelsService) {}
+  constructor(private readonly chatService: ChannelsService) {}
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return this.channelsService.findOne(id);
+  // ********* //
+  // getDmList //
+  // ********* //
+
+  @Get('/:id/dm-list')
+  @UseGuards(AuthGuard)
+  async getDmList(@Param('id') id: string) {
+    const dmList = await this.chatService.getDmList(id);
+    return dmList;
   }
 
-  @Get()
-  async findAll() {
-    return this.channelsService.findAll();
-  }
+  // @Get(':id')
+  // async findOne(@Param('id') id: string) {
+  //   return this.channelsService.findOne(id);
+  // }
 
-  @Post()
-  async create(
-    @Req() req: RequestWithUser,
-    @Body() createChannelDto: CreateChannelDto,
-  ) {
-    createChannelDto.owner.id = req.user.id;
-    return this.channelsService.create(createChannelDto);
-  }
+  // @Get()
+  // async findAll() {
+  //   return this.channelsService.findAll();
+  // }
 
-  @UseGuards(OwnershipGuard)
-  @Patch(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() updateChannelDto: UpdateChannelDto,
-  ) {
-    return this.channelsService.update(id, updateChannelDto);
-  }
+  // @Post()
+  // async create(
+  //   @Req() req: RequestWithUser,
+  //   @Body() createChannelDto: CreateChannelDto,
+  // ) {
+  //   createChannelDto.owner.id = req.user.id;
+  //   return this.channelsService.create(createChannelDto);
+  // }
 
-  @UseGuards(OwnershipGuard)
-  @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return this.channelsService.remove(id);
-  }
+  // @UseGuards(OwnershipGuard)
+  // @Patch(':id')
+  // async update(
+  //   @Param('id') id: string,
+  //   @Body() updateChannelDto: UpdateChannelDto,
+  // ) {
+  //   return this.channelsService.update(id, updateChannelDto);
+  // }
+
+  // @UseGuards(OwnershipGuard)
+  // @Delete(':id')
+  // async remove(@Param('id') id: string) {
+  //   return this.channelsService.remove(id);
+  // }
 }

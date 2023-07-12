@@ -1,12 +1,17 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-
 import { Repository } from 'typeorm';
 
 import { UsersService } from '@/modules/users/users.service';
 
-import { Channel } from './entities/channel.entity';
-import { Message } from './entities/message.entity';
+import { Channel } from '@/modules/channels/entities/channel.entity';
+import { Message } from '@/modules/channels/entities/message.entity';
+import { User } from '@/modules/users/user.entity';
 
 import { AddMessageDto } from '@/modules/chat/dtos/add-message.dto';
 import { BanUserDto } from '@/modules/chat/dtos/ban-user.dto';
@@ -17,14 +22,28 @@ import { UpdateChannelDto } from './dtos/update-channel.dto';
 export class ChannelsService {
   constructor(
     @InjectRepository(Channel)
-    private readonly channelRepository: Repository<Channel>,
+    private readonly channelsRepository: Repository<Channel>,
     @InjectRepository(Message)
-    private readonly messageRepository: Repository<Message>,
+    private readonly messagesRepository: Repository<Message>,
     private readonly userService: UsersService,
   ) {}
 
+  // ****** //
+  // LOGGER //
+  // ****** //
+
+  private logger = new Logger(ChannelsService.name);
+
+  // ******************** //
+  // FUNCTION DEFINITIONS //
+  // ******************** //
+
+  // ******* //
+  // findOne //
+  // ******* //
+
   async findOne(id: string) {
-    const channel = await this.channelRepository.findOneBy({ id });
+    const channel = await this.channelsRepository.findOneBy({ id });
 
     if (!channel) {
       throw new NotFoundException(`There is no channel under id ${id}`);
@@ -33,88 +52,123 @@ export class ChannelsService {
     return channel;
   }
 
-  async findAll() {
-    const channels = await this.channelRepository.find({
-      relations: ['messages'],
-    });
+  // ********* //
+  // getDmList //
+  // ********* //
 
-    if (!channels) {
-      throw new NotFoundException(`No channels found`);
+  async getDmList(userId: string): Promise<Channel[]> {
+    if (!userId) {
+      this.logger.warn(`ID of the user is required.`);
+      throw new BadRequestException('ID of the user is required.');
     }
-
-    return channels;
-  }
-
-  async findOneWithRelations(id: string) {
-    const channel = await this.channelRepository.findOneBy({ id });
-
-    if (!channel) {
-      throw new NotFoundException(`There is no channel under id ${id}`);
-    }
-
-    return channel;
-  }
-
-  async create(createChannelDto: CreateChannelDto) {
-    const newChannel = this.channelRepository.create({
-      ...createChannelDto,
-    });
-
-    const channel = await this.channelRepository.save(newChannel);
-
-    return channel;
-  }
-
-  async update(id: string, updateChannelDto: UpdateChannelDto) {
-    const channel = await this.channelRepository.preload({
-      id,
-      ...updateChannelDto,
-    });
-
-    if (!channel) {
-      throw new NotFoundException(`There is no channel under id ${id}`);
-    }
-
-    return this.channelRepository.save(channel);
-  }
-
-  async remove(id: string) {
-    const channel = await this.findOne(id);
-
-    return this.channelRepository.remove(channel);
-  }
-
-  async addMessage(addMessageDto: AddMessageDto) {
-    const { messageBody, channelId, userId } = addMessageDto;
-
-    const channel = await this.findOne(channelId);
 
     const user = await this.userService.findOneById(userId);
+    if (!user) {
+      this.logger.warn(`User with ID : ${userId} not found in database.`);
+      throw new NotFoundException(
+        `User with ID : ${userId} not found in database.`,
+      );
+    }
 
-    const newMessage = this.messageRepository.create({
-      messageBody,
-      channel,
-      user,
-    });
+    const dm = await this.channelsRepository
+      .createQueryBuilder('channel')
+      .innerJoinAndSelect('channel.members', 'user', 'user.id = :userId', {
+        userId,
+      })
+      .where('channel.isDm = :isDm', { isDm: true })
+      .getMany();
+    if (!dm.length) {
+      this.logger.verbose(`No DMs found in database for ${userId}.`);
+      return [];
+    }
 
-    const message = await this.messageRepository.save(newMessage);
+    this.logger.verbose(`DMs list of : ${userId} successfully retrieved.`);
 
-    return message;
+    return dm;
   }
 
-  async banUserFromChannel(banUserDto: BanUserDto) {
-    const user = await this.userService.findOneById(banUserDto.userId);
+  // async findAll() {
+  //   const channels = await this.channelRepository.find({
+  //     relations: ['messages'],
+  //   });
 
-    const channel = await this.findOne(banUserDto.channelId);
+  //   if (!channels) {
+  //     throw new NotFoundException(`No channels found`);
+  //   }
 
-    await this.userService.updateUserChannel(banUserDto.userId, null);
+  //   return channels;
+  // }
 
-    const bannedMembers = { ...channel.bannedMembers, ...user };
-    const updatedChannel = await this.channelRepository.preload({
-      id: banUserDto.channelId,
-      bannedMembers,
-    });
+  // async findOneWithRelations(id: string) {
+  //   const channel = await this.channelRepository.findOneBy({ id });
 
-    return this.channelRepository.save(updatedChannel);
-  }
+  //   if (!channel) {
+  //     throw new NotFoundException(`There is no channel under id ${id}`);
+  //   }
+
+  //   return channel;
+  // }
+
+  // async create(createChannelDto: CreateChannelDto) {
+  //   const newChannel = this.channelRepository.create({
+  //     ...createChannelDto,
+  //   });
+
+  //   const channel = await this.channelRepository.save(newChannel);
+
+  //   return channel;
+  // }
+
+  // async update(id: string, updateChannelDto: UpdateChannelDto) {
+  //   const channel = await this.channelRepository.preload({
+  //     id,
+  //     ...updateChannelDto,
+  //   });
+
+  //   if (!channel) {
+  //     throw new NotFoundException(`There is no channel under id ${id}`);
+  //   }
+
+  //   return this.channelRepository.save(channel);
+  // }
+
+  // async remove(id: string) {
+  //   const channel = await this.findOne(id);
+
+  //   return this.channelRepository.remove(channel);
+  // }
+
+  // async addMessage(addMessageDto: AddMessageDto) {
+  //   const { messageBody, channelId, userId } = addMessageDto;
+
+  //   const channel = await this.findOne(channelId);
+
+  //   const user = await this.userService.findOneById(userId);
+
+  //   const newMessage = this.messageRepository.create({
+  //     messageBody,
+  //     channel,
+  //     user,
+  //   });
+
+  //   const message = await this.messageRepository.save(newMessage);
+
+  //   return message;
+  // }
+
+  // async banUserFromChannel(banUserDto: BanUserDto) {
+  //   const user = await this.userService.findOneById(banUserDto.userId);
+
+  //   const channel = await this.findOne(banUserDto.channelId);
+
+  //   await this.userService.updateUserChannel(banUserDto.userId, null);
+
+  //   const bannedMembers = { ...channel.bannedMembers, ...user };
+  //   const updatedChannel = await this.channelRepository.preload({
+  //     id: banUserDto.channelId,
+  //     bannedMembers,
+  //   });
+
+  //   return this.channelRepository.save(updatedChannel);
+  // }
 }

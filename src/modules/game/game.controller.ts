@@ -16,15 +16,20 @@ import { GameService } from './game.service';
 
 import { RequestWithUser } from '@/core/types/request-with-user';
 
-import { CreateGameDto } from './dtos/create-game-dto';
-import { UpdateGameDto } from './dtos/update-game-dto';
-import { OwnershipGuard } from './guards/ownership.guard';
 import { AuthGuard } from '@/core/guards/auth.guard';
+import { OwnershipGuard } from './guards/ownership.guard';
+
+import { CreateGameDto } from './dtos/create-game-dto';
 import { PaginationDTO } from '@/core/dtos/pagination.dto';
+import { UpdateGameDto } from './dtos/update-game-dto';
 
 @Controller('games')
 export class GameController {
-  constructor(private readonly gameService: GameService) { }
+  constructor(private readonly gameService: GameService) {}
+
+  // ******* //
+  // findOne //
+  // ******* //
 
   @Get(':id')
   @UseGuards(AuthGuard)
@@ -37,6 +42,10 @@ export class GameController {
 
     return game;
   }
+
+  // ******* //
+  // findAll //
+  // ******* //
 
   @Get()
   @UseGuards(AuthGuard)
@@ -56,6 +65,10 @@ export class GameController {
     });
   }
 
+  // ****** //
+  // create //
+  // ****** //
+
   @Post()
   @UseGuards(AuthGuard)
   async create(
@@ -66,12 +79,20 @@ export class GameController {
     return this.gameService.create(createGameDto);
   }
 
+  // ****** //
+  // update //
+  // ****** //
+
   @Patch(':id')
   @UseGuards(AuthGuard)
   @UseGuards(OwnershipGuard)
   async update(@Param('id') id: string, @Body() updateGameDto: UpdateGameDto) {
     return this.gameService.update(id, updateGameDto);
   }
+
+  // ****** //
+  // remove //
+  // ****** //
 
   @Delete(':id')
   @UseGuards(AuthGuard)
@@ -80,17 +101,29 @@ export class GameController {
     return this.gameService.remove(id);
   }
 
+  // **** //
+  // join //
+  // **** //
+
   @Post(':id/join')
   @UseGuards(AuthGuard)
   async join(@Param('id') id: string, @Req() req: RequestWithUser) {
     return this.gameService.join(id, req.session.userId);
   }
 
+  // ***** //
+  // leave //
+  // ***** //
+
   @Post(':id/leave')
   @UseGuards(AuthGuard)
   async leave(@Param('id') id: string, @Req() req: RequestWithUser) {
     return this.gameService.leave(id, req.session.userId);
   }
+
+  // **** //
+  // kick //
+  // **** //
 
   @Post(':id/kick/:userId')
   @UseGuards(AuthGuard)

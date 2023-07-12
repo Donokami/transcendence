@@ -78,7 +78,7 @@ export class User {
   // ************************* //
 
   @JoinTable()
-  @ManyToOne(() => Channel, (channel: Channel) => channel.members, {
+  @ManyToMany(() => Channel, (channel: Channel) => channel.members, {
     eager: true,
   })
   channels: Array<Channel>;

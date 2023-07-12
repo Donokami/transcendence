@@ -15,4 +15,4 @@ import { ChannelsService } from './channels.service';
   providers: [ChannelsService],
   exports: [ChannelsService],
 })
-export class ChannelsModule { }
+export class ChannelsModule {}
