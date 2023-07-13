@@ -124,11 +124,11 @@ export class Room implements RoomObject {
         this[key] = updatedRoom[key]
       }
     })
-    this.gameGateway.server.to(this.id).emit('game:update', this.get())
+    this.gameGateway.server.to(this.id).emit('room:update', this.get())
     return this.get()
   }
 
-  public start() {
+  public startGame() {
     console.log('Starting game')
 
     this.update({ status: RoomStatus.INGAME })

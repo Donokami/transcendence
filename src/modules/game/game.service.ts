@@ -71,7 +71,7 @@ export class GameService {
 
     this.rooms.push(room)
 
-    this.gameGateway.server.emit('game:create', room.get())
+    this.gameGateway.server.emit('room:create', room.get())
 
     return room.get()
   }
@@ -103,7 +103,7 @@ export class GameService {
 
     this.logger.verbose(`Removing room ${id}`)
 
-    this.gameGateway.server.to(room.id).emit('game:remove', room.get())
+    this.gameGateway.server.to(room.id).emit('room:remove', room.get())
 
     return room.get()
   }
@@ -120,7 +120,7 @@ export class GameService {
 
     this.logger.verbose(`Joining user ${userId} to room ${id}`)
 
-    this.gameGateway.server.to(room.id).emit('game:update', room.get())
+    this.gameGateway.server.to(room.id).emit('room:update', room.get())
 
     return room.get()
   }
@@ -130,7 +130,7 @@ export class GameService {
 
     this.logger.verbose(`Kicking user ${userId} from room ${id}`)
 
-    this.gameGateway.server.to(id).emit('game:kick', {
+    this.gameGateway.server.to(id).emit('room:kick', {
       userId
     })
 
@@ -163,7 +163,7 @@ export class GameService {
 
         this.rooms.splice(this.rooms.indexOf(room), 1)
 
-        this.gameGateway.server.emit('game:delete', {
+        this.gameGateway.server.emit('room:delete', {
           id: room.id
         })
 
@@ -175,7 +175,7 @@ export class GameService {
       }, 5000)
     }
 
-    this.gameGateway.server.to(room.id).emit('game:update', room.get())
+    this.gameGateway.server.to(room.id).emit('room:update', room.get())
 
     this.logger.verbose(`Removing user ${userId} from room ${id}`)
 

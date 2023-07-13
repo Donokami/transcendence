@@ -27,18 +27,7 @@ export class GameGateway {
   private readonly logger = new Logger(GameService.name)
 
   async handleConnection(client: Socket) {
-    const roomId = client.handshake.query.roomId as string
-    client.emit('connection', 'Successfully connected to game server')
-    const room = await this.gameService.findOne(roomId)
-
-    if (!room) {
-      client.emit('error', `Room ${roomId} not found`)
-      return
-    }
-
-    client.join(roomId)
-
-    this.logger.verbose(`Client ${client.id} connected to room ${roomId}`)
+    this.logger.verbose(`Client ${client.id} connected to /game socket`)
   }
 
   handleDisconnect(client: UserSocket) {
@@ -48,7 +37,7 @@ export class GameGateway {
     client.emit('disconnection', 'Successfully disconnected from game server')
   }
 
-  @SubscribeMessage('join')
+  @SubscribeMessage('room:join')
   async handleJoin(
     @MessageBody() roomId: string,
     @ConnectedSocket() client: UserSocket
@@ -64,10 +53,10 @@ export class GameGateway {
 
     client.join(roomId)
 
-    this.server.to(roomId).emit('game:update', room.get())
+    this.server.to(roomId).emit('room:update', room.get())
   }
 
-  @SubscribeMessage('leave')
+  @SubscribeMessage('room:leave')
   async handleLeave(
     @MessageBody() roomId: string,
     @ConnectedSocket() client: Socket
@@ -82,7 +71,7 @@ export class GameGateway {
     client.leave(roomId)
   }
 
-  @SubscribeMessage('start')
+  @SubscribeMessage('game:start')
   async handleStart(
     @MessageBody() roomId: string,
     @ConnectedSocket() client: UserSocket
@@ -101,7 +90,7 @@ export class GameGateway {
       return
     }
 
-    room.start()
+    room.startGame()
   }
 
   // @SubscribeMessage('move')
