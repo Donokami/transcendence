@@ -118,12 +118,9 @@ export class Room implements RoomObject {
     this.invited.push(user)
   }
 
-  public update(updatedRoom: any) {
-    Object.keys(updatedRoom).forEach((key) => {
-      if (updatedRoom[key] !== undefined) {
-        this[key] = updatedRoom[key]
-      }
-    })
+  public update(updatedRoom: RoomObject) {
+    Object.assign(this, updatedRoom)
+
     this.gameGateway.server.to(this.id).emit('room:update', this.get())
     return this.get()
   }
@@ -131,7 +128,7 @@ export class Room implements RoomObject {
   public startGame() {
     console.log('Starting game')
 
-    this.update({ status: RoomStatus.INGAME })
+    this.update({ ...this, status: RoomStatus.INGAME })
     this.gameState.startGame()
   }
 

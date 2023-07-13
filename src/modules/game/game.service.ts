@@ -93,7 +93,7 @@ export class GameService {
     return updatedGame
   }
 
-  async remove(id: string) {
+  async delete(id: string) {
     const room = await this.findOne(id)
 
     if (!room) {
@@ -137,6 +137,14 @@ export class GameService {
     return await data
   }
 
+  async leaveAll(userId: string) {
+    const user = await this.userService.findOneById(userId)
+    this.rooms.forEach((room) => {
+      this.leave(room.id, user.id)
+    })
+  }
+
+  // todo: crappy code, to clean up and secure
   async leave(id: string, userId: string) {
     const room = await this.findOne(id)
     const user = await this.userService.findOneById(userId)

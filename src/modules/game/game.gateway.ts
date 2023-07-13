@@ -28,11 +28,13 @@ export class GameGateway {
 
   async handleConnection(client: Socket) {
     this.logger.verbose(`Client ${client.id} connected to /game socket`)
+    this.logger.verbose(client)
   }
 
   handleDisconnect(client: UserSocket) {
-    const roomId = client.handshake.query.roomId as string
-    this.gameService.leave(roomId, client.request.user.id).catch((err) => {})
+    // const roomId = client.handshake.query.roomId as string
+    // this.gameService.leave(roomId, client.request.user.id).catch((err) => {})
+    this.gameService.leaveAll(client.request.user.id)
     this.logger.verbose(`Client ${client.id} disconnected`)
     client.emit('disconnection', 'Successfully disconnected from game server')
   }
@@ -92,18 +94,4 @@ export class GameGateway {
 
     room.startGame()
   }
-
-  // @SubscribeMessage('move')
-  // async handleMove(
-  //   @MessageBody('x') x: number,
-  //   @MessageBody('room_id') room_id: string,
-  //   @ConnectedSocket() client: Socket,
-  // ): Promise<void> {
-  //   const room = await this.gameService.findOne(room_id);
-
-  //   // game.updatePos(client.request.user.id, x);
-  //   if (x < 0 || x > 1) {
-  //     client.emit('error', 'Invalid move');
-  //   }
-  // }
 }
