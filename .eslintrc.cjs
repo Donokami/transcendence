@@ -1,5 +1,5 @@
 /* eslint-env node */
-require('@rushstack/eslint-patch/modern-module-resolution')
+// require('@rushstack/eslint-patch/modern-module-resolution')
 
 module.exports = {
   root: true,
@@ -9,7 +9,7 @@ module.exports = {
     '@vue/eslint-config-prettier/skip-formatting'
   ],
   rules: {
-    'space-before-function-paren': ['error', 'never']
+    // 'space-before-function-paren': ['error', 'never']
   },
   parserOptions: {
     ecmaVersion: 'latest'

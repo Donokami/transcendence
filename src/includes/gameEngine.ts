@@ -2,7 +2,7 @@ import { Vector3, type Object3D } from 'three'
 import { reactive } from 'vue'
 import { io } from 'socket.io-client'
 
-const socket = io('http://localhost:5000/', { path: '/ws/socket.io' })
+// const socket = io('http://localhost:5000/', { path: '/ws/socket.io' })
 
 const gs = reactive({
   connected: false,
@@ -27,20 +27,20 @@ const gm = {
   ballRadius: 0.8
 }
 
-socket.on('connect', () => {
-  gs.connected = true
-  console.log('connected')
-})
+// socket.on('connect', () => {
+//   gs.connected = true
+//   console.log('connected')
+// })
 
-socket.on('coordinates', ({ x, y, z }) => {
-  // console.log(args)
-  console.log(x, y, z)
-  gs.testBallPos = new Vector3(x, y, z)
-})
+// socket.on('coordinates', ({ x, y, z }) => {
+//   // console.log(args)
+//   console.log(x, y, z)
+//   gs.testBallPos = new Vector3(x, y, z)
+// })
 
-socket.onAny((eventName, ...args) => {
-  console.log(eventName, args)
-})
+// socket.onAny((eventName, ...args) => {
+//   console.log(eventName, args)
+// })
 
 type SimObject3D = Object3D & {
   velocity: {
@@ -54,7 +54,8 @@ type SimObject3D = Object3D & {
 function startBallMov(ball: SimObject3D): void {
   ball.position.x = ball.position.z
   ball.position.y =
-    -((0 - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 + 1.4 * gm.fieldDepth * 0.1
+    -((0 - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 +
+    1.4 * gm.fieldDepth * 0.1
 
   const direction: number = Math.random() > 0.5 ? -1 : 1
   ball.velocity = {
@@ -75,7 +76,8 @@ function updateBallPosition(delta: number, ball: SimObject3D): void {
   // add an arc to the ballRef's flight. Comment this out for boring, flat pong.
   // ballPos.y = -(((ballPos.z - 1) * (ballPos.z - 1)) / 5000) + 2
   ballPos.y =
-    -((ballPos.z - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 + 1.4 * gm.fieldDepth * 0.1
+    -((ballPos.z - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 +
+    1.4 * gm.fieldDepth * 0.1
 
   // -(((0 - 1) * (0 - 1)) / (60 * 60)) * 60 * 0.5 + 1.4 * 60 * 0.1
 }
@@ -97,7 +99,8 @@ function isSideCollision(ball: SimObject3D): boolean {
   const ballX = ball.position.x
   const halfFieldWidth = gm.fieldWidth * 0.5
   return (
-    ballX >= halfFieldWidth + gm.ballRadius * 0.5 || ballX <= -halfFieldWidth - gm.ballRadius * 0.5
+    ballX >= halfFieldWidth + gm.ballRadius * 0.5 ||
+    ballX <= -halfFieldWidth - gm.ballRadius * 0.5
   )
 }
 
@@ -115,7 +118,10 @@ function isPaddle2Collision(ball: SimObject3D, paddle2: SimObject3D): boolean {
   )
 }
 
-function isBallAlignedWithPaddle(ball: SimObject3D, paddle: SimObject3D): boolean {
+function isBallAlignedWithPaddle(
+  ball: SimObject3D,
+  paddle: SimObject3D
+): boolean {
   const halfPaddleWidth = gm.fieldWidth * gm.paddleRatio * 0.6
   const paddleX = paddle.position.x
   const ballX = ball.position.x
@@ -175,7 +181,11 @@ function processBallMovement(
   }
 }
 
-function processCpuPaddle(delta: number, ball: SimObject3D, paddle2: SimObject3D): void {
+function processCpuPaddle(
+  delta: number,
+  ball: SimObject3D,
+  paddle2: SimObject3D
+): void {
   const ballPos = ball.position
   const cpuPos = paddle2.position
   // let newPos = ballPos
@@ -196,7 +206,8 @@ function processCpuPaddle(delta: number, ball: SimObject3D, paddle2: SimObject3D
 function resetBall(ball: SimObject3D): void {
   ball.position.x = ball.position.z = 0
   ball.position.y =
-    -((0 - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 + 1.4 * gm.fieldDepth * 0.1
+    -((0 - 1) ** 2 / gm.fieldDepth ** 2) * gm.fieldDepth * 0.5 +
+    1.4 * gm.fieldDepth * 0.1
   ball.velocity.x = ball.velocity.y = ball.velocity.z = 0
   ball.stopped = true
 }
