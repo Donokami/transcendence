@@ -175,10 +175,6 @@ export class GameService {
           id: room.id
         })
 
-        if (room.owner.id === user.id) {
-          room.owner = room.players[0]
-        }
-
         return room.get()
       }, 5000)
     }

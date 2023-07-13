@@ -28,7 +28,6 @@ export class GameGateway {
 
   async handleConnection(client: Socket) {
     this.logger.verbose(`Client ${client.id} connected to /game socket`)
-    this.logger.verbose(client)
   }
 
   handleDisconnect(client: UserSocket) {

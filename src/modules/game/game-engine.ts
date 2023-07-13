@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common'
 import { Object3D, Vector3 } from 'three'
 import { GameGateway } from './game.gateway'
-import { Room } from './room'
+import { Room, RoomStatus } from './room'
 
 type SimObject3D = Object3D & {
   velocity: {
@@ -36,7 +36,7 @@ const gm: Metrics = {
   paddleHeight: 1,
   paddleDepth: 1,
   ballRadius: 0.8,
-  timeout: 120000,
+  timeout: 30000,
   tps: 5
 }
 
@@ -77,12 +77,12 @@ export class Game {
     // Gives to testBall a random position
     const minPos = new Vector3(
       -this.metrics.fieldWidth / 2,
-      0,
+      2,
       -this.metrics.fieldDepth / 2
     )
     const maxPos = new Vector3(
       this.metrics.fieldWidth / 2,
-      0,
+      8,
       this.metrics.fieldDepth / 2
     )
     this.testBall.position.lerpVectors(minPos, maxPos, Math.random())
@@ -92,7 +92,7 @@ export class Game {
     const { x, y, z } = this.testBall.position
     this.gameGateway.server
       .to(this.roomState.id)
-      .emit('update:testBall', { x, y, z })
+      .emit('game:update:testBall', { x, y, z })
   }
 
   public startGame() {
@@ -101,6 +101,7 @@ export class Game {
   }
 
   public endGame() {
+    this.roomState.update({ ...this.roomState, status: RoomStatus.OPEN })
     this.logger.log('end of game!')
   }
 }
