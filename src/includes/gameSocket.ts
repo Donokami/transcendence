@@ -1,8 +1,8 @@
-import { onBeforeRouteUpdate, onBeforeRouteLeave } from 'vue-router'
 import { Socket, io } from 'socket.io-client'
-// import { useGameStore } from '@/stores/GameStore'
 import type { Room } from '@/types/Room'
+import type { Game } from '@/types/Game'
 import { reactive } from 'vue'
+import { Vector3 } from 'three'
 
 export const socket: Socket = io('http://localhost:3002/game', {
   withCredentials: true,
@@ -22,9 +22,14 @@ export const room: Room = reactive({
   maxPlayers: 0
 })
 
-socket.connect()
-
-console.log('pipi')
+export const game: Game = reactive({
+  paddle1Pos: new Vector3(0, 0, 0),
+  paddle2Pos: new Vector3(0, 0, 0),
+  testBallPos: new Vector3(0, 0, 0),
+  score1: 0,
+  score2: 0,
+  isUserPaddle1: true
+})
 
 socket.on('connect', () => {
   console.log('connected to the /game socket')
@@ -40,10 +45,9 @@ socket.on('error', (error) => {
 
 socket.on('room:update', (data: Room) => {
   console.log(data)
-  // Assign the data to the room object
   Object.assign(room, data)
 })
 
-onBeforeRouteLeave(async () => {
-  socket.disconnect()
+socket.on('game:update:testBall', ({ x, y, z }) => {
+  game.testBallPos = new Vector3(x, y, z)
 })

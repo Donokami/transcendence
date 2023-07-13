@@ -1,21 +1,45 @@
 <template>
   <div class="max-w-screen-xl min-w-[95%] mx-auto text-black">
-    <p>Prooooouuuut</p>
-    <template v-if="room">
-      <room-summary :room="room" />
-    </template>
+    <div
+      class="flex flex-col p-5 mx-2 my-3 mt-1 text-justify border-2 border-black">
+      <template v-if="room">
+        <room-summary :room="room" />
+        <button @click="startGame" :disabled="loggedUser?.id !== room.owner.id">
+          Start game
+        </button>
+        <game-canvas
+          :room="room"
+          :game="game"
+          v-if="room.status === 'ingame'" />
+      </template>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { useRoute } from 'vue-router'
+import { onBeforeRouteLeave, useRoute } from 'vue-router'
 // import { useGameStore } from '../stores/GameStore';
-import RoomSummary from '@/components/RoomSummary.vue';
-import { socket, room } from '@/includes/gameSocket';
+import RoomSummary from '@/components/RoomSummary.vue'
+import GameCanvas from '@/components/GameCanvas.vue'
+import { socket, room, game } from '@/includes/gameSocket'
+import { onMounted } from 'vue'
+import { useUserStore } from '@/stores/UserStore'
 // import { onMounted } from 'vue';
 
-const route = useRoute()
+const roomId = useRoute().params.id
 
-socket.emit('room:join', route.params.id)
+const { loggedUser } = useUserStore()
 
+socket.connect()
+
+socket.emit('room:join', roomId)
+
+// to do: to move into a component
+function startGame(): void {
+  socket.emit('game:start', roomId)
+}
+
+onBeforeRouteLeave(() => {
+  socket.disconnect()
+})
 </script>
