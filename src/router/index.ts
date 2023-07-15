@@ -12,7 +12,7 @@ import StatsView from '../views/StatsView.vue'
 import RoomView from '../views/RoomView.vue'
 import CreateRoomView from '../views/CreateRoomView.vue'
 
-const routes: Array<RouteRecordRaw> = [
+const routes: RouteRecordRaw[] = [
   {
     component: AuthView,
     path: '/auth',

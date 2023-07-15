@@ -1,116 +1,199 @@
 <template>
-  <canvas ref="canvas" class="w-full h-full absolute bg-black top-0 left-0 z-0"></canvas>
+  <div class="">
+    <p class="">
+      {{ scoring }} ({{ Math.round(1 / gs.fps) }} fps) -
+      {{
+        Math.round(ballRef?.position.z) +
+        ' - ' +
+        Math.round(ballRef?.position.y * 100) / 100 +
+        ' - ' +
+        Math.round(ballRef?.position.x * 100) / 100
+      }}
+    </p>
+    <div class="w-[720px] h-[480px]">
+      <TresCanvas clear-color="#005" shadows @mousemove="MovePaddle">
+        <TresScene>
+          <TresAmbientLight
+            color="#ffffff"
+            :position="[0, 3, 0]"
+            :intensity="1" />
+          <TresDirectionalLight color="#ffffff" :intensity="2" />
+          <!-- <TresDirectionalLight color="#ffaaaa" :position="[0, 5, 3]" :intensity="0.5" /> -->
+          <TresPerspectiveCamera
+            :position="[paddlePos(gs.posX), 5, gm.fieldDepth]"
+            ref="cameraRef"
+            :fov="25"
+            :aspect="1"
+            :near="0.1"
+            :far="1000" />
+          <!-- <TresPerspectiveCamera :position="[
+            10,
+            40,
+            5
+          ]" :fov="45" :aspect="1" :near="0.1" :far="1000" /> -->
+          <!-- <TresGroup ref="groupRef">
+            <TresMesh :position="[-1, -2, 1]" :scale="1.25">
+              <TresSphereGeometry />
+              <TresMeshToonMaterial color="beige" />
+            </TresMesh>
+            <TresMesh :position="[1, -2, 1]" :scale="1.25">
+              <TresSphereGeometry />
+              <TresMeshToonMaterial color="beige" />
+            </TresMesh>
+            <TresMesh :position="[0, 4.8, 0]" :scale="1">
+              <TresSphereGeometry :args="[1]" />
+              <TresMeshToonMaterial color="pink" />
+            </TresMesh>
+            <TresMesh :position="[0, 1, 0]" :scale="1">
+          <TresCylinderGeometry :args="[1, 1, 7.5]" />
+          <TresMeshToonMaterial color="beige" />
+          </TresMesh>
+          </TresGroup> -->
+          <TresGroup>
+            <TresMesh>
+              <TresBoxGeometry
+                :args="[gm.fieldWidth, gm.fieldHeight, gm.fieldDepth]" />
+              <TresMeshToonMaterial color="#f80" />
+            </TresMesh>
+            <TresMesh
+              :rotate-x="-Math.PI * 0.5"
+              :position-y="gm.fieldHeight * 0.5 + 0.01">
+              <TresPlaneGeometry :args="[gm.fieldWidth, 1]" />
+              <TresMeshToonMaterial color="#fff" />
+            </TresMesh>
+          </TresGroup>
+          <TresMesh
+            :position="[
+              paddlePos(gs.posX),
+              gm.fieldHeight,
+              gm.fieldDepth * 0.5 + gm.paddleDepth * 0.5
+            ]"
+            ref="paddle1Ref">
+            <TresBoxGeometry
+              :args="[
+                gm.paddleRatio * gm.fieldWidth,
+                gm.paddleHeight,
+                gm.paddleDepth
+              ]" />
+            <TresMeshToonMaterial color="#fff" />
+          </TresMesh>
+          <TresMesh
+            :position="[
+              0,
+              gm.fieldHeight,
+              -gm.fieldDepth * 0.5 - gm.paddleDepth * 0.5
+            ]"
+            ref="paddle2Ref">
+            <TresBoxGeometry
+              :args="[
+                gm.paddleRatio * gm.fieldWidth,
+                gm.paddleHeight,
+                gm.paddleDepth
+              ]" />
+            <TresMeshToonMaterial color="#fff" />
+          </TresMesh>
+          <TresMesh ref="ballRef">
+            <TresSphereGeometry :args="[gm.ballRadius]" />
+            <TresMeshToonMaterial color="yellow" />
+          </TresMesh>
+          <TresMesh ref="testBallRef">
+            <TresSphereGeometry :args="[gm.ballRadius]" />
+            <TresMeshToonMaterial color="blue" />
+          </TresMesh>
+          <Suspense>
+            <Text3D
+              :size="3"
+              :height="1"
+              :position="[
+                0,
+                (gm.fieldHeight + gm.paddleHeight) * 4,
+                -gm.fieldDepth * 0.5
+              ]"
+              ref="textRef"
+              :text="scoring"
+              center
+              need-updates
+              font="https://raw.githubusercontent.com/Tresjs/assets/main/fonts/FiraCodeRegular.json">
+              <TresMeshToonMaterial color="#fff" />
+            </Text3D>
+          </Suspense>
+
+          <!-- <Suspense>
+            <Environment ref="envRef" :files="'game/environment.hdr'" />
+          </Suspense> -->
+        </TresScene>
+        <Stars :size="1" />
+        <!-- <OrbitControls /> -->
+      </TresCanvas>
+    </div>
+  </div>
 </template>
 
-<script lang="ts">
-export default {
-  name: 'GameCanvas',
-  mounted() {
-    // Get the canvas element and its context
-    const canvas = this.$refs.canvas as HTMLCanvasElement
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+<script setup lang="ts">
+import { type ShallowRef, shallowRef, computed, ref } from 'vue'
+import { useRenderLoop } from '@tresjs/core'
+import { Text3D, Stars, OrbitControls } from '@tresjs/cientos'
+import { gm, gs, renderPong, type SimObject3D } from '@/includes/gameEngine'
+import type { Object3D } from 'three'
+import type { Room } from '@/types/Room'
+import type { Game } from '@/types/Game'
 
-    // Set the initial position and velocity of the ball
-    let x = canvas.width / 2
-    let y = canvas.height / 2
-    let dx = 1.5
-    let dy = 1.5
-    const radius = 2
+const props = defineProps<{
+  room: Room
+  game: Game
+}>()
 
-    // Set the initial position and size of the paddles
-    const paddleWidth = 10
-    const paddleHeight = 50
-    const leftPaddleX = 10
-    const rightPaddleX = canvas.width - 20
-    let rightPaddleVelocityY = 1
-    let leftPaddleY = canvas.height / 2 - paddleHeight / 2
-    let rightPaddleY = canvas.height / 2 - paddleHeight / 2
+const room = ref(props.room)
+const game = ref(props.game)
 
-    // Define a function to draw the ball on the canvas
-    function drawBall() {
-      ctx.beginPath()
-      ctx.arc(x, y, radius, 0, Math.PI * 2)
-      ctx.fillStyle = 'white'
-      ctx.fill()
-      ctx.closePath()
-    }
+// const groupRef: ShallowRef = shallowRef(null)
+// const envRef: ShallowRef = shallowRef(null)
 
-    // Define a function to draw the paddles on the canvas
-    function drawPaddles() {
-      // Left paddle
-      ctx.beginPath()
-      ctx.rect(leftPaddleX, leftPaddleY, paddleWidth, paddleHeight)
-      ctx.fillStyle = '#FFFFFF'
-      ctx.fill()
-      ctx.closePath()
+const scoring = computed(() => {
+  return `${gs.score1} - ${gs.score2}`
+})
 
-      // Right paddle
-      ctx.beginPath()
-      ctx.rect(rightPaddleX, rightPaddleY, paddleWidth, paddleHeight)
-      ctx.fillStyle = '#FFFFFF'
-      ctx.fill()
-      ctx.closePath()
-    }
+const cameraRef: ShallowRef<Object3D | null> = shallowRef(null)
+const ballRef: ShallowRef<SimObject3D | null> = shallowRef(null)
+const testBallRef: ShallowRef<SimObject3D | null> = shallowRef(null)
+const paddle1Ref: ShallowRef<SimObject3D | null> = shallowRef(null)
+const paddle2Ref: ShallowRef<SimObject3D | null> = shallowRef(null)
 
-    // Define a function to clear the canvas
-    function clearCanvas() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height)
-    }
+const { onLoop } = useRenderLoop()
 
-    // Define a function to update the ball's position and velocity
-    function update() {
-      // Bounce off the top or bottom walls
-      if (y + dy > canvas.height - radius || y + dy < radius) {
-        dy = -dy
-      }
-
-      // Bounce off the left or right paddles
-      if (
-        (x - radius <= leftPaddleX + paddleWidth &&
-          x + radius >= leftPaddleX &&
-          y + radius >= leftPaddleY &&
-          y - radius <= leftPaddleY + paddleHeight) ||
-        (x + radius >= rightPaddleX &&
-          x - radius <= rightPaddleX + paddleWidth &&
-          y + radius >= rightPaddleY &&
-          y - radius <= rightPaddleY + paddleHeight)
-      ) {
-        dx = -dx
-      }
-
-      if (x + dx > canvas.width - radius || x + dx < radius) {
-        // Disable the game loop
-        // cancelAnimationFrame(gameLoopId)
-        // Set the ball's position back to the middle of the canvas
-        x = canvas.width / 2
-        y = canvas.height / 2
-
-        // Set the ball's velocity to move towards the opposite direction
-        dx = -dx
-        dy = -dy
-      }
-
-      // Move the ball
-      x += dx
-      y += dy
-    }
-
-    // Define the animation loop
-    function animate() {
-      clearCanvas()
-      drawBall()
-      drawPaddles()
-      update()
-      // Move the right paddle automatically
-      rightPaddleY += rightPaddleVelocityY
-      if (rightPaddleY + paddleHeight > canvas.height || rightPaddleY < 0) {
-        rightPaddleVelocityY = -rightPaddleVelocityY
-      }
-      requestAnimationFrame(animate)
-    }
-
-    // Start the animation loop
-    animate()
-  }
+const paddlePos = (x: number): number => {
+  const newMin = -gm.fieldWidth * 0.5 + gm.paddleRatio * gm.fieldWidth * 0.5
+  const newMax = gm.fieldWidth * 0.5 - gm.paddleRatio * gm.fieldWidth * 0.5
+  return (x * (newMax - newMin)) / gm.canvasWidth + newMin
 }
+
+const MovePaddle = (e: MouseEvent): void => {
+  gs.posX = e.offsetX
+  gs.posY = e.offsetY
+}
+
+// A loop that switch the TestBall position each second
+// setInterval(() => {
+//   gs.testBallPos.x = Math.random() * gm.fieldWidth - gm.fieldWidth * 0.5
+//   gs.testBallPos.z = Math.random() * gm.fieldDepth - gm.fieldDepth * 0.5
+// }, 1000)
+
+onLoop(({ delta }) => {
+  gs.fps = delta
+  gs.testBallPos = game.value.testBallPos
+  if (
+    ballRef.value != null &&
+    testBallRef.value != null &&
+    paddle1Ref.value != null &&
+    paddle2Ref.value != null
+  ) {
+    renderPong(
+      delta,
+      ballRef.value,
+      testBallRef.value,
+      paddle1Ref.value,
+      paddle2Ref.value
+    )
+  }
+})
 </script>

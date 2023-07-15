@@ -1,11 +1,12 @@
 <template>
-  <div class="stats rounded-none">
+  <div class="rounded-none stats">
 
-    <div class="stat border-black border-r-2">
+    <div class="border-r-2 border-black stat">
       <div class="stat-figure text-secondary">
         <div class="avatar online">
-          <div class="w-16 rounded-full">
-            <img src="../assets/profile-picture.jpg" />
+          <input type="file" ref="fileInput" @change="onFileChange" style="display: none" />
+          <div class="w-16 rounded-full cursor-pointer">
+            <img v-if="userStore.loggedUser" :src="userStore.loggedUser.profilePicture" @click="triggerFileInput" />
           </div>
         </div>
       </div>
@@ -14,7 +15,7 @@
       <div v-if="observedUser" class="stat-desc" :class="statusColor">{{ observedUser.status }}</div>
     </div>
 
-    <div class="stat border-none">
+    <div class="border-none stat">
       <div class="stat-figure text-primary">
         <iconify-icon class="w-10 h-10" icon="icon-park-outline:ranking" style="color: #5d4df8"></iconify-icon>
       </div>
@@ -53,7 +54,13 @@
           @mouseout="iconUnblockUser = 'mdi:account-cancel'"></iconify-icon>
       </div>
 
-      <div class="stat-value text-xl">Friends</div>
+      <div class="stat-figure text-primary tooltip tooltip-top" v-else data-tip="Block user">
+        <iconify-icon class="w-10 h-10" :icon="iconBlockUser" style="color: #5d4df8" @click="blockUser"
+          @mouseover="iconBlockUser = 'mdi:account-cancel'"
+          @mouseout="iconBlockUser = 'mdi:account-cancel-outline'"></iconify-icon>
+      </div>
+
+      <div class="text-xl stat-value">Friends</div>
       <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
 
     </div>
@@ -95,6 +102,37 @@ import { useUserStore } from '@/stores/UserStore'
 // ******************** //
 
 const userStore = useUserStore();
+
+const fileInput = ref(null);
+
+const triggerFileInput = () => {
+  fileInput.value.click();
+};
+
+const convertToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = error => reject(error);
+  });
+};
+
+const onFileChange = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files) {
+    const file = target.files[0];
+    try {
+      const base64Picture = await convertToBase64(file);
+      await userStore.updateUser(userStore.loggedUser.id, { profilePicture: base64Picture });
+      location.reload();
+    } catch (error) {
+      console.error('Error updating profile picture:', error);
+    }
+  }
+};
+
+
 
 // **************************** //
 // loggedUser RELATED VARIABLES //

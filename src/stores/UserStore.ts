@@ -5,6 +5,13 @@ import fetcher from '@/utils/fetcher'
 import type { User } from '@/types/user'
 import type { Channel } from '@/types/Channel'
 
+interface UserData {
+  email?: string
+  password?: string
+  username?: string
+  profilePicture?: string
+}
+
 export const useUserStore = defineStore('users', {
   state: () => ({
     
@@ -397,6 +404,28 @@ export const useUserStore = defineStore('users', {
       })
 
       return response.json()
+    },
+
+    // ********** //
+    // updateUser //
+    // ********** //
+
+    async updateUser(id: string, userData: UserData) {
+      const response = await fetch(`http://localhost:3000/api/user/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+        body: JSON.stringify(userData)
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        return data
+      } else {
+        throw new Error(`HTTP error status: ${response.status}`)
+      }
     }
   }
 })
