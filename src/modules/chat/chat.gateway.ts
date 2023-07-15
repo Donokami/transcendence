@@ -432,7 +432,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
-  connectedUsers: Map<string, string> = new Map();
+  connectedUsers = new Map<string, string>();
 
   // ************ //
   // CONSTRUCTORS //

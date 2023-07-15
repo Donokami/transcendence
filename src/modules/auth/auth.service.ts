@@ -12,7 +12,7 @@ import { promisify } from 'util';
 import { randomBytes, scrypt as _scrypt } from 'crypto';
 
 import { UsersService } from '@/modules/users/users.service';
-import { UserDetails } from './utils/types';
+import { type UserDetails } from '@/core/types/user-details';
 import { QueryFailedError } from 'typeorm';
 
 const scrypt = promisify(_scrypt);
@@ -23,7 +23,7 @@ export class AuthService {
   // CONSTRUCTOR //
   // *********** //
 
-  constructor(private usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {}
 
   // ****** //
   // LOGGER //
@@ -72,7 +72,7 @@ export class AuthService {
       const otpauth = authenticator.keyuri(user.email, 'YourService', secret);
       const dataUrl = await qrcode.toDataURL(otpauth);
 
-      return { isTwoFactorEnabled: true, dataUrl: dataUrl };
+      return { isTwoFactorEnabled: true, dataUrl };
     }
   }
 
@@ -129,7 +129,6 @@ export class AuthService {
       //   }
       // }
       this.logger.warn('Email already in use ! Error : ', error);
-      throw new BadRequestException('Email already in use');
     }
   }
 

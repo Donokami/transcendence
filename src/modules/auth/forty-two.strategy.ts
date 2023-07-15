@@ -5,11 +5,11 @@ import { AuthService } from './auth.service';
 
 @Injectable()
 export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
-  constructor(private authService: AuthService) {
+  constructor(private readonly authService: AuthService) {
     super({
       clientID: process.env.FORTYTWO_APP_ID,
       clientSecret: process.env.FORTYTWO_APP_SECRET,
-      callbackURL: process.env.FORTYTWO_APP_CALLBACK,
+      callbackURL: process.env.FORTYTWO_APP_REDIRECT_URI,
       profileFields: {
         id: function (obj) {
           return String(obj.id);

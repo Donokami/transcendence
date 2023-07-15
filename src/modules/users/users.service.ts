@@ -7,8 +7,8 @@ import {
 import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { Channel } from '@/modules/channels/entities/channel.entity';
-import { UserDetails } from '@/modules/auth/utils/types';
+import { type Channel } from '@/modules/channels/entities/channel.entity';
+import { type UserDetails } from '@/core/types/user-details';
 import {
   Friendship,
   FriendshipStatus,
@@ -21,9 +21,9 @@ import { UserDto } from './dtos/user.dto';
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>,
     @InjectRepository(Friendship)
-    private friendshipRepository: Repository<Friendship>,
+    private readonly friendshipRepository: Repository<Friendship>,
   ) {}
 
   // ****** //
@@ -40,9 +40,13 @@ export class UsersService {
   // create //
   // ****** //
 
-  create(email: string, password: string, username: string): Promise<User> {
+  async create(
+    email: string,
+    password: string,
+    username: string,
+  ): Promise<User> {
     const user = this.userRepository.create({ email, password, username });
-    return this.userRepository.save(user);
+    return await this.userRepository.save(user);
   }
 
   // *********** //
@@ -181,13 +185,14 @@ export class UsersService {
     const user = await this.userRepository.findOneBy({
       id,
     });
-    if (user)
+    if (user) {
       user.nFriends = await this.friendshipRepository.count({
         where: [
           { sender: { id }, status: FriendshipStatus.ACCEPTED },
           { receiver: { id }, status: FriendshipStatus.ACCEPTED },
         ],
       });
+    }
     return user;
   }
 
@@ -201,7 +206,7 @@ export class UsersService {
       this.logger.warn(`User with ID : ${id} not found`);
       throw new NotFoundException(`User with ID : ${id} not found`);
     }
-    return this.userRepository.remove(user);
+    return await this.userRepository.remove(user);
   }
 
   // ****** //
@@ -215,7 +220,7 @@ export class UsersService {
       throw new NotFoundException(`User with ID : ${id} not found`);
     }
     Object.assign(user, attrs);
-    return this.userRepository.save(user);
+    return await this.userRepository.save(user);
   }
 
   // ***************** //
@@ -244,6 +249,6 @@ export class UsersService {
       );
     }
 
-    return this.userRepository.save(user);
+    return await this.userRepository.save(user);
   }
 }

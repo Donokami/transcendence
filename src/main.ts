@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { SocketIoAdapter } from '@/core/websockets/auth-adapter';
+import * as express from 'express';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config({ path: '../envs/.env' });
@@ -21,6 +22,9 @@ async function bootstrap() {
   app.useWebSocketAdapter(new SocketIoAdapter(app, configService));
 
   app.setGlobalPrefix('api');
+
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
   const config = new DocumentBuilder()
     .setTitle('Transcendence API')

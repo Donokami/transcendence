@@ -35,7 +35,7 @@ export class GameGateway {
   // LOGGER //
   // ****** //
 
-  private logger = new Logger(GameService.name);
+  private readonly logger = new Logger(GameService.name);
 
   // ***************** //
   // GATEWAY FUNCTIONS //
@@ -46,18 +46,7 @@ export class GameGateway {
   // **************** //
 
   async handleConnection(client: Socket) {
-    const gameId = client.handshake.query.gameId as string;
-    client.emit('connection', 'Successfully connected to game server');
-    const game = await this.gameService.findOne(gameId);
-
-    if (!game) {
-      client.emit('error', `Game ${gameId} not found`);
-      return;
-    }
-
-    client.join(gameId);
-
-    this.logger.verbose(`Client ${client.id} connected to game ${gameId}`);
+    this.logger.verbose(`Client ${client.id} connected to /game socket`);
   }
 
   // **************** //
@@ -65,63 +54,66 @@ export class GameGateway {
   // **************** //
 
   handleDisconnect(client: UserSocket) {
-    const gameId = client.handshake.query.gameId as string;
-    this.gameService.leave(gameId, client.request.user.id).catch((err) => {});
+    // const roomId = client.handshake.query.roomId as string
+    // this.gameService.leave(roomId, client.request.user.id).catch((err) => {})
+    this.gameService.leaveAll(client.request.user.id);
     this.logger.verbose(`Client ${client.id} disconnected`);
     client.emit('disconnection', 'Successfully disconnected from game server');
   }
 
-  // ********** //
-  // handleJoin //
-  // ********** //
-
-  @SubscribeMessage('join')
+  @SubscribeMessage('room:join')
   async handleJoin(
-    @MessageBody() room: string,
+    @MessageBody() roomId: string,
     @ConnectedSocket() client: UserSocket,
   ): Promise<void> {
-    const game = await this.gameService.findOneWithRelations(room);
+    const room = await this.gameService.findOne(roomId);
 
-    if (!game) {
-      client.emit('error', `Game ${room} not found`);
+    if (!room) {
+      client.emit('error', `Game ${roomId} not found`);
       return;
     }
 
-    this.gameService.join(room, client.request.user.id).catch((err) => {});
+    this.gameService.join(roomId, client.request.user.id).catch((err) => {});
 
-    client.join(room);
+    client.join(roomId);
 
-    this.server.to(room).emit('game:update', game);
+    this.server.to(roomId).emit('room:update', room.get());
   }
 
-  // *********** //
-  // handleLeave //
-  // *********** //
-
-  @SubscribeMessage('leave')
+  @SubscribeMessage('room:leave')
   async handleLeave(
-    @MessageBody() room: string,
+    @MessageBody() roomId: string,
     @ConnectedSocket() client: Socket,
   ): Promise<void> {
-    const game = await this.gameService.findOneWithRelations(room);
+    const room = await this.gameService.findOne(roomId);
 
-    if (!game) {
-      client.emit('error', `Game ${room} not found`);
+    if (!room) {
+      client.emit('error', `Room ${roomId} not found`);
       return;
     }
 
-    client.leave(room);
+    client.leave(roomId);
   }
 
-  // ********** //
-  // handleMove //
-  // ********** //
+  @SubscribeMessage('game:start')
+  async handleStart(
+    @MessageBody() roomId: string,
+    @ConnectedSocket() client: UserSocket,
+  ): Promise<void> {
+    const room = await this.gameService.findOne(roomId);
 
-  @SubscribeMessage('move')
-  handleMove(
-    @MessageBody() move: string,
-    @ConnectedSocket() client: Socket,
-  ): void {
-    this.server.emit('move', client.id, move);
+    // todo: check if the room is full and not started
+
+    if (!room) {
+      client.emit('error', `Room ${roomId} not found`);
+      return;
+    }
+
+    if (room.get().owner.id !== client.request.user.id) {
+      client.emit('error', 'You are not the owner of this room');
+      return;
+    }
+
+    room.startGame();
   }
 }

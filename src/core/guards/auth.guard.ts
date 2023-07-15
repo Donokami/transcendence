@@ -1,4 +1,8 @@
-import { CanActivate, ExecutionContext, Logger } from '@nestjs/common';
+import {
+  type CanActivate,
+  type ExecutionContext,
+  Logger,
+} from '@nestjs/common';
 
 export class AuthGuard implements CanActivate {
   private logger = new Logger(AuthGuard.name);

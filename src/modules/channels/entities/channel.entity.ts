@@ -51,7 +51,7 @@ export class Channel {
   members: Array<User>;
 
   @ManyToMany(() => User, (user: User) => user.bannedChannels)
-  bannedMembers: Array<User>;
+  bannedMembers: User[];
 
   // **************************** //
   // PRIVACY RELATED INFORMATIONS //
@@ -68,7 +68,7 @@ export class Channel {
   // ***************************** //
 
   @OneToMany(() => Message, (message: Message) => message.channel)
-  messages: Array<Message>;
+  messages: Message[];
 
   @AfterInsert()
   logInsert() {

@@ -15,7 +15,7 @@ import { Logger } from '@nestjs/common';
 
 import { Channel } from '@/modules/channels/entities/channel.entity';
 import { Friendship } from '@/modules/social/entities/friendship.entity';
-import { Message } from '@/modules/channels/entities/message.entity';
+import { type Message } from '@/modules/channels/entities/message.entity';
 
 // ****** //
 // LOGGER //
@@ -68,10 +68,10 @@ export class User {
   nFriends: number;
 
   @OneToMany(() => Friendship, (friendship) => friendship.sender)
-  sentRequests: Array<Friendship>;
+  sentRequests: Friendship[];
 
   @OneToMany(() => Friendship, (friendship) => friendship.receiver)
-  receivedRequests: Array<Friendship>;
+  receivedRequests: Friendship[];
 
   // ************************* //
   // CHAT RELATED INFORMATIONS //
@@ -87,10 +87,10 @@ export class User {
   @ManyToMany(() => Channel, (channel: Channel) => channel.bannedMembers, {
     eager: true,
   })
-  bannedChannels: Array<Channel>;
+  bannedChannels: Channel[];
 
   @OneToMany(() => Channel, (channel: Channel) => channel.messages)
-  messages: Array<Message>;
+  messages: Message[];
 
   // ************************** //
   // STATS RELATED INFORMATIONS //

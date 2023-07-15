@@ -34,7 +34,7 @@ export class GameController {
   @Get(':id')
   @UseGuards(AuthGuard)
   async findOne(@Param('id') id: string) {
-    const game = await this.gameService.findOneWithRelations(id);
+    const game = await this.gameService.findOne(id);
 
     if (!game) {
       throw new NotFoundException(`There is no game under id ${id}`);
@@ -59,7 +59,7 @@ export class GameController {
     )
     query: PaginationDTO,
   ) {
-    return this.gameService.findAll({
+    return await this.gameService.findAll({
       limit: Number(query.limit) || 10,
       page: Number(query.page) || 1,
     });
@@ -76,7 +76,7 @@ export class GameController {
     @Body() createGameDto: CreateGameDto,
   ) {
     createGameDto.owner = req.session.userId;
-    return this.gameService.create(createGameDto);
+    return await this.gameService.create(createGameDto);
   }
 
   // ****** //
@@ -87,7 +87,7 @@ export class GameController {
   @UseGuards(AuthGuard)
   @UseGuards(OwnershipGuard)
   async update(@Param('id') id: string, @Body() updateGameDto: UpdateGameDto) {
-    return this.gameService.update(id, updateGameDto);
+    return await this.gameService.update(id, updateGameDto);
   }
 
   // ****** //
@@ -98,37 +98,6 @@ export class GameController {
   @UseGuards(AuthGuard)
   @UseGuards(OwnershipGuard)
   async remove(@Param('id') id: string) {
-    return this.gameService.remove(id);
-  }
-
-  // **** //
-  // join //
-  // **** //
-
-  @Post(':id/join')
-  @UseGuards(AuthGuard)
-  async join(@Param('id') id: string, @Req() req: RequestWithUser) {
-    return this.gameService.join(id, req.session.userId);
-  }
-
-  // ***** //
-  // leave //
-  // ***** //
-
-  @Post(':id/leave')
-  @UseGuards(AuthGuard)
-  async leave(@Param('id') id: string, @Req() req: RequestWithUser) {
-    return this.gameService.leave(id, req.session.userId);
-  }
-
-  // **** //
-  // kick //
-  // **** //
-
-  @Post(':id/kick/:userId')
-  @UseGuards(AuthGuard)
-  @UseGuards(OwnershipGuard)
-  async kick(@Param('id') id: string, @Param('userId') userId: string) {
-    return this.gameService.kick(id, userId);
+    return await this.gameService.delete(id);
   }
 }

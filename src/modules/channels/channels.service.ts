@@ -124,39 +124,6 @@ export class ChannelsService {
     return dm;
   }
 
-  // async getDmList(userId: string): Promise<Channel[]> {
-  //   if (!userId) {
-  //     this.logger.warn(`ID of the user is required.`);
-  //     throw new BadRequestException('ID of the user is required.');
-  //   }
-
-  //   const user = await this.userService.findOneById(userId);
-  //   if (!user) {
-  //     this.logger.warn(`User with ID : ${userId} not found in database.`);
-  //     throw new NotFoundException(
-  //       `User with ID : ${userId} not found in database.`,
-  //     );
-  //   }
-
-  //   const dm = await this.channelsRepository
-  //     .createQueryBuilder('channel')
-  //     .innerJoinAndSelect('channel.members', 'user')
-  //     .where('channel.isDm = :isDm', { isDm: true })
-  //     .andWhere('channel.id IN (:...channelIds)', {
-  //       channelIds: this.channelsRepository
-  //         .createQueryBuilder('channel')
-  //         .innerJoin('channel.members', 'member')
-  //         .where('member.id = :userId', { userId })
-  //         .select('channel.id'),
-  //     })
-  //     .getMany();
-  //   if (!dm.length) {
-  //     this.logger.verbose(`No DMs found in database for ${userId}.`);
-  //     return [];
-  //   }
-
-  //   console.log(dm[0].members);
-
   //   this.logger.verbose(`DMs list of : ${userId} successfully retrieved.`);
 
   //   return dm;

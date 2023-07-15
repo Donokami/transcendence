@@ -1,8 +1,9 @@
+import { type User } from '@/modules/users/user.entity';
 import type { IncomingMessage } from 'http';
 import type { Socket } from 'socket.io';
 
 interface UserIncomingMessage extends IncomingMessage {
-  user: any; // todo: add user type
+  user: User;
 }
 
 export interface UserSocket extends Socket {

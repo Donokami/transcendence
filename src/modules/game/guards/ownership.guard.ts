@@ -1,11 +1,11 @@
 import {
-  CanActivate,
-  ExecutionContext,
+  type CanActivate,
+  type ExecutionContext,
   Injectable,
   Logger,
 } from '@nestjs/common';
 
-import { Observable } from 'rxjs';
+import { type Observable } from 'rxjs';
 
 import { type RequestWithUser } from '@/core/types/request-with-user';
 
@@ -13,9 +13,9 @@ import { GameService } from '../game.service';
 
 @Injectable()
 export class OwnershipGuard implements CanActivate {
-  constructor(private readonly gameService: GameService) { }
+  constructor(private readonly gameService: GameService) {}
 
-  private logger = new Logger(OwnershipGuard.name);
+  private readonly logger = new Logger(OwnershipGuard.name);
 
   canActivate(
     context: ExecutionContext,
@@ -38,7 +38,7 @@ export class OwnershipGuard implements CanActivate {
         }
 
         resolve(false);
-      } catch (e) { }
+      } catch (e) {}
     });
   }
 }

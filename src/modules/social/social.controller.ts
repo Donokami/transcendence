@@ -108,7 +108,7 @@ export class SocialController {
   ) {
     const senderId = session.userId;
 
-    return this.socialService.sendFriendRequest(
+    return await this.socialService.sendFriendRequest(
       senderId,
       friendRequestDto.receiverId,
     );
@@ -125,6 +125,6 @@ export class SocialController {
   ) {
     const userId = session.userId;
 
-    return this.socialService.unblockUser(userId, userToUnblockId);
+    return await this.socialService.unblockUser(userId, userToUnblockId);
   }
 }

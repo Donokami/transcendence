@@ -1,5 +1,5 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { Test, type TestingModule } from '@nestjs/testing';
+import { type INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '@/app.module';
 
@@ -15,9 +15,9 @@ describe('Authentication system', () => {
     await app.init();
   });
 
-  it('Handles a register request', () => {
+  it('Handles a register request', async () => {
     const email = 'test@mail.fr';
-    return request(app.getHttpServer())
+    await request(app.getHttpServer())
       .post('/auth/register')
       .send({ email, password: 'password' })
       .expect(201)

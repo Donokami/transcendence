@@ -1,7 +1,7 @@
 import { Test } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 
-import { User } from '@/modules/users/user.entity';
+import { type User } from '@/modules/users/user.entity';
 import { UsersService } from '@/modules/users/users.service';
 
 import { AuthService } from './auth.service';
@@ -13,18 +13,18 @@ describe('AuthService', () => {
   beforeEach(async () => {
     const users: User[] = [];
     fakeUsersService = {
-      find: (email: string) => {
+      find: async (email: string) => {
         const filteredUsers = users.filter((user) => user.email === email);
-        return Promise.resolve(filteredUsers);
+        return await Promise.resolve(filteredUsers);
       },
-      create: (email: string, password: string) => {
+      create: async (email: string, password: string) => {
         const user = {
           id: Math.floor(Math.random() * 999999),
           email,
           password,
         } as unknown as User;
         users.push(user);
-        return Promise.resolve(user);
+        return await Promise.resolve(user);
       },
     };
 

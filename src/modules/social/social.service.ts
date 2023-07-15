@@ -20,9 +20,9 @@ export class SocialService {
 
   constructor(
     @InjectRepository(User)
-    private usersRepository: Repository<User>,
+    private readonly usersRepository: Repository<User>,
     @InjectRepository(Friendship)
-    private friendshipRepository: Repository<Friendship>,
+    private readonly friendshipRepository: Repository<Friendship>,
   ) {}
 
   // ****** //
@@ -501,8 +501,8 @@ export class SocialService {
       const friendship = this.friendshipRepository.create({
         blockerId: null,
         status: FriendshipStatus.PENDING,
-        sender: sender,
-        receiver: receiver,
+        sender,
+        receiver,
       });
 
       this.logger.verbose(`A new pending request has been created.`);
