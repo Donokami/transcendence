@@ -34,7 +34,7 @@ export class UsersController {
   constructor(
     private usersService: UsersService,
     private readonly socialService: SocialService,
-  ) { }
+  ) {}
 
   // ****** //
   // LOGGER //
@@ -66,6 +66,16 @@ export class UsersController {
     return users;
   }
 
+  // **************** //
+  // getAllUsersStats //
+  // **************** //
+
+  @Get('/all/stats')
+  async getAllUsersStats(): Promise<User[]> {
+    const users = await this.usersService.findAllWithStats();
+    return users;
+  }
+
   // ************ //
   // findUserById //
   // ************ //
@@ -74,6 +84,21 @@ export class UsersController {
   @UseGuards(AuthGuard)
   async findUserById(@Param('id') id: string): Promise<User> {
     const user = await this.usersService.findOneById(id);
+    if (!user) {
+      this.logger.error(`User with ID : ${id} not found.`);
+      throw new NotFoundException(`User with ID : ${id} not found.`);
+    }
+    return user;
+  }
+
+  // ********************* //
+  // findUserByIdWithStats //
+  // ********************* //
+
+  @Get('/:id/stats')
+  @UseGuards(AuthGuard)
+  async findUserByIdWithStats(@Param('id') id: string): Promise<User> {
+    const user = await this.usersService.findOneByIdWithStats(id);
     if (!user) {
       this.logger.error(`User with ID : ${id} not found.`);
       throw new NotFoundException(`User with ID : ${id} not found.`);

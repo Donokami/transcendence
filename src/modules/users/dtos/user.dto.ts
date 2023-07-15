@@ -79,10 +79,6 @@ export class UserDto {
   @Expose()
   bannedChannels: Array<Channel>;
 
-  // @ApiProperty()
-  // @Expose()
-  // isAdmin: boolean;
-
   @ApiProperty()
   @Expose()
   messages: Array<Message>;

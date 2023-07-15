@@ -499,7 +499,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.server
           .to(channel.id)
           .emit(
-            'disconnect',
+            'chat:disconnect',
             `User with ID : ${userId} disconnected from chat server`,
           );
       });

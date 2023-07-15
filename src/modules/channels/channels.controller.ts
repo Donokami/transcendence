@@ -1,26 +1,36 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
+  Logger,
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 
 import { AuthGuard } from '@/core/guards/auth.guard';
 import { RequestWithUser } from '@/core/types/request-with-user';
 
 import { ChannelsService } from './channels.service';
+
 import { CreateChannelDto } from './dtos/create-channel.dto';
-import { UpdateChannelDto } from './dtos/update-channel.dto';
-import { OwnershipGuard } from './guards/ownership.guard';
 
 @Controller('channels')
 export class ChannelsController {
-  constructor(private readonly chatService: ChannelsService) {}
+  constructor(private readonly channelsService: ChannelsService) {}
+
+  // ****** //
+  // LOGGER //
+  // ****** //
+
+  private logger = new Logger(ChannelsController.name);
 
   // ********* //
   // getDmList //
@@ -29,8 +39,23 @@ export class ChannelsController {
   @Get('/:id/dm-list')
   @UseGuards(AuthGuard)
   async getDmList(@Param('id') id: string) {
-    const dmList = await this.chatService.getDmList(id);
+    const dmList = await this.channelsService.getDmList(id);
     return dmList;
+  }
+
+  // *************** //
+  // createDmChannel //
+  // *************** //
+
+  @Post('/create-dm')
+  @UseGuards(AuthGuard)
+  async createDmChannel(@Body() body: CreateChannelDto) {
+    try {
+      const dmChannel = await this.channelsService.createDmChannel(body);
+      return dmChannel;
+    } catch (error) {
+      throw error;
+    }
   }
 
   // @Get(':id')

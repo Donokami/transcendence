@@ -4,7 +4,7 @@ import {
   ForbiddenException,
   Logger,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 
 import { Channel } from '@/modules/channels/entities/channel.entity';
@@ -63,15 +63,111 @@ export class UsersService {
     return users;
   }
 
+  // **************** //
+  // findAllWithStats //
+  // **************** //
+
+  async findAllWithStats(): Promise<User[]> {
+    const users = await this.userRepository.find({
+      select: [
+        'id',
+        'username',
+        'rank',
+        'gamesPlayed',
+        'win',
+        'loss',
+        'winRate',
+        'pointsScored',
+        'pointsConceded',
+        'pointsDifference',
+      ],
+    });
+    return users;
+  }
+
+  // ********* //
+  // findByIds //
+  // ********* //
+
+  async findByIds(userIds: string[]): Promise<User[]> {
+    return this.userRepository.find({
+      where: {
+        id: In(userIds),
+      },
+    });
+  }
+
   // ************** //
   // findOneByEmail //
   // ************** //
 
-  async findOneByEmail(email: string) {
+  async findOneByEmail(email: string): Promise<User> {
     if (!email) {
       return null;
     }
-    return this.userRepository.find({ where: { email } });
+
+    const user = await this.userRepository.findOne({ where: { email } });
+
+    return user;
+  }
+
+  // *************************** //
+  // findOneByEmailWithAuthInfos //
+  // *************************** //
+
+  async findOneByEmailWithAuthInfos(email: string): Promise<User> {
+    if (!email) {
+      return null;
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: [
+        'id',
+        'username',
+        'email',
+        'password',
+        'twoFactorSecret',
+        'isTwoFactorEnabled',
+      ],
+    });
+
+    return user;
+  }
+
+  // ************************ //
+  // findOneByIdWithAuthInfos //
+  // ************************ //
+
+  async findOneByIdWithStats(id: string): Promise<User> {
+    if (!id) {
+      return null;
+    }
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: [
+        'id',
+        'username',
+        'rank',
+        'gamesPlayed',
+        'win',
+        'loss',
+        'winRate',
+        'pointsScored',
+        'pointsConceded',
+        'pointsDifference',
+      ],
+    });
+
+    if (user)
+      user.nFriends = await this.friendshipRepository.count({
+        where: [
+          { sender: { id }, status: FriendshipStatus.ACCEPTED },
+          { receiver: { id }, status: FriendshipStatus.ACCEPTED },
+        ],
+      });
+
+    return user;
   }
 
   // *********** //

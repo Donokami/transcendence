@@ -17,8 +17,10 @@ import { AddMessageDto } from '@/modules/chat/dtos/add-message.dto';
 import { BanUserDto } from '@/modules/chat/dtos/ban-user.dto';
 import { CreateChannelDto } from './dtos/create-channel.dto';
 import { UpdateChannelDto } from './dtos/update-channel.dto';
+import { Serialize } from '@/core/interceptors/serialize.interceptor';
 
 @Injectable()
+// @Serialize(CreateChannelDto)
 export class ChannelsService {
   constructor(
     @InjectRepository(Channel)
@@ -37,6 +39,32 @@ export class ChannelsService {
   // ******************** //
   // FUNCTION DEFINITIONS //
   // ******************** //
+
+  // *************** //
+  // createDmChannel //
+  // *************** //
+
+  async createDmChannel(createChannelDto: CreateChannelDto): Promise<Channel> {
+    const owner: User = await this.userService.findOneById(
+      createChannelDto.ownerId,
+    );
+
+    const members: User[] = await this.userService.findByIds(
+      createChannelDto.membersIds,
+    );
+
+    members.forEach((member) => {
+      member.profilePicture = '';
+    });
+
+    const newDmChannel = this.channelsRepository.create({
+      isDm: true,
+      owner: owner,
+      members: members,
+    });
+
+    return await this.channelsRepository.save(newDmChannel);
+  }
 
   // ******* //
   // findOne //
@@ -70,13 +98,22 @@ export class ChannelsService {
       );
     }
 
+    const channelIds = await this.channelsRepository
+      .createQueryBuilder('channel')
+      .innerJoin('channel.members', 'member')
+      .where('member.id = :userId', { userId })
+      .select('channel.id')
+      .getRawMany();
+
     const dm = await this.channelsRepository
       .createQueryBuilder('channel')
-      .innerJoinAndSelect('channel.members', 'user', 'user.id = :userId', {
-        userId,
-      })
+      .innerJoinAndSelect('channel.members', 'user')
       .where('channel.isDm = :isDm', { isDm: true })
+      .andWhere('channel.id IN (:...channelIds)', {
+        channelIds: channelIds.map((channel) => channel.channel_id),
+      })
       .getMany();
+
     if (!dm.length) {
       this.logger.verbose(`No DMs found in database for ${userId}.`);
       return [];
@@ -86,6 +123,44 @@ export class ChannelsService {
 
     return dm;
   }
+
+  // async getDmList(userId: string): Promise<Channel[]> {
+  //   if (!userId) {
+  //     this.logger.warn(`ID of the user is required.`);
+  //     throw new BadRequestException('ID of the user is required.');
+  //   }
+
+  //   const user = await this.userService.findOneById(userId);
+  //   if (!user) {
+  //     this.logger.warn(`User with ID : ${userId} not found in database.`);
+  //     throw new NotFoundException(
+  //       `User with ID : ${userId} not found in database.`,
+  //     );
+  //   }
+
+  //   const dm = await this.channelsRepository
+  //     .createQueryBuilder('channel')
+  //     .innerJoinAndSelect('channel.members', 'user')
+  //     .where('channel.isDm = :isDm', { isDm: true })
+  //     .andWhere('channel.id IN (:...channelIds)', {
+  //       channelIds: this.channelsRepository
+  //         .createQueryBuilder('channel')
+  //         .innerJoin('channel.members', 'member')
+  //         .where('member.id = :userId', { userId })
+  //         .select('channel.id'),
+  //     })
+  //     .getMany();
+  //   if (!dm.length) {
+  //     this.logger.verbose(`No DMs found in database for ${userId}.`);
+  //     return [];
+  //   }
+
+  //   console.log(dm[0].members);
+
+  //   this.logger.verbose(`DMs list of : ${userId} successfully retrieved.`);
+
+  //   return dm;
+  // }
 
   // async findAll() {
   //   const channels = await this.channelRepository.find({

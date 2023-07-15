@@ -17,14 +17,14 @@ import { Channel } from '@/modules/channels/entities/channel.entity';
 import { Friendship } from '@/modules/social/entities/friendship.entity';
 import { Message } from '@/modules/channels/entities/message.entity';
 
+// ****** //
+// LOGGER //
+// ****** //
+
+const logger = new Logger('user');
+
 @Entity()
 export class User {
-  // ****** //
-  // LOGGER //
-  // ****** //
-
-  private logger = new Logger(User.name);
-
   // ************* //
   // ENTITY FIELDS //
   // ************* //
@@ -36,19 +36,19 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   username: string;
 
-  @Column()
+  @Column({ select: false, unique: true })
   email: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   password: string;
 
   @Column({ nullable: true })
   profilePicture: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   twoFactorSecret: string;
 
   @Column({ default: false })
@@ -96,28 +96,28 @@ export class User {
   // STATS RELATED INFORMATIONS //
   // ************************** //
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   rank: number;
 
-  @Column({ default: 0 })
+  @Column({ default: 0, select: false })
   gamesPlayed: number;
 
-  @Column({ default: 0 })
+  @Column({ default: 0, select: false })
   win: number;
 
-  @Column({ default: 0 })
+  @Column({ default: 0, select: false })
   loss: number;
 
-  @Column({ default: 0 })
+  @Column({ default: 0, select: false })
   winRate: number;
 
-  @Column({ default: 0 })
+  @Column({ default: 0, select: false })
   pointsScored: number;
 
-  @Column({ default: 0 })
+  @Column({ default: 0, select: false })
   pointsConceded: number;
 
-  @Column({ default: 0 })
+  @Column({ default: 0, select: false })
   pointsDifference: number;
 
   // ***** //
@@ -126,16 +126,16 @@ export class User {
 
   @AfterInsert()
   logInsert() {
-    this.logger.verbose(`User with id ${this.id} inserted`);
+    logger.verbose(`User with id ${this.id} inserted`);
   }
 
   @AfterRemove()
   logRemove() {
-    this.logger.verbose(`User with id ${this.id} removed`, this.id);
+    logger.verbose(`User with id ${this.id} removed`, this.id);
   }
 
   @AfterUpdate()
   logUpdate() {
-    this.logger.verbose(`User with id ${this.id} updated`, this.id);
+    logger.verbose(`User with id ${this.id} updated`, this.id);
   }
 }

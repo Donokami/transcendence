@@ -13,6 +13,7 @@ import { randomBytes, scrypt as _scrypt } from 'crypto';
 
 import { UsersService } from '@/modules/users/users.service';
 import { UserDetails } from './utils/types';
+import { QueryFailedError } from 'typeorm';
 
 const scrypt = promisify(_scrypt);
 
@@ -39,7 +40,9 @@ export class AuthService {
   // ************ //
 
   async validateUser(details: UserDetails) {
-    const [user] = await this.usersService.findOneByEmail(details.email);
+    const user = await this.usersService.findOneByEmailWithAuthInfos(
+      details.email,
+    );
     if (!user) {
       const newUser = await this.usersService.createOauth(details);
       return newUser;
@@ -106,23 +109,28 @@ export class AuthService {
   // ******** //
 
   async register(email: string, password: string, username: string) {
-    const users = await this.usersService.findOneByEmail(email);
-    if (users.length) {
-      this.logger.warn('Email already in use');
+    try {
+      const salt = randomBytes(8).toString('hex');
+      const hash = (await scrypt(password, salt, 32)) as Buffer;
+      const hashedPassword = salt + '.' + hash.toString('hex');
+
+      const newUser = await this.usersService.create(
+        email,
+        hashedPassword,
+        username,
+      );
+      return newUser;
+    } catch (error: any) {
+      // todo : handle QueryFailedError
+      // if (error instanceof QueryFailedError) {
+      //   switch (error.name) {
+      //     case: 'ER_DUP_ENTRY':
+      //     break;
+      //   }
+      // }
+      this.logger.warn('Email already in use ! Error : ', error);
       throw new BadRequestException('Email already in use');
     }
-
-    const salt = randomBytes(8).toString('hex');
-    const hash = (await scrypt(password, salt, 32)) as Buffer;
-    const hashedPassword = salt + '.' + hash.toString('hex');
-
-    const user = await this.usersService.create(
-      email,
-      hashedPassword,
-      username,
-    );
-
-    return user;
   }
 
   // ****** //
@@ -130,7 +138,7 @@ export class AuthService {
   // ****** //
 
   async signIn(email: string, password: string) {
-    const [user] = await this.usersService.findOneByEmail(email);
+    const user = await this.usersService.findOneByEmailWithAuthInfos(email);
     if (!user) {
       this.logger.warn('User not found');
       throw new NotFoundException('User not found');
