@@ -7,12 +7,8 @@
         <label class="cursor-pointer p-6">
           <span class="stat-value text-xl">{{ authMessage }}</span>
           <span class="px-6 align-middle">
-            <input
-              type="checkbox"
-              class="toggle rounded-none"
-              v-model="userStore.twoFactorEnabled"
-              @click="switchAuthMessage"
-            />
+            <input type="checkbox" class="toggle rounded-none" v-model="userStore.twoFactorEnabled"
+              @click="switchAuthMessage" />
           </span>
         </label>
         <div v-if="qrCodeUrl" class="px-2">
@@ -25,14 +21,10 @@
 
     <div class="border-2 border-black items-center mx-2 my-3 mt-1 p-5 text-justify relative">
       <h2 class="text-2xl font-bold mb-8 text-black">Stats</h2>
-      <stats-ranking-table
-        @table-state-changed="tableState = $event"
-        v-show="tableState === 'ranking'"
-      ></stats-ranking-table>
-      <stats-match-history-table
-        @table-state-changed="tableState = $event"
-        v-show="tableState === 'matchHistory'"
-      ></stats-match-history-table>
+      <stats-ranking-table @table-state-changed="tableState = $event"
+        v-show="tableState === 'ranking'"></stats-ranking-table>
+      <stats-match-history-table @table-state-changed="tableState = $event"
+        v-show="tableState === 'matchHistory'"></stats-match-history-table>
     </div>
   </div>
 </template>
@@ -43,12 +35,10 @@
 // IMPORTS //
 // ******* //
 
-import { onBeforeMount, ref, type Ref} from 'vue';
+import { onBeforeMount, ref, type Ref } from 'vue';
 import { onBeforeRouteUpdate, useRoute } from 'vue-router';
 
 import { storeToRefs } from 'pinia';
-
-import type { User } from '@/types/User';
 
 import { useUserStore } from '@/stores/UserStore';
 
@@ -66,12 +56,12 @@ const route = useRoute();
 const userStore = useUserStore();
 
 const authMessage = ref('Activate 2FA')
-const qrCodeUrl= ref('')
+const qrCodeUrl = ref('')
 
 const tableState = ref('ranking')
 
-const {observedUser} = storeToRefs(userStore);
-const {loggedUser} = storeToRefs(userStore);
+const { observedUser } = storeToRefs(userStore);
+const { loggedUser } = storeToRefs(userStore);
 
 // ******************** //
 // FUNCTION DEFINITIONS //
@@ -83,10 +73,10 @@ const {loggedUser} = storeToRefs(userStore);
 
 const fetchUser = async (id: string | undefined) => {
   if (id) {
-    observedUser.value = await userStore.fetchUserById(id);
+    observedUser.value = await userStore.fetchUserByIdWithStats(id);
     console.log(`[ProfileView] - The current observed user is ${observedUser.value.username}`);
   }
-  else if (loggedUser.value){
+  else if (loggedUser.value) {
     observedUser.value = loggedUser.value;
     console.log(`[ProfileView] - The current observed user is ${observedUser.value.username}`);
   }
@@ -128,7 +118,7 @@ onBeforeMount(async () => {
   await fetchUser(id);
 });
 
-onBeforeRouteUpdate(async (to, from)=> {
+onBeforeRouteUpdate(async (to, from) => {
   const id = to.path.split("/").pop();
   await fetchUser(id);
 })

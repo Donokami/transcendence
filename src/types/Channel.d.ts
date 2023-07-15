@@ -1,16 +1,30 @@
 import type { User } from './User'
 
 export interface Channel {
-  // CHANNEL INFORMATIONS INSPIRED BY BACKEND CHANNEL ENTITY
+  // **************************** //
+  // GENERAL CHANNEL INFORMATIONS //
+  // **************************** //
   id: string
   name: string
-  ownerId: string
+  isDm: boolean
+
+  // **************************** //
+  // MEMBERS RELATED INFORMATIONS //
+  // **************************** //
+
+  receiver: User
+  owner: User
   members: Array<User>
   bannedMembers: Array<User>
-  messages: Array<Message>
 
-  // OTHER CHANNEL INFORMATIONS
-  type: string
+  // **************************** //
+  // PRIVACY RELATED INFORMATIONS //
+  // **************************** //
   passwordRequired: boolean
   password: string
+
+  // ***************************** //
+  // MESSAGES RELATED INFORMATIONS //
+  // ***************************** //
+  messages: Array<Message>
 }

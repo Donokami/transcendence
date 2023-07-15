@@ -1,15 +1,34 @@
 import { defineStore } from 'pinia'
-import type { User } from '@/types/User'
+
+import fetcher from '@/utils/fetcher'
+
+import type { User } from '@/types/user'
+import type { Channel } from '@/types/Channel'
 
 export const useUserStore = defineStore('users', {
   state: () => ({
+    
+    // ********** //
+    // loggedUser //
+    // ********** //
+    
     loggedUser: null as unknown as User | null,
-    observedUser: null as unknown as User | null,
     friendList: [] as User[],
+    dmList: [] as Channel[],
     twoFactorEnabled: false,
-    tempUserId: null as unknown as string | null
-    // selectedUser: null as unknown as User,
-    // users: [] as User[]
+
+    // ********************** //
+    // observedUser (PROFILE) //
+    // ********************** // 
+
+    observedUser: null as unknown as User | null,
+
+    // **************** //
+    // tempUserId (2FA) //
+    // **************** //
+
+    tempUserId: null as unknown as string | null,
+    
   }),
   actions: {
 
@@ -72,7 +91,7 @@ export const useUserStore = defineStore('users', {
     // ************* //
 
     async fetchAllUsers(): Promise<User[]> {
-      const response = await fetch(`http://localhost:3000/api/user/all`, {
+      const response = await fetch(`http://localhost:3000/api/user/all/stats`, {
         method: 'GET',
         credentials: 'include',
       })
@@ -101,15 +120,19 @@ export const useUserStore = defineStore('users', {
     // fetchDmList //
     // *********** //
 
-    async fetchDmList(id: string) {
-      const response = await fetch(`http://localhost:3000/api/channels/${id}/dm-list`, {
-      method: 'GET',
-      credentials: 'include',
+    async fetchDmList(id: string): Promise<Channel[]> {
+      const response: Channel[] = await fetcher.get(`/channels/${id}/dm-list`);
+      
+      response.forEach((channel: Channel) => {
+        channel.receiver = channel.members.filter((user: User) => {
+          if (!this.loggedUser){
+            return false ;
+          }
+          return user.id !== this.loggedUser.id
+        })[0];
       })
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
+      
+      return response;
     },
 
     // *************** //
@@ -173,6 +196,38 @@ export const useUserStore = defineStore('users', {
       return response.json();
     },
 
+    // ********************** //
+    // fetchUserByIDWithStats //
+    // ********************** //
+
+    async fetchUserByIdWithStats(id: string): Promise<User> {
+      const response = await fetch(`http://localhost:3000/api/user/${id}/stats`, {
+        method: 'GET',
+        credentials: 'include',
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    },
+
+    // ************* //
+    // refreshDmList //
+    // ************* //
+
+    async refreshDmList() {
+      if (!this.loggedUser) {
+        return [];
+      }
+      try {
+        const response = await this.fetchDmList(this.loggedUser.id);
+        this.dmList = response;
+        console.log(`[UserStore] - dmList : `, this.dmList);
+      } catch (error) {
+        console.error(`[UserStore] - Failed to fetch DMs! Error: `, error);
+      }
+    },
+
     // ***************** //
     // refreshFriendList //
     // ***************** //
@@ -185,6 +240,7 @@ export const useUserStore = defineStore('users', {
         const response = await this.fetchFriendList(this.loggedUser.id);
         this.friendList = response;
         console.log(`[UserStore] - friendList : `, this.friendList);
+        return this.friendList;
       } catch (error) {
         console.error(`[UserStore] - Failed to fetch friends! Error: `, error);
       }

@@ -1,36 +1,101 @@
 <template>
   <ul class="menu bg-base-100 w-full">
-    <li v-for="channel in filteredChannels" :key="channel.name">
-      <a
-        class="flex p-1"
-        :class="userStore.selectedUser && { active: userStore.selectedUser.id === user.id }"
-        @click="userStore.selectedUser = user"
-      >
+    <li v-if="loggedUser" v-for="dm in dmList" :key="dm.receiver.username">
+      <router-link class="flex p-1"
+        :class="{ active: selectedChannel && dm.receiver.username === selectedChannel.receiver.username }"
+        :to="`/chat/${dm.id}`">
         <div class="mx-auto md:mx-0 w-16 flex justify-center items-center">
-          <svg v-if="user.profile_picture" :src="user.profile_picture" class="h-[60px] w-12"></svg>
-          <iconify-icon icon="ri:account-circle-line" class="h-16 w-12"></iconify-icon>
+          <svg v-if="dm.receiver.profilePicture" :src="dm.receiver.profilePicture" class="h-[60px] w-12"></svg>
+          <iconify-icon v-else icon="ri:account-circle-line" class="h-16 w-12"></iconify-icon>
         </div>
-        <span class="hidden md:block">{{ user.username }}</span>
-      </a>
+        <span class="hidden md:block">{{ dm.receiver.username }}</span>
+      </router-link>
     </li>
   </ul>
 </template>
 
 <script setup lang="ts">
-  import { computed } from 'vue'
-  import type { User } from '../types/User'
-  import type { Channel } from '../types/Channel.js'
-  import { useUserStore } from '@/stores/UserStore.js'
 
-  const userStore = useUserStore() 
-  // const selectedChannel
+// ******* //
+// IMPORTS //
+// ******* //
 
-  const filteredChannels = computed(() => {
-    return userStore.loggedUser.channels.filter((channel: Channel) => {
-      if (channel.type === 'direct') {
-        return true
-      }
-      return userStore.loggedUser.channels
-    })
-  })
+import { ref } from 'vue'
+import { onBeforeRouteUpdate } from 'vue-router';
+
+import { storeToRefs } from 'pinia';
+
+import { useUserStore } from '@/stores/UserStore'
+import { useChannelStore } from '@/stores/ChannelStore'
+
+import type { User } from '@/types/user'
+import type { Channel } from '@/types/Channel'
+
+// ******************** //
+// VARIABLE DEFINITIONS //
+// ******************** //
+
+const userStore = useUserStore()
+const channelStore = useChannelStore()
+
+// **************************** //
+// loggedUser RELATED VARIABLES //
+// **************************** //
+
+const { loggedUser } = storeToRefs(userStore);
+const { dmList } = storeToRefs(userStore);
+
+// ********************************* //
+// selectedChannel RELATED VARIABLES //
+// ********************************* //
+
+const { selectedChannel } = storeToRefs(channelStore);
+
+// ******************** //
+// FUNCTION DEFINITIONS //
+// ******************** //
+
+// const selectChannel = async (channel: Channel) => {
+//   if (channel) {
+//     selectedChannel.value = channel;
+//     console.log(`[ChatDirectMessagesList] - selectedChannel : `, selectedChannel);
+//   }
+//   console.log(`[ChatDirectMessagesList] - No channel selected`);
+// };
+
+// const getOtherUser = async (channel: Channel) => {
+//   if (!loggedUser.value)
+//     return 0;
+//   try {
+//     otherUser.value = channel.members.filter((user: User) => user.id !== loggedUser.value.id)[0];
+//     console.log(`[ChatDirectMessagesList] - otherUser : `, otherUser);
+//   } catch (error) {
+//     console.error(`[ChatDirectMessagesList] - Failed to getOtherUser ! Error : `, error);
+//   }
+// };
+
+// ***************** //
+// fetchSelectedChannel //
+// ***************** //
+
+const fetchSelectedChannel = async (id: string | undefined) => {
+  if (id) {
+    selectedChannel.value = await userStore.fetchUserById(id);
+    console.log(`[ProfileView] - The current selected user is ${selectedChannel.value.username}`);
+  }
+  else {
+    console.log(`[ProfileView] - No selected user.`);
+  }
+};
+
+// ********************* //
+// VueJs LIFECYCLE HOOKS //
+// ********************* //
+
+onBeforeRouteUpdate(async (to, from) => {
+  const id = to.path.split("/").pop();
+  console.log(`[ProfileView] - The current route is ${to.path}`);
+  console.log(`[ProfileView] - The current id is ${id}`);
+})
+
 </script>

@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import type { User } from '@/types/User'
+import type { User } from '@/types/user'
 import { useUserStore } from '@/stores/UserStore';
 import { ref, onBeforeMount } from 'vue';
 

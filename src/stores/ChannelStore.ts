@@ -1,24 +1,28 @@
 import { defineStore } from 'pinia'
-import type { Channel } from '../types/Channel.js'
-import type { User } from '../types/User.js'
+
+import fetcher from '@/utils/fetcher'
+
+import type { Channel } from '@/types/Channel'
+import type { User } from '@/types/User'
 
 export const useChannelStore = defineStore('channels', {
   state: () => ({
-    selectedChannel: null as unknown as Channel,
-  })
-})
+    selectedChannel: null as unknown as Channel | null,
+  }),
+  actions: {
+    
+    // *************** //
+    // createDmChannel //
+    // *************** //
 
-// channels: [
-//   {
-//     name: 'Test Channel #1',
-//     members: [] as User[],
-//     passwordRequired: false,
-//     password: ''
-//   },
-//   {
-//     name: 'Test Channel #2',
-//     members: [] as User[],
-//     passwordRequired: false,
-//     password: ''
-//   }
-// ]
+    async createDmChannel(ownerId: string, receiverId: string): Promise<Channel> {
+      const channelParam = {
+        isDm: true,
+        ownerId: ownerId,
+        membersIds: [ownerId, receiverId],
+      };
+      const response: Channel = await fetcher.post(`/channels/create-dm`, channelParam);
+      return response
+    },
+  }
+})

@@ -30,7 +30,7 @@ const routes: Array<RouteRecordRaw> = [
   },
   {
     component: ChatView,
-    path: '/chat',
+    path: '/chat:catchAll(.*)',
     name: 'chat'
   },
   {

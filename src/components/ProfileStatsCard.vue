@@ -16,11 +16,7 @@
 
     <div class="stat border-none">
       <div class="stat-figure text-primary">
-        <iconify-icon
-          class="w-10 h-10"
-          icon="icon-park-outline:ranking"
-          style="color: #5d4df8"
-        ></iconify-icon>
+        <iconify-icon class="w-10 h-10" icon="icon-park-outline:ranking" style="color: #5d4df8"></iconify-icon>
       </div>
       <div class="stat-value text-xl">Rank</div>
       <div v-if="observedUser" class="stat-value text-primary">{{ observedUser.rank ?? '-' }}</div>
@@ -28,51 +24,33 @@
 
     <div class="stat border-black !border-l-2">
       <div class="stat-figure text-primary">
-        <iconify-icon
-          class="w-10 h-10"
-          icon="mdi:target-arrow"
-          style="color: #5d4df8"
-        ></iconify-icon>
+        <iconify-icon class="w-10 h-10" icon="mdi:target-arrow" style="color: #5d4df8"></iconify-icon>
       </div>
       <div class="stat-value text-xl">Win Rate</div>
       <div v-if="observedUser" class="stat-value text-primary">{{ observedUser.winRate }} %</div>
     </div>
 
-    <div 
-      class="stat border-black !border-l-2"
-      v-if="loggedUser && observedUser && (observedUser.id !== loggedUser.id)"
-    >
-      <div class="stat-figure text-primary tooltip tooltip-top" v-if="isFriend === false && loggedUser.isBlockedBy == null && observedUser.isBlockedBy == null" data-tip="Add friend">
-        <iconify-icon
-        class="w-10 h-10"
-        :icon="iconSendRequest"
-        style="color: #5d4df8"
-        @click="sendFriendRequest"
-        @mouseover="iconSendRequest = 'mdi:account-plus'"
-        @mouseout="iconSendRequest = 'mdi:account-plus-outline'"
-        ></iconify-icon>
-      </div>
-        
-      <div class="stat-figure text-primary tooltip tooltip-top" v-else-if="isFriend === true && loggedUser.isBlockedBy != true" data-tip="Block user">
-        <iconify-icon
-          class="w-10 h-10"
-          :icon="iconBlockUser"
-          style="color: #5d4df8"
-          @click="blockUser"
-          @mouseover="iconBlockUser = 'mdi:account-cancel'"
-          @mouseout="iconBlockUser = 'mdi:account-cancel-outline'"
-        ></iconify-icon>
+    <div class="stat border-black !border-l-2" v-if="loggedUser && observedUser && (observedUser.id !== loggedUser.id)">
+      <div class="stat-figure text-primary tooltip tooltip-top"
+        v-if="isFriend === false && loggedUser.isBlockedBy == null && observedUser.isBlockedBy == null"
+        data-tip="Add friend">
+        <iconify-icon class="w-10 h-10" :icon="iconSendRequest" style="color: #5d4df8" @click="sendFriendRequest"
+          @mouseover="iconSendRequest = 'mdi:account-plus'"
+          @mouseout="iconSendRequest = 'mdi:account-plus-outline'"></iconify-icon>
       </div>
 
-      <div class="stat-figure text-primary tooltip tooltip-top" v-else-if="isFriend === false && observedUser.isBlockedBy == true" data-tip="Unblock user">
-        <iconify-icon
-          class="w-10 h-10"
-          :icon="iconUnblockUser"
-          style="color: #5d4df8"
-          @click="unblockUser"
+      <div class="stat-figure text-primary tooltip tooltip-top"
+        v-else-if="isFriend === true && loggedUser.isBlockedBy != true" data-tip="Block user">
+        <iconify-icon class="w-10 h-10" :icon="iconBlockUser" style="color: #5d4df8" @click="blockUser"
+          @mouseover="iconBlockUser = 'mdi:account-cancel'"
+          @mouseout="iconBlockUser = 'mdi:account-cancel-outline'"></iconify-icon>
+      </div>
+
+      <div class="stat-figure text-primary tooltip tooltip-top"
+        v-else-if="isFriend === false && observedUser.isBlockedBy == true" data-tip="Unblock user">
+        <iconify-icon class="w-10 h-10" :icon="iconUnblockUser" style="color: #5d4df8" @click="unblockUser"
           @mouseover="iconUnblockUser = 'mdi:account-cancel-outline'"
-          @mouseout="iconUnblockUser = 'mdi:account-cancel'"
-        ></iconify-icon>
+          @mouseout="iconUnblockUser = 'mdi:account-cancel'"></iconify-icon>
       </div>
 
       <div class="stat-value text-xl">Friends</div>
@@ -80,24 +58,17 @@
 
     </div>
 
-    <div 
-      class="stat border-black !border-l-2"
-      v-if="loggedUser && observedUser && (observedUser.id === loggedUser.id)"
-    >
-    <div class="stat-figure text-primary" v-if="nFriendRequests > 0">
-    <div class="indicator">
-      <label for="my-modal-3">
-        <span class="badge badge-secondary indicator-item text-white">{{ nFriendRequests }}</span>
-        <iconify-icon
-          class="w-10 h-10"
-          :icon="iconSeeRequests"
-          style="color: 5d4df8"
-          @mouseover="iconSeeRequests = 'mdi:account-alert'"
-          @mouseout="iconSeeRequests = 'mdi:account-alert-outline'"
-        ></iconify-icon>
-      </label>
-    </div>
-    </div>
+    <div class="stat border-black !border-l-2" v-if="loggedUser && observedUser && (observedUser.id === loggedUser.id)">
+      <div class="stat-figure text-primary" v-if="nFriendRequests > 0">
+        <div class="indicator">
+          <label for="my-modal-3">
+            <span class="badge badge-secondary indicator-item text-white">{{ nFriendRequests }}</span>
+            <iconify-icon class="w-10 h-10" :icon="iconSeeRequests" style="color: 5d4df8"
+              @mouseover="iconSeeRequests = 'mdi:account-alert'"
+              @mouseout="iconSeeRequests = 'mdi:account-alert-outline'"></iconify-icon>
+          </label>
+        </div>
+      </div>
       <div class="stat-value text-xl">Friends</div>
       <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
     </div>
@@ -110,14 +81,14 @@
 // IMPORTS //
 // ******* //
 
-import { computed, onBeforeMount, ref, type PropType} from 'vue';
+import { computed, onBeforeMount, ref, type PropType } from 'vue';
 import { onBeforeRouteUpdate } from 'vue-router';
 
 import { storeToRefs } from 'pinia';
 
-import type { User } from '@/types/User';
+import type { User } from '@/types/user';
 
-import { useUserStore } from '../stores/UserStore' 
+import { useUserStore } from '@/stores/UserStore'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -129,7 +100,7 @@ const userStore = useUserStore();
 // loggedUser RELATED VARIABLES //
 // **************************** //
 
-const {loggedUser} = storeToRefs(userStore);
+const { loggedUser } = storeToRefs(userStore);
 const nFriendRequests = ref(0);
 const isFriend = ref(false);
 
@@ -137,7 +108,7 @@ const isFriend = ref(false);
 // observedUser RELATED VARIABLES //
 // ****************************** //
 
-const {observedUser} = storeToRefs(userStore);
+const { observedUser } = storeToRefs(userStore);
 
 const statusColor = computed(() => {
   if (observedUser.value && observedUser.value.status === 'online') return 'text-[#62D49A]';
@@ -244,7 +215,7 @@ const sendFriendRequest = async () => {
     await userStore.sendFriendRequest(observedUser.value.id);
     console.log(`[ProfileStatsCard] - Friend request sent !`);
   }
-  catch(error) {
+  catch (error) {
     console.error(`[ProfileStatsCard] - Failed to send friend requests ! Error : `, error);
   }
 }

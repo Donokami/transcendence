@@ -4,85 +4,86 @@
     <a class="tab tab-bordered text-2xl font-bold mb-8" @click="toggleList">Channels</a>
   </div>
   <div>
-    <label
-    for="my-modal-3"
-    class="btn bg-white border-2 border-black mb-2 text-black hover:bg-primary hover:border-primary hover:text-white"
-    type="button"
-  >
-    SEND A NEW DM
-  </label>
+    <label for="my-modal-3"
+      class="btn bg-white border-2 border-black mb-2 text-black hover:bg-primary hover:border-primary hover:text-white"
+      type="button">
+      SEND A NEW DM
+    </label>
     <chat-direct-messages-modal></chat-direct-messages-modal>
     <chat-direct-messages-list v-if="hasDms"></chat-direct-messages-list>
   </div>
 </template>
 
 <script setup lang="ts">
-  // ******* //
-  // IMPORTS //
-  // ******* //
+// ******* //
+// IMPORTS //
+// ******* //
 
-  import { computed, onBeforeMount, ref } from 'vue'
-  
-  import { storeToRefs } from 'pinia'
-  import { useUserStore } from '@/stores/UserStore.js'
+import { onBeforeMount, ref } from 'vue'
+import { onBeforeRouteUpdate } from 'vue-router'
 
-  import ChatDirectMessagesList from '../components/ChatDirectMessagesList.vue'
-  import ChatDirectMessagesModal from '../components/ChatDirectMessagesModal.vue'
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/UserStore.js'
 
-  // ******************** //
-  // VARIABLE DEFINITIONS //
-  // ******************** //
+import ChatDirectMessagesList from '../components/ChatDirectMessagesList.vue'
+import ChatDirectMessagesModal from '../components/ChatDirectMessagesModal.vue'
 
-  const userStore = useUserStore()
+// ******************** //
+// VARIABLE DEFINITIONS //
+// ******************** //
 
-  const emit = defineEmits(['list-state-changed'])
-  
-  // **************************** //
-  // loggedUser RELATED VARIABLES //
-  // **************************** //
-  
-  const {loggedUser} = storeToRefs(userStore);
-  
-  let hasDms = ref(false);
+const userStore = useUserStore()
 
-  
-  // ******************** //
-  // FUNCTION DEFINITIONS //
-  // ******************** //
-  
-  // ********* //
-  // getDmList //
-  // ********* //
+const emit = defineEmits(['list-state-changed'])
 
-  const getDmList = async () => {
-    if (!loggedUser.value)
-      return 0;
-    try {
-      const dmList = await userStore.fetchDmList(loggedUser.value.id);
-      hasDms.value = !!dmList.length;
+// **************************** //
+// loggedUser RELATED VARIABLES //
+// **************************** //
 
-      console.log(`[ChatDirectMessages] - DM list : `, dmList);
-      console.log(`[ChatDirectMessages] - hasDms : `, hasDms.value);
+const { loggedUser } = storeToRefs(userStore);
 
-    } catch (error) {
-      console.error(`[ProfileStatsCard] - Failed to fetch friend requests ! Error : `, error);
-    }
-  };
+let hasDms = ref(false);
 
-  // ********** //
-  // toggleList //
-  // ********** //
 
-  const toggleList = () => {
-    emit('list-state-changed', 'channels')
+// ******************** //
+// FUNCTION DEFINITIONS //
+// ******************** //
+
+// ********** //
+// checkHasDm //
+// ********** //
+
+const checkHasDm = async () => {
+  if (!loggedUser.value)
+    return 0;
+  try {
+    hasDms.value = !!userStore.dmList.length;
+    console.log(`[ChatDirectMessages] - hasDms : `, hasDms.value);
+  } catch (error) {
+    console.error(`[ProfileStatsCard] - Failed to fetch friend requests ! Error : `, error);
   }
-  
-  // ********************* //
-  // VueJs LIFECYCLE HOOKS //
-  // ********************* //
-  
-  onBeforeMount(async () => {
-    await getDmList();
-  });
+};
+
+// ********** //
+// toggleList //
+// ********** //
+
+const toggleList = () => {
+  emit('list-state-changed', 'channels')
+}
+
+// ********************* //
+// VueJs LIFECYCLE HOOKS //
+// ********************* //
+
+onBeforeMount(async () => {
+  await userStore.refreshDmList();
+  checkHasDm();
+});
+
+onBeforeRouteUpdate(async (to, from) => {
+  await userStore.refreshDmList();
+  checkHasDm();
+})
 
 </script>

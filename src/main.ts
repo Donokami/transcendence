@@ -10,30 +10,6 @@ import { VueQueryPlugin } from "@tanstack/vue-query";
 
 import './assets/base.css'
 
-// const chatSocket = io('http://localhost:3002/chat', {
-//     transportOptions: {
-//         polling: {
-//             cors : {
-//                 origin: 'http://localhost:3002',
-//                 methods: ['GET,POST,DELETE'],
-//                 credentials: true,
-//             }
-//         }
-//     }
-// })
-
-// const gameSocket = io('http://localhost:3002/game', {
-//     transportOptions: {
-//         polling: {
-//             cors : {
-//                 origin: 'http://localhost:3002',
-//                 methods: ['GET,POST,DELETE'],
-//                 credentials: true,
-//             }
-//         }
-//     }
-// })
-
 const app = createApp(App)
 
 // Plug-in registration
@@ -41,9 +17,6 @@ app.use(createPinia())
 app.use(router)
 app.use(VeeValidatePlugin)
 app.use(VueQueryPlugin)
-
-// app.config.globalProperties.$chatSocket = chatSocket
-// app.config.globalProperties.$gameSocket = gameSocket
 
 app.component('iconify-icon', Icon)
 
