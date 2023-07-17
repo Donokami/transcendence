@@ -14,19 +14,19 @@ interface UserData {
 
 export const useUserStore = defineStore('users', {
   state: () => ({
-    
     // ********** //
     // loggedUser //
     // ********** //
-    
+
     loggedUser: null as unknown as User | null,
     friendList: [] as User[],
     dmList: [] as Channel[],
+    groupChannelsList: [] as Channel[],
     twoFactorEnabled: false,
 
     // ********************** //
     // observedUser (PROFILE) //
-    // ********************** // 
+    // ********************** //
 
     observedUser: null as unknown as User | null,
 
@@ -34,11 +34,9 @@ export const useUserStore = defineStore('users', {
     // tempUserId (2FA) //
     // **************** //
 
-    tempUserId: null as unknown as string | null,
-    
+    tempUserId: null as unknown as string | null
   }),
   actions: {
-
     // ******************* //
     // acceptFriendRequest //
     // ******************* //
@@ -80,10 +78,13 @@ export const useUserStore = defineStore('users', {
     // *************** //
 
     async enableTwoFactor() {
-      const response = await fetch('http://localhost:3000/api/auth/enableTwoFactor', {
-        method: 'POST',
-        credentials: 'include'
-      })
+      const response = await fetch(
+        'http://localhost:3000/api/auth/enableTwoFactor',
+        {
+          method: 'POST',
+          credentials: 'include'
+        }
+      )
 
       if (response.ok) {
         const data = await response.json()
@@ -100,27 +101,33 @@ export const useUserStore = defineStore('users', {
     async fetchAllUsers(): Promise<User[]> {
       const response = await fetch(`http://localhost:3000/api/user/all/stats`, {
         method: 'GET',
-        credentials: 'include',
+        credentials: 'include'
       })
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json();
+      return response.json()
     },
-  
+
     // ************** //
     // fetchBlockerId //
     // ************** //
 
-    async fetchBlockerId(loggedUserId: string, observedUserId: string):Promise<string> {
-      const response = await fetch(`http://localhost:3000/api/social/blocker-id/${loggedUserId}/${observedUserId}`, {
-        method: 'GET',
-        credentials: 'include',
-      })
+    async fetchBlockerId(
+      loggedUserId: string,
+      observedUserId: string
+    ): Promise<string> {
+      const response = await fetch(
+        `http://localhost:3000/api/social/blocker-id/${loggedUserId}/${observedUserId}`,
+        {
+          method: 'GET',
+          credentials: 'include'
+        }
+      )
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.text();
+      return response.text()
     },
 
     // *********** //
@@ -128,18 +135,18 @@ export const useUserStore = defineStore('users', {
     // *********** //
 
     async fetchDmList(id: string): Promise<Channel[]> {
-      const response: Channel[] = await fetcher.get(`/channels/${id}/dm-list`);
-      
+      const response: Channel[] = await fetcher.get(`/channels/${id}/dm-list`)
+
       response.forEach((channel: Channel) => {
         channel.receiver = channel.members.filter((user: User) => {
-          if (!this.loggedUser){
-            return false ;
+          if (!this.loggedUser) {
+            return false
           }
           return user.id !== this.loggedUser.id
-        })[0];
+        })[0]
       })
-      
-      return response;
+
+      return response
     },
 
     // *************** //
@@ -147,14 +154,17 @@ export const useUserStore = defineStore('users', {
     // *************** //
 
     async fetchFriendList(id: string) {
-      const response = await fetch(`http://localhost:3000/api/social/${id}/friend-list`, {
-        method: 'GET',
-        credentials: 'include',
-      })
+      const response = await fetch(
+        `http://localhost:3000/api/social/${id}/friend-list`,
+        {
+          method: 'GET',
+          credentials: 'include'
+        }
+      )
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json();
+      return response.json()
     },
 
     // ******************* //
@@ -162,14 +172,29 @@ export const useUserStore = defineStore('users', {
     // ******************* //
 
     async fetchFriendRequests(id: string) {
-      const response = await fetch(`http://localhost:3000/api/social/${id}/friend-requests`, {
-        method: 'GET',
-        credentials: 'include',
-      })
+      const response = await fetch(
+        `http://localhost:3000/api/social/${id}/friend-requests`,
+        {
+          method: 'GET',
+          credentials: 'include'
+        }
+      )
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json();
+      return response.json()
+    },
+
+    // ********************* //
+    // fetchGroupChannelsList //
+    // ********************* //
+
+    async fetchGroupChannelsList(id: string): Promise<Channel[]> {
+      const response: Channel[] = await fetcher.get(
+        `/channels/${id}/group-channels-list`
+      )
+
+      return response
     },
 
     // ********* //
@@ -179,13 +204,13 @@ export const useUserStore = defineStore('users', {
     async fetchUser(): Promise<User> {
       const response = await fetch(`http://localhost:3000/api/user/me`, {
         method: 'GET',
-        credentials: 'include',
+        credentials: 'include'
       })
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
       // TO DO: check if await is required here
-      return await response.json();
+      return await response.json()
     },
 
     // ************* //
@@ -195,12 +220,12 @@ export const useUserStore = defineStore('users', {
     async fetchUserById(id: string): Promise<User> {
       const response = await fetch(`http://localhost:3000/api/user/${id}`, {
         method: 'GET',
-        credentials: 'include',
+        credentials: 'include'
       })
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json();
+      return response.json()
     },
 
     // ********************** //
@@ -208,14 +233,17 @@ export const useUserStore = defineStore('users', {
     // ********************** //
 
     async fetchUserByIdWithStats(id: string): Promise<User> {
-      const response = await fetch(`http://localhost:3000/api/user/${id}/stats`, {
-        method: 'GET',
-        credentials: 'include',
-      })
+      const response = await fetch(
+        `http://localhost:3000/api/user/${id}/stats`,
+        {
+          method: 'GET',
+          credentials: 'include'
+        }
+      )
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json();
+      return response.json()
     },
 
     // ************* //
@@ -224,14 +252,14 @@ export const useUserStore = defineStore('users', {
 
     async refreshDmList() {
       if (!this.loggedUser) {
-        return [];
+        return []
       }
       try {
-        const response = await this.fetchDmList(this.loggedUser.id);
-        this.dmList = response;
-        console.log(`[UserStore] - dmList : `, this.dmList);
+        const response = await this.fetchDmList(this.loggedUser.id)
+        this.dmList = response
+        console.log(`[UserStore] - dmList : `, this.dmList)
       } catch (error) {
-        console.error(`[UserStore] - Failed to fetch DMs! Error: `, error);
+        console.error(`[UserStore] - Failed to fetch DMs! Error: `, error)
       }
     },
 
@@ -241,15 +269,38 @@ export const useUserStore = defineStore('users', {
 
     async refreshFriendList() {
       if (!this.loggedUser) {
-        return [];
+        return []
       }
       try {
-        const response = await this.fetchFriendList(this.loggedUser.id);
-        this.friendList = response;
-        console.log(`[UserStore] - friendList : `, this.friendList);
-        return this.friendList;
+        const response = await this.fetchFriendList(this.loggedUser.id)
+        this.friendList = response
+        console.log(`[UserStore] - friendList : `, this.friendList)
+        return this.friendList
       } catch (error) {
-        console.error(`[UserStore] - Failed to fetch friends! Error: `, error);
+        console.error(`[UserStore] - Failed to fetch friends! Error: `, error)
+      }
+    },
+
+    // ************************ //
+    // refreshGroupChannelsList //
+    // ************************ //
+
+    async refreshGroupChannelsList() {
+      if (!this.loggedUser) {
+        return []
+      }
+      try {
+        const response = await this.fetchGroupChannelsList(this.loggedUser.id)
+        this.dmList = response
+        console.log(
+          `[UserStore] - groupChannelsList : `,
+          this.groupChannelsList
+        )
+      } catch (error) {
+        console.error(
+          `[UserStore] - Failed to fetch group channels ! Error: `,
+          error
+        )
       }
     },
 
@@ -259,13 +310,13 @@ export const useUserStore = defineStore('users', {
 
     async refreshUser() {
       try {
-        const user = await this.fetchUser();
+        const user = await this.fetchUser()
         if (user) {
-        this.loggedUser = user;
-        this.twoFactorEnabled = user.isTwoFactorEnabled
+          this.loggedUser = user
+          this.twoFactorEnabled = user.isTwoFactorEnabled
         }
       } catch (error) {
-        console.log(error);
+        console.log(error)
       }
     },
 
@@ -288,14 +339,17 @@ export const useUserStore = defineStore('users', {
     // ******************* //
 
     async rejectFriendRequest(senderId: string) {
-      const response = await fetch(`http://localhost:3000/api/social/friendship/request/${senderId}/reject`, {
-        method: 'PUT',
-        credentials: 'include',
-      })
+      const response = await fetch(
+        `http://localhost:3000/api/social/friendship/request/${senderId}/reject`,
+        {
+          method: 'PUT',
+          credentials: 'include'
+        }
+      )
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json();
+      return response.json()
     },
 
     // ***************** //
@@ -303,17 +357,22 @@ export const useUserStore = defineStore('users', {
     // ***************** //
 
     async sendFriendRequest(receiverId: string) {
-      const response = await fetch(`http://localhost:3000/api/social/friendship/request`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({receiverId}),
-        credentials: 'include',
-      })
+      const response = await fetch(
+        `http://localhost:3000/api/social/friendship/request`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ receiverId }),
+          credentials: 'include'
+        }
+      )
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-      console.log(`[UserStore] - Friend request successfully sent to ${receiverId} !`);
-      return response.json();
+      console.log(
+        `[UserStore] - Friend request successfully sent to ${receiverId} !`
+      )
+      return response.json()
     },
 
     // ****** //
@@ -332,8 +391,7 @@ export const useUserStore = defineStore('users', {
         if (data.isTwoFactorEnabled) {
           this.twoFactorEnabled = true
           this.tempUserId = data.tempUserId
-        }
-        else {
+        } else {
           this.loggedUser = data.user
         }
       }
@@ -363,28 +421,33 @@ export const useUserStore = defineStore('users', {
     // *********** //
 
     async unblockUser(userToUnblockId: string) {
-      const response = await fetch(`http://localhost:3000/api/social/friendship/${userToUnblockId}/unblock`, {
-        method: 'PUT',
-        credentials: 'include',
-      })
+      const response = await fetch(
+        `http://localhost:3000/api/social/friendship/${userToUnblockId}/unblock`,
+        {
+          method: 'PUT',
+          credentials: 'include'
+        }
+      )
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json();
+      return response.json()
     },
-
 
     // *************** //
     // verifyTwoFactor //
     // *************** //
 
     async verifyTwoFactor(values: Record<string, any>) {
-      const response = await fetch('http://localhost:3000/api/auth/verifyToken', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-        credentials: 'include'
-      })
+      const response = await fetch(
+        'http://localhost:3000/api/auth/verifyToken',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(values),
+          credentials: 'include'
+        }
+      )
 
       if (response.ok) {
         const user: User = await response.json()
@@ -398,10 +461,13 @@ export const useUserStore = defineStore('users', {
     // ************* //
 
     async getAuthStatus() {
-      const response = await fetch('http://localhost:3000/api/auth/authStatus', {
-        method: 'GET',
-        credentials: 'include'
-      })
+      const response = await fetch(
+        'http://localhost:3000/api/auth/authStatus',
+        {
+          method: 'GET',
+          credentials: 'include'
+        }
+      )
 
       return response.json()
     },

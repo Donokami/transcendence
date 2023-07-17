@@ -1,14 +1,10 @@
 <template>
   <ul class="menu bg-base-100 w-full">
-    <li v-if="loggedUser" v-for="dm in dmList" :key="dm.receiver.username">
-      <router-link class="flex p-1"
-        :class="{ active: selectedChannel && dm.receiver.username === selectedChannel.receiver.username }"
-        :to="`/chat/${dm.id}`">
-        <div class="mx-auto md:mx-0 w-16 flex justify-center items-center">
-          <svg v-if="dm.receiver.profilePicture" :src="dm.receiver.profilePicture" class="h-[60px] w-12"></svg>
-          <iconify-icon v-else icon="ri:account-circle-line" class="h-16 w-12"></iconify-icon>
-        </div>
-        <span class="hidden md:block">{{ dm.receiver.username }}</span>
+    <li v-if="loggedUser" v-for="groupChannel in groupChannelsList" :key="groupChannel.name">
+      <router-link class="flex p-1" :class="{
+        active: selectedChannel && groupChannel.name === selectedChannel.name
+      }" :to="`/chat/${groupChannel.id}`">
+        <span class="flex justify-center items-center h-[60px]">{{ groupChannel.name }}</span>
       </router-link>
     </li>
   </ul>
@@ -39,7 +35,7 @@ const channelStore = useChannelStore()
 // **************************** //
 
 const { loggedUser } = storeToRefs(userStore);
-const { dmList } = storeToRefs(userStore);
+const { groupChannelsList } = storeToRefs(userStore);
 
 // ********************************* //
 // selectedChannel RELATED VARIABLES //
@@ -47,18 +43,14 @@ const { dmList } = storeToRefs(userStore);
 
 const { selectedChannel } = storeToRefs(channelStore);
 
-// ******************** //
-// FUNCTION DEFINITIONS //
-// ******************** //
-
 // ********************* //
 // VueJs LIFECYCLE HOOKS //
 // ********************* //
 
 onBeforeRouteUpdate(async (to, from) => {
   const id = to.path.split("/").pop();
-  console.log(`[ChatDirectMessagesList] - The current route is ${to.path}`);
-  console.log(`[ChatDirectMessagesList] - The current id is ${id}`);
+  console.log(`[ChatGroupChannelsList] - The current route is ${to.path}`);
+  console.log(`[ChatGroupChannelsList] - The current id is ${id}`);
 })
 
 </script>

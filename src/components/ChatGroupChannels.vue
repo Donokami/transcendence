@@ -1,16 +1,16 @@
 <template>
   <div class="tabs">
-    <a class="tab tab-active tab-bordered text-2xl font-bold mb-8">DMs</a>
-    <a class="tab tab-bordered text-2xl font-bold mb-8" @click="toggleList">Channels</a>
+    <a class="tab tab-bordered text-2xl font-bold mb-8" @click="toggleList">DMs</a>
+    <a class="tab tab-bordered tab-active text-2xl font-bold mb-8">Channels</a>
   </div>
   <div>
     <label for="my-modal-3"
       class="btn bg-white border-2 border-black mb-2 text-black hover:bg-primary hover:border-primary hover:text-white"
       type="button">
-      SEND A NEW DM
+      CREATE A NEW CHANNEL
     </label>
-    <chat-direct-messages-modal></chat-direct-messages-modal>
-    <chat-direct-messages-list v-if="hasDms"></chat-direct-messages-list>
+    <chat-group-channels-modal></chat-group-channels-modal>
+    <chat-group-channels-list v-if="hasGroupChannels"></chat-group-channels-list>
   </div>
 </template>
 
@@ -21,13 +21,13 @@
 // ******* //
 
 import { onBeforeMount, ref } from 'vue'
-import { onBeforeRouteUpdate } from 'vue-router'
 
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/UserStore.js'
 
-import ChatDirectMessagesList from '@/components/ChatDirectMessagesList.vue'
-import ChatDirectMessagesModal from '@/components/ChatDirectMessagesModal.vue'
+import ChatGroupChannelsList from '@/components/ChatGroupChannelsList.vue'
+import ChatGroupChannelsModal from '@/components/ChatGroupChannelsModal.vue'
+import { onBeforeRouteUpdate } from 'vue-router'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -43,25 +43,24 @@ const emit = defineEmits(['list-state-changed'])
 
 const { loggedUser } = storeToRefs(userStore);
 
-let hasDms = ref(false);
-
+let hasGroupChannels = ref(false);
 
 // ******************** //
 // FUNCTION DEFINITIONS //
 // ******************** //
 
-// ********** //
-// checkHasDm //
-// ********** //
+// ********************* //
+// checkHasGroupChannels //
+// ********************* //
 
-const checkHasDm = async () => {
+const checkHasGroupChannels = async () => {
   if (!loggedUser.value)
     return 0;
   try {
-    hasDms.value = !!userStore.dmList.length;
-    console.log(`[ChatDirectMessages] - hasDms : `, hasDms.value);
+    hasGroupChannels.value = !!userStore.groupChannelsList.length;
+    console.log(`[ChatGroupChannels] - hasGroupChannels : `, hasGroupChannels.value);
   } catch (error) {
-    console.error(`[ChatDirectMessages] - Failed to check hasDms value ! Error : `, error);
+    console.error(`[ChatGroupChannels] - Failed to check hasGroupChannels value ! Error : `, error);
   }
 };
 
@@ -70,7 +69,7 @@ const checkHasDm = async () => {
 // ********** //
 
 const toggleList = () => {
-  emit('list-state-changed', 'groupChannels')
+  emit('list-state-changed', 'dm')
 }
 
 // ********************* //
@@ -78,13 +77,13 @@ const toggleList = () => {
 // ********************* //
 
 onBeforeMount(async () => {
-  await userStore.refreshDmList();
-  checkHasDm();
+  await userStore.refreshGroupChannelsList();
+  checkHasGroupChannels();
 });
 
 onBeforeRouteUpdate(async (to, from) => {
-  await userStore.refreshDmList();
-  checkHasDm();
+  await userStore.refreshGroupChannelsList();
+  checkHasGroupChannels();
 })
 
 </script>

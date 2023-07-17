@@ -37,11 +37,11 @@ import { onBeforeRouteUpdate } from 'vue-router';
 
 import { storeToRefs } from 'pinia';
 
-import { useUserStore } from '@/stores/UserStore.js'
 import { useChannelStore } from '@/stores/ChannelStore';
+import { useUserStore } from '@/stores/UserStore.js'
 
 import type { Channel } from '@/types/Channel';
-import type { User } from '@/types/User';
+import type { User } from '@/types/user';
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -62,7 +62,6 @@ const { friendList } = storeToRefs(userStore);
 // ******************** //
 
 const createDmChannel = async (friend: User): Promise<Channel | null> => {
-  console.log("createDmChannel() - friend: ", friend);
   if (!loggedUser.value || !friend) {
     return null;
   }

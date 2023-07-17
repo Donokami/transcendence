@@ -3,7 +3,8 @@
     <div class="flex h-[75vh]">
       <div class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify min-w-min w-1/4 overflow-y-auto">
         <chat-direct-messages v-if="listState === 'dm'" @list-state-changed="listState = $event"></chat-direct-messages>
-        <chat-channels v-if="listState === 'channels'" @list-state-changed="listState = $event"></chat-channels>
+        <chat-group-channels v-if="listState === 'groupChannels'"
+          @list-state-changed="listState = $event"></chat-group-channels>
       </div>
 
       <div class="flex flex-col justify-between text-justify w-3/4" v-if="selectedChannel">
@@ -25,7 +26,7 @@
 // ******* //
 
 import { ref } from 'vue'
-import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute } from 'vue-router'
+import { onBeforeRouteLeave, useRoute } from 'vue-router'
 
 import { storeToRefs } from 'pinia'
 
@@ -33,7 +34,7 @@ import { useChannelStore } from '@/stores/ChannelStore.js'
 
 import io from 'socket.io-client'
 
-import ChatChannels from '@/components/ChatChannels.vue'
+import ChatGroupChannels from '@/components/ChatGroupChannels.vue'
 import ChatDirectMessages from '@/components/ChatDirectMessages.vue'
 import ChatDiscussion from '@/components/ChatDiscussion.vue'
 import ChatInput from '@/components/ChatInput.vue'
