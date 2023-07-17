@@ -2,22 +2,22 @@ import {
   BadRequestException,
   Injectable,
   Logger,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+  NotFoundException
+} from '@nestjs/common'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 
-import { UsersService } from '@/modules/users/users.service';
+import { UsersService } from '@/modules/users/users.service'
 
-import { Channel } from '@/modules/channels/entities/channel.entity';
-import { Message } from '@/modules/channels/entities/message.entity';
-import { User } from '@/modules/users/user.entity';
+import { Channel } from '@/modules/channels/entities/channel.entity'
+import { Message } from '@/modules/channels/entities/message.entity'
+import { User } from '@/modules/users/user.entity'
 
-import { AddMessageDto } from '@/modules/chat/dtos/add-message.dto';
-import { BanUserDto } from '@/modules/chat/dtos/ban-user.dto';
-import { CreateChannelDto } from './dtos/create-channel.dto';
-import { UpdateChannelDto } from './dtos/update-channel.dto';
-import { Serialize } from '@/core/interceptors/serialize.interceptor';
+import { AddMessageDto } from '@/modules/chat/dtos/add-message.dto'
+import { BanUserDto } from '@/modules/chat/dtos/ban-user.dto'
+import { CreateChannelDto } from './dtos/create-channel.dto'
+import { UpdateChannelDto } from './dtos/update-channel.dto'
+import { Serialize } from '@/core/interceptors/serialize.interceptor'
 
 @Injectable()
 // @Serialize(CreateChannelDto)
@@ -27,14 +27,14 @@ export class ChannelsService {
     private readonly channelsRepository: Repository<Channel>,
     @InjectRepository(Message)
     private readonly messagesRepository: Repository<Message>,
-    private readonly userService: UsersService,
+    private readonly userService: UsersService
   ) {}
 
   // ****** //
   // LOGGER //
   // ****** //
 
-  private logger = new Logger(ChannelsService.name);
+  private logger = new Logger(ChannelsService.name)
 
   // ******************** //
   // FUNCTION DEFINITIONS //
@@ -46,24 +46,24 @@ export class ChannelsService {
 
   async createDmChannel(createChannelDto: CreateChannelDto): Promise<Channel> {
     const owner: User = await this.userService.findOneById(
-      createChannelDto.ownerId,
-    );
+      createChannelDto.ownerId
+    )
 
     const members: User[] = await this.userService.findByIds(
-      createChannelDto.membersIds,
-    );
+      createChannelDto.membersIds
+    )
 
     members.forEach((member) => {
-      member.profilePicture = '';
-    });
+      member.profilePicture = ''
+    })
 
     const newDmChannel = this.channelsRepository.create({
       isDm: true,
       owner: owner,
-      members: members,
-    });
+      members: members
+    })
 
-    return await this.channelsRepository.save(newDmChannel);
+    return await this.channelsRepository.save(newDmChannel)
   }
 
   // ******* //
@@ -71,13 +71,13 @@ export class ChannelsService {
   // ******* //
 
   async findOne(id: string) {
-    const channel = await this.channelsRepository.findOneBy({ id });
+    const channel = await this.channelsRepository.findOneBy({ id })
 
     if (!channel) {
-      throw new NotFoundException(`There is no channel under id ${id}`);
+      throw new NotFoundException(`There is no channel under id ${id}`)
     }
 
-    return channel;
+    return channel
   }
 
   // ********* //
@@ -86,16 +86,16 @@ export class ChannelsService {
 
   async getDmList(userId: string): Promise<Channel[]> {
     if (!userId) {
-      this.logger.warn(`ID of the user is required.`);
-      throw new BadRequestException('ID of the user is required.');
+      this.logger.warn(`ID of the user is required.`)
+      throw new BadRequestException('ID of the user is required.')
     }
 
-    const user = await this.userService.findOneById(userId);
+    const user = await this.userService.findOneById(userId)
     if (!user) {
-      this.logger.warn(`User with ID : ${userId} not found in database.`);
+      this.logger.warn(`User with ID : ${userId} not found in database.`)
       throw new NotFoundException(
-        `User with ID : ${userId} not found in database.`,
-      );
+        `User with ID : ${userId} not found in database.`
+      )
     }
 
     const channelIds = await this.channelsRepository
@@ -103,25 +103,69 @@ export class ChannelsService {
       .innerJoin('channel.members', 'member')
       .where('member.id = :userId', { userId })
       .select('channel.id')
-      .getRawMany();
+      .getRawMany()
 
     const dm = await this.channelsRepository
       .createQueryBuilder('channel')
       .innerJoinAndSelect('channel.members', 'user')
       .where('channel.isDm = :isDm', { isDm: true })
       .andWhere('channel.id IN (:...channelIds)', {
-        channelIds: channelIds.map((channel) => channel.channel_id),
+        channelIds: channelIds.map((channel) => channel.channel_id)
       })
-      .getMany();
+      .getMany()
 
     if (!dm.length) {
-      this.logger.verbose(`No DMs found in database for ${userId}.`);
-      return [];
+      this.logger.verbose(`No DMs found in database for ${userId}.`)
+      return []
     }
 
-    this.logger.verbose(`DMs list of : ${userId} successfully retrieved.`);
+    this.logger.verbose(`DMs list of : ${userId} successfully retrieved.`)
 
-    return dm;
+    return dm
+  }
+
+  // ******************** //
+  // getGroupChannelsList //
+  // ******************** //
+
+  async getGroupChannelsList(userId: string): Promise<Channel[]> {
+    if (!userId) {
+      this.logger.warn(`ID of the user is required.`)
+      throw new BadRequestException('ID of the user is required.')
+    }
+
+    const user = await this.userService.findOneById(userId)
+    if (!user) {
+      this.logger.warn(`User with ID : ${userId} not found in database.`)
+      throw new NotFoundException(
+        `User with ID : ${userId} not found in database.`
+      )
+    }
+
+    const channelIds = await this.channelsRepository
+      .createQueryBuilder('channel')
+      .innerJoin('channel.members', 'member')
+      .where('member.id = :userId', { userId })
+      .select('channel.id')
+      .getRawMany()
+
+    const groupChannels = await this.channelsRepository
+      .createQueryBuilder('channel')
+      .innerJoinAndSelect('channel.members', 'user')
+      .where('channel.isDm = :isDm', { isDm: false })
+      .andWhere('channel.id IN (:...channelIds)', {
+        channelIds: channelIds.map((channel) => channel.channel_id)
+      })
+      .getMany()
+
+    if (!groupChannels.length) {
+      this.logger.verbose(`No group channels found in database for ${userId}.`)
+      return []
+    }
+
+    this.logger.verbose(`DMs list of : ${userId} successfully retrieved.`)
+
+    return groupChannels
   }
 
   //   this.logger.verbose(`DMs list of : ${userId} successfully retrieved.`);

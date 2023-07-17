@@ -6,7 +6,6 @@ import {
 
 import { Channel } from '@/modules/channels/entities/channel.entity';
 import { Friendship } from '@/modules/social/entities/friendship.entity';
-import { Game } from '@/modules/game/entities/game.entity';
 import { Message } from '@/modules/channels/entities/message.entity';
 import { User } from '@/modules/users/user.entity';
 
@@ -22,21 +21,21 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
           username: process.env.DB_USER,
           password: process.env.DB_PASS,
           database: process.env.DB_NAME_DEVELOPMENT,
-          entities: [Channel, Friendship, Game, Message, User],
+          entities: [Channel, Friendship, Message, User],
           synchronize: true,
         };
       case 'development':
         return {
           type: 'sqlite',
           database: 'db.sqlite',
-          entities: [Channel, Friendship, Game, Message, User],
+          entities: [Channel, Friendship, Message, User],
           synchronize: true,
         };
       case 'test':
         return {
           type: 'sqlite',
           database: 'db.sqlite',
-          entities: [Channel, Friendship, Game, Message, User],
+          entities: [Channel, Friendship, Message, User],
           synchronize: true,
           dropSchema: true,
         };

@@ -12,15 +12,15 @@ import {
   Req,
   UseGuards,
   UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+  ValidationPipe
+} from '@nestjs/common'
 
-import { AuthGuard } from '@/core/guards/auth.guard';
-import { RequestWithUser } from '@/core/types/request-with-user';
+import { AuthGuard } from '@/core/guards/auth.guard'
+import { RequestWithUser } from '@/core/types/request-with-user'
 
-import { ChannelsService } from './channels.service';
+import { ChannelsService } from './channels.service'
 
-import { CreateChannelDto } from './dtos/create-channel.dto';
+import { CreateChannelDto } from './dtos/create-channel.dto'
 
 @Controller('channels')
 export class ChannelsController {
@@ -30,18 +30,7 @@ export class ChannelsController {
   // LOGGER //
   // ****** //
 
-  private logger = new Logger(ChannelsController.name);
-
-  // ********* //
-  // getDmList //
-  // ********* //
-
-  @Get('/:id/dm-list')
-  @UseGuards(AuthGuard)
-  async getDmList(@Param('id') id: string) {
-    const dmList = await this.channelsService.getDmList(id);
-    return dmList;
-  }
+  private logger = new Logger(ChannelsController.name)
 
   // *************** //
   // createDmChannel //
@@ -51,11 +40,35 @@ export class ChannelsController {
   @UseGuards(AuthGuard)
   async createDmChannel(@Body() body: CreateChannelDto) {
     try {
-      const dmChannel = await this.channelsService.createDmChannel(body);
-      return dmChannel;
+      const dmChannel = await this.channelsService.createDmChannel(body)
+      return dmChannel
     } catch (error) {
-      throw error;
+      throw error
     }
+  }
+
+  // ********* //
+  // getDmList //
+  // ********* //
+
+  @Get('/:id/dm-list')
+  @UseGuards(AuthGuard)
+  async getDmList(@Param('id') id: string) {
+    const dmList = await this.channelsService.getDmList(id)
+    return dmList
+  }
+
+  // ******************** //
+  // getGroupChannelsList //
+  // ******************** //
+
+  @Get('/:id/group-channels-list')
+  @UseGuards(AuthGuard)
+  async getGroupChannelsList(@Param('id') id: string) {
+    const groupChannelsList = await this.channelsService.getGroupChannelsList(
+      id
+    )
+    return groupChannelsList
   }
 
   // @Get(':id')
