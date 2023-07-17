@@ -5,7 +5,7 @@
   </div>
   <div>
     <label for="my-modal-3"
-      class="btn bg-white border-2 border-black mb-2 text-black hover:bg-primary hover:border-primary hover:text-white"
+      class="btn bg-white border-2 border-black mb-2 text-black hover:bg-black hover:border-black hover:text-white"
       type="button">
       SEND A NEW DM
     </label>

@@ -5,7 +5,7 @@
         :class="{ active: selectedChannel && dm.receiver.username === selectedChannel.receiver.username }"
         :to="`/chat/${dm.id}`">
         <div class="mx-auto md:mx-0 w-16 flex justify-center items-center">
-          <svg v-if="dm.receiver.profilePicture" :src="dm.receiver.profilePicture" class="h-[60px] w-12"></svg>
+          <img v-if="dm.receiver.profilePicture" :src="dm.receiver.profilePicture" class="rounded-full h-12 w-12">
           <iconify-icon v-else icon="ri:account-circle-line" class="h-16 w-12"></iconify-icon>
         </div>
         <span class="hidden md:block">{{ dm.receiver.username }}</span>
@@ -59,6 +59,12 @@ onBeforeRouteUpdate(async (to, from) => {
   const id = to.path.split("/").pop();
   console.log(`[ChatDirectMessagesList] - The current route is ${to.path}`);
   console.log(`[ChatDirectMessagesList] - The current id is ${id}`);
+
+  const selectedDM = dmList.value.find(dm => dm.id === id);
+
+  if (selectedDM) {
+    channelStore.selectedChannel = selectedDM;
+  }
 })
 
 </script>

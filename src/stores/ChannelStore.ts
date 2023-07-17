@@ -34,6 +34,7 @@ export const useChannelStore = defineStore('channels', {
     // ****************** //
 
     async createGroupChannel(
+      channelName: string,
       ownerId: string,
       receiversId: string[],
       passwordRequired: boolean,
@@ -41,6 +42,7 @@ export const useChannelStore = defineStore('channels', {
     ): Promise<Channel> {
       const channelParam = {
         isDm: false,
+        channelName,
         ownerId,
         membersIds: [ownerId, ...receiversId],
         passwordRequired,
