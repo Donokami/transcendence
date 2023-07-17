@@ -1,22 +1,14 @@
 import {
-  BadRequestException,
   Body,
   Controller,
-  Delete,
   Get,
   Logger,
   Param,
-  Patch,
   Post,
-  Query,
-  Req,
-  UseGuards,
-  UsePipes,
-  ValidationPipe
+  UseGuards
 } from '@nestjs/common'
 
 import { AuthGuard } from '@/core/guards/auth.guard'
-import { RequestWithUser } from '@/core/types/request-with-user'
 
 import { ChannelsService } from './channels.service'
 
@@ -42,6 +34,21 @@ export class ChannelsController {
     try {
       const dmChannel = await this.channelsService.createDmChannel(body)
       return dmChannel
+    } catch (error) {
+      throw error
+    }
+  }
+
+  // ****************** //
+  // createGroupChannel //
+  // ****************** //
+
+  @Post('/create-group-channel')
+  @UseGuards(AuthGuard)
+  async createGroupChannel(@Body() body: CreateChannelDto) {
+    try {
+      const groupChannel = await this.channelsService.createGroupChannel(body)
+      return groupChannel
     } catch (error) {
       throw error
     }

@@ -1,28 +1,33 @@
-import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator'
 
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger'
 
 export class CreateChannelDto {
   @ApiProperty()
   @IsOptional()
   @IsString()
-  name?: string;
+  name?: string
 
   @ApiProperty()
   @IsBoolean()
-  isDm: boolean;
+  isDm: boolean
 
   @ApiProperty()
   @IsString()
-  ownerId: string;
+  ownerId: string
 
   @ApiProperty()
   @IsArray()
   @IsString({ each: true })
-  membersIds: Array<string>;
+  membersIds: Array<string>
+
+  @ApiProperty()
+  @IsOptional()
+  @IsBoolean()
+  passwordRequired?: boolean
 
   @ApiProperty()
   @IsOptional()
   @IsString()
-  password?: string;
+  password?: string
 }

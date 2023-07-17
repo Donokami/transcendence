@@ -53,10 +53,6 @@ export class ChannelsService {
       createChannelDto.membersIds
     )
 
-    members.forEach((member) => {
-      member.profilePicture = ''
-    })
-
     const newDmChannel = this.channelsRepository.create({
       isDm: true,
       owner: owner,
@@ -64,6 +60,37 @@ export class ChannelsService {
     })
 
     return await this.channelsRepository.save(newDmChannel)
+  }
+
+  // ****************** //
+  // createGroupChannel //
+  // ****************** //
+
+  async createGroupChannel(
+    createChannelDto: CreateChannelDto
+  ): Promise<Channel> {
+    const owner: User = await this.userService.findOneById(
+      createChannelDto.ownerId
+    )
+
+    const members: User[] = await this.userService.findByIds(
+      createChannelDto.membersIds
+    )
+
+    members.forEach((member) => {
+      member.profilePicture = ''
+    })
+
+    const newGroupChannel = this.channelsRepository.create({
+      isDm: false,
+      name: createChannelDto.name,
+      owner: owner,
+      members: members,
+      passwordRequired: createChannelDto.passwordRequired,
+      password: createChannelDto.password
+    })
+
+    return await this.channelsRepository.save(newGroupChannel)
   }
 
   // ******* //
