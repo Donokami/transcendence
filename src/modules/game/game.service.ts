@@ -12,7 +12,7 @@ import { UsersService } from '@/modules/users/users.service'
 
 import { type CreateGameDto } from './dtos/create-game-dto'
 import { type UpdateGameDto } from './dtos/update-game-dto'
-import { type Pagination } from '@/core/types/pagination'
+// import { type Pagination } from '@/core/types/pagination'
 import { GameGateway } from './game.gateway'
 
 import { Room, type RoomObject } from './room'
@@ -33,10 +33,8 @@ export class GameService {
     return this.rooms.find((room) => room.get().id === id)
   }
 
-  async findAll({ limit = 10, page = 1 }: Pagination) {
+  async findAll() {
     return this.rooms
-      .slice((page - 1) * limit, page * limit)
-      .map((g) => g.get())
   }
 
   // todo: create a function to retrieve all rooms that are not full and another public

@@ -3,19 +3,19 @@ import {
   Injectable,
   Logger,
   NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+  UnauthorizedException
+} from '@nestjs/common'
 
-import * as qrcode from 'qrcode';
-import { authenticator } from 'otplib';
-import { promisify } from 'util';
-import { randomBytes, scrypt as _scrypt } from 'crypto';
+import * as qrcode from 'qrcode'
+import { authenticator } from 'otplib'
+import { promisify } from 'util'
+import { randomBytes, scrypt as _scrypt } from 'crypto'
 
-import { UsersService } from '@/modules/users/users.service';
-import { type UserDetails } from '@/core/types/user-details';
-import { QueryFailedError } from 'typeorm';
+import { UsersService } from '@/modules/users/users.service'
+import { type UserDetails } from '@/core/types/user-details'
+import { QueryFailedError } from 'typeorm'
 
-const scrypt = promisify(_scrypt);
+const scrypt = promisify(_scrypt)
 
 @Injectable()
 export class AuthService {
@@ -29,7 +29,7 @@ export class AuthService {
   // LOGGER //
   // ****** //
 
-  private logger = new Logger(AuthService.name);
+  private logger = new Logger(AuthService.name)
 
   // ******************** //
   // FUNCTION DEFINITIONS //
@@ -41,13 +41,13 @@ export class AuthService {
 
   async validateUser(details: UserDetails) {
     const user = await this.usersService.findOneByEmailWithAuthInfos(
-      details.email,
-    );
+      details.email
+    )
     if (!user) {
-      const newUser = await this.usersService.createOauth(details);
-      return newUser;
+      const newUser = await this.usersService.createOauth(details)
+      return newUser
     }
-    return user;
+    return user
   }
 
   // *************** //
@@ -55,24 +55,24 @@ export class AuthService {
   // *************** //
 
   async toggleTwoFactor(userId: string) {
-    const user = await this.usersService.findOneById(userId);
+    const user = await this.usersService.findOneById(userId)
 
     if (user.isTwoFactorEnabled) {
-      user.isTwoFactorEnabled = false;
-      user.twoFactorSecret = null;
-      await this.usersService.update(user.id, user);
+      user.isTwoFactorEnabled = false
+      user.twoFactorSecret = null
+      await this.usersService.update(user.id, user)
 
-      return { isTwoFactorEnabled: false };
+      return { isTwoFactorEnabled: false }
     } else {
-      const secret = authenticator.generateSecret();
-      user.twoFactorSecret = secret;
-      user.isTwoFactorEnabled = true;
-      await this.usersService.update(user.id, user);
+      const secret = authenticator.generateSecret()
+      user.twoFactorSecret = secret
+      user.isTwoFactorEnabled = true
+      await this.usersService.update(user.id, user)
 
-      const otpauth = authenticator.keyuri(user.email, 'YourService', secret);
-      const dataUrl = await qrcode.toDataURL(otpauth);
+      const otpauth = authenticator.keyuri(user.email, 'YourService', secret)
+      const dataUrl = await qrcode.toDataURL(otpauth)
 
-      return { isTwoFactorEnabled: true, dataUrl };
+      return { isTwoFactorEnabled: true, dataUrl }
     }
   }
 
@@ -81,27 +81,27 @@ export class AuthService {
   // ******************** //
 
   async verifyTwoFactorToken(userId: string, token: string) {
-    const user = await this.usersService.findOneById(userId);
+    const user = await this.usersService.findOneById(userId)
     if (!user) {
-      this.logger.warn('User not found');
-      throw new UnauthorizedException('User not found');
+      this.logger.warn('User not found')
+      throw new UnauthorizedException('User not found')
     }
     if (!user.isTwoFactorEnabled) {
-      this.logger.warn('2FA is disabled');
-      throw new UnauthorizedException('2FA is disabled');
+      this.logger.warn('2FA is disabled')
+      throw new UnauthorizedException('2FA is disabled')
     }
 
     const isValid = authenticator.verify({
       token,
-      secret: user.twoFactorSecret,
-    });
+      secret: user.twoFactorSecret
+    })
 
     if (!isValid) {
-      this.logger.warn('Invalid 2FA token');
-      throw new UnauthorizedException('Invalid 2FA token');
+      this.logger.warn('Invalid 2FA token')
+      throw new UnauthorizedException('Invalid 2FA token')
     }
 
-    return user;
+    return user
   }
 
   // ******** //
@@ -110,25 +110,29 @@ export class AuthService {
 
   async register(email: string, password: string, username: string) {
     try {
-      const salt = randomBytes(8).toString('hex');
-      const hash = (await scrypt(password, salt, 32)) as Buffer;
-      const hashedPassword = salt + '.' + hash.toString('hex');
+      const salt = randomBytes(8).toString('hex')
+      const hash = (await scrypt(password, salt, 32)) as Buffer
+      const hashedPassword = salt + '.' + hash.toString('hex')
 
       const newUser = await this.usersService.create(
         email,
         hashedPassword,
-        username,
-      );
-      return newUser;
-    } catch (error: any) {
-      // todo : handle QueryFailedError
-      // if (error instanceof QueryFailedError) {
-      //   switch (error.name) {
-      //     case: 'ER_DUP_ENTRY':
-      //     break;
-      //   }
-      // }
-      this.logger.warn('Email already in use ! Error : ', error);
+        username
+      )
+      return newUser
+    } catch (err: any) {
+      if (err instanceof QueryFailedError) {
+        console.log(err)
+
+        switch (err.driverError.code) {
+          case 'SQLITE_CONSTRAINT' || '23505': // todo: check error code for postgres
+            this.logger.warn(err.driverError.message)
+            throw new BadRequestException(err.driverError.message)
+          default:
+            this.logger.warn('Unknown error : ', err)
+            throw new BadRequestException('Unknown error')
+        }
+      }
     }
   }
 
@@ -137,21 +141,21 @@ export class AuthService {
   // ****** //
 
   async signIn(email: string, password: string) {
-    const user = await this.usersService.findOneByEmailWithAuthInfos(email);
+    const user = await this.usersService.findOneByEmailWithAuthInfos(email)
     if (!user) {
-      this.logger.warn('User not found');
-      throw new NotFoundException('User not found');
+      this.logger.warn('User not found')
+      throw new NotFoundException('User not found')
     }
 
-    const [salt, storedHash] = user.password.split('.');
+    const [salt, storedHash] = user.password.split('.')
 
-    const hash = (await scrypt(password, salt, 32)) as Buffer;
+    const hash = (await scrypt(password, salt, 32)) as Buffer
 
     if (storedHash !== hash.toString('hex')) {
-      this.logger.warn('Bad password');
-      throw new BadRequestException('Bad password');
+      this.logger.warn('Bad password')
+      throw new BadRequestException('Bad password')
     }
 
-    return user;
+    return user
   }
 }

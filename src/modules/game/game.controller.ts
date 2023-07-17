@@ -7,21 +7,18 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   Req,
   UseGuards,
-  ValidationPipe,
-} from '@nestjs/common';
-import { GameService } from './game.service';
+} from '@nestjs/common'
+import { GameService } from './game.service'
 
-import { RequestWithUser } from '@/core/types/request-with-user';
+import { RequestWithUser } from '@/core/types/request-with-user'
 
-import { AuthGuard } from '@/core/guards/auth.guard';
-import { OwnershipGuard } from './guards/ownership.guard';
+import { AuthGuard } from '@/core/guards/auth.guard'
+import { OwnershipGuard } from './guards/ownership.guard'
 
-import { CreateGameDto } from './dtos/create-game-dto';
-import { PaginationDTO } from '@/core/dtos/pagination.dto';
-import { UpdateGameDto } from './dtos/update-game-dto';
+import { CreateGameDto } from './dtos/create-game-dto'
+import { UpdateGameDto } from './dtos/update-game-dto'
 
 @Controller('games')
 export class GameController {
@@ -34,13 +31,13 @@ export class GameController {
   @Get(':id')
   @UseGuards(AuthGuard)
   async findOne(@Param('id') id: string) {
-    const game = await this.gameService.findOne(id);
+    const game = await this.gameService.findOne(id)
 
     if (!game) {
-      throw new NotFoundException(`There is no game under id ${id}`);
+      throw new NotFoundException(`There is no game under id ${id}`)
     }
 
-    return game;
+    return game
   }
 
   // ******* //
@@ -49,20 +46,8 @@ export class GameController {
 
   @Get()
   @UseGuards(AuthGuard)
-  async findAll(
-    @Query(
-      new ValidationPipe({
-        transform: true,
-        transformOptions: { enableImplicitConversion: true },
-        forbidNonWhitelisted: true,
-      }),
-    )
-    query: PaginationDTO,
-  ) {
-    return await this.gameService.findAll({
-      limit: Number(query.limit) || 10,
-      page: Number(query.page) || 1,
-    });
+  async findAll() {
+    return await this.gameService.findAll()
   }
 
   // ****** //
@@ -73,10 +58,10 @@ export class GameController {
   @UseGuards(AuthGuard)
   async create(
     @Req() req: RequestWithUser,
-    @Body() createGameDto: CreateGameDto,
+    @Body() createGameDto: CreateGameDto
   ) {
-    createGameDto.owner = req.session.userId;
-    return await this.gameService.create(createGameDto);
+    createGameDto.owner = req.session.userId
+    return await this.gameService.create(createGameDto)
   }
 
   // ****** //
@@ -87,7 +72,7 @@ export class GameController {
   @UseGuards(AuthGuard)
   @UseGuards(OwnershipGuard)
   async update(@Param('id') id: string, @Body() updateGameDto: UpdateGameDto) {
-    return await this.gameService.update(id, updateGameDto);
+    return await this.gameService.update(id, updateGameDto)
   }
 
   // ****** //
@@ -98,6 +83,6 @@ export class GameController {
   @UseGuards(AuthGuard)
   @UseGuards(OwnershipGuard)
   async remove(@Param('id') id: string) {
-    return await this.gameService.delete(id);
+    return await this.gameService.delete(id)
   }
 }

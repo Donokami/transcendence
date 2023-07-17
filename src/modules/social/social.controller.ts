@@ -5,11 +5,11 @@ import {
   Param,
   Post,
   Put,
-  Session,
-} from '@nestjs/common';
+  Session
+} from '@nestjs/common'
 
-import { SocialService } from './social.service';
-import { FriendRequestDto } from './dtos/friend-request.dto';
+import { SocialService } from './social.service'
+import { FriendRequestDto } from './dtos/friend-request.dto'
 
 @Controller('social')
 export class SocialController {
@@ -26,11 +26,11 @@ export class SocialController {
   @Put('/friendship/request/:senderId/accept')
   async acceptFriendRequest(
     @Param('senderId') senderId: string,
-    @Session() session: any,
+    @Session() session: any
   ) {
-    const receiverId = session.userId;
+    const receiverId = session.userId
 
-    return this.socialService.acceptFriendRequest(receiverId, senderId);
+    return this.socialService.acceptFriendRequest(receiverId, senderId)
   }
 
   // ********* //
@@ -40,11 +40,11 @@ export class SocialController {
   @Put('/friendship/:userToBlockId/block')
   async blockUser(
     @Param('userToBlockId') userToBlockId: string,
-    @Session() session: any,
+    @Session() session: any
   ) {
-    const userId = session.userId;
+    const userId = session.userId
 
-    return this.socialService.blockUser(userId, userToBlockId);
+    return this.socialService.blockUser(userId, userToBlockId)
   }
 
   // ************ //
@@ -54,13 +54,13 @@ export class SocialController {
   @Get('/blocker-id/:loggedUserId/:observedUserId/')
   async getBlockerId(
     @Param('loggedUserId') loggedUserId: string,
-    @Param('observedUserId') observedUserId: string,
+    @Param('observedUserId') observedUserId: string
   ) {
     const blockerId = await this.socialService.getBlockerId(
       loggedUserId,
-      observedUserId,
-    );
-    return blockerId;
+      observedUserId
+    )
+    return blockerId
   }
 
   // ************* //
@@ -69,8 +69,8 @@ export class SocialController {
 
   @Get('/:id/friend-list')
   async getFriendList(@Param('id') id: string) {
-    const friendList = await this.socialService.getFriendList(id);
-    return friendList;
+    const friendList = await this.socialService.getFriendList(id)
+    return friendList
   }
 
   // ***************** //
@@ -79,8 +79,8 @@ export class SocialController {
 
   @Get('/:id/friend-requests')
   async getFriendRequests(@Param('id') id: string) {
-    const friendRequests = await this.socialService.getFriendRequests(id);
-    return friendRequests;
+    const friendRequests = await this.socialService.getFriendRequests(id)
+    return friendRequests
   }
 
   // ******************* //
@@ -90,11 +90,11 @@ export class SocialController {
   @Put('/friendship/request/:senderId/reject')
   async rejectFriendRequest(
     @Param('senderId') senderId: string,
-    @Session() session: any,
+    @Session() session: any
   ) {
-    const receiverId = session.userId;
+    const receiverId = session.userId
 
-    return this.socialService.rejectFriendRequest(receiverId, senderId);
+    return this.socialService.rejectFriendRequest(receiverId, senderId)
   }
 
   // ***************** //
@@ -104,14 +104,14 @@ export class SocialController {
   @Post('/friendship/request')
   async sendFriendRequest(
     @Body() friendRequestDto: FriendRequestDto,
-    @Session() session: any,
+    @Session() session: any
   ) {
-    const senderId = session.userId;
+    const senderId = session.userId
 
     return await this.socialService.sendFriendRequest(
       senderId,
-      friendRequestDto.receiverId,
-    );
+      friendRequestDto.receiverId
+    )
   }
 
   // *********** //
@@ -121,10 +121,10 @@ export class SocialController {
   @Put('/friendship/:userToUnblockId/unblock')
   async unblockUser(
     @Param('userToUnblockId') userToUnblockId: string,
-    @Session() session: any,
+    @Session() session: any
   ) {
-    const userId = session.userId;
+    const userId = session.userId
 
-    return await this.socialService.unblockUser(userId, userToUnblockId);
+    return await this.socialService.unblockUser(userId, userToUnblockId)
   }
 }

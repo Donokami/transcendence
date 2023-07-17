@@ -7,25 +7,25 @@ import {
   NotFoundException,
   Param,
   Patch,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+  UseGuards
+} from '@nestjs/common'
 
-import { AuthGuard } from '@/core/guards/auth.guard';
-import { Serialize } from '@/core/interceptors/serialize.interceptor';
-import { Friendship } from '@/modules/social/entities/friendship.entity';
-import { SocialService } from '@/modules/social/social.service';
+import { AuthGuard } from '@/core/guards/auth.guard'
+import { Serialize } from '@/core/interceptors/serialize.interceptor'
+import { Friendship } from '@/modules/social/entities/friendship.entity'
+import { SocialService } from '@/modules/social/social.service'
 
-import { User } from './user.entity';
-import { UsersService } from './users.service';
-import { UserDto } from './dtos/user.dto';
-import { UpdateUserDto } from './dtos/update-user.dto';
-import { CurrentUser } from './decorators/current-user.decorator';
+import { User } from './user.entity'
+import { UsersService } from './users.service'
+import { UpdateUserDto } from './dtos/update-user.dto'
+import { CurrentUser } from './decorators/current-user.decorator'
 
-import { OwnershipGuard } from './guards/ownership.guard';
+import { OwnershipGuard } from './guards/ownership.guard'
+import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate'
+import { ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger'
+import { PaginateQueryOptions } from '@/core/decorators/pagination'
 
-@Controller('user')
-@Serialize(UserDto)
+@Controller('users')
 export class UsersController {
   // *********** //
   // CONSTRUCTOR //
@@ -33,18 +33,60 @@ export class UsersController {
 
   constructor(
     private readonly usersService: UsersService,
-    private readonly socialService: SocialService,
+    private readonly socialService: SocialService
   ) {}
 
   // ****** //
   // LOGGER //
   // ****** //
 
-  private logger = new Logger(UsersController.name);
+  private logger = new Logger(UsersController.name)
 
   // ***************** //
   // ROUTE DEFINITIONS //
   // ***************** //
+
+  // *********** //
+  // getAllUsers //
+  // *********** //
+
+  @Get()
+  @UseGuards(AuthGuard)
+  @PaginateQueryOptions()
+  @ApiOkResponse({
+    description: 'The user records',
+    type: Paginated<User> // fix: not working
+  })
+  @ApiOperation({
+    summary: 'Get all users',
+    operationId: 'getAllUsers',
+    description: 'Get all users',
+    tags: ['users']
+  })
+  getAllUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
+    return this.usersService.findAll(query)
+  }
+
+  // **************** //
+  // getAllUsersStats //
+  // **************** //
+
+  @Get('/stats')
+  @UseGuards(AuthGuard)
+  @PaginateQueryOptions()
+  @ApiOperation({
+    summary: 'Get all users with stats',
+    operationId: 'getAllUsersStats',
+    description: 'Get all users with stats',
+    tags: ['users']
+  })
+  // @ApiQuery({ name: "filter.parentId", required: false, description: "Possible values: '$null' or '$eq:_id_' ", example: "$null" })
+  async getAllUsersStats(
+    @Paginate() query: PaginateQuery
+  ): Promise<Paginated<User>> {
+    const users = await this.usersService.findAllWithStats(query)
+    return users
+  }
 
   // ****** //
   // whoAmI //
@@ -52,28 +94,22 @@ export class UsersController {
 
   @Get('/me')
   @UseGuards(AuthGuard)
+  @ApiOkResponse({
+    description: 'The current user',
+    type: User
+  })
+  @ApiOperation({
+    summary: 'Get current user',
+    operationId: 'whoAmI',
+    description: 'Get current user',
+    tags: ['users']
+  })
   whoAmI(@CurrentUser() user: User): User {
-    return user;
-  }
-
-  // *********** //
-  // getAllUsers //
-  // *********** //
-
-  @Get('/all')
-  async getAllUsers(): Promise<User[]> {
-    const users = await this.usersService.findAll();
-    return users;
-  }
-
-  // **************** //
-  // getAllUsersStats //
-  // **************** //
-
-  @Get('/all/stats')
-  async getAllUsersStats(): Promise<User[]> {
-    const users = await this.usersService.findAllWithStats();
-    return users;
+    if (!user) {
+      this.logger.error(`User not found.`)
+      throw new NotFoundException(`User not found.`)
+    }
+    return user
   }
 
   // ************ //
@@ -82,13 +118,23 @@ export class UsersController {
 
   @Get('/:id')
   @UseGuards(AuthGuard)
+  @ApiOkResponse({
+    description: 'The user corresponding on the passed id',
+    type: User
+  })
+  @ApiOperation({
+    summary: 'Get user by ID',
+    operationId: 'findUserById',
+    description: 'Get user by ID',
+    tags: ['users']
+  })
   async findUserById(@Param('id') id: string): Promise<User> {
-    const user = await this.usersService.findOneById(id);
+    const user = await this.usersService.findOneById(id)
     if (!user) {
-      this.logger.error(`User with ID : ${id} not found.`);
-      throw new NotFoundException(`User with ID : ${id} not found.`);
+      this.logger.error(`User with ID : ${id} not found.`)
+      throw new NotFoundException(`User with ID : ${id} not found.`)
     }
-    return user;
+    return user
   }
 
   // ********************* //
@@ -97,13 +143,19 @@ export class UsersController {
 
   @Get('/:id/stats')
   @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Get user by ID with stats',
+    operationId: 'findUserByIdWithStats',
+    description: 'Get user by ID with stats',
+    tags: ['users']
+  })
   async findUserByIdWithStats(@Param('id') id: string): Promise<User> {
-    const user = await this.usersService.findOneByIdWithStats(id);
+    const user = await this.usersService.findOneByIdWithStats(id)
     if (!user) {
-      this.logger.error(`User with ID : ${id} not found.`);
-      throw new NotFoundException(`User with ID : ${id} not found.`);
+      this.logger.error(`User with ID : ${id} not found.`)
+      throw new NotFoundException(`User with ID : ${id} not found.`)
     }
-    return user;
+    return user
   }
 
   // ********** //
@@ -112,11 +164,19 @@ export class UsersController {
 
   @Patch('/:id')
   @UseGuards(AuthGuard)
+  @UseGuards(OwnershipGuard)
+  @Serialize(User)
+  @ApiOperation({
+    summary: 'Update user',
+    operationId: 'updateUser',
+    description: 'Update user',
+    tags: ['users']
+  })
   async updateUser(
     @Param('id') id: string,
-    @Body() body: UpdateUserDto,
+    @Body() body: UpdateUserDto
   ): Promise<User> {
-    return await this.usersService.update(id, body);
+    return await this.usersService.update(id, body)
   }
 
   // ********** //
@@ -126,7 +186,13 @@ export class UsersController {
   @Delete('/:id')
   @UseGuards(AuthGuard)
   @UseGuards(OwnershipGuard)
+  @ApiOperation({
+    summary: 'Remove user',
+    operationId: 'removeUser',
+    description: 'Remove user',
+    tags: ['users']
+  })
   async removeUser(@Param('id') id: string) {
-    return await this.usersService.remove(id);
+    return await this.usersService.remove(id)
   }
 }
