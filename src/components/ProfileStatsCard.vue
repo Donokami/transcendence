@@ -7,7 +7,7 @@
           <input type="file" ref="fileInput" @change="onFileChange" style="display: none" />
           <div class="w-16 rounded-full cursor-pointer" @click="triggerFileInput">
             <img 
-              v-if="userStore.loggedUser && userStore.loggedUser.profilePicture"
+              v-if="userStore.loggedUser && userStore.loggedUser.profilePicture && pictureSrc"
               :src="pictureSrc" 
             />
             <iconify-icon v-else icon="ri:account-circle-line" class="h-16 w-16 text-black"></iconify-icon>
@@ -92,7 +92,7 @@
 // IMPORTS //
 // ******* //
 
-import { computed, onBeforeMount, ref, type PropType } from 'vue';
+import { computed, onBeforeMount, ref, type Ref, type PropType } from 'vue';
 import { onBeforeRouteUpdate } from 'vue-router';
 
 import { storeToRefs } from 'pinia';
@@ -107,7 +107,7 @@ import { useUserStore } from '@/stores/UserStore'
 
 const userStore = useUserStore();
 
-const fileInput = ref(null);
+const fileInput = ref(null) as Ref<HTMLElement | null>;
 
 
 // **************************** //
@@ -119,6 +119,7 @@ const nFriendRequests = ref(0);
 const isFriend = ref(false);
 
 const pictureSrc = computed(() => {
+      if (!userStore.loggedUser) return null;
       const profilePicture = userStore.loggedUser.profilePicture;
       if (!profilePicture) return null;
 
@@ -163,7 +164,7 @@ const iconUnblockUser = ref('mdi:account-cancel');
 // ******************** //
 
 const triggerFileInput = () => {
-  fileInput.value.click();
+  fileInput.value?.click();
 };
 
 const onFileChange = async (event: Event) => {
@@ -171,10 +172,11 @@ const onFileChange = async (event: Event) => {
   if (target.files) {
     const file = target.files[0];
     try {
+      if (!userStore.loggedUser) return;
       await userStore.uploadProfilePicture(userStore.loggedUser.id, file);
       location.reload();
     } catch (error) {
-      console.error('Error updating profile picture:', error?.message);
+      console.error('Error updating profile picture:', error);
     }
   }
 };
@@ -193,6 +195,7 @@ const blockUser = async () => {
     console.log(`[ProfileStatsCard] - Failed to block user! Error : `, error);
   }
 };
+
 // ***************** //
 // sendFriendRequest //
 // ***************** //

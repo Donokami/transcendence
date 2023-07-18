@@ -131,7 +131,6 @@ const handleOauth = async () => {
   const popup = window.open(authUrl, '_blank', 'width=500,height=600');
 
     const intervalId = setInterval(async () => {
-      console.log('Checking auth status...')
       try {
         if (popup.closed) return clearInterval(intervalId);          
         const authStatus = await userStore.getAuthStatus();

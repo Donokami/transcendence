@@ -99,7 +99,7 @@ export const useUserStore = defineStore('users', {
     // ************* //
 
     async fetchAllUsers(): Promise<User[]> {
-      const response = await fetch(`http://localhost:3000/api/user/all/stats`, {
+      const response = await fetch(`http://localhost:3000/api/users/stats`, {
         method: 'GET',
         credentials: 'include'
       })
@@ -202,7 +202,7 @@ export const useUserStore = defineStore('users', {
     // ********* //
 
     async fetchUser(): Promise<User> {
-      const response = await fetch(`http://localhost:3000/api/user/me`, {
+      const response = await fetch(`http://localhost:3000/api/users/me`, {
         method: 'GET',
         credentials: 'include'
       })
@@ -213,43 +213,12 @@ export const useUserStore = defineStore('users', {
       return await response.json()
     },
 
-    // *********** //
-    // refreshUser //
-    // *********** //
-
-    async refreshUser() {
-      try {
-        const user = await this.fetchUser()
-        if (user) {
-          this.loggedUser = user
-          this.twoFactorEnabled = user.isTwoFactorEnabled
-        }
-      } catch (error) {
-        console.error(error)
-      }
-    },
-
-    // ************* //
-    // fetchAllUsers //
-    // ************* //
-
-    async fetchAllUsers(): Promise<User[]> {
-      const response = await fetch(`http://localhost:3000/api/user/all`, {
-        method: 'GET',
-        credentials: 'include'
-      })
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      return response.json()
-    },
-
     // ************* //
     // fetchUserByID //
     // ************* //
 
     async fetchUserById(id: string): Promise<User> {
-      const response = await fetch(`http://localhost:3000/api/user/${id}`, {
+      const response = await fetch(`http://localhost:3000/api/users/${id}`, {
         method: 'GET',
         credentials: 'include'
       })
@@ -265,7 +234,7 @@ export const useUserStore = defineStore('users', {
 
     async fetchUserByIdWithStats(id: string): Promise<User> {
       const response = await fetch(
-        `http://localhost:3000/api/user/${id}/stats`,
+        `http://localhost:3000/api/users/${id}/stats`,
         {
           method: 'GET',
           credentials: 'include'
@@ -508,7 +477,7 @@ export const useUserStore = defineStore('users', {
     // ********** //
 
     async updateUser(id: string, userData: UserData) {
-      const response = await fetch(`http://localhost:3000/api/user/${id}`, {
+      const response = await fetch(`http://localhost:3000/api/users/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -533,7 +502,7 @@ export const useUserStore = defineStore('users', {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await fetch('http://localhost:3000/api/user/upload', {
+      const response = await fetch('http://localhost:3000/api/users/upload', {
         method: 'POST',
         credentials: 'include',
         body: formData

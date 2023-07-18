@@ -53,7 +53,7 @@ const usernameSchema = {
 const submitForm = async (values: Record<string, string>) => {
   console.log(values)
   try {
-
+    if (!userStore.loggedUser) return;
     await userStore.updateUser(userStore.loggedUser.id, {username: values.username});
     emit('close-modal');
 
