@@ -213,6 +213,37 @@ export const useUserStore = defineStore('users', {
       return await response.json()
     },
 
+    // *********** //
+    // refreshUser //
+    // *********** //
+
+    async refreshUser() {
+      try {
+        const user = await this.fetchUser()
+        if (user) {
+          this.loggedUser = user
+          this.twoFactorEnabled = user.isTwoFactorEnabled
+        }
+      } catch (error) {
+        console.error(error)
+      }
+    },
+
+    // ************* //
+    // fetchAllUsers //
+    // ************* //
+
+    async fetchAllUsers(): Promise<User[]> {
+      const response = await fetch(`http://localhost:3000/api/user/all`, {
+        method: 'GET',
+        credentials: 'include'
+      })
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      return response.json()
+    },
+
     // ************* //
     // fetchUserByID //
     // ************* //
@@ -492,6 +523,27 @@ export const useUserStore = defineStore('users', {
       } else {
         throw new Error(`HTTP error status: ${response.status}`)
       }
+    },
+
+    // ******************** //
+    // UploadProfilePicture //
+    // ******************** //
+
+    async uploadProfilePicture(id: string, file: File) {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const response = await fetch('http://localhost:3000/api/user/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error status: ${response.status}`)
+      }
+
+      return response.json()
     }
   }
 })

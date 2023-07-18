@@ -5,8 +5,12 @@
       <div class="stat-figure text-secondary">
         <div class="avatar online">
           <input type="file" ref="fileInput" @change="onFileChange" style="display: none" />
-          <div class="w-16 rounded-full cursor-pointer">
-            <img v-if="userStore.loggedUser" :src="userStore.loggedUser.profilePicture" @click="triggerFileInput" />
+          <div class="w-16 rounded-full cursor-pointer" @click="triggerFileInput">
+            <img 
+              v-if="userStore.loggedUser && userStore.loggedUser.profilePicture"
+              :src="pictureSrc" 
+            />
+            <iconify-icon v-else icon="ri:account-circle-line" class="h-16 w-16 text-black"></iconify-icon>
           </div>
         </div>
       </div>
@@ -105,34 +109,6 @@ const userStore = useUserStore();
 
 const fileInput = ref(null);
 
-const triggerFileInput = () => {
-  fileInput.value.click();
-};
-
-const convertToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = error => reject(error);
-  });
-};
-
-const onFileChange = async (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  if (target.files) {
-    const file = target.files[0];
-    try {
-      const base64Picture = await convertToBase64(file);
-      await userStore.updateUser(userStore.loggedUser.id, { profilePicture: base64Picture });
-      location.reload();
-    } catch (error) {
-      console.error('Error updating profile picture:', error);
-    }
-  }
-};
-
-
 
 // **************************** //
 // loggedUser RELATED VARIABLES //
@@ -142,11 +118,30 @@ const { loggedUser } = storeToRefs(userStore);
 const nFriendRequests = ref(0);
 const isFriend = ref(false);
 
+const pictureSrc = computed(() => {
+      const profilePicture = userStore.loggedUser.profilePicture;
+      if (!profilePicture) return null;
+
+      if (profilePicture.includes('cdn.intra.42')) {
+        return profilePicture;
+      } else {
+        return 'http://localhost:3000/' + profilePicture;
+      }
+  });
+
 // ****************************** //
 // observedUser RELATED VARIABLES //
 // ****************************** //
 
-const { observedUser } = storeToRefs(userStore);
+const props = defineProps({
+  observedUser: {
+    type: Object as PropType<User>,
+      required: true,
+      default: () => ({}),
+    }
+});
+
+const observedUser = computed(() => props.observedUser);
 
 const statusColor = computed(() => {
   if (observedUser.value && observedUser.value.status === 'online') return 'text-[#62D49A]';
@@ -167,6 +162,23 @@ const iconUnblockUser = ref('mdi:account-cancel');
 // FUNCTION DEFINITIONS //
 // ******************** //
 
+const triggerFileInput = () => {
+  fileInput.value.click();
+};
+
+const onFileChange = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files) {
+    const file = target.files[0];
+    try {
+      await userStore.uploadProfilePicture(userStore.loggedUser.id, file);
+      location.reload();
+    } catch (error) {
+      console.error('Error updating profile picture:', error?.message);
+    }
+  }
+};
+
 // ********* //
 // blockUser //
 // ********* //
@@ -181,10 +193,9 @@ const blockUser = async () => {
     console.log(`[ProfileStatsCard] - Failed to block user! Error : `, error);
   }
 };
-
-// ****************** //
-// checkBlockedStatus //
-// ****************** //
+// ***************** //
+// sendFriendRequest //
+// ***************** //
 
 const checkBlockedStatus = async () => {
   if (!loggedUser.value || !observedUser.value)

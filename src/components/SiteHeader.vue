@@ -33,8 +33,8 @@
             <div class="h-[60px] w-20">
               <div class="h-full flex items-center justify-center">
                 <img
-                  v-if="userStore.loggedUser"
-                  :src="userStore.loggedUser.profilePicture"
+                  v-if="userStore.loggedUser && userStore.loggedUser.profilePicture"
+                  :src="pictureSrc"
                   class="object-cover h-12 w-12 rounded-full"
                 />
                 <iconify-icon v-else icon="ri:account-circle-line" class="h-12 w-12"></iconify-icon>
@@ -63,6 +63,7 @@
 
   import { useRouter } from 'vue-router'
   import { useUserStore } from '../stores/UserStore'
+  import { computed} from 'vue';
 
   // ******************** //
   // VARIABLE DEFINITIONS //
@@ -70,6 +71,17 @@
 
   const router = useRouter()
   const userStore = useUserStore()
+
+  const pictureSrc = computed(() => {
+      const profilePicture = userStore.loggedUser.profilePicture;
+      if (!profilePicture) return null;
+
+      if (profilePicture.includes('cdn.intra.42')) {
+        return profilePicture;
+      } else {
+        return 'http://localhost:3000/' + profilePicture;
+      }
+  });
 
   // ******************** //
   // FUNCTION DEFINITIONS //

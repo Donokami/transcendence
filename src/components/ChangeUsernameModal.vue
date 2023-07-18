@@ -1,5 +1,5 @@
 <template>
-  <input type="checkbox" id="my-modal-4" class="modal-toggle" v-model="checkboxModel" />
+  <input type="checkbox" id="my-modal-4" class="modal-toggle" />
 
   <div class="modal">
     <div class="modal-box rounded-none">

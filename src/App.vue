@@ -1,6 +1,6 @@
 <template>
   <div class="bg-white min-h-[calc(100vh-92px)] flex flex-col">
-    <site-header v-if="route.path !== '/auth'"></site-header>
+    <site-header v-if="route.path !== '/auth' && route.path !== '/mfa'"></site-header>
     <auth-header v-else></auth-header>
 
     <router-view></router-view>

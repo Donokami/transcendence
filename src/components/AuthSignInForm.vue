@@ -130,28 +130,28 @@ const handleOauth = async () => {
   const authUrl = 'http://localhost:3000/api/auth/42/signIn';
   const popup = window.open(authUrl, '_blank', 'width=500,height=600');
 
-  const intervalId = setInterval(async () => {
-    try {
-      const authStatus = await userStore.getAuthStatus();
+    const intervalId = setInterval(async () => {
+      console.log('Checking auth status...')
+      try {
+        if (popup.closed) return clearInterval(intervalId);          
+        const authStatus = await userStore.getAuthStatus();
 
-      if (authStatus.status === 'authenticated') {
-        clearInterval(intervalId);
-        if (popup) {
-          popup.close();
+        if (authStatus.status === 'authenticated') {
+          clearInterval(intervalId);
+          if (popup) popup.close();
+          await userStore.refreshUser();
+          router.push('/');
+        } 
+        
+        if (authStatus.status === 'requires_2fa') {
+          clearInterval(intervalId);
+          if (popup) popup.close();
+          router.push('/mfa');
         }
-        await userStore.refreshUser();
-        router.push('/');
-      } else if (authStatus.status === 'requires_2fa') {
-        clearInterval(intervalId);
-        if (popup) {
-          popup.close();
-        }
-        router.push('/mfa');
+      } catch (error) {
+        console.error('Error fetching auth status:', error);
       }
-    } catch (error) {
-      console.error('Error fetching auth status:', error);
-    }
-  }, 1000);
+    }, 1000);
 
   inSubmission.value = false;
 };
