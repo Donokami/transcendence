@@ -5,6 +5,7 @@ db.sqlite
 package-lock.json
 pnpm-lock.yaml
 /postgres-data
+/uploads
 
 # Compiled output
 /dist

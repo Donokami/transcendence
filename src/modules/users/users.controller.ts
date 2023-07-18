@@ -5,19 +5,26 @@ import {
   Get,
   Logger,
   NotFoundException,
+  BadRequestException,
   Param,
   Patch,
-  UseGuards
+  Post,
+  UseGuards,
+  UploadedFile,
+  UseInterceptors,
+  UseFilters
 } from '@nestjs/common'
 
 import { AuthGuard } from '@/core/guards/auth.guard'
 import { Serialize } from '@/core/interceptors/serialize.interceptor'
 import { Friendship } from '@/modules/social/entities/friendship.entity'
 import { SocialService } from '@/modules/social/social.service'
+import { FileUploadExceptionFilter } from '@/core/filters/file-upload-exception.filter'
 
 import { User } from './user.entity'
 import { UsersService } from './users.service'
 import { UpdateUserDto } from './dtos/update-user.dto'
+import { UserDto } from '@/modules/users/dtos/user.dto'
 import { CurrentUser } from './decorators/current-user.decorator'
 
 import { OwnershipGuard } from './guards/ownership.guard'
@@ -25,7 +32,12 @@ import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate'
 import { ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger'
 import { PaginateQueryOptions } from '@/core/decorators/pagination'
 
+import { FileInterceptor } from '@nestjs/platform-express'
+import { memoryStorage } from 'multer'
+import * as sharp from 'sharp'
+
 @Controller('users')
+@Serialize(UserDto)
 export class UsersController {
   // *********** //
   // CONSTRUCTOR //
@@ -86,6 +98,42 @@ export class UsersController {
   ): Promise<Paginated<User>> {
     const users = await this.usersService.findAllWithStats(query)
     return users
+  }
+
+  // *********** //
+  // upload file //
+  // *********** //
+
+  @Post('upload')
+  @UseGuards(AuthGuard)
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: {
+        fileSize: 1024 * 1024 * 2,
+        files: 1
+      }
+    })
+  )
+  @UseFilters(FileUploadExceptionFilter)
+  async uploadFile(
+    @CurrentUser() user: User,
+    @UploadedFile() file: Express.Multer.File
+  ) {
+    try {
+      await sharp(file.buffer).metadata()
+    } catch (error) {
+      throw new BadRequestException('Invalid file type')
+    }
+
+    if (user.profilePicture?.includes('uploads/')) {
+      await this.usersService.deleteFile(user.profilePicture)
+    }
+
+    const filePath = await this.usersService.saveFile(file)
+    await this.usersService.update(user.id, { profilePicture: filePath })
+
+    return { status: 'success' }
   }
 
   // ****** //
@@ -176,6 +224,7 @@ export class UsersController {
     @Param('id') id: string,
     @Body() body: UpdateUserDto
   ): Promise<User> {
+    console.log('body', body)
     return await this.usersService.update(id, body)
   }
 

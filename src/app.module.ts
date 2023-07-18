@@ -23,6 +23,8 @@ import { UserSerializer } from '@/modules/auth/user.serializer';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const session: RequestHandler = require('cookie-session')({
@@ -36,6 +38,10 @@ export const session: RequestHandler = require('cookie-session')({
       isGlobal: true,
       expandVariables: true,
       load: [config],
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'),
+      serveRoot: '/uploads',
     }),
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService,

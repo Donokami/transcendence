@@ -20,6 +20,8 @@ export default registerAs('transcendence-config', () => {
     fortyTwoAppSecret: process.env.FORTYTWO_APP_SECRET,
     fortyTwoAppRedirectURI: process.env.FORTYTWO_APP_REDIRECT_URI,
 
+    uploadDir: process.env.UPLOAD_DIR,
+
     socketPort: parseInt(process.env.SOCKET_PORT),
     socketOrigin: process.env.SOCKET_ORIGIN,
   };
