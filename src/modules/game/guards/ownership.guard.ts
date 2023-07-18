@@ -2,43 +2,43 @@ import {
   type CanActivate,
   type ExecutionContext,
   Injectable,
-  Logger,
-} from '@nestjs/common';
+  Logger
+} from '@nestjs/common'
 
-import { type Observable } from 'rxjs';
+import { type Observable } from 'rxjs'
 
-import { type RequestWithUser } from '@/core/types/request-with-user';
+import { type RequestWithUser } from '@/core/types/request-with-user'
 
-import { GameService } from '../game.service';
+import { GameService } from '../game.service'
 
 @Injectable()
 export class OwnershipGuard implements CanActivate {
   constructor(private readonly gameService: GameService) {}
 
-  private readonly logger = new Logger(OwnershipGuard.name);
+  private readonly logger = new Logger(OwnershipGuard.name)
 
   canActivate(
-    context: ExecutionContext,
+    context: ExecutionContext
   ): boolean | Promise<boolean> | Observable<boolean> {
     return new Promise(async (resolve) => {
       try {
-        const req = context.switchToHttp().getRequest<RequestWithUser>();
-        const gameId = req.params.id;
+        const req = context.switchToHttp().getRequest<RequestWithUser>()
+        const roomId = req.params.id
 
-        const game = await this.gameService.findOne(gameId);
+        const { data: room } = await this.gameService.findOne(roomId)
 
-        if (!game) {
-          this.logger.warn(`Game ${gameId} not found`);
-          resolve(false);
+        if (!room) {
+          this.logger.warn(`Room ${roomId} not found`)
+          resolve(false)
         }
 
-        if (game.owner.id === req.session.userId) {
-          this.logger.verbose(`User ${req.session.userId} owns game ${gameId}`);
-          resolve(true);
+        if (room.owner.id === req.session.userId) {
+          this.logger.verbose(`User ${req.session.userId} owns room ${roomId}`)
+          resolve(true)
         }
 
-        resolve(false);
+        resolve(false)
       } catch (e) {}
-    });
+    })
   }
 }

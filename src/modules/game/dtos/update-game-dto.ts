@@ -1,30 +1,30 @@
-import { IsString, IsNumber, IsBoolean, IsOptional } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
-import { User } from '@/modules/users/user.entity';
+import { IsString, IsNumber, IsBoolean, IsOptional } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger'
+import { User } from '@/modules/users/user.entity'
 
 export class UpdateGameDto {
   @ApiProperty()
   @IsString()
   @IsOptional()
-  name?: string;
+  name?: string
 
   @ApiProperty()
   @IsString()
   @IsOptional()
-  owner?: User;
+  owner?: User // todo: change to string
 
   @ApiProperty()
   @IsBoolean()
   @IsOptional()
-  isPrivate?: boolean;
+  isPrivate?: boolean
 
   @ApiProperty()
   @IsNumber()
   @IsOptional()
-  users?: User[];
+  users?: User[] // todo: change to string[]
 
   @ApiProperty()
   @IsNumber()
   @IsOptional()
-  maxMembers?: number;
+  maxMembers?: number
 }

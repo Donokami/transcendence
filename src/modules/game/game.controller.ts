@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -8,7 +9,7 @@ import {
   Patch,
   Post,
   Req,
-  UseGuards,
+  UseGuards
 } from '@nestjs/common'
 import { GameService } from './game.service'
 
@@ -19,6 +20,10 @@ import { OwnershipGuard } from './guards/ownership.guard'
 
 import { CreateGameDto } from './dtos/create-game-dto'
 import { UpdateGameDto } from './dtos/update-game-dto'
+import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate'
+import { RoomObject } from './room'
+import { RoomError } from '@/core/constants/errors'
+import { roomErrorHandler } from './utils/game-errors-handler'
 
 @Controller('games')
 export class GameController {
@@ -31,13 +36,13 @@ export class GameController {
   @Get(':id')
   @UseGuards(AuthGuard)
   async findOne(@Param('id') id: string) {
-    const game = await this.gameService.findOne(id)
+    const { data } = await this.gameService.findOne(id)
 
-    if (!game) {
+    if (!data) {
       throw new NotFoundException(`There is no game under id ${id}`)
     }
 
-    return game
+    return data
   }
 
   // ******* //
@@ -46,8 +51,12 @@ export class GameController {
 
   @Get()
   @UseGuards(AuthGuard)
-  async findAll() {
-    return await this.gameService.findAll()
+  async findAll(
+    @Paginate() query: PaginateQuery
+  ): Promise<Paginated<RoomObject>> {
+    const { data } = await this.gameService.findAll(query)
+
+    return data
   }
 
   // ****** //
@@ -59,9 +68,15 @@ export class GameController {
   async create(
     @Req() req: RequestWithUser,
     @Body() createGameDto: CreateGameDto
-  ) {
+  ): Promise<RoomObject> {
     createGameDto.owner = req.session.userId
-    return await this.gameService.create(createGameDto)
+    const { data: room, error } = await this.gameService.create(createGameDto)
+
+    if (error) {
+      roomErrorHandler(error)
+    }
+
+    return room
   }
 
   // ****** //
@@ -72,7 +87,24 @@ export class GameController {
   @UseGuards(AuthGuard)
   @UseGuards(OwnershipGuard)
   async update(@Param('id') id: string, @Body() updateGameDto: UpdateGameDto) {
-    return await this.gameService.update(id, updateGameDto)
+    const { data, error } = await this.gameService.update(id, updateGameDto)
+
+    if (error) {
+      switch (error.code) {
+        case RoomError.NOT_FOUND:
+          throw new NotFoundException(`There is no room under id ${id}`)
+        case RoomError.NOT_OWNER:
+          throw new BadRequestException(`You are not the owner of room ${id}`)
+        case RoomError.ALREADY_EXISTS:
+          throw new BadRequestException(
+            `A room with name ${updateGameDto.name} already exists`
+          )
+        default:
+          throw new BadRequestException(error.message)
+      }
+    }
+
+    // this.gameGateway.server.to(room.id).emit('room:remove', room.get())
   }
 
   // ****** //

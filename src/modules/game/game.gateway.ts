@@ -1,26 +1,26 @@
-import { Inject, Logger, forwardRef } from '@nestjs/common';
+import { Inject, Logger, forwardRef } from '@nestjs/common'
 
-import { Server, Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io'
 
 import {
   ConnectedSocket,
   MessageBody,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
-} from '@nestjs/websockets';
+  WebSocketServer
+} from '@nestjs/websockets'
 
-import { UserSocket } from '@/core/types/socket';
+import { UserSocket } from '@/core/types/socket'
 
-import { GameService } from './game.service';
+import { GameService } from './game.service'
 
 @WebSocketGateway({
   namespace: '/game',
-  transport: ['websocket', 'polling'],
+  transport: ['websocket', 'polling']
 })
 export class GameGateway {
   @WebSocketServer()
-  server: Server;
+  server: Server
 
   // ************ //
   // CONSTRUCTORS //
@@ -28,14 +28,14 @@ export class GameGateway {
 
   constructor(
     @Inject(forwardRef(() => GameService))
-    private gameService: GameService,
+    private gameService: GameService
   ) {}
 
   // ****** //
   // LOGGER //
   // ****** //
 
-  private readonly logger = new Logger(GameService.name);
+  private readonly logger = new Logger(GameService.name)
 
   // ***************** //
   // GATEWAY FUNCTIONS //
@@ -46,7 +46,7 @@ export class GameGateway {
   // **************** //
 
   async handleConnection(client: Socket) {
-    this.logger.verbose(`Client ${client.id} connected to /game socket`);
+    this.logger.verbose(`Client ${client.id} connected to /game socket`)
   }
 
   // **************** //
@@ -56,64 +56,75 @@ export class GameGateway {
   handleDisconnect(client: UserSocket) {
     // const roomId = client.handshake.query.roomId as string
     // this.gameService.leave(roomId, client.request.user.id).catch((err) => {})
-    this.gameService.leaveAll(client.request.user.id);
-    this.logger.verbose(`Client ${client.id} disconnected`);
-    client.emit('disconnection', 'Successfully disconnected from game server');
+    this.gameService.leaveAll(client.request.user.id)
+    this.logger.verbose(`Client ${client.id} disconnected`)
+    client.emit('disconnection', 'Successfully disconnected from game server')
   }
 
   @SubscribeMessage('room:join')
   async handleJoin(
     @MessageBody() roomId: string,
-    @ConnectedSocket() client: UserSocket,
+    @ConnectedSocket() client: UserSocket
   ): Promise<void> {
-    const room = await this.gameService.findOne(roomId);
+    const { data: room, error: roomError } = await this.gameService.findOne(
+      roomId
+    )
 
-    if (!room) {
-      client.emit('error', `Game ${roomId} not found`);
-      return;
+    if (roomError) {
+      client.emit('error', roomError)
+      return
     }
 
-    this.gameService.join(roomId, client.request.user.id).catch((err) => {});
+    const { error } = await this.gameService.join(
+      roomId,
+      client.request.user.id
+    )
 
-    client.join(roomId);
+    if (error) {
+      client.emit('error', error)
+      return
+    }
 
-    this.server.to(roomId).emit('room:update', room.get());
+    client.join(roomId)
+
+    this.server.to(roomId).emit('room:update', room.get())
   }
 
   @SubscribeMessage('room:leave')
   async handleLeave(
     @MessageBody() roomId: string,
-    @ConnectedSocket() client: Socket,
+    @ConnectedSocket() client: Socket
   ): Promise<void> {
-    const room = await this.gameService.findOne(roomId);
+    const { error } = await this.gameService.findOne(roomId)
 
-    if (!room) {
-      client.emit('error', `Room ${roomId} not found`);
-      return;
+    if (error) {
+      client.emit('error', error)
+      return
     }
 
-    client.leave(roomId);
+    client.leave(roomId)
   }
 
   @SubscribeMessage('game:start')
   async handleStart(
     @MessageBody() roomId: string,
-    @ConnectedSocket() client: UserSocket,
+    @ConnectedSocket() client: UserSocket
   ): Promise<void> {
-    const room = await this.gameService.findOne(roomId);
+    const { data: room, error } = await this.gameService.findOne(roomId)
+
+    // todo: to test after implementing all the game logic
+    if (error) {
+      client.emit('error', error)
+      return
+    }
 
     // todo: check if the room is full and not started
 
-    if (!room) {
-      client.emit('error', `Room ${roomId} not found`);
-      return;
-    }
+    // if (room.get().owner.id !== client.request.user.id) {
+    //   client.emit('error', 'You are not the owner of this room')
+    //   return
+    // }
 
-    if (room.get().owner.id !== client.request.user.id) {
-      client.emit('error', 'You are not the owner of this room');
-      return;
-    }
-
-    room.startGame();
+    room.startGame()
   }
 }
