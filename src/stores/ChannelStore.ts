@@ -42,11 +42,11 @@ export const useChannelStore = defineStore('channels', {
     ): Promise<Channel> {
       const channelParam = {
         isDm: false,
-        channelName,
-        ownerId,
+        name: channelName,
+        ownerId: ownerId,
         membersIds: [ownerId, ...receiversId],
-        passwordRequired,
-        password
+        passwordRequired: passwordRequired,
+        password: password
       }
       const response: Channel = await fetcher.post(
         `/channels/create-group-channel`,

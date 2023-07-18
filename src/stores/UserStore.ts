@@ -291,7 +291,7 @@ export const useUserStore = defineStore('users', {
       }
       try {
         const response = await this.fetchGroupChannelsList(this.loggedUser.id)
-        this.dmList = response
+        this.groupChannelsList = response
         console.log(
           `[UserStore] - groupChannelsList : `,
           this.groupChannelsList

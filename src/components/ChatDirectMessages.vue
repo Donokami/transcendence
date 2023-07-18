@@ -4,12 +4,13 @@
     <a class="tab tab-bordered text-2xl font-bold mb-8" @click="toggleList">Channels</a>
   </div>
   <div>
-    <label for="my-modal-3"
+    <button for="my-modal-3"
       class="btn bg-white border-2 border-black mb-2 text-black hover:bg-black hover:border-black hover:text-white"
-      type="button">
+      type="button" @click="toggleModal">
       SEND A NEW DM
-    </label>
-    <chat-direct-messages-modal></chat-direct-messages-modal>
+    </button>
+    <chat-direct-messages-modal :showModal="showModal"
+      @update:showModal="showModal = $event"></chat-direct-messages-modal>
     <chat-direct-messages-list v-if="hasDms"></chat-direct-messages-list>
   </div>
 </template>
@@ -36,6 +37,13 @@ import ChatDirectMessagesModal from '@/components/ChatDirectMessagesModal.vue'
 const userStore = useUserStore()
 
 const emit = defineEmits(['list-state-changed'])
+
+let showModal = ref(false);
+
+function toggleModal(): void {
+  showModal.value = !showModal.value;
+  console.log(`[ChatDirectMessages] - showModal : `, showModal.value);
+}
 
 // **************************** //
 // loggedUser RELATED VARIABLES //
