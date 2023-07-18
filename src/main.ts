@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { SocketIoAdapter } from '@/core/websockets/auth-adapter';
 import * as express from 'express';
+import * as fs from 'fs/promises';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config({ path: '../envs/.env' });
@@ -19,12 +20,12 @@ async function bootstrap() {
     credentials: true,
   });
 
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
+
   app.useWebSocketAdapter(new SocketIoAdapter(app, configService));
 
   app.setGlobalPrefix('api');
-
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
   const config = new DocumentBuilder()
     .setTitle('Transcendence API')
@@ -33,6 +34,13 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+
+  const dir = './uploads';
+  try {
+    await fs.access(dir);
+  } catch {
+    await fs.mkdir(dir, { recursive: true });
+  }
 
   await app.listen(configService.get('PORT'));
 }

@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -12,6 +13,10 @@ import {
   Friendship,
   FriendshipStatus,
 } from '@/modules/social/entities/friendship.entity';
+
+import { randomUUID } from 'crypto';
+import * as path from 'path';
+import * as fs from 'fs';
 
 import { User } from './user.entity';
 import { UserDto } from './dtos/user.dto';
@@ -136,5 +141,31 @@ export class UsersService {
     }
 
     return await this.userRepository.save(user);
+  }
+
+  // ******** //
+  // SaveFile //
+  // ******** //
+
+  async saveFile(file: Express.Multer.File): Promise<string> {
+    const filename = randomUUID() + path.extname(file.originalname);
+    const filePath = './uploads/' + filename;
+    await fs.promises.writeFile(filePath, file.buffer);
+
+    return filePath;
+  }
+
+  // ********** //
+  // DeleteFile //
+  // ********** //
+
+  async deleteFile(filePath: string) {
+    try {
+      await fs.promises.unlink(filePath);
+    } catch (error) {
+      throw new BadRequestException('Invalid file path');
+    }
+
+    return;
   }
 }

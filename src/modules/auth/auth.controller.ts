@@ -101,5 +101,6 @@ export class AuthController {
   @Post('/signout')
   signOut(@Session() session: any) {
     session.userId = null;
+    session.twoFactorUserId = null;
   }
 }
