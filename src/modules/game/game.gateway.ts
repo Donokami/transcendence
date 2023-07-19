@@ -70,20 +70,22 @@ export class GameGateway {
       roomId
     )
 
-    if (roomError) {
-      client.emit('error', roomError)
-      return
-    }
+    // if (roomError) {
+    //   this.logger.error(roomError)
+    //   client.emit('error', roomError)
+    //   return
+    // }
 
     const { error } = await this.gameService.join(
       roomId,
       client.request.user.id
     )
 
-    if (error) {
-      client.emit('error', error)
-      return
-    }
+    // if (error) {
+    //   client.emit('error', error)
+    //   this.logger.error(error)
+    //   return
+    // }
 
     client.join(roomId)
 
@@ -99,6 +101,7 @@ export class GameGateway {
 
     if (error) {
       client.emit('error', error)
+      this.logger.error(error)
       return
     }
 
