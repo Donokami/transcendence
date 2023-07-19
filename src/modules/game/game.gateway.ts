@@ -1,4 +1,4 @@
-import { Inject, Logger, forwardRef } from '@nestjs/common'
+import { Inject, Logger, UseFilters, forwardRef } from '@nestjs/common'
 
 import { Server, Socket } from 'socket.io'
 
@@ -10,14 +10,17 @@ import {
   WebSocketServer
 } from '@nestjs/websockets'
 
-import { UserSocket } from '@/core/types/socket'
+import { IUserSocket } from '@/core/types/socket'
 
 import { GameService } from './game.service'
+import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
+import { RoomNotFound } from '@/core/exceptions/game'
 
 @WebSocketGateway({
   namespace: '/game',
   transport: ['websocket', 'polling']
 })
+@UseFilters(new GlobalExceptionFilter())
 export class GameGateway {
   @WebSocketServer()
   server: Server
@@ -53,7 +56,7 @@ export class GameGateway {
   // handleDisconnect //
   // **************** //
 
-  handleDisconnect(client: UserSocket) {
+  handleDisconnect(client: IUserSocket) {
     // const roomId = client.handshake.query.roomId as string
     // this.gameService.leave(roomId, client.request.user.id).catch((err) => {})
     this.gameService.leaveAll(client.request.user.id)
@@ -62,24 +65,17 @@ export class GameGateway {
   }
 
   @SubscribeMessage('room:join')
-  async handleJoin(
+  handleJoin(
     @MessageBody() roomId: string,
-    @ConnectedSocket() client: UserSocket
-  ): Promise<void> {
-    const { data: room, error: roomError } = await this.gameService.findOne(
-      roomId
-    )
+    @ConnectedSocket() client: IUserSocket
+  ) {
+    const room = this.gameService.findOne(roomId)
 
-    // if (roomError) {
-    //   this.logger.error(roomError)
-    //   client.emit('error', roomError)
-    //   return
-    // }
+    if (!room) {
+      throw new RoomNotFound()
+    }
 
-    const { error } = await this.gameService.join(
-      roomId,
-      client.request.user.id
-    )
+    this.gameService.join(roomId, client.request.user.id)
 
     // if (error) {
     //   client.emit('error', error)
@@ -97,13 +93,7 @@ export class GameGateway {
     @MessageBody() roomId: string,
     @ConnectedSocket() client: Socket
   ): Promise<void> {
-    const { error } = await this.gameService.findOne(roomId)
-
-    if (error) {
-      client.emit('error', error)
-      this.logger.error(error)
-      return
-    }
+    await this.gameService.findOne(roomId)
 
     client.leave(roomId)
   }
@@ -111,15 +101,9 @@ export class GameGateway {
   @SubscribeMessage('game:start')
   async handleStart(
     @MessageBody() roomId: string,
-    @ConnectedSocket() client: UserSocket
+    @ConnectedSocket() client: IUserSocket
   ): Promise<void> {
-    const { data: room, error } = await this.gameService.findOne(roomId)
-
-    // todo: to test after implementing all the game logic
-    if (error) {
-      client.emit('error', error)
-      return
-    }
+    const room = await this.gameService.findOne(roomId)
 
     // todo: check if the room is full and not started
 

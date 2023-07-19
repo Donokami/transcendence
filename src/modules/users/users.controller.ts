@@ -24,20 +24,21 @@ import { FileUploadExceptionFilter } from '@/core/filters/file-upload-exception.
 import { User } from './user.entity'
 import { UsersService } from './users.service'
 import { UpdateUserDto } from './dtos/update-user.dto'
-import { UserDto } from '@/modules/users/dtos/user.dto'
 import { CurrentUser } from './decorators/current-user.decorator'
 
 import { OwnershipGuard } from './guards/ownership.guard'
 import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate'
-import { ApiOkResponse, ApiOperation, ApiQuery } from '@nestjs/swagger'
+import { ApiOkResponse, ApiOperation } from '@nestjs/swagger'
 import { PaginateQueryOptions } from '@/core/decorators/pagination'
 
 import { FileInterceptor } from '@nestjs/platform-express'
 import { memoryStorage } from 'multer'
 import * as sharp from 'sharp'
+import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
+import { UserNotFound } from '@/core/exceptions'
 
 @Controller('users')
-@Serialize(UserDto)
+@UseFilters(new GlobalExceptionFilter())
 export class UsersController {
   // *********** //
   // CONSTRUCTOR //
@@ -75,7 +76,7 @@ export class UsersController {
     description: 'Get all users',
     tags: ['users']
   })
-  getAllUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
+  getAllUsers(@Paginate() query: PaginateQuery) {
     return this.usersService.findAll(query)
   }
 
@@ -116,6 +117,12 @@ export class UsersController {
     })
   )
   @UseFilters(FileUploadExceptionFilter)
+  @ApiOperation({
+    summary: 'Upload file',
+    operationId: 'uploadFile',
+    description: 'Upload file',
+    tags: ['users']
+  })
   async uploadFile(
     @CurrentUser() user: User,
     @UploadedFile() file: Express.Multer.File
@@ -154,8 +161,7 @@ export class UsersController {
   })
   whoAmI(@CurrentUser() user: User): User {
     if (!user) {
-      this.logger.error(`User not found.`)
-      throw new NotFoundException(`User not found.`)
+      throw new UserNotFound()
     }
     return user
   }
@@ -179,8 +185,7 @@ export class UsersController {
   async findUserById(@Param('id') id: string): Promise<User> {
     const user = await this.usersService.findOneById(id)
     if (!user) {
-      this.logger.error(`User with ID : ${id} not found.`)
-      throw new NotFoundException(`User with ID : ${id} not found.`)
+      throw new UserNotFound()
     }
     return user
   }
@@ -200,8 +205,7 @@ export class UsersController {
   async findUserByIdWithStats(@Param('id') id: string): Promise<User> {
     const user = await this.usersService.findOneByIdWithStats(id)
     if (!user) {
-      this.logger.error(`User with ID : ${id} not found.`)
-      throw new NotFoundException(`User with ID : ${id} not found.`)
+      throw new UserNotFound()
     }
     return user
   }

@@ -7,7 +7,7 @@ import {
 
 import { type Observable } from 'rxjs'
 
-import { type RequestWithUser } from '@/core/types/request-with-user'
+import { type IRequestWithUser } from '@/core/types/request-with-user'
 
 import { GameService } from '../game.service'
 
@@ -22,10 +22,10 @@ export class OwnershipGuard implements CanActivate {
   ): boolean | Promise<boolean> | Observable<boolean> {
     return new Promise(async (resolve) => {
       try {
-        const req = context.switchToHttp().getRequest<RequestWithUser>()
+        const req = context.switchToHttp().getRequest<IRequestWithUser>()
         const roomId = req.params.id
 
-        const { data: room } = await this.gameService.findOne(roomId)
+        const room = await this.gameService.findOne(roomId)
 
         if (!room) {
           this.logger.warn(`Room ${roomId} not found`)

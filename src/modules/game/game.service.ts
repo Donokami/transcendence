@@ -15,8 +15,8 @@ import { GameGateway } from './game.gateway'
 import { Room, type RoomObject } from './room'
 import { PaginateQuery, Paginated } from 'nestjs-paginate'
 import { paginate } from '@/core/utils/pagination'
-import { response, type ServiceResponse } from '@/core/utils/response'
-import { RoomError } from '@/core/constants/errors'
+import { RoomAlreadyExists, RoomNotFound } from '@/core/exceptions/game'
+import { UserNotFound } from '@/core/exceptions'
 
 @Injectable()
 export class GameService {
@@ -30,36 +30,27 @@ export class GameService {
 
   private readonly logger = new Logger(GameService.name)
 
-  async findOne(id: string): Promise<ServiceResponse<Room>> {
-    return response(this.rooms.find((room) => room.get().id === id))
+  findOne(id: string): Room {
+    return this.rooms.find((room) => room.get().id === id)
   }
 
-  async findAll(
-    query: PaginateQuery
-  ): Promise<ServiceResponse<Promise<Paginated<RoomObject>>>> {
-    return response(
-      paginate(
-        query,
-        this.rooms.map((room) => room.get())
-      )
+  findAll(query: PaginateQuery): Promise<Paginated<RoomObject>> {
+    return paginate(
+      query,
+      this.rooms.map((room) => room.get())
     )
   }
 
   // todo: create a function to retrieve all rooms that are not full and another public
 
-  async create(
-    createGameDto: CreateGameDto
-  ): Promise<ServiceResponse<RoomObject>> {
+  async create(createGameDto: CreateGameDto): Promise<RoomObject> {
     const user = await this.userService.findOneById(
       createGameDto.owner as unknown as string
     )
 
     if (!user) {
       this.logger.warn(`User ${createGameDto.owner} not found`)
-      return response(null, {
-        message: `There is no user under id ${createGameDto.owner}`,
-        code: RoomError.NOT_FOUND
-      })
+      throw new UserNotFound()
     }
 
     if (
@@ -68,17 +59,7 @@ export class GameService {
           g.get().name === (createGameDto.name || user.username + "'s room")
       )
     ) {
-      this.logger.warn(
-        `A room with name ${
-          createGameDto.name || user.username + "'s room"
-        } already exists`
-      )
-      return response(null, {
-        message: `A room with name ${
-          createGameDto.name || user.username + "'s room"
-        } already exists`,
-        code: RoomError.ALREADY_EXISTS
-      })
+      throw new RoomAlreadyExists()
     }
 
     const room = new Room(
@@ -92,20 +73,14 @@ export class GameService {
 
     this.rooms.push(room)
 
-    return response(room.get())
+    return room.get()
   }
 
-  async update(
-    id: string,
-    updateGameDto: UpdateGameDto
-  ): Promise<ServiceResponse<RoomObject>> {
-    const { data: room, error } = await this.findOne(id)
+  update(id: string, updateGameDto: UpdateGameDto): RoomObject {
+    const room = this.findOne(id)
 
-    if (error) {
-      if (error.code === RoomError.NOT_FOUND) {
-        this.logger.warn(`Room ${id} not found`)
-      }
-      return response(null, error)
+    if (!room) {
+      throw new RoomNotFound()
     }
 
     const updatedGame: RoomObject = { ...room.get(), ...updateGameDto }
@@ -114,53 +89,48 @@ export class GameService {
 
     this.logger.verbose(`Updating room ${id}`)
 
-    return response(updatedGame)
+    return updatedGame
   }
 
-  async delete(id: string): Promise<ServiceResponse<RoomObject>> {
-    const { data: room, error } = await this.findOne(id)
+  async delete(id: string): Promise<RoomObject> {
+    const room = this.findOne(id)
 
-    if (error) {
-      if (error.code === RoomError.NOT_FOUND) {
-        this.logger.warn(`Room ${id} not found`)
-      }
-      return response(null, error)
+    if (!room) {
+      throw new RoomNotFound()
     }
 
     this.logger.verbose(`Removing room ${id}`)
 
     this.gameGateway.server.to(room.id).emit('room:remove', room.get())
 
-    return response(room.get())
+    return room.get()
   }
 
-  async join(id: string, userId: string): Promise<ServiceResponse<RoomObject>> {
-    const { data: room, error } = await this.findOne(id)
+  async join(id: string, userId: string): Promise<RoomObject> {
+    const room = this.findOne(id)
     const user = await this.userService.findOneById(userId)
 
-    if (error) {
-      if (error.code === RoomError.NOT_FOUND) {
-        this.logger.warn(`Room ${id} not found`)
-      }
-      return response(null, error)
+    if (!room) {
+      throw new RoomNotFound()
     }
 
-    try {
-      room.join(user)
-    } catch (error) {
-      return response(null, error) // todo: to test
+    if (!user) {
+      this.logger.warn(`User ${userId} not found`)
+      throw new UserNotFound()
     }
+
+    room.join(user)
 
     this.logger.verbose(`Joining user ${userId} to room ${id}`)
 
     this.gameGateway.server.to(room.id).emit('room:update', room.get())
 
-    return response(room.get())
+    return room.get()
   }
 
   // todo: rewrite theses functions
-  async kick(id: string, userId: string): Promise<ServiceResponse<RoomObject>> {
-    const { data, error } = await this.leave(id, userId)
+  async kick(id: string, userId: string): Promise<RoomObject> {
+    const room = this.leave(id, userId)
 
     this.logger.verbose(`Kicking user ${userId} from room ${id}`)
 
@@ -168,7 +138,7 @@ export class GameService {
       userId
     })
 
-    return response(data)
+    return room
   }
 
   async leaveAll(userId: string) {
@@ -179,21 +149,17 @@ export class GameService {
   }
 
   // todo: crappy code, to clean up and secure
-  async leave(
-    id: string,
-    userId: string
-  ): Promise<ServiceResponse<RoomObject>> {
-    const { data: room } = await this.findOne(id)
+  async leave(id: string, userId: string): Promise<RoomObject> {
+    const room = this.findOne(id)
     const user = await this.userService.findOneById(userId)
 
     if (!room) {
-      this.logger.warn(`Game ${id} not found`)
-      throw new NotFoundException(`There is no room under id ${id}`)
+      throw new RoomNotFound()
     }
 
     if (!user) {
       this.logger.warn(`User ${userId} not found`)
-      throw new NotFoundException(`There is no user under id ${userId}`)
+      throw new UserNotFound()
     }
 
     room.leave(user)
@@ -220,6 +186,6 @@ export class GameService {
 
     this.logger.verbose(`Removing user ${userId} from room ${id}`)
 
-    return response(room.get())
+    return room.get()
   }
 }

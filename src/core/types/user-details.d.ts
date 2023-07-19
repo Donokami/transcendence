@@ -1,5 +1,5 @@
-export interface UserDetails {
-  username: string;
-  email: string;
-  profilePicture: string;
+export interface IUserDetails {
+  username: string
+  email: string
+  profilePicture: string
 }

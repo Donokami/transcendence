@@ -25,10 +25,10 @@ export const paginate = async <T>(
       totalItems: total,
       currentPage: page,
       totalPages: lastPage,
-      sortBy: null,
-      searchBy: null,
-      search: null,
-      select: null
+      sortBy: undefined,
+      searchBy: undefined,
+      search: undefined,
+      select: undefined
     },
     links: {
       current: `${query.path}?limit=${limit}&page=${page}`

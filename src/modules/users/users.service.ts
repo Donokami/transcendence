@@ -1,10 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-  Logger,
-  BadRequestException
-} from '@nestjs/common'
+import { Injectable, Logger, BadRequestException } from '@nestjs/common'
 import { In, Repository } from 'typeorm'
 import { InjectRepository } from '@nestjs/typeorm'
 import { ConfigService } from '@nestjs/config'
@@ -17,7 +11,7 @@ import {
 } from 'nestjs-paginate'
 
 import { type Channel } from '@/modules/channels/entities/channel.entity'
-import { type UserDetails } from '@/core/types/user-details'
+import { type IUserDetails } from '@/core/types/user-details'
 import {
   Friendship,
   FriendshipStatus
@@ -28,7 +22,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 
 import { User } from './user.entity'
-import { UserDto } from './dtos/user.dto'
+import { UserNotFound, UserNotInChannel } from '@/core/exceptions'
 
 @Injectable()
 export class UsersService {
@@ -67,7 +61,7 @@ export class UsersService {
   // createOauth //
   // *********** //
 
-  createOauth(details: UserDetails) {
+  createOauth(details: IUserDetails) {
     const user = this.userRepository.create(details)
     return this.userRepository.save(user)
   }
@@ -133,7 +127,19 @@ export class UsersService {
         pointsScored: [FilterOperator.EQ, FilterSuffix.NOT],
         pointsConceded: [FilterOperator.EQ, FilterSuffix.NOT],
         pointsDifference: [FilterOperator.EQ, FilterSuffix.NOT]
-      }
+      },
+      select: [
+        'id',
+        'username',
+        'rank',
+        'gamesPlayed',
+        'win',
+        'loss',
+        'winRate',
+        'pointsScored',
+        'pointsConceded',
+        'pointsDifference'
+      ]
     })
   }
 
@@ -251,8 +257,7 @@ export class UsersService {
   async remove(id: string): Promise<User> {
     const user = await this.findOneById(id)
     if (!user) {
-      this.logger.warn(`User with ID : ${id} not found`)
-      throw new NotFoundException(`User with ID : ${id} not found`)
+      throw new UserNotFound()
     }
     return await this.userRepository.remove(user)
   }
@@ -264,8 +269,7 @@ export class UsersService {
   async update(id: string, attrs: Partial<User>): Promise<User> {
     const user = await this.findOneById(id)
     if (!user) {
-      this.logger.warn(`User with ID : ${id} not found`)
-      throw new NotFoundException(`User with ID : ${id} not found`)
+      throw new UserNotFound()
     }
     Object.assign(user, attrs)
     return await this.userRepository.save(user)
@@ -282,8 +286,7 @@ export class UsersService {
     })
 
     if (!user) {
-      this.logger.warn(`User with ID : ${id} not found`)
-      throw new NotFoundException(`User with ID : ${id} not found`)
+      throw new UserNotFound()
     }
 
     const isBanned = user.bannedChannels?.find(
@@ -291,10 +294,7 @@ export class UsersService {
     )
 
     if (isBanned) {
-      this.logger.warn(`User with ID : ${id} is banned from this channel`)
-      throw new ForbiddenException(
-        `User with ID : ${id} is banned from this channel`
-      )
+      throw new UserNotInChannel()
     }
 
     return await this.userRepository.save(user)

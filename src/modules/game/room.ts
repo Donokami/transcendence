@@ -1,9 +1,15 @@
 import { MAX_PLAYERS } from '@/core/constants'
 import { Logger } from '@nestjs/common'
 import { randomUUID } from 'crypto'
-import { type User } from '../users/user.entity'
+import { User } from '../users/user.entity'
 import { GameGateway } from './game.gateway'
 import { Game } from './game-engine'
+import {
+  RoomNeedsAnOwner,
+  UserAlreadyInRoom,
+  UserAlreadyInvited,
+  UserNotInvited
+} from '@/core/exceptions'
 
 export enum RoomStatus {
   OPEN = 'open',
@@ -48,7 +54,7 @@ export class Room implements RoomObject {
     private readonly gameGateway: GameGateway
   ) {
     if (!owner) {
-      throw new Error('Room must have an owner')
+      throw new RoomNeedsAnOwner()
     }
 
     this.id = randomUUID()
@@ -60,8 +66,6 @@ export class Room implements RoomObject {
     this.isPrivate = isPrivate || false
 
     this.owner = owner
-
-    this.players.push(owner)
   }
 
   public get(): RoomObject {
@@ -80,11 +84,11 @@ export class Room implements RoomObject {
 
   public join(user: User) {
     if (this.players.find((u) => u.id === user.id)) {
-      throw new Error('User is already in the room')
+      throw new UserAlreadyInRoom()
     }
 
     if (this.isPrivate && !this.invited.find((u) => u.id === user.id)) {
-      throw new Error('User is not invited')
+      throw new UserNotInvited()
     }
 
     if (this.players.length < MAX_PLAYERS && this.status === RoomStatus.OPEN) {
@@ -112,7 +116,12 @@ export class Room implements RoomObject {
 
   public invite(user: User) {
     if (this.invited.find((u) => u.id === user.id)) {
-      throw new Error('User is already invited')
+      throw new UserAlreadyInvited()
+    }
+
+    if (this.players.find((u) => u.id === user.id)) {
+      // todo: to test
+      throw new UserAlreadyInRoom()
     }
 
     this.invited.push(user)

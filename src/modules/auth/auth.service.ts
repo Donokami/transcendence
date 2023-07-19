@@ -12,8 +12,14 @@ import { promisify } from 'util'
 import { randomBytes, scrypt as _scrypt } from 'crypto'
 
 import { UsersService } from '@/modules/users/users.service'
-import { type UserDetails } from '@/core/types/user-details'
+import { type IUserDetails } from '@/core/types/user-details'
 import { QueryFailedError } from 'typeorm'
+import {
+  InvalidPassword,
+  InvalidTwoFaToken,
+  TwoFaDisabled,
+  UserNotFound
+} from '@/core/exceptions'
 
 const scrypt = promisify(_scrypt)
 
@@ -39,7 +45,7 @@ export class AuthService {
   // validateUser //
   // ************ //
 
-  async validateUser(details: UserDetails) {
+  async validateUser(details: IUserDetails) {
     const user = await this.usersService.findOneByEmailWithAuthInfos(
       details.email
     )
@@ -83,12 +89,11 @@ export class AuthService {
   async verifyTwoFactorToken(userId: string, token: string) {
     const user = await this.usersService.findOneById(userId)
     if (!user) {
-      this.logger.warn('User not found')
-      throw new UnauthorizedException('User not found')
+      throw new UserNotFound()
     }
     if (!user.isTwoFactorEnabled) {
       this.logger.warn('2FA is disabled')
-      throw new UnauthorizedException('2FA is disabled')
+      throw new TwoFaDisabled()
     }
 
     const isValid = authenticator.verify({
@@ -98,7 +103,7 @@ export class AuthService {
 
     if (!isValid) {
       this.logger.warn('Invalid 2FA token')
-      throw new UnauthorizedException('Invalid 2FA token')
+      throw new InvalidTwoFaToken()
     }
 
     return user
@@ -109,31 +114,16 @@ export class AuthService {
   // ******** //
 
   async register(email: string, password: string, username: string) {
-    try {
-      const salt = randomBytes(8).toString('hex')
-      const hash = (await scrypt(password, salt, 32)) as Buffer
-      const hashedPassword = salt + '.' + hash.toString('hex')
+    const salt = randomBytes(8).toString('hex')
+    const hash = (await scrypt(password, salt, 32)) as Buffer
+    const hashedPassword = salt + '.' + hash.toString('hex')
 
-      const newUser = await this.usersService.create(
-        email,
-        hashedPassword,
-        username
-      )
-      return newUser
-    } catch (err: any) {
-      if (err instanceof QueryFailedError) {
-        console.log(err)
-
-        switch (err.driverError.code) {
-          case 'SQLITE_CONSTRAINT' || '23505': // todo: check error code for postgres
-            this.logger.warn(err.driverError.message)
-            throw new BadRequestException(err.driverError.message)
-          default:
-            this.logger.warn('Unknown error : ', err)
-            throw new BadRequestException('Unknown error')
-        }
-      }
-    }
+    const newUser = await this.usersService.create(
+      email,
+      hashedPassword,
+      username
+    )
+    return newUser
   }
 
   // ****** //
@@ -144,7 +134,7 @@ export class AuthService {
     const user = await this.usersService.findOneByEmailWithAuthInfos(email)
     if (!user) {
       this.logger.warn('User not found')
-      throw new NotFoundException('User not found')
+      throw new UserNotFound()
     }
 
     const [salt, storedHash] = user.password.split('.')
@@ -153,7 +143,7 @@ export class AuthService {
 
     if (storedHash !== hash.toString('hex')) {
       this.logger.warn('Bad password')
-      throw new BadRequestException('Bad password')
+      throw new InvalidPassword()
     }
 
     return user

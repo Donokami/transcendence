@@ -397,10 +397,10 @@ import {
   Logger,
   NotFoundException,
   UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
+  ValidationPipe
+} from '@nestjs/common'
 
-import { Server, Socket } from 'socket.io';
+import { Server, Socket } from 'socket.io'
 
 import {
   ConnectedSocket,
@@ -409,30 +409,30 @@ import {
   OnGatewayDisconnect,
   SubscribeMessage,
   WebSocketGateway,
-  WebSocketServer,
-} from '@nestjs/websockets';
+  WebSocketServer
+} from '@nestjs/websockets'
 
-import { UserSocket } from '@/core/types/socket';
+import { IUserSocket } from '@/core/types/socket'
 
-import { ChannelsService } from '@/modules/channels/channels.service';
-import { UsersService } from '@/modules/users/users.service';
+import { ChannelsService } from '@/modules/channels/channels.service'
+import { UsersService } from '@/modules/users/users.service'
 
-import { AddMessageDto } from './dtos/add-message.dto';
-import { BanUserDto } from './dtos/ban-user.dto';
-import { JoinChannelDto } from './dtos/join-channel.dto';
-import { KickUserDto } from './dtos/kick-user.dto';
-import { LeaveChannelDto } from './dtos/leave-channel.dto';
+import { AddMessageDto } from './dtos/add-message.dto'
+import { BanUserDto } from './dtos/ban-user.dto'
+import { JoinChannelDto } from './dtos/join-channel.dto'
+import { KickUserDto } from './dtos/kick-user.dto'
+import { LeaveChannelDto } from './dtos/leave-channel.dto'
 
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
   namespace: '/chat',
-  transport: ['websocket', 'polling'],
+  transport: ['websocket', 'polling']
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  server: Server
 
-  connectedUsers = new Map<string, string>();
+  connectedUsers = new Map<string, string>()
 
   // ************ //
   // CONSTRUCTORS //
@@ -440,14 +440,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   constructor(
     private readonly userService: UsersService,
-    private readonly channelService: ChannelsService,
+    private readonly channelService: ChannelsService
   ) {}
 
   // ****** //
   // LOGGER //
   // ****** //
 
-  private logger = new Logger(ChatGateway.name);
+  private logger = new Logger(ChatGateway.name)
 
   // ***************** //
   // GATEWAY FUNCTIONS //
@@ -457,41 +457,45 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // handleConnection //
   // **************** //
 
-  async handleConnection(@ConnectedSocket() client: UserSocket): Promise<void> {
-    const user = client.request.user;
+  async handleConnection(
+    @ConnectedSocket() client: IUserSocket
+  ): Promise<void> {
+    const user = client.request.user
 
-    this.connectedUsers.set(client.id, user.id);
+    this.connectedUsers.set(client.id, user.id)
     this.logger.verbose(
-      `User with ID : ${user.id} added to the map of connected users`,
-    );
+      `User with ID : ${user.id} added to the map of connected users`
+    )
 
-    client.emit('connection', 'Successfully connected to chat server.');
+    client.emit('connection', 'Successfully connected to chat server.')
   }
 
   // **************** //
   // handleDisconnect //
   // **************** //
 
-  async handleDisconnect(@ConnectedSocket() client: UserSocket): Promise<void> {
-    const userId = this.connectedUsers.get(client.id);
+  async handleDisconnect(
+    @ConnectedSocket() client: IUserSocket
+  ): Promise<void> {
+    const userId = this.connectedUsers.get(client.id)
     if (!userId) {
       this.logger.warn(
-        `Client ${client.id} is already disconnected from chat server`,
-      );
+        `Client ${client.id} is already disconnected from chat server`
+      )
       throw new NotFoundException(
-        `Client ${client.id} is already disconnected from chat server)`,
-      );
+        `Client ${client.id} is already disconnected from chat server)`
+      )
     }
 
-    this.connectedUsers.delete(client.id);
+    this.connectedUsers.delete(client.id)
     this.logger.verbose(
-      `User with ID : ${userId} deleted from connected users map`,
-    );
+      `User with ID : ${userId} deleted from connected users map`
+    )
 
-    const user = await this.userService.findOneById(userId);
+    const user = await this.userService.findOneById(userId)
     if (!user) {
-      this.logger.warn(`User ${userId} not found in database`);
-      throw new NotFoundException(`User ${userId} not found in database)`);
+      this.logger.warn(`User ${userId} not found in database`)
+      throw new NotFoundException(`User ${userId} not found in database)`)
     }
 
     if (user && user.channels) {
@@ -500,9 +504,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           .to(channel.id)
           .emit(
             'chat:disconnect',
-            `User with ID : ${userId} disconnected from chat server`,
-          );
-      });
+            `User with ID : ${userId} disconnected from chat server`
+          )
+      })
     }
   }
 }
