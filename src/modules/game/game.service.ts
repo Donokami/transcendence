@@ -64,12 +64,19 @@ export class GameService {
 
     if (
       this.rooms.find(
-        (g) => g.get().name === createGameDto.name || user.username + "'s room"
+        (g) =>
+          g.get().name === (createGameDto.name || user.username + "'s room")
       )
     ) {
-      this.logger.warn(`A room with name ${createGameDto.name} already exists`)
+      this.logger.warn(
+        `A room with name ${
+          createGameDto.name || user.username + "'s room"
+        } already exists`
+      )
       return response(null, {
-        message: `A room with name ${createGameDto.name} already exists`,
+        message: `A room with name ${
+          createGameDto.name || user.username + "'s room"
+        } already exists`,
         code: RoomError.ALREADY_EXISTS
       })
     }
