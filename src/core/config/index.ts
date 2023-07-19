@@ -1,7 +1,7 @@
-import { registerAs } from '@nestjs/config';
-import { z } from 'zod';
-import { generateErrorMessage, type ErrorMessageOptions } from 'zod-error';
-import 'dotenv/config';
+import { registerAs } from '@nestjs/config'
+import { z } from 'zod'
+import { generateErrorMessage, type ErrorMessageOptions } from 'zod-error'
+import 'dotenv/config'
 
 export default registerAs('transcendence-config', () => {
   const values = {
@@ -23,8 +23,8 @@ export default registerAs('transcendence-config', () => {
     uploadDir: process.env.UPLOAD_DIR,
 
     socketPort: parseInt(process.env.SOCKET_PORT),
-    socketOrigin: process.env.SOCKET_ORIGIN,
-  };
+    socketOrigin: process.env.SOCKET_ORIGIN
+  }
 
   const schema = z.object({
     nodeEnv: z.string(),
@@ -42,25 +42,27 @@ export default registerAs('transcendence-config', () => {
     fortyTwoAppSecret: z.string(),
     fortyTwoAppRedirectURI: z.string(),
 
+    uploadDir: z.string(),
+
     socketPort: z.number(),
-    socketOrigin: z.string(),
-  });
+    socketOrigin: z.string()
+  })
 
   const options: ErrorMessageOptions = {
     delimiter: {
-      error: '\n',
+      error: '\n'
     },
     transform: ({ errorMessage, index }) =>
-      `Error #${index + 1}: ${errorMessage}`,
-  };
-
-  try {
-    schema.parse(values);
-  } catch (err) {
-    const errorMessage = generateErrorMessage(err.issues, options);
-    console.error(errorMessage);
-    process.exit(1);
+      `Error #${index + 1}: ${errorMessage}`
   }
 
-  return values;
-});
+  try {
+    schema.parse(values)
+  } catch (err) {
+    const errorMessage = generateErrorMessage(err.issues, options)
+    console.error(errorMessage)
+    process.exit(1)
+  }
+
+  return values
+})

@@ -7,10 +7,10 @@ import {
 } from '@nestjs/common'
 import { In, Repository } from 'typeorm'
 import { InjectRepository } from '@nestjs/typeorm'
+import { ConfigService } from '@nestjs/config'
 import {
   FilterOperator,
   FilterSuffix,
-  Paginate,
   PaginateQuery,
   paginate,
   Paginated
@@ -36,7 +36,8 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(Friendship)
-    private readonly friendshipRepository: Repository<Friendship>
+    private readonly friendshipRepository: Repository<Friendship>,
+    private readonly configService: ConfigService
   ) {}
 
   // ****** //
@@ -305,7 +306,7 @@ export class UsersService {
 
   async saveFile(file: Express.Multer.File): Promise<string> {
     const filename = randomUUID() + path.extname(file.originalname)
-    const filePath = './uploads/' + filename
+    const filePath = this.configService.get('UPLOAD_DIR') + filename
     await fs.promises.writeFile(filePath, file.buffer)
 
     return filePath
