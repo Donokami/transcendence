@@ -5,14 +5,17 @@ import {
   Param,
   Post,
   Put,
-  Session
+  Session,
+  UseFilters
 } from '@nestjs/common'
 
 import { SocialService } from './social.service'
 import { FriendRequestDto } from './dtos/friend-request.dto'
 import { ApiOperation } from '@nestjs/swagger'
+import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 
 @Controller('social')
+@UseFilters(new GlobalExceptionFilter())
 export class SocialController {
   // *********** //
   // CONSTRUCTOR //

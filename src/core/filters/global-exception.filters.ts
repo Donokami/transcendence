@@ -72,8 +72,14 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         message = (exception as CannotCreateEntityIdMapError).message
         code = (exception as any).code
         break
-      default:
-        status = HttpStatus.INTERNAL_SERVER_ERROR
+      default: {
+        if (!status) {
+          status = HttpStatus.INTERNAL_SERVER_ERROR
+        }
+        if (!message) {
+          message = 'Internal server error'
+        }
+      }
     }
 
     response
