@@ -34,6 +34,9 @@ socket.connect()
 
 socket.emit('room:join', roomId)
 
+console.log('room', room);
+
+
 // to do: to move into a component
 function startGame(): void {
   socket.emit('game:start', roomId)

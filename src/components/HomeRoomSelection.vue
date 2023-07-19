@@ -6,7 +6,7 @@
   <div class="flex flex-wrap gap-2">
     <div v-if="isError" class="text-red-500">{{ error }}</div>
     <div v-if="isLoading">Loading...</div>
-    <div v-else-if="rooms.length > 0" v-for="room in rooms" :key="room">
+    <div v-else-if="rooms.length > 0" v-for="room in rooms.data" :key="room">
       <router-link :to="`/room/${room.id}`" class="flex flex-col neobrutalist-box m-2.5 px-2 py-2">
         <span>{{ room.name }}</span>
 
@@ -35,7 +35,7 @@ async function getRooms() {
   if (!res.ok) {
     throw new Error(res.statusText)
   }
-  return res.json()
+  return await res.json()
 }
 const { isLoading, isError, data: rooms, error, refetch } = useQuery({
   queryKey: ['rooms'],

@@ -4,7 +4,7 @@ import type { Game } from '@/types/Game'
 import { reactive } from 'vue'
 import { Vector3 } from 'three'
 
-export const socket: Socket = io('http://localhost:3002/game', {
+export const socket: Socket = io('http://localhost:3001/game', {
   withCredentials: true,
   autoConnect: false,
   transports: ['websocket']

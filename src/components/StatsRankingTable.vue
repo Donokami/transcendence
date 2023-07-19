@@ -20,10 +20,12 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in users" :key="user.rank">
+          <tr v-for="user in users.data" :key="user.rank">
             <th class="text-center">{{ user.rank }}</th>
             <th>
-              <router-link :to="{ name: 'profile', params: { id: user.id } }"> {{ user.username }} </router-link>
+              <router-link :to="{ name: 'profile', params: { id: user.id } }">
+                {{ user.username }}
+              </router-link>
             </th>
             <td class="text-center">{{ user.winRate }} %</td>
             <td class="text-center">{{ user.win }}</td>
@@ -41,21 +43,22 @@
 
 <script setup lang="ts">
 import type { User } from '@/types/user'
-import { useUserStore } from '@/stores/UserStore';
-import { ref, onBeforeMount } from 'vue';
+import { useUserStore } from '@/stores/UserStore'
+import { ref, onBeforeMount } from 'vue'
 
 const emit = defineEmits(['table-state-changed', 'go-to-profile-triggered'])
-const userStore = useUserStore();
+const userStore = useUserStore()
 
 const toggleTable = (): void => {
   emit('table-state-changed', 'matchHistory')
 }
 
-let users = ref<User[]>([]);
+const users = ref<User[]>([])
 
 onBeforeMount(async () => {
-  users.value = await userStore.fetchAllUsers();
-  users.value.sort((a, b) => b.winRate - a.winRate);
-  users.value.forEach((user, index) => (user.rank = index + 1));
+  // todo: create a function in the user store to fetch all users with stats and use api sort instead of js sort
+  users.value = await userStore.fetchAllUsers()
+  users.value.data.sort((a, b) => b.winRate - a.winRate)
+  users.value.data.forEach((user, index) => (user.rank = index + 1))
 })
 </script>
