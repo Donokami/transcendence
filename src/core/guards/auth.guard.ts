@@ -15,9 +15,6 @@ export class AuthGuard implements CanActivate {
 
     this.logger.verbose(`Session user ID : ${request.session.userId}`)
 
-    return (
-      request.session.userId ||
-      this.configService.get('NODE_ENV') === 'development' // this line allow to bypass the auth guard in development mode
-    )
+    return request.session.userId
   }
 }

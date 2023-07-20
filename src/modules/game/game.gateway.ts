@@ -15,6 +15,7 @@ import { IUserSocket } from '@/core/types/socket'
 import { GameService } from './game.service'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { RoomNotFound } from '@/core/exceptions/game'
+import * as request from 'supertest'
 
 @WebSocketGateway({
   namespace: '/game',
@@ -25,36 +26,16 @@ export class GameGateway {
   @WebSocketServer()
   server: Server
 
-  // ************ //
-  // CONSTRUCTORS //
-  // ************ //
-
   constructor(
     @Inject(forwardRef(() => GameService))
     private gameService: GameService
   ) {}
 
-  // ****** //
-  // LOGGER //
-  // ****** //
-
   private readonly logger = new Logger(GameService.name)
-
-  // ***************** //
-  // GATEWAY FUNCTIONS //
-  // ***************** //
-
-  // **************** //
-  // handleConnection //
-  // **************** //
 
   async handleConnection(client: Socket) {
     this.logger.verbose(`Client ${client.id} connected to /game socket`)
   }
-
-  // **************** //
-  // handleDisconnect //
-  // **************** //
 
   handleDisconnect(client: IUserSocket) {
     // const roomId = client.handshake.query.roomId as string
@@ -93,17 +74,14 @@ export class GameGateway {
     @MessageBody() roomId: string,
     @ConnectedSocket() client: Socket
   ): Promise<void> {
-    await this.gameService.findOne(roomId)
+    this.gameService.findOne(roomId)
 
     client.leave(roomId)
   }
 
   @SubscribeMessage('game:start')
-  async handleStart(
-    @MessageBody() roomId: string,
-    @ConnectedSocket() client: IUserSocket
-  ): Promise<void> {
-    const room = await this.gameService.findOne(roomId)
+  async handleStart(@MessageBody() roomId: string): Promise<void> {
+    const room = this.gameService.findOne(roomId)
 
     // todo: check if the room is full and not started
 
@@ -113,5 +91,19 @@ export class GameGateway {
     // }
 
     room.startGame()
+  }
+
+  @SubscribeMessage('game:move')
+  async handleMove(
+    @MessageBody() data: { roomId: string; posX: number },
+    @ConnectedSocket() client: IUserSocket
+  ): Promise<void> {
+    const room = this.gameService.findOne(data.roomId)
+
+    if (!room) throw new RoomNotFound()
+    if (data.posX < 0 || data.posX > 1) return
+
+    this.gameService.updatePos(data.posX, client.request.user.id, data.roomId)
+    // room.gameState.movePaddle(data.posX)
   }
 }

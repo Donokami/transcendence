@@ -21,7 +21,7 @@ import { CreateGameDto } from './dtos/create-game-dto'
 import { UpdateGameDto } from './dtos/update-game-dto'
 import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate'
 import { RoomObject } from './room'
-import { ApiOkResponse, ApiOperation } from '@nestjs/swagger'
+import { ApiOperation } from '@nestjs/swagger'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { RoomNotFound } from '@/core/exceptions/game'
 
@@ -29,10 +29,6 @@ import { RoomNotFound } from '@/core/exceptions/game'
 @UseFilters(new GlobalExceptionFilter())
 export class GameController {
   constructor(private readonly gameService: GameService) {}
-
-  // ******* //
-  // findOne //
-  // ******* //
 
   @Get(':id')
   @UseGuards(AuthGuard)
@@ -53,10 +49,6 @@ export class GameController {
     return room.get()
   }
 
-  // ******* //
-  // findAll //
-  // ******* //
-
   @Get()
   @UseGuards(AuthGuard)
   @ApiOperation({
@@ -68,10 +60,6 @@ export class GameController {
   findAll(@Paginate() query: PaginateQuery): Promise<Paginated<RoomObject>> {
     return this.gameService.findAll(query)
   }
-
-  // ****** //
-  // create //
-  // ****** //
 
   @Post()
   @UseGuards(AuthGuard)
@@ -89,10 +77,6 @@ export class GameController {
     return this.gameService.create(createGameDto)
   }
 
-  // ****** //
-  // update //
-  // ****** //
-
   @Patch(':id')
   @UseGuards(AuthGuard)
   @UseGuards(OwnershipGuard)
@@ -107,10 +91,6 @@ export class GameController {
 
     // this.gameGateway.server.to(room.id).emit('room:remove', room.get())
   }
-
-  // ****** //
-  // remove //
-  // ****** //
 
   @Delete(':id')
   @UseGuards(AuthGuard)

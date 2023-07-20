@@ -15,8 +15,11 @@ import { GameGateway } from './game.gateway'
 import { Room, type RoomObject } from './room'
 import { PaginateQuery, Paginated } from 'nestjs-paginate'
 import { paginate } from '@/core/utils/pagination'
-import { RoomAlreadyExists, RoomNotFound } from '@/core/exceptions/game'
-import { UserNotFound } from '@/core/exceptions'
+import {
+  UserNotFound,
+  RoomAlreadyExists,
+  RoomNotFound
+} from '@/core/exceptions'
 
 @Injectable()
 export class GameService {
@@ -43,7 +46,7 @@ export class GameService {
 
   // todo: create a function to retrieve all rooms that are not full and another public
 
-  async create(createGameDto: CreateGameDto): Promise<RoomObject> {
+  public async create(createGameDto: CreateGameDto): Promise<RoomObject> {
     const user = await this.userService.findOneById(
       createGameDto.owner as unknown as string
     )
@@ -92,7 +95,7 @@ export class GameService {
     return updatedGame
   }
 
-  async delete(id: string): Promise<RoomObject> {
+  public async delete(id: string): Promise<RoomObject> {
     const room = this.findOne(id)
 
     if (!room) {
@@ -106,7 +109,7 @@ export class GameService {
     return room.get()
   }
 
-  async join(id: string, userId: string): Promise<RoomObject> {
+  public async join(id: string, userId: string): Promise<RoomObject> {
     const room = this.findOne(id)
     const user = await this.userService.findOneById(userId)
 
@@ -129,7 +132,7 @@ export class GameService {
   }
 
   // todo: rewrite theses functions
-  async kick(id: string, userId: string): Promise<RoomObject> {
+  public async kick(id: string, userId: string): Promise<RoomObject> {
     const room = this.leave(id, userId)
 
     this.logger.verbose(`Kicking user ${userId} from room ${id}`)
@@ -141,7 +144,7 @@ export class GameService {
     return room
   }
 
-  async leaveAll(userId: string) {
+  public async leaveAll(userId: string) {
     const user = await this.userService.findOneById(userId)
     this.rooms.forEach((room) => {
       this.leave(room.id, user.id)
@@ -149,7 +152,7 @@ export class GameService {
   }
 
   // todo: crappy code, to clean up and secure
-  async leave(id: string, userId: string): Promise<RoomObject> {
+  public async leave(id: string, userId: string): Promise<RoomObject> {
     const room = this.findOne(id)
     const user = await this.userService.findOneById(userId)
 
@@ -187,5 +190,20 @@ export class GameService {
     this.logger.verbose(`Removing user ${userId} from room ${id}`)
 
     return room.get()
+  }
+
+  public async updatePos(
+    posX: number,
+    userId: string,
+    roomId: string
+  ): Promise<void> {
+    const room = this.findOne(roomId)
+    const user = await this.userService.findOneById(userId)
+
+    if (!room) throw new RoomNotFound()
+    if (!user) throw new UserNotFound()
+
+    const paddle = room.gameState.getUserPaddle(user)
+    room.gameState.updatePaddlePosition(posX, paddle)
   }
 }

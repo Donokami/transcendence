@@ -2,6 +2,7 @@ import { Logger } from '@nestjs/common'
 import { Object3D, Vector3 } from 'three'
 import { GameGateway } from './game.gateway'
 import { Room, RoomStatus } from './room'
+import { User } from '@/modules/users/user.entity'
 
 type SimObject3D = Object3D & {
   velocity: {
@@ -43,24 +44,36 @@ const gm: Metrics = {
 export class Game {
   private readonly logger = new Logger(Game.name)
 
-  private paddle1: SimObject3D
-  private paddle2: SimObject3D
-  private ball: SimObject3D
+  private paddle1: SimObject3D = new Object3D() as SimObject3D
+  private paddle2: SimObject3D = new Object3D() as SimObject3D
+  private ball: SimObject3D = new Object3D() as SimObject3D
   private testBall: SimObject3D = new Object3D() as SimObject3D
-  private timeout: number = gm.timeout
   private readonly metrics: Metrics = gm
+  private startTime: number
+  private endTime: number
 
   constructor(
     private readonly roomState: Room,
     private readonly gameGateway: GameGateway
-  ) {}
+  ) {
+    this.paddle1.position.set(
+      0,
+      this.metrics.fieldHeight,
+      this.metrics.fieldDepth * 0.5 + this.metrics.paddleDepth * 0.5
+    )
+    this.paddle2.position.set(
+      0,
+      this.metrics.fieldHeight,
+      -this.metrics.fieldDepth * 0.5 - this.metrics.paddleDepth * 0.5
+    )
+  }
 
   private async gameLoop() {
-    const startTime = Date.now()
-    const endTime = startTime + this.metrics.timeout
+    this.startTime = Date.now()
+    this.endTime = this.startTime + this.metrics.timeout
 
-    while (Date.now() < endTime) {
-      const deltaTime = Date.now() - startTime
+    while (Date.now() < this.endTime) {
+      const deltaTime = Date.now() - this.startTime
       this.calculatePhysics(deltaTime)
       await this.broadcastUpdate()
 
@@ -92,7 +105,16 @@ export class Game {
     const { x, y, z } = this.testBall.position
     this.gameGateway.server
       .to(this.roomState.id)
-      .emit('game:update:testBall', { x, y, z })
+      .emit('game:testBall', { x, y, z })
+    this.gameGateway.server
+      .to(this.roomState.id)
+      .emit('game:remainingTime', (this.endTime - Date.now()) / 1000)
+    this.gameGateway.server
+      .to(this.roomState.id)
+      .emit(`game:paddle1`, { ...this.paddle1.position })
+    this.gameGateway.server
+      .to(this.roomState.id)
+      .emit(`game:paddle2`, { ...this.paddle2.position })
   }
 
   public startGame() {
@@ -103,5 +125,28 @@ export class Game {
   public endGame() {
     this.roomState.update({ ...this.roomState, status: RoomStatus.OPEN })
     this.logger.log('end of game!')
+  }
+
+  public getUserPaddle(User: User): SimObject3D {
+    if (this.roomState.players[0].id === User.id) {
+      return this.paddle1
+    }
+    return this.paddle2
+  }
+
+  public updatePaddlePosition(normalizedPos: number, paddle: SimObject3D) {
+    paddle.position.lerpVectors(
+      new Vector3(
+        -this.metrics.fieldWidth / 2,
+        paddle.position.y,
+        paddle.position.z
+      ),
+      new Vector3(
+        this.metrics.fieldWidth / 2,
+        paddle.position.y,
+        paddle.position.z
+      ),
+      normalizedPos
+    )
   }
 }
