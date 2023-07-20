@@ -21,38 +21,28 @@
 // IMPORTS //
 // ******* //
 
+import { storeToRefs } from 'pinia'
 import { onBeforeMount, ref } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 
-import { storeToRefs } from 'pinia'
-import { useUserStore } from '@/stores/UserStore.js'
-
 import ChatDirectMessagesList from '@/components/ChatDirectMessagesList.vue'
 import ChatDirectMessagesModal from '@/components/ChatDirectMessagesModal.vue'
+import { useChannelStore } from '@/stores/ChannelStore.js'
+import { useUserStore } from '@/stores/UserStore.js'
+import type { Channel } from '@/types/Channel'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
 // ******************** //
 
+const channelStore = useChannelStore()
+const dmList = ref([] as Channel[]);
+const emit = defineEmits(['list-state-changed'])
+let hasDms = ref(false);
+let showModal = ref(false);
 const userStore = useUserStore()
 
-const emit = defineEmits(['list-state-changed'])
-
-let showModal = ref(false);
-
-function toggleModal(): void {
-  showModal.value = !showModal.value;
-  console.log(`[ChatDirectMessages] - showModal : `, showModal.value);
-}
-
-// **************************** //
-// loggedUser RELATED VARIABLES //
-// **************************** //
-
 const { loggedUser } = storeToRefs(userStore);
-
-let hasDms = ref(false);
-
 
 // ******************** //
 // FUNCTION DEFINITIONS //
@@ -66,7 +56,7 @@ const checkHasDm = async () => {
   if (!loggedUser.value)
     return 0;
   try {
-    hasDms.value = !!userStore.dmList.length;
+    hasDms.value = !!dmList.value.length;
     console.log(`[ChatDirectMessages] - hasDms : `, hasDms.value);
   } catch (error) {
     console.error(`[ChatDirectMessages] - Failed to check hasDms value ! Error : `, error);
@@ -81,17 +71,28 @@ const toggleList = () => {
   emit('list-state-changed', 'groupChannels')
 }
 
+// *********** //
+// toggleModal //
+// *********** //
+
+function toggleModal(): void {
+  showModal.value = !showModal.value;
+  console.log(`[ChatDirectMessages] - showModal : `, showModal.value);
+}
+
 // ********************* //
 // VueJs LIFECYCLE HOOKS //
 // ********************* //
 
 onBeforeMount(async () => {
-  await userStore.refreshDmList();
+  dmList.value = await channelStore.getDms();
+  console.log(`[ChatDirectMessages] - dmList : `, dmList.value);
   checkHasDm();
 });
 
 onBeforeRouteUpdate(async (to, from) => {
-  await userStore.refreshDmList();
+  dmList.value = await channelStore.getDms();
+  console.log(`[ChatDirectMessages] - dmList : `, dmList.value);
   checkHasDm();
 })
 

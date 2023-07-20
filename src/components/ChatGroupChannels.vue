@@ -20,30 +20,27 @@
 // IMPORTS //
 // ******* //
 
-import { onBeforeMount, ref } from 'vue'
-
 import { storeToRefs } from 'pinia'
-import { useUserStore } from '@/stores/UserStore.js'
+import { onBeforeMount, ref } from 'vue'
+import { onBeforeRouteUpdate } from 'vue-router'
 
 import ChatGroupChannelsList from '@/components/ChatGroupChannelsList.vue'
 import ChatGroupChannelsModal from '@/components/ChatGroupChannelsModal.vue'
-import { onBeforeRouteUpdate } from 'vue-router'
+import { useChannelStore } from '@/stores/ChannelStore.js'
+import { useUserStore } from '@/stores/UserStore.js'
+import type { Channel } from '@/types/Channel'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
 // ******************** //
 
+const channelStore = useChannelStore()
+const emit = defineEmits(['list-state-changed'])
+const groupChannelsList = ref([] as Channel[]);
+let hasGroupChannels = ref(false);
 const userStore = useUserStore()
 
-const emit = defineEmits(['list-state-changed'])
-
-// **************************** //
-// loggedUser RELATED VARIABLES //
-// **************************** //
-
 const { loggedUser } = storeToRefs(userStore);
-
-let hasGroupChannels = ref(false);
 
 // ******************** //
 // FUNCTION DEFINITIONS //
@@ -57,7 +54,7 @@ const checkHasGroupChannels = async () => {
   if (!loggedUser.value)
     return 0;
   try {
-    hasGroupChannels.value = !!userStore.groupChannelsList.length;
+    hasGroupChannels.value = !!groupChannelsList.value.length;
     console.log(`[ChatGroupChannels] - hasGroupChannels : `, hasGroupChannels.value);
   } catch (error) {
     console.error(`[ChatGroupChannels] - Failed to check hasGroupChannels value ! Error : `, error);
@@ -77,12 +74,12 @@ const toggleList = () => {
 // ********************* //
 
 onBeforeMount(async () => {
-  await userStore.refreshGroupChannelsList();
+  groupChannelsList.value = await channelStore.getGroupChannels();
   checkHasGroupChannels();
 });
 
 onBeforeRouteUpdate(async (to, from) => {
-  await userStore.refreshGroupChannelsList();
+  groupChannelsList.value = await channelStore.getGroupChannels();
   checkHasGroupChannels();
 })
 

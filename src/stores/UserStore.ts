@@ -20,8 +20,6 @@ export const useUserStore = defineStore('users', {
 
     loggedUser: null as unknown as User | null,
     friendList: [] as User[],
-    dmList: [] as Channel[],
-    groupChannelsList: [] as Channel[],
     twoFactorEnabled: false,
 
     // ********************** //
@@ -130,25 +128,6 @@ export const useUserStore = defineStore('users', {
       return response.text()
     },
 
-    // *********** //
-    // fetchDmList //
-    // *********** //
-
-    async fetchDmList(id: string): Promise<Channel[]> {
-      const response: Channel[] = await fetcher.get(`/channels/${id}/dm-list`)
-
-      response.forEach((channel: Channel) => {
-        channel.receiver = channel.members.filter((user: User) => {
-          if (!this.loggedUser) {
-            return false
-          }
-          return user.id !== this.loggedUser.id
-        })[0]
-      })
-
-      return response
-    },
-
     // *************** //
     // fetchFriendList //
     // *************** //
@@ -185,18 +164,6 @@ export const useUserStore = defineStore('users', {
       return response.json()
     },
 
-    // ********************* //
-    // fetchGroupChannelsList //
-    // ********************* //
-
-    async fetchGroupChannelsList(id: string): Promise<Channel[]> {
-      const response: Channel[] = await fetcher.get(
-        `/channels/${id}/group-channels-list`
-      )
-
-      return response
-    },
-
     // ********* //
     // fetchUser //
     // ********* //
@@ -209,7 +176,7 @@ export const useUserStore = defineStore('users', {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      // TO DO: check if await is required here
+      // to do: check if await is required here
       return await response.json()
     },
 
@@ -246,23 +213,6 @@ export const useUserStore = defineStore('users', {
       return response.json()
     },
 
-    // ************* //
-    // refreshDmList //
-    // ************* //
-
-    async refreshDmList() {
-      if (!this.loggedUser) {
-        return []
-      }
-      try {
-        const response = await this.fetchDmList(this.loggedUser.id)
-        this.dmList = response
-        console.log(`[UserStore] - dmList : `, this.dmList)
-      } catch (error) {
-        console.error(`[UserStore] - Failed to fetch DMs! Error: `, error)
-      }
-    },
-
     // ***************** //
     // refreshFriendList //
     // ***************** //
@@ -278,29 +228,6 @@ export const useUserStore = defineStore('users', {
         return this.friendList
       } catch (error) {
         console.error(`[UserStore] - Failed to fetch friends! Error: `, error)
-      }
-    },
-
-    // ************************ //
-    // refreshGroupChannelsList //
-    // ************************ //
-
-    async refreshGroupChannelsList() {
-      if (!this.loggedUser) {
-        return []
-      }
-      try {
-        const response = await this.fetchGroupChannelsList(this.loggedUser.id)
-        this.groupChannelsList = response
-        console.log(
-          `[UserStore] - groupChannelsList : `,
-          this.groupChannelsList
-        )
-      } catch (error) {
-        console.error(
-          `[UserStore] - Failed to fetch group channels ! Error: `,
-          error
-        )
       }
     },
 

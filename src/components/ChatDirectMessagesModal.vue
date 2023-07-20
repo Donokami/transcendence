@@ -17,7 +17,7 @@
         <div class="collapse-title text-base">Select a friend</div>
         <div class="collapse-content text-base">
           <ul class="menu bg-base-100 w-full">
-            <li v-for="friend in  noDmFriendList " :key="friend.username">
+            <li v-for="friend in  noDmWithUserList " :key="friend.username">
               <a class="flex p-1 modal-action justify-start" @click="createDmChannel(friend)">
                 <button class="block" @click="closeModal">{{ friend.username
                 }}</button>
@@ -36,14 +36,12 @@
 // IMPORTS //
 // ******* //
 
+import { storeToRefs } from 'pinia';
 import { onBeforeMount, ref, toRefs, watch } from 'vue';
 import { onBeforeRouteUpdate } from 'vue-router';
 
-import { storeToRefs } from 'pinia';
-
 import { useChannelStore } from '@/stores/ChannelStore';
 import { useUserStore } from '@/stores/UserStore.js'
-
 import type { Channel } from '@/types/Channel';
 import type { User } from '@/types/user';
 
@@ -51,24 +49,18 @@ import type { User } from '@/types/user';
 // VARIABLE DEFINITIONS //
 // ******************** //
 
-const userStore = useUserStore()
 const channelStore = useChannelStore()
-
+const emit = defineEmits(['update:showModal'])
+const noDmWithUserList = ref<User[]>([]);
 const props = defineProps({
   showModal: { type: Boolean },
 })
 let { showModal } = toRefs(props)
-
-const emit = defineEmits(['update:showModal'])
-
-// **************************** //
-// loggedUser RELATED VARIABLES //
-// **************************** //
+const userStore = useUserStore()
 
 const { loggedUser } = storeToRefs(userStore)
 const { friendList } = storeToRefs(userStore);
 
-const noDmFriendList = ref<User[]>([]);
 
 // ******************** //
 // FUNCTION DEFINITIONS //
@@ -105,19 +97,19 @@ function closeModal(): void {
   }
 }
 
-// ********************* //
-// refreshNoDmFriendList //
-// ********************* //
+// *********************** //
+// refreshNoDmWithUserList //
+// *********************** //
 
-async function refreshNoDmFriendList() {
+async function refreshNoDmWithUserList() {
   if (!loggedUser.value) {
-    noDmFriendList.value = [];
+    noDmWithUserList.value = [];
     return;
   }
-  const dmList = await userStore.fetchDmList(loggedUser.value.id);
+  const dmList = channelStore.getDms();
   const dmUserIds = dmList.map(channel => channel.receiver.id);
   console.log(`[ChatDirectMessagesModal] - dmUserIds: `, dmUserIds)
-  noDmFriendList.value = friendList.value.filter(friend => !dmUserIds.includes(friend.id));
+  noDmWithUserList.value = friendList.value.filter(friend => !dmUserIds.includes(friend.id));
 }
 // ********************* //
 // VueJs LIFECYCLE HOOKS //
@@ -125,13 +117,13 @@ async function refreshNoDmFriendList() {
 
 onBeforeMount(async () => {
   await userStore.refreshFriendList();
-  await refreshNoDmFriendList();
+  await refreshNoDmWithUserList();
 
 })
 
 onBeforeRouteUpdate(async (to, from) => {
   await userStore.refreshFriendList();
-  await refreshNoDmFriendList();
+  await refreshNoDmWithUserList();
 })
 
 watch(showModal, (newValue) => {
