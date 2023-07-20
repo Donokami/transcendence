@@ -9,23 +9,17 @@
         ' - ' +
         Math.round(ballRef?.position.x * 100) / 100
       }}
+      -
+      {{ Math.round(game.remainingTime) }}
     </p>
     <div class="w-[720px] h-[480px]">
       <TresCanvas clear-color="#005" shadows @mousemove="MovePaddle">
         <TresScene>
-          <TresAmbientLight
-            color="#ffffff"
-            :position="[0, 3, 0]"
-            :intensity="1" />
+          <TresAmbientLight color="#ffffff" :position="[0, 3, 0]" :intensity="1" />
           <TresDirectionalLight color="#ffffff" :intensity="2" />
           <!-- <TresDirectionalLight color="#ffaaaa" :position="[0, 5, 3]" :intensity="0.5" /> -->
-          <TresPerspectiveCamera
-            :position="[paddlePos(gs.posX), 5, gm.fieldDepth]"
-            ref="cameraRef"
-            :fov="25"
-            :aspect="1"
-            :near="0.1"
-            :far="1000" />
+          <TresPerspectiveCamera :position="[gs.paddle1Pos.x, 5, gm.fieldDepth]" ref="cameraRef" :fov="25" :aspect="1"
+            :near="0.1" :far="1000" />
           <!-- <TresPerspectiveCamera :position="[
             10,
             40,
@@ -51,45 +45,37 @@
           </TresGroup> -->
           <TresGroup>
             <TresMesh>
-              <TresBoxGeometry
-                :args="[gm.fieldWidth, gm.fieldHeight, gm.fieldDepth]" />
+              <TresBoxGeometry :args="[gm.fieldWidth, gm.fieldHeight, gm.fieldDepth]" />
               <TresMeshToonMaterial color="#f80" />
             </TresMesh>
-            <TresMesh
-              :rotate-x="-Math.PI * 0.5"
-              :position-y="gm.fieldHeight * 0.5 + 0.01">
+            <TresMesh :rotate-x="-Math.PI * 0.5" :position-y="gm.fieldHeight * 0.5 + 0.01">
               <TresPlaneGeometry :args="[gm.fieldWidth, 1]" />
               <TresMeshToonMaterial color="#fff" />
             </TresMesh>
           </TresGroup>
-          <TresMesh
-            :position="[
-              paddlePos(gs.posX),
-              gm.fieldHeight,
-              gm.fieldDepth * 0.5 + gm.paddleDepth * 0.5
-            ]"
-            ref="paddle1Ref">
-            <TresBoxGeometry
-              :args="[
-                gm.paddleRatio * gm.fieldWidth,
-                gm.paddleHeight,
-                gm.paddleDepth
-              ]" />
+          <!-- <TresMesh :position="[
+            paddlePos(gs.posX),
+            gm.fieldHeight,
+            gm.fieldDepth * 0.5 + gm.paddleDepth * 0.5
+          ]" ref="paddle1Ref"> -->
+          <TresMesh ref="paddle1Ref">
+            <TresBoxGeometry :args="[
+              gm.paddleRatio * gm.fieldWidth,
+              gm.paddleHeight,
+              gm.paddleDepth
+            ]" />
             <TresMeshToonMaterial color="#fff" />
           </TresMesh>
-          <TresMesh
-            :position="[
-              0,
-              gm.fieldHeight,
-              -gm.fieldDepth * 0.5 - gm.paddleDepth * 0.5
-            ]"
-            ref="paddle2Ref">
-            <TresBoxGeometry
-              :args="[
-                gm.paddleRatio * gm.fieldWidth,
-                gm.paddleHeight,
-                gm.paddleDepth
-              ]" />
+          <TresMesh :position="[
+            0,
+            gm.fieldHeight,
+            -gm.fieldDepth * 0.5 - gm.paddleDepth * 0.5
+          ]" ref="paddle2Ref">
+            <TresBoxGeometry :args="[
+              gm.paddleRatio * gm.fieldWidth,
+              gm.paddleHeight,
+              gm.paddleDepth
+            ]" />
             <TresMeshToonMaterial color="#fff" />
           </TresMesh>
           <TresMesh ref="ballRef">
@@ -101,18 +87,11 @@
             <TresMeshToonMaterial color="blue" />
           </TresMesh>
           <Suspense>
-            <Text3D
-              :size="3"
-              :height="1"
-              :position="[
-                0,
-                (gm.fieldHeight + gm.paddleHeight) * 4,
-                -gm.fieldDepth * 0.5
-              ]"
-              ref="textRef"
-              :text="scoring"
-              center
-              need-updates
+            <Text3D :size="3" :height="1" :position="[
+              0,
+              (gm.fieldHeight + gm.paddleHeight) * 4,
+              -gm.fieldDepth * 0.5
+            ]" ref="textRef" :text="scoring" center need-updates
               font="https://raw.githubusercontent.com/Tresjs/assets/main/fonts/FiraCodeRegular.json">
               <TresMeshToonMaterial color="#fff" />
             </Text3D>
@@ -137,6 +116,7 @@ import { gm, gs, renderPong, type SimObject3D } from '@/includes/gameEngine'
 import type { Object3D } from 'three'
 import type { Room } from '@/types/Room'
 import type { Game } from '@/types/Game'
+import { socket } from '@/includes/gameSocket'
 
 const props = defineProps<{
   room: Room
@@ -144,13 +124,13 @@ const props = defineProps<{
 }>()
 
 const room = ref(props.room)
-const game = ref(props.game)
+const remoteGame = ref(props.game)
 
 // const groupRef: ShallowRef = shallowRef(null)
 // const envRef: ShallowRef = shallowRef(null)
 
 const scoring = computed(() => {
-  return `${gs.score1} - ${gs.score2}`
+  return `${remoteGame.value.score1} - ${remoteGame.value.score2}`
 })
 
 const cameraRef: ShallowRef<Object3D | null> = shallowRef(null)
@@ -168,8 +148,8 @@ const paddlePos = (x: number): number => {
 }
 
 const MovePaddle = (e: MouseEvent): void => {
-  gs.posX = e.offsetX
-  gs.posY = e.offsetY
+  socket.emit('game:move', { roomId: room.value.id, posX: e.offsetX / gm.canvasWidth })
+  // gs.posY = e.offsetY
 }
 
 // A loop that switch the TestBall position each second
@@ -180,7 +160,8 @@ const MovePaddle = (e: MouseEvent): void => {
 
 onLoop(({ delta }) => {
   gs.fps = delta
-  gs.testBallPos = game.value.testBallPos
+  gs.testBallPos = remoteGame.value.testBallPos
+  gs.paddle1Pos = remoteGame.value.paddle1Pos
   if (
     ballRef.value != null &&
     testBallRef.value != null &&

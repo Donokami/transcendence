@@ -7,4 +7,5 @@ export interface Game {
   score1: number
   score2: number
   isUserPaddle1: boolean
+  remainingTime: number
 }

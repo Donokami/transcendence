@@ -12,7 +12,8 @@ const gs = reactive({
   posY: 0,
   fps: 0,
   activeCanvas: false,
-  testBallPos: new Vector3(0, 5, 0)
+  testBallPos: new Vector3(0, 5, 0),
+  paddle1Pos: new Vector3(0, 5, 0)
 })
 
 const gm = {
@@ -221,6 +222,10 @@ function renderPong(
 ): void {
   // testBall.position.set(gs.testBallPos.x, gs.testBallPos.y, gs.testBallPos.z)
   testBall.position.lerp(gs.testBallPos, 0.1)
+  paddle1.position.lerp(gs.paddle1Pos, 0.1)
+
+  // testBall.position.set(gs.testBallPos.x, gs.testBallPos.y, gs.testBallPos.z)
+
   processCpuPaddle(delta, ball, paddle2)
   processBallMovement(delta, ball, paddle1, paddle2)
 }
