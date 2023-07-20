@@ -3,17 +3,15 @@ import {
   AfterRemove,
   Entity,
   Column,
-  CreateDateColumn,
   PrimaryGeneratedColumn,
-  ManyToOne,
-  JoinTable,
-} from 'typeorm';
+  ManyToOne
+} from 'typeorm'
 
-import { Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common'
 
-import { User } from '@/modules/users/user.entity';
+import { User } from '@/modules/users/user.entity'
 
-import { Channel } from './channel.entity';
+import { Channel } from './channel.entity'
 
 @Entity()
 export class Message {
@@ -21,34 +19,31 @@ export class Message {
   // LOGGER //
   // ****** //
 
-  private logger = new Logger(Message.name);
+  private logger = new Logger(Message.name)
 
   // ************* //
   // ENTITY FIELDS //
   // ************* //
 
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: string
 
   @Column()
-  messageBody: string;
-
-  @CreateDateColumn()
-  createdAt: Date;
+  messageBody: string
 
   @ManyToOne(() => Channel, (channel: Channel) => channel.messages)
-  channel: Channel;
+  channel: Channel
 
   @ManyToOne(() => User, (user: User) => user.messages)
-  user: User;
+  user: User
 
   @AfterInsert()
   logInsert() {
-    this.logger.verbose(`Message with id ${this.id} inserted`);
+    this.logger.verbose(`Message with id ${this.id} inserted`)
   }
 
   @AfterRemove()
   logRemove() {
-    this.logger.verbose(`Message with id ${this.id} removed`);
+    this.logger.verbose(`Message with id ${this.id} removed`)
   }
 }

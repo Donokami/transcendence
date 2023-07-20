@@ -2,20 +2,20 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
-  Logger,
-} from '@nestjs/common';
-import { In, Repository } from 'typeorm';
-import { InjectRepository } from '@nestjs/typeorm';
+  Logger
+} from '@nestjs/common'
+import { In, Repository } from 'typeorm'
+import { InjectRepository } from '@nestjs/typeorm'
 
-import { type Channel } from '@/modules/channels/entities/channel.entity';
-import { type UserDetails } from '@/core/types/user-details';
+import { type Channel } from '@/modules/chat/channels/entities/channel.entity'
+import { type UserDetails } from '@/core/types/user-details'
 import {
   Friendship,
-  FriendshipStatus,
-} from '@/modules/social/entities/friendship.entity';
+  FriendshipStatus
+} from '@/modules/social/entities/friendship.entity'
 
-import { User } from './user.entity';
-import { UserDto } from './dtos/user.dto';
+import { User } from './user.entity'
+import { UserDto } from './dtos/user.dto'
 
 @Injectable()
 export class UsersService {
@@ -23,14 +23,14 @@ export class UsersService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     @InjectRepository(Friendship)
-    private readonly friendshipRepository: Repository<Friendship>,
+    private readonly friendshipRepository: Repository<Friendship>
   ) {}
 
   // ****** //
   // LOGGER //
   // ****** //
 
-  private logger: Logger = new Logger(UsersService.name);
+  private logger: Logger = new Logger(UsersService.name)
 
   // ******************** //
   // FUNCTION DEFINITIONS //
@@ -43,10 +43,10 @@ export class UsersService {
   async create(
     email: string,
     password: string,
-    username: string,
+    username: string
   ): Promise<User> {
-    const user = this.userRepository.create({ email, password, username });
-    return await this.userRepository.save(user);
+    const user = this.userRepository.create({ email, password, username })
+    return await this.userRepository.save(user)
   }
 
   // *********** //
@@ -54,8 +54,8 @@ export class UsersService {
   // *********** //
 
   createOauth(details: UserDetails) {
-    const user = this.userRepository.create(details);
-    return this.userRepository.save(user);
+    const user = this.userRepository.create(details)
+    return this.userRepository.save(user)
   }
 
   // ******* //
@@ -63,8 +63,8 @@ export class UsersService {
   // ******* //
 
   async findAll(): Promise<User[]> {
-    const users = await this.userRepository.find();
-    return users;
+    const users = await this.userRepository.find()
+    return users
   }
 
   // **************** //
@@ -83,10 +83,10 @@ export class UsersService {
         'winRate',
         'pointsScored',
         'pointsConceded',
-        'pointsDifference',
-      ],
-    });
-    return users;
+        'pointsDifference'
+      ]
+    })
+    return users
   }
 
   // ********* //
@@ -96,9 +96,9 @@ export class UsersService {
   async findByIds(userIds: string[]): Promise<User[]> {
     return this.userRepository.find({
       where: {
-        id: In(userIds),
-      },
-    });
+        id: In(userIds)
+      }
+    })
   }
 
   // ************** //
@@ -107,12 +107,12 @@ export class UsersService {
 
   async findOneByEmail(email: string): Promise<User> {
     if (!email) {
-      return null;
+      return null
     }
 
-    const user = await this.userRepository.findOne({ where: { email } });
+    const user = await this.userRepository.findOne({ where: { email } })
 
-    return user;
+    return user
   }
 
   // *************************** //
@@ -121,7 +121,7 @@ export class UsersService {
 
   async findOneByEmailWithAuthInfos(email: string): Promise<User> {
     if (!email) {
-      return null;
+      return null
     }
 
     const user = await this.userRepository.findOne({
@@ -132,11 +132,11 @@ export class UsersService {
         'email',
         'password',
         'twoFactorSecret',
-        'isTwoFactorEnabled',
-      ],
-    });
+        'isTwoFactorEnabled'
+      ]
+    })
 
-    return user;
+    return user
   }
 
   // ************************ //
@@ -145,7 +145,7 @@ export class UsersService {
 
   async findOneByIdWithStats(id: string): Promise<User> {
     if (!id) {
-      return null;
+      return null
     }
     const user = await this.userRepository.findOne({
       where: { id },
@@ -159,19 +159,19 @@ export class UsersService {
         'winRate',
         'pointsScored',
         'pointsConceded',
-        'pointsDifference',
-      ],
-    });
+        'pointsDifference'
+      ]
+    })
 
     if (user)
       user.nFriends = await this.friendshipRepository.count({
         where: [
           { sender: { id }, status: FriendshipStatus.ACCEPTED },
-          { receiver: { id }, status: FriendshipStatus.ACCEPTED },
-        ],
-      });
+          { receiver: { id }, status: FriendshipStatus.ACCEPTED }
+        ]
+      })
 
-    return user;
+    return user
   }
 
   // *********** //
@@ -180,20 +180,37 @@ export class UsersService {
 
   async findOneById(id: string): Promise<User> {
     if (!id) {
-      return null;
+      return null
     }
     const user = await this.userRepository.findOneBy({
-      id,
-    });
+      id
+    })
     if (user) {
       user.nFriends = await this.friendshipRepository.count({
         where: [
           { sender: { id }, status: FriendshipStatus.ACCEPTED },
-          { receiver: { id }, status: FriendshipStatus.ACCEPTED },
-        ],
-      });
+          { receiver: { id }, status: FriendshipStatus.ACCEPTED }
+        ]
+      })
     }
-    return user;
+    return user
+  }
+
+  // *********************** //
+  // findOneByIdWithChannels //
+  // *********************** //
+
+  async findOneByIdWithChannels(id: string): Promise<User> {
+    if (!id) {
+      return null
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: ['id', 'username', 'channels', 'bannedChannels', 'messages']
+    })
+
+    return user
   }
 
   // ****** //
@@ -201,12 +218,12 @@ export class UsersService {
   // ****** //
 
   async remove(id: string): Promise<User> {
-    const user = await this.findOneById(id);
+    const user = await this.findOneById(id)
     if (!user) {
-      this.logger.warn(`User with ID : ${id} not found`);
-      throw new NotFoundException(`User with ID : ${id} not found`);
+      this.logger.warn(`User with ID : ${id} not found`)
+      throw new NotFoundException(`User with ID : ${id} not found`)
     }
-    return await this.userRepository.remove(user);
+    return await this.userRepository.remove(user)
   }
 
   // ****** //
@@ -214,13 +231,13 @@ export class UsersService {
   // ****** //
 
   async update(id: string, attrs: Partial<User>): Promise<User> {
-    const user = await this.findOneById(id);
+    const user = await this.findOneById(id)
     if (!user) {
-      this.logger.warn(`User with ID : ${id} not found`);
-      throw new NotFoundException(`User with ID : ${id} not found`);
+      this.logger.warn(`User with ID : ${id} not found`)
+      throw new NotFoundException(`User with ID : ${id} not found`)
     }
-    Object.assign(user, attrs);
-    return await this.userRepository.save(user);
+    Object.assign(user, attrs)
+    return await this.userRepository.save(user)
   }
 
   // ***************** //
@@ -230,25 +247,25 @@ export class UsersService {
   async updateUserChannel(id: string, channel: Channel): Promise<User> {
     const user = await this.userRepository.preload({
       id,
-      channels: [] as Channel[],
-    });
+      channels: [] as Channel[]
+    })
 
     if (!user) {
-      this.logger.warn(`User with ID : ${id} not found`);
-      throw new NotFoundException(`User with ID : ${id} not found`);
+      this.logger.warn(`User with ID : ${id} not found`)
+      throw new NotFoundException(`User with ID : ${id} not found`)
     }
 
     const isBanned = user.bannedChannels?.find(
-      (bannedChannel) => bannedChannel.id === channel?.id,
-    );
+      (bannedChannel) => bannedChannel.id === channel?.id
+    )
 
     if (isBanned) {
-      this.logger.warn(`User with ID : ${id} is banned from this channel`);
+      this.logger.warn(`User with ID : ${id} is banned from this channel`)
       throw new ForbiddenException(
-        `User with ID : ${id} is banned from this channel`,
-      );
+        `User with ID : ${id} is banned from this channel`
+      )
     }
 
-    return await this.userRepository.save(user);
+    return await this.userRepository.save(user)
   }
 }

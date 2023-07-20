@@ -1,33 +1,38 @@
 import {
   BadRequestException,
+  Inject,
   Injectable,
   Logger,
-  NotFoundException
+  NotFoundException,
+  forwardRef
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
 import { UsersService } from '@/modules/users/users.service'
 
-import { Channel } from '@/modules/channels/entities/channel.entity'
-import { Message } from '@/modules/channels/entities/message.entity'
+import { Channel } from '@/modules/chat/channels/entities/channel.entity'
+import { Message } from '@/modules/chat/channels/entities/message.entity'
 import { User } from '@/modules/users/user.entity'
 
-import { AddMessageDto } from '@/modules/chat/dtos/add-message.dto'
-import { BanUserDto } from '@/modules/chat/dtos/ban-user.dto'
 import { CreateChannelDto } from './dtos/create-channel.dto'
-import { UpdateChannelDto } from './dtos/update-channel.dto'
-import { Serialize } from '@/core/interceptors/serialize.interceptor'
+import { MessageDto } from './dtos/message.dto'
+
+import type { ServiceResponse } from '@/core/types/service-response'
+import { response } from '@/core/utils'
+import { ChannelError } from '@/core/constants/errors/channel-error'
+import { ChatGateway } from '../chat.gateway'
 
 @Injectable()
-// @Serialize(CreateChannelDto)
 export class ChannelsService {
   constructor(
     @InjectRepository(Channel)
     private readonly channelsRepository: Repository<Channel>,
     @InjectRepository(Message)
     private readonly messagesRepository: Repository<Message>,
-    private readonly userService: UsersService
+    private readonly userService: UsersService,
+    @Inject(forwardRef(() => ChatGateway))
+    private readonly chatGateway: ChatGateway
   ) {}
 
   // ****** //
@@ -195,93 +200,63 @@ export class ChannelsService {
     return groupChannels
   }
 
-  //   this.logger.verbose(`DMs list of : ${userId} successfully retrieved.`);
+  // *********** //
+  // getMessages //
+  // *********** //
 
-  //   return dm;
-  // }
+  async getMessages(channelId: string): Promise<ServiceResponse<Message[]>> {
+    if (!channelId) {
+      this.logger.warn(`ID of the channel is required.`)
+      return response(null, {
+        message: 'ID of the channel is required.',
+        code: ChannelError.MISSING_ID
+      })
+    }
 
-  // async findAll() {
-  //   const channels = await this.channelRepository.find({
-  //     relations: ['messages'],
-  //   });
+    const channel = await this.channelsRepository.findOneBy({ id: channelId })
+    if (!channel) {
+      this.logger.warn(`Channel with ID : ${channelId} not found in database.`)
+      return response(null, {
+        message: `Channel with ID : ${channelId} not found in database.`,
+        code: ChannelError.NOT_FOUND
+      })
+    }
 
-  //   if (!channels) {
-  //     throw new NotFoundException(`No channels found`);
-  //   }
+    const messages = await this.messagesRepository.find({
+      where: { channel: { id: channel.id } },
+      relations: ['user']
+    })
 
-  //   return channels;
-  // }
+    this.logger.verbose(
+      `Messages list of : ${channelId} successfully retrieved.`
+    )
 
-  // async findOneWithRelations(id: string) {
-  //   const channel = await this.channelRepository.findOneBy({ id });
+    return response(messages)
+  }
 
-  //   if (!channel) {
-  //     throw new NotFoundException(`There is no channel under id ${id}`);
-  //   }
+  // *********** //
+  // postMessage //
+  // *********** //
 
-  //   return channel;
-  // }
+  async postMessage(messageDto: MessageDto): Promise<ServiceResponse<Message>> {
+    const { messageBody, channelId, userId } = messageDto
 
-  // async create(createChannelDto: CreateChannelDto) {
-  //   const newChannel = this.channelRepository.create({
-  //     ...createChannelDto,
-  //   });
+    // todo: check errors
 
-  //   const channel = await this.channelRepository.save(newChannel);
+    const channel = await this.findOne(channelId)
 
-  //   return channel;
-  // }
+    const user = await this.userService.findOneById(userId)
 
-  // async update(id: string, updateChannelDto: UpdateChannelDto) {
-  //   const channel = await this.channelRepository.preload({
-  //     id,
-  //     ...updateChannelDto,
-  //   });
+    const newMessage = this.messagesRepository.create({
+      messageBody,
+      channel,
+      user
+    })
 
-  //   if (!channel) {
-  //     throw new NotFoundException(`There is no channel under id ${id}`);
-  //   }
+    const message = await this.messagesRepository.save(newMessage)
 
-  //   return this.channelRepository.save(channel);
-  // }
+    this.chatGateway.server.to(channel.id).emit('message', message)
 
-  // async remove(id: string) {
-  //   const channel = await this.findOne(id);
-
-  //   return this.channelRepository.remove(channel);
-  // }
-
-  // async addMessage(addMessageDto: AddMessageDto) {
-  //   const { messageBody, channelId, userId } = addMessageDto;
-
-  //   const channel = await this.findOne(channelId);
-
-  //   const user = await this.userService.findOneById(userId);
-
-  //   const newMessage = this.messageRepository.create({
-  //     messageBody,
-  //     channel,
-  //     user,
-  //   });
-
-  //   const message = await this.messageRepository.save(newMessage);
-
-  //   return message;
-  // }
-
-  // async banUserFromChannel(banUserDto: BanUserDto) {
-  //   const user = await this.userService.findOneById(banUserDto.userId);
-
-  //   const channel = await this.findOne(banUserDto.channelId);
-
-  //   await this.userService.updateUserChannel(banUserDto.userId, null);
-
-  //   const bannedMembers = { ...channel.bannedMembers, ...user };
-  //   const updatedChannel = await this.channelRepository.preload({
-  //     id: banUserDto.channelId,
-  //     bannedMembers,
-  //   });
-
-  //   return this.channelRepository.save(updatedChannel);
-  // }
+    return response(message)
+  }
 }

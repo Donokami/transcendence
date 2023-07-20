@@ -1,10 +1,10 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger'
+import { Expose } from 'class-transformer'
 
-import { Channel } from '@/modules/channels/entities/channel.entity';
-import { type Friendship } from '@/modules/social/entities/friendship.entity';
-import { type Message } from '@/modules/channels/entities/message.entity';
-import { type User } from '@/modules/users/user.entity';
+import { Channel } from '@/modules/chat/channels/entities/channel.entity'
+import { type Friendship } from '@/modules/social/entities/friendship.entity'
+import { type Message } from '@/modules/chat/channels/entities/message.entity'
+import { type User } from '@/modules/users/user.entity'
 
 export class UserDto {
   // ******************* //
@@ -13,27 +13,27 @@ export class UserDto {
 
   @ApiProperty()
   @Expose()
-  id: string;
+  id: string
 
   @ApiProperty()
   @Expose()
-  username: string;
+  username: string
 
   @ApiProperty()
   @Expose()
-  email: string;
+  email: string
 
   @ApiProperty()
   @Expose()
-  profilePicture: string;
+  profilePicture: string
 
   @ApiProperty()
   @Expose()
-  isTwoFactorEnabled: string;
+  isTwoFactorEnabled: string
 
   @ApiProperty()
   @Expose()
-  dataUrl?: string;
+  dataUrl?: string
 
   // ****************** //
   // OTHER INFORMATIONS //
@@ -41,7 +41,7 @@ export class UserDto {
 
   @ApiProperty()
   @Expose()
-  status: string;
+  status: string
 
   // ******************************* //
   // FRIENDSHIP RELATED INFORMATIONS //
@@ -49,23 +49,23 @@ export class UserDto {
 
   @ApiProperty()
   @Expose()
-  nFriends: number;
+  nFriends: number
 
   @ApiProperty()
   @Expose()
-  friends: User[];
+  friends: User[]
 
   @Expose()
   @Expose()
-  blockedUser: User[];
-
-  @ApiProperty()
-  @Expose()
-  sentRequests: Friendship[];
+  blockedUser: User[]
 
   @ApiProperty()
   @Expose()
-  receivedRequests: Friendship[];
+  sentRequests: Friendship[]
+
+  @ApiProperty()
+  @Expose()
+  receivedRequests: Friendship[]
 
   // ************************* //
   // CHAT RELATED INFORMATIONS //
@@ -73,15 +73,15 @@ export class UserDto {
 
   @ApiProperty()
   @Expose()
-  channel: Channel;
+  channel: Channel
 
   @ApiProperty()
   @Expose()
-  bannedChannels: Channel[];
+  bannedChannels: Channel[]
 
   @ApiProperty()
   @Expose()
-  messages: Message[];
+  messages: Message[]
 
   // ************************** //
   // STATS RELATED INFORMATIONS //
@@ -89,33 +89,33 @@ export class UserDto {
 
   @ApiProperty()
   @Expose()
-  rank: number;
+  rank: number
 
   @ApiProperty()
   @Expose()
-  gamesPlayed: number;
+  gamesPlayed: number
 
   @ApiProperty()
   @Expose()
-  win: number;
+  win: number
 
   @ApiProperty()
   @Expose()
-  loss: number;
+  loss: number
 
   @ApiProperty()
   @Expose()
-  winRate: number;
+  winRate: number
 
   @ApiProperty()
   @Expose()
-  pointsScored: number;
+  pointsScored: number
 
   @ApiProperty()
   @Expose()
-  pointsConceded: number;
+  pointsConceded: number
 
   @ApiProperty()
   @Expose()
-  pointsDifference: number;
+  pointsDifference: number
 }

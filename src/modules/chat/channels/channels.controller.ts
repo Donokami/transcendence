@@ -13,6 +13,8 @@ import { AuthGuard } from '@/core/guards/auth.guard'
 import { ChannelsService } from './channels.service'
 
 import { CreateChannelDto } from './dtos/create-channel.dto'
+import { MessageDto } from './dtos/message.dto'
+import { channelErrorHandler } from './utils/channels-errors-handler'
 
 @Controller('channels')
 export class ChannelsController {
@@ -25,10 +27,49 @@ export class ChannelsController {
   private logger = new Logger(ChannelsController.name)
 
   // *************** //
+  // postMessages //
+  // *************** //
+
+  @Post('/:id/messages')
+  @UseGuards(AuthGuard)
+  // todo: add MemberGuard
+  async postMessages(@Param('id') id: string, @Body() body: MessageDto) {
+    const { userId, messageBody } = body
+    const { data: message, error } = await this.channelsService.postMessage({
+      userId,
+      channelId: id,
+      messageBody
+    })
+
+    if (error) {
+      channelErrorHandler(error)
+    }
+
+    return message
+  }
+
+  // *********** //
+  // getMessages //
+  // *********** //
+
+  @Get('/:id/messages')
+  @UseGuards(AuthGuard)
+  // todo: add MemberGuard
+  async getMessages(@Param('id') id: string) {
+    const { data: messages, error } = await this.channelsService.getMessages(id)
+
+    if (error) {
+      channelErrorHandler(error)
+    }
+
+    return messages
+  }
+
+  // *************** //
   // createDmChannel //
   // *************** //
 
-  @Post('/create-dm')
+  @Post('/create/dm')
   @UseGuards(AuthGuard)
   async createDmChannel(@Body() body: CreateChannelDto) {
     try {
@@ -43,7 +84,7 @@ export class ChannelsController {
   // createGroupChannel //
   // ****************** //
 
-  @Post('/create-group-channel')
+  @Post('/create/group-channel')
   @UseGuards(AuthGuard)
   async createGroupChannel(@Body() body: CreateChannelDto) {
     try {
@@ -77,38 +118,4 @@ export class ChannelsController {
     )
     return groupChannelsList
   }
-
-  // @Get(':id')
-  // async findOne(@Param('id') id: string) {
-  //   return this.channelsService.findOne(id);
-  // }
-
-  // @Get()
-  // async findAll() {
-  //   return this.channelsService.findAll();
-  // }
-
-  // @Post()
-  // async create(
-  //   @Req() req: RequestWithUser,
-  //   @Body() createChannelDto: CreateChannelDto,
-  // ) {
-  //   createChannelDto.owner.id = req.user.id;
-  //   return this.channelsService.create(createChannelDto);
-  // }
-
-  // @UseGuards(OwnershipGuard)
-  // @Patch(':id')
-  // async update(
-  //   @Param('id') id: string,
-  //   @Body() updateChannelDto: UpdateChannelDto,
-  // ) {
-  //   return this.channelsService.update(id, updateChannelDto);
-  // }
-
-  // @UseGuards(OwnershipGuard)
-  // @Delete(':id')
-  // async remove(@Param('id') id: string) {
-  //   return this.channelsService.remove(id);
-  // }
 }

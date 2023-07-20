@@ -8,20 +8,20 @@ import {
   OneToMany,
   ManyToMany,
   ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+  PrimaryGeneratedColumn
+} from 'typeorm'
 
-import { Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common'
 
-import { Channel } from '@/modules/channels/entities/channel.entity';
-import { Friendship } from '@/modules/social/entities/friendship.entity';
-import { type Message } from '@/modules/channels/entities/message.entity';
+import { Channel } from '@/modules/chat/channels/entities/channel.entity'
+import { Friendship } from '@/modules/social/entities/friendship.entity'
+import { type Message } from '@/modules/chat/channels/entities/message.entity'
 
 // ****** //
 // LOGGER //
 // ****** //
 
-const logger = new Logger('user');
+const logger = new Logger('user')
 
 @Entity()
 export class User {
@@ -34,44 +34,44 @@ export class User {
   // ******************* //
 
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: string
 
   @Column({ unique: true })
-  username: string;
+  username: string
 
   @Column({ select: false, unique: true })
-  email: string;
+  email: string
 
   @Column({ nullable: true, select: false })
-  password: string;
+  password: string
 
   @Column({ nullable: true })
-  profilePicture: string;
+  profilePicture: string
 
   @Column({ nullable: true, select: false })
-  twoFactorSecret: string;
+  twoFactorSecret: string
 
   @Column({ default: false })
-  isTwoFactorEnabled: boolean;
+  isTwoFactorEnabled: boolean
 
   // ****************** //
   // OTHER INFORMATIONS //
   // ****************** //
 
   @Column({ default: 'offline' })
-  status: string;
+  status: string
 
   // ******************************* //
   // FRIENDSHIP RELATED INFORMATIONS //
   // ******************************* //
 
-  nFriends: number;
+  nFriends: number
 
   @OneToMany(() => Friendship, (friendship) => friendship.sender)
-  sentRequests: Friendship[];
+  sentRequests: Friendship[]
 
   @OneToMany(() => Friendship, (friendship) => friendship.receiver)
-  receivedRequests: Friendship[];
+  receivedRequests: Friendship[]
 
   // ************************* //
   // CHAT RELATED INFORMATIONS //
@@ -79,46 +79,46 @@ export class User {
 
   @JoinTable()
   @ManyToMany(() => Channel, (channel: Channel) => channel.members, {
-    eager: true,
+    eager: true
   })
-  channels: Array<Channel>;
+  channels: Array<Channel>
 
   @JoinTable()
   @ManyToMany(() => Channel, (channel: Channel) => channel.bannedMembers, {
-    eager: true,
+    eager: true
   })
-  bannedChannels: Channel[];
+  bannedChannels: Channel[]
 
   @OneToMany(() => Channel, (channel: Channel) => channel.messages)
-  messages: Message[];
+  messages: Message[]
 
   // ************************** //
   // STATS RELATED INFORMATIONS //
   // ************************** //
 
   @Column({ nullable: true, select: false })
-  rank: number;
+  rank: number
 
   @Column({ default: 0, select: false })
-  gamesPlayed: number;
+  gamesPlayed: number
 
   @Column({ default: 0, select: false })
-  win: number;
+  win: number
 
   @Column({ default: 0, select: false })
-  loss: number;
+  loss: number
 
   @Column({ default: 0, select: false })
-  winRate: number;
+  winRate: number
 
   @Column({ default: 0, select: false })
-  pointsScored: number;
+  pointsScored: number
 
   @Column({ default: 0, select: false })
-  pointsConceded: number;
+  pointsConceded: number
 
   @Column({ default: 0, select: false })
-  pointsDifference: number;
+  pointsDifference: number
 
   // ***** //
   // UTILS //
@@ -126,16 +126,16 @@ export class User {
 
   @AfterInsert()
   logInsert() {
-    logger.verbose(`User with id ${this.id} inserted`);
+    logger.verbose(`User with id ${this.id} inserted`)
   }
 
   @AfterRemove()
   logRemove() {
-    logger.verbose(`User with id ${this.id} removed`, this.id);
+    logger.verbose(`User with id ${this.id} removed`, this.id)
   }
 
   @AfterUpdate()
   logUpdate() {
-    logger.verbose(`User with id ${this.id} updated`, this.id);
+    logger.verbose(`User with id ${this.id} updated`, this.id)
   }
 }
