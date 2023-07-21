@@ -34,11 +34,12 @@ export class ChannelsController {
   @UseGuards(AuthGuard)
   // todo: add MemberGuard
   async postMessages(@Param('id') id: string, @Body() body: MessageDto) {
-    const { userId, messageBody } = body
+    const { userId, messageBody, date } = body
     const { data: message, error } = await this.channelsService.postMessage({
       userId,
       channelId: id,
-      messageBody
+      messageBody,
+      date
     })
 
     if (error) {
@@ -93,29 +94,5 @@ export class ChannelsController {
     } catch (error) {
       throw error
     }
-  }
-
-  // ********* //
-  // getDmList //
-  // ********* //
-
-  @Get('/:id/dm-list')
-  @UseGuards(AuthGuard)
-  async getDmList(@Param('id') id: string) {
-    const dmList = await this.channelsService.getDmList(id)
-    return dmList
-  }
-
-  // ******************** //
-  // getGroupChannelsList //
-  // ******************** //
-
-  @Get('/:id/group-channels-list')
-  @UseGuards(AuthGuard)
-  async getGroupChannelsList(@Param('id') id: string) {
-    const groupChannelsList = await this.channelsService.getGroupChannelsList(
-      id
-    )
-    return groupChannelsList
   }
 }

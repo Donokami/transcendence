@@ -207,7 +207,8 @@ export class UsersService {
 
     const user = await this.userRepository.findOne({
       where: { id },
-      select: ['id', 'username', 'channels', 'bannedChannels', 'messages']
+      select: ['id', 'username', 'channels', 'bannedChannels', 'messages'],
+      relations: ['channels', 'bannedChannels']
     })
 
     return user

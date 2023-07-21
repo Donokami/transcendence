@@ -48,7 +48,8 @@ export const session: RequestHandler = require('cookie-session')({
     {
       provide: APP_PIPE,
       useValue: new ValidationPipe({
-        whitelist: true
+        whitelist: true,
+        forbidUnknownValues: true
       })
     }
   ]

@@ -7,25 +7,25 @@ import {
   NotFoundException,
   Param,
   Patch,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+  UseGuards
+} from '@nestjs/common'
 
-import { AuthGuard } from '@/core/guards/auth.guard';
-import { Serialize } from '@/core/interceptors/serialize.interceptor';
-import { Friendship } from '@/modules/social/entities/friendship.entity';
-import { SocialService } from '@/modules/social/social.service';
+import { AuthGuard } from '@/core/guards/auth.guard'
+import { Serialize } from '@/core/interceptors/serialize.interceptor'
+import { Friendship } from '@/modules/social/entities/friendship.entity'
+import { SocialService } from '@/modules/social/social.service'
 
-import { User } from './user.entity';
-import { UsersService } from './users.service';
-import { UserDto } from './dtos/user.dto';
-import { UpdateUserDto } from './dtos/update-user.dto';
-import { CurrentUser } from './decorators/current-user.decorator';
+import { User } from './user.entity'
+import { UsersService } from './users.service'
+import { UserDto } from './dtos/user.dto'
+import { UpdateUserDto } from './dtos/update-user.dto'
+import { CurrentUser } from './decorators/current-user.decorator'
 
-import { OwnershipGuard } from './guards/ownership.guard';
+import { OwnershipGuard } from './guards/ownership.guard'
+import { ChannelsService } from '@/modules/chat/channels/channels.service'
+import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 
 @Controller('user')
-@Serialize(UserDto)
 export class UsersController {
   // *********** //
   // CONSTRUCTOR //
@@ -34,13 +34,14 @@ export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly socialService: SocialService,
+    private readonly channelsService: ChannelsService
   ) {}
 
   // ****** //
   // LOGGER //
   // ****** //
 
-  private logger = new Logger(UsersController.name);
+  private logger = new Logger(UsersController.name)
 
   // ***************** //
   // ROUTE DEFINITIONS //
@@ -53,7 +54,7 @@ export class UsersController {
   @Get('/me')
   @UseGuards(AuthGuard)
   whoAmI(@CurrentUser() user: User): User {
-    return user;
+    return user
   }
 
   // *********** //
@@ -62,18 +63,18 @@ export class UsersController {
 
   @Get('/all')
   async getAllUsers(): Promise<User[]> {
-    const users = await this.usersService.findAll();
-    return users;
+    const users = await this.usersService.findAll()
+    return users
   }
 
   // **************** //
   // getAllUsersStats //
   // **************** //
 
-  @Get('/all/stats')
+  @Get('/stats')
   async getAllUsersStats(): Promise<User[]> {
-    const users = await this.usersService.findAllWithStats();
-    return users;
+    const users = await this.usersService.findAllWithStats()
+    return users
   }
 
   // ************ //
@@ -83,12 +84,12 @@ export class UsersController {
   @Get('/:id')
   @UseGuards(AuthGuard)
   async findUserById(@Param('id') id: string): Promise<User> {
-    const user = await this.usersService.findOneById(id);
+    const user = await this.usersService.findOneById(id)
     if (!user) {
-      this.logger.error(`User with ID : ${id} not found.`);
-      throw new NotFoundException(`User with ID : ${id} not found.`);
+      this.logger.error(`User with ID : ${id} not found.`)
+      throw new NotFoundException(`User with ID : ${id} not found.`)
     }
-    return user;
+    return user
   }
 
   // ********************* //
@@ -98,12 +99,20 @@ export class UsersController {
   @Get('/:id/stats')
   @UseGuards(AuthGuard)
   async findUserByIdWithStats(@Param('id') id: string): Promise<User> {
-    const user = await this.usersService.findOneByIdWithStats(id);
+    const user = await this.usersService.findOneByIdWithStats(id)
     if (!user) {
-      this.logger.error(`User with ID : ${id} not found.`);
-      throw new NotFoundException(`User with ID : ${id} not found.`);
+      this.logger.error(`User with ID : ${id} not found.`)
+      throw new NotFoundException(`User with ID : ${id} not found.`)
     }
-    return user;
+    return user
+  }
+
+  @Get('/:id/channels')
+  @UseGuards(AuthGuard)
+  async getUserChannels(@Param('id') id: string): Promise<Channel[]> {
+    const channels = await this.channelsService.getChannels(id)
+
+    return channels
   }
 
   // ********** //
@@ -114,9 +123,9 @@ export class UsersController {
   @UseGuards(AuthGuard)
   async updateUser(
     @Param('id') id: string,
-    @Body() body: UpdateUserDto,
+    @Body() body: UpdateUserDto
   ): Promise<User> {
-    return await this.usersService.update(id, body);
+    return await this.usersService.update(id, body)
   }
 
   // ********** //
@@ -127,6 +136,6 @@ export class UsersController {
   @UseGuards(AuthGuard)
   @UseGuards(OwnershipGuard)
   async removeUser(@Param('id') id: string) {
-    return await this.usersService.remove(id);
+    return await this.usersService.remove(id)
   }
 }

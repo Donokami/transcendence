@@ -4,7 +4,8 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  ManyToOne
+  ManyToOne,
+  CreateDateColumn
 } from 'typeorm'
 
 import { Logger } from '@nestjs/common'
@@ -13,14 +14,10 @@ import { User } from '@/modules/users/user.entity'
 
 import { Channel } from './channel.entity'
 
+const logger = new Logger('message')
+
 @Entity()
 export class Message {
-  // ****** //
-  // LOGGER //
-  // ****** //
-
-  private logger = new Logger(Message.name)
-
   // ************* //
   // ENTITY FIELDS //
   // ************* //
@@ -37,13 +34,16 @@ export class Message {
   @ManyToOne(() => User, (user: User) => user.messages)
   user: User
 
+  @Column()
+  createdAt: Date
+
   @AfterInsert()
   logInsert() {
-    this.logger.verbose(`Message with id ${this.id} inserted`)
+    logger.verbose(`Message with id ${this.id} inserted`)
   }
 
   @AfterRemove()
   logRemove() {
-    this.logger.verbose(`Message with id ${this.id} removed`)
+    logger.verbose(`Message with id ${this.id} removed`)
   }
 }

@@ -7,7 +7,7 @@ import {
   forwardRef
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { Repository, SelectQueryBuilder } from 'typeorm'
 
 import { UsersService } from '@/modules/users/users.service'
 
@@ -116,7 +116,7 @@ export class ChannelsService {
   // getDmList //
   // ********* //
 
-  async getDmList(userId: string): Promise<Channel[]> {
+  async getChannels(userId: string): Promise<Channel[]> {
     if (!userId) {
       this.logger.warn(`ID of the user is required.`)
       throw new BadRequestException('ID of the user is required.')
@@ -130,74 +130,26 @@ export class ChannelsService {
       )
     }
 
-    const channelIds = await this.channelsRepository
+    // fix: take(10) not working
+    const channels = await this.channelsRepository
       .createQueryBuilder('channel')
-      .innerJoin('channel.members', 'member')
-      .where('member.id = :userId', { userId })
-      .select('channel.id')
-      .getRawMany()
-
-    const dm = await this.channelsRepository
-      .createQueryBuilder('channel')
-      .innerJoinAndSelect('channel.members', 'user')
-      .where('channel.isDm = :isDm', { isDm: true })
-      .andWhere('channel.id IN (:...channelIds)', {
-        channelIds: channelIds.map((channel) => channel.channel_id)
-      })
-      .getMany()
-
-    if (!dm.length) {
-      this.logger.verbose(`No DMs found in database for ${userId}.`)
-      return []
-    }
-
-    this.logger.verbose(`DMs list of : ${userId} successfully retrieved.`)
-
-    return dm
-  }
-
-  // ******************** //
-  // getGroupChannelsList //
-  // ******************** //
-
-  async getGroupChannelsList(userId: string): Promise<Channel[]> {
-    if (!userId) {
-      this.logger.warn(`ID of the user is required.`)
-      throw new BadRequestException('ID of the user is required.')
-    }
-
-    const user = await this.userService.findOneById(userId)
-    if (!user) {
-      this.logger.warn(`User with ID : ${userId} not found in database.`)
-      throw new NotFoundException(
-        `User with ID : ${userId} not found in database.`
+      .leftJoinAndSelect('channel.members', 'members')
+      .leftJoinAndSelect('channel.owner', 'owner')
+      .leftJoinAndMapMany(
+        'channel.messages',
+        Message,
+        'message',
+        'message.channelId = channel.id',
+        (qb) => qb.orderBy('message.createdAt', 'ASC')
       )
-    }
-
-    const channelIds = await this.channelsRepository
-      .createQueryBuilder('channel')
-      .innerJoin('channel.members', 'member')
-      .where('member.id = :userId', { userId })
-      .select('channel.id')
-      .getRawMany()
-
-    const groupChannels = await this.channelsRepository
-      .createQueryBuilder('channel')
-      .innerJoinAndSelect('channel.members', 'user')
-      .where('channel.isDm = :isDm', { isDm: false })
-      .andWhere('channel.id IN (:...channelIds)', {
-        channelIds: channelIds.map((channel) => channel.channel_id)
-      })
+      .leftJoinAndSelect('message.user', 'user')
+      .where('members.id = :userId', { userId })
+      .orderBy('message.createdAt', 'ASC')
       .getMany()
-
-    if (!groupChannels.length) {
-      this.logger.verbose(`No group channels found in database for ${userId}.`)
-      return []
-    }
 
     this.logger.verbose(`DMs list of : ${userId} successfully retrieved.`)
 
-    return groupChannels
+    return channels
   }
 
   // *********** //
@@ -231,6 +183,8 @@ export class ChannelsService {
       `Messages list of : ${channelId} successfully retrieved.`
     )
 
+    console.log('messages : ', messages)
+
     return response(messages)
   }
 
@@ -239,7 +193,7 @@ export class ChannelsService {
   // *********** //
 
   async postMessage(messageDto: MessageDto): Promise<ServiceResponse<Message>> {
-    const { messageBody, channelId, userId } = messageDto
+    const { messageBody, channelId, userId, date } = messageDto
 
     // todo: check errors
 
@@ -250,7 +204,8 @@ export class ChannelsService {
     const newMessage = this.messagesRepository.create({
       messageBody,
       channel,
-      user
+      user,
+      createdAt: date
     })
 
     const message = await this.messagesRepository.save(newMessage)

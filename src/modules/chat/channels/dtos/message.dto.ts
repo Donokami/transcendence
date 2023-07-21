@@ -1,4 +1,5 @@
-import { IsOptional, IsString } from 'class-validator'
+import { Transform, Type } from 'class-transformer'
+import { IsDate, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
 export class MessageDto {
   @IsString()
@@ -10,4 +11,9 @@ export class MessageDto {
 
   @IsString()
   userId: string
+
+  @IsNotEmpty()
+  @Transform(({ value }) => new Date(value))
+  @IsDate()
+  date: Date
 }
