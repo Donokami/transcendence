@@ -10,7 +10,7 @@ import type { User } from '@/types/user'
 
 export const useChannelStore = defineStore('channels', {
   state: () => ({
-    channelsList: null as unknown as Promise<Channel[]>,
+    channelsList: [] as unknown as Promise<Channel[]>,
     selectedChannel: null as unknown as Channel
   }),
   actions: {
@@ -24,7 +24,7 @@ export const useChannelStore = defineStore('channels', {
     ): Promise<Channel | null> {
       const channelParam = {
         isDm: true,
-        ownerId: ownerId,
+        ownerId,
         membersIds: [ownerId, receiverId]
       }
 
@@ -34,7 +34,7 @@ export const useChannelStore = defineStore('channels', {
           channelParam
         )
 
-        this.channelsList.push(response)
+        this.channelsList.push(response) // fix: not working
 
         console.log('New DM channel created ! Id : ', response.id)
         console.log(
@@ -62,10 +62,10 @@ export const useChannelStore = defineStore('channels', {
       const channelParam = {
         isDm: false,
         name: channelName,
-        ownerId: ownerId,
+        ownerId,
         membersIds: [ownerId, ...receiversId],
-        passwordRequired: passwordRequired,
-        password: password
+        passwordRequired,
+        password
       }
       try {
         const response: Channel = await fetcher.post(
@@ -84,24 +84,12 @@ export const useChannelStore = defineStore('channels', {
     // fetchChannels //
     // ************* //
 
-    // todo Lucas : create the route /channels/:id in the backend
     async fetchChannels(): Promise<Channel[]> {
       const { loggedUser } = useUserStore()
-      if (!loggedUser) return []
+      if (loggedUser == null) return []
       try {
-        this.channelsList = fetcher.get(`/channels/${loggedUser.id}`)
+        this.channelsList = fetcher.get(`/user/${loggedUser.id}/channels`)
         const response = await this.channelsList
-        response.forEach((channel: Channel) => {
-          if (channel.isDm === true) {
-            channel.receiver = channel.members.filter((user: User) => {
-              if (!loggedUser) {
-                return false
-              }
-              return user.id !== loggedUser.id
-            })[0]
-          }
-        })
-
         return response
       } catch (error) {
         console.error(error)
@@ -109,14 +97,37 @@ export const useChannelStore = defineStore('channels', {
       }
     },
 
+    async getChannels(): Promise<Channel[]> {
+      const { loggedUser } = useUserStore()
+      if (loggedUser == null) return []
+      const channels = await this.channelsList
+
+      const response = await this.channelsList
+      channels.map((channel: Channel) => {
+        if (channel.isDm) {
+          const recieverUser = channel.members[0]
+          console.log('recieverUser : ', recieverUser)
+
+          if (recieverUser != null) {
+            channel.name = 'ta mere la query' // todo: needs an obvious fix (see backend)
+            channel.image = recieverUser.profilePicture
+          }
+        }
+        return channel
+      })
+      console.log('response : ', response)
+
+      return response
+    },
+
     // ****** //
     // getDms //
     // ****** //
 
     async getDms(): Promise<Channel[]> {
-      const channels = await this.channelsList
+      const channels = await this.getChannels()
       console.log('channels : ', channels)
-      return channels.filter((channel) => channel.isDm === true)
+      return channels.filter((channel) => channel.isDm)
     },
 
     // **************** //
@@ -124,8 +135,8 @@ export const useChannelStore = defineStore('channels', {
     // **************** //
 
     async getGroupChannels(): Promise<Channel[]> {
-      const channels = await this.channelsList
-      return channels.filter((channel) => channel.isDm === false)
+      const channels = await this.getChannels()
+      return channels.filter((channel) => !channel.isDm)
     },
 
     // ******************** //
@@ -139,7 +150,7 @@ export const useChannelStore = defineStore('channels', {
         )
         this.selectedChannel.messages = response
         const channel = this.getChannel()
-        if (channel) channel.messages = response
+        if (channel != null) channel.messages = response
       } catch (error) {
         console.error(error)
       }
@@ -181,11 +192,12 @@ export const useChannelStore = defineStore('channels', {
     // getChannel //
     // ********** //
 
-    getChannel(channelId?: string): Channel | undefined {
+    async getChannel(channelId?: string): Channel | undefined {
       if (!channelId) {
         channelId = this.selectedChannel.id
       }
-      return this.channelsList.find((channel) => channel.id === channelId)
+      const channels = await this.getChannels()
+      return channels.find((channel) => channel.id === channelId)
     },
 
     // ****************** //
@@ -194,7 +206,7 @@ export const useChannelStore = defineStore('channels', {
 
     getChannelMessages() {
       const channel = this.getChannel()
-      if (channel) {
+      if (channel != null) {
         return channel.messages
       }
     },
@@ -248,19 +260,20 @@ export const useChannelStore = defineStore('channels', {
     async sendMessage(message: string) {
       const { loggedUser } = useUserStore()
       try {
-        const newMessage: Message = await fetcher.post(
-          `/channels/${this.selectedChannel.id}/messages`,
-          {
-            userId: loggedUser?.id,
-            messageBody: message
-          }
-        )
-
-        const channel = await this.getChannel()
-        if (channel) channel.messages.push(newMessage)
+        await fetcher.post(`/channels/${this.selectedChannel.id}/messages`, {
+          userId: loggedUser?.id,
+          messageBody: message,
+          date: new Date()
+        })
       } catch (error) {
         console.error(error)
       }
+    },
+
+    async addMessage(message: Message) {
+      const channel = await this.getChannel()
+      this.selectedChannel.messages.push(message)
+      console.log('channel : ', channel)
     }
   }
 })

@@ -50,7 +50,7 @@ export const useUserStore = defineStore('users', {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json()
+      return await response.json()
     },
 
     // ********* //
@@ -68,7 +68,7 @@ export const useUserStore = defineStore('users', {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json()
+      return await response.json()
     },
 
     // *************** //
@@ -97,14 +97,15 @@ export const useUserStore = defineStore('users', {
     // ************* //
 
     async fetchAllUsers(): Promise<User[]> {
-      const response = await fetch(`http://localhost:3000/api/user/all/stats`, {
+      const response = await fetch(`http://localhost:3000/api/user/stats`, {
         method: 'GET',
         credentials: 'include'
       })
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json()
+      const users = await response.json()
+      return users
     },
 
     // ************** //
@@ -125,7 +126,7 @@ export const useUserStore = defineStore('users', {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.text()
+      return await response.text()
     },
 
     // *************** //
@@ -143,7 +144,7 @@ export const useUserStore = defineStore('users', {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json()
+      return await response.json()
     },
 
     // ******************* //
@@ -161,7 +162,7 @@ export const useUserStore = defineStore('users', {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json()
+      return await response.json()
     },
 
     // ********* //
@@ -192,7 +193,7 @@ export const useUserStore = defineStore('users', {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json()
+      return await response.json()
     },
 
     // ********************** //
@@ -210,7 +211,7 @@ export const useUserStore = defineStore('users', {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json()
+      return await response.json()
     },
 
     // ***************** //
@@ -218,7 +219,7 @@ export const useUserStore = defineStore('users', {
     // ***************** //
 
     async refreshFriendList() {
-      if (!this.loggedUser) {
+      if (this.loggedUser == null) {
         return []
       }
       try {
@@ -276,7 +277,7 @@ export const useUserStore = defineStore('users', {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json()
+      return await response.json()
     },
 
     // ***************** //
@@ -299,7 +300,7 @@ export const useUserStore = defineStore('users', {
       console.log(
         `[UserStore] - Friend request successfully sent to ${receiverId} !`
       )
-      return response.json()
+      return await response.json()
     },
 
     // ****** //
@@ -358,7 +359,7 @@ export const useUserStore = defineStore('users', {
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
       }
-      return response.json()
+      return await response.json()
     },
 
     // *************** //
@@ -396,7 +397,7 @@ export const useUserStore = defineStore('users', {
         }
       )
 
-      return response.json()
+      return await response.json()
     },
 
     // ********** //
