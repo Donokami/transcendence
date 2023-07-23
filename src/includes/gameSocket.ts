@@ -25,11 +25,12 @@ export const room: Room = reactive({
 export const game: Game = reactive({
   paddle1Pos: new Vector3(0, 0, 0),
   paddle2Pos: new Vector3(0, 0, 0),
-  testBallPos: new Vector3(0, 0, 0),
+  ballPos: new Vector3(0, 3, 0),
   score1: 0,
   score2: 0,
   isUserPaddle1: true,
-  remainingTime: 0
+  remainingTime: 0,
+  fps: 0
 })
 
 socket.on('connect', () => {
@@ -49,12 +50,18 @@ socket.on('room:update', (data: Room) => {
   Object.assign(room, data)
 })
 
-socket.on('game:testBall', ({ x, y, z }) => {
-  game.testBallPos = new Vector3(x, y, z)
+socket.on('game:ball', ({ x, y, z }) => {
+  game.ballPos = new Vector3(x, y, z)
 })
 
-socket.on('game:paddle1', ({ x, y, z }) => {
+socket.on('game:player1', ([{ x, y, z }, score]) => {
   game.paddle1Pos = new Vector3(x, y, z)
+  game.score1 = score
+})
+
+socket.on('game:player2', ([{ x, y, z }, score]) => {
+  game.paddle2Pos = new Vector3(x, y, z)
+  game.score2 = score
 })
 
 socket.on('game:remainingTime', (remainingTime: number) => {

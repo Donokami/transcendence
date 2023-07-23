@@ -15,7 +15,7 @@
   "dependencies": {
     "@tanstack/vue-query": "^4.29.20",
     "@tresjs/cientos": "^2.3.0",
-    "@tresjs/core": "^2.4.0",
+    "@tresjs/core": "^2.4.2",
     "@types/three": "^0.152.1",
     "@vee-validate/rules": "^4.10.6",
     "daisyui": "^2.52.0",
