@@ -10,7 +10,6 @@ import config from './core/config'
 import { TypeOrmConfigService } from './core/config/database.config'
 
 import { AuthModule } from '@/modules/auth/auth.module'
-import { ChannelsModule } from '@/modules/channels/channels.module'
 import { ChatModule } from '@/modules/chat/chat.module'
 import { GameModule } from '@/modules/game/game.module'
 import { SocialModule } from '@/modules/social/social.module'
@@ -41,7 +40,6 @@ export const session: RequestHandler = require('cookie-session')({
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService
     }),
-    ChannelsModule,
     ChatModule,
     SocialModule,
     GameModule,
@@ -54,7 +52,8 @@ export const session: RequestHandler = require('cookie-session')({
     {
       provide: APP_PIPE,
       useValue: new ValidationPipe({
-        whitelist: true
+        whitelist: true,
+        forbidUnknownValues: true
       })
     }
   ]

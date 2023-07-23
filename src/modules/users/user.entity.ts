@@ -82,15 +82,11 @@ export class User {
   // ************************* //
 
   @JoinTable()
-  @ManyToMany(() => Channel, (channel: Channel) => channel.members, {
-    eager: true
-  })
+  @ManyToMany(() => Channel, (channel: Channel) => channel.members)
   channels: Array<Channel>
 
   @JoinTable()
-  @ManyToMany(() => Channel, (channel: Channel) => channel.bannedMembers, {
-    eager: true
-  })
+  @ManyToMany(() => Channel, (channel: Channel) => channel.bannedMembers)
   bannedChannels: Channel[]
 
   @OneToMany(() => Channel, (channel: Channel) => channel.messages)

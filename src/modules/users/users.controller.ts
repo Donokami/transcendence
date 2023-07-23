@@ -36,6 +36,7 @@ import { memoryStorage } from 'multer'
 import * as sharp from 'sharp'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { UserNotFound } from '@/core/exceptions'
+import { ChannelsService } from '@/modules/chat/channels/channels.service'
 
 @Controller('users')
 @UseFilters(new GlobalExceptionFilter())
@@ -46,8 +47,9 @@ export class UsersController {
 
   constructor(
     private readonly usersService: UsersService,
-    private readonly socialService: SocialService
-  ) {}
+    private readonly socialService: SocialService,
+    private readonly channelsService: ChannelsService
+  ) { }
 
   // ****** //
   // LOGGER //
@@ -228,7 +230,6 @@ export class UsersController {
     @Param('id') id: string,
     @Body() body: UpdateUserDto
   ): Promise<User> {
-    console.log('body', body)
     return await this.usersService.update(id, body)
   }
 

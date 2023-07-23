@@ -7,19 +7,19 @@ import {
   OneToMany,
   ManyToMany,
   OneToOne,
-  ManyToOne,
-} from 'typeorm';
+  ManyToOne
+} from 'typeorm'
 
-import { User } from '@/modules/users/user.entity';
+import { User } from '@/modules/users/user.entity'
 
-import { Message } from './message.entity';
-import { Logger } from '@nestjs/common';
+import { Message } from './message.entity'
+import { Logger } from '@nestjs/common'
 
 // ****** //
 // LOGGER //
 // ****** //
 
-const logger = new Logger('channel');
+const logger = new Logger('channel')
 
 @Entity()
 export class Channel {
@@ -32,51 +32,51 @@ export class Channel {
   // **************************** //
 
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: string
 
   @Column({ nullable: true })
-  name: string;
+  name: string
 
   @Column({ default: true })
-  isDm: boolean;
+  isDm: boolean
 
   // **************************** //
   // MEMBERS RELATED INFORMATIONS //
   // **************************** //
 
   @ManyToOne(() => User)
-  owner: User;
+  owner: User
 
   @ManyToMany(() => User, (user: User) => user.channels)
-  members: Array<User>;
+  members: Array<User>
 
   @ManyToMany(() => User, (user: User) => user.bannedChannels)
-  bannedMembers: User[];
+  bannedMembers: User[]
 
   // **************************** //
   // PRIVACY RELATED INFORMATIONS //
   // **************************** //
 
   @Column({ default: false })
-  passwordRequired: boolean;
+  passwordRequired: boolean
 
   @Column({ nullable: true })
-  password: string;
+  password: string
 
   // ***************************** //
   // MESSAGES RELATED INFORMATIONS //
   // ***************************** //
 
   @OneToMany(() => Message, (message: Message) => message.channel)
-  messages: Message[];
+  messages: Message[]
 
   @AfterInsert()
   logInsert() {
-    logger.verbose(`Channel with id ${this.id} inserted`);
+    logger.verbose(`Channel with id ${this.id} inserted`)
   }
 
   @AfterRemove()
   logRemove() {
-    logger.verbose(`Channel with id ${this.id} removed`);
+    logger.verbose(`Channel with id ${this.id} removed`)
   }
 }

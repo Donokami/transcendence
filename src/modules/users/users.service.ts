@@ -32,7 +32,7 @@ export class UsersService {
     @InjectRepository(Friendship)
     private readonly friendshipRepository: Repository<Friendship>,
     private readonly configService: ConfigService
-  ) {}
+  ) { }
 
   // ****** //
   // LOGGER //
@@ -247,6 +247,24 @@ export class UsersService {
         ]
       })
     }
+    return user
+  }
+
+  // *********************** //
+  // findOneByIdWithChannels //
+  // *********************** //
+
+  async findOneByIdWithChannels(id: string): Promise<User> {
+    if (!id) {
+      return null
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: ['id', 'username', 'channels', 'bannedChannels', 'messages'],
+      relations: ['channels', 'bannedChannels']
+    })
+
     return user
   }
 
