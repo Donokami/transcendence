@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common'
 import { randomUUID } from 'crypto'
 import { User } from '../users/user.entity'
 import { GameGateway } from './game.gateway'
-import { Game } from './game-engine'
+import { Game } from './game.engine'
 import {
   RoomNeedsAnOwner,
   UserAlreadyInRoom,
@@ -46,7 +46,7 @@ export class Room implements RoomObject {
   isPrivate = false
   status = RoomStatus.OPEN
   maxPlayers = MAX_PLAYERS
-  gameState = new Game(this, this.gameGateway)
+  gameState = null
 
   private readonly logger = new Logger(Room.name)
   constructor(
@@ -138,6 +138,8 @@ export class Room implements RoomObject {
     console.log('Starting game')
 
     this.update({ ...this, status: RoomStatus.INGAME })
+
+    this.gameState = new Game(this, this.gameGateway)
     this.gameState.startGame()
   }
 
