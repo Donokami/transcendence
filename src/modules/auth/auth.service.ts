@@ -29,7 +29,7 @@ export class AuthService {
   // CONSTRUCTOR //
   // *********** //
 
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   // ****** //
   // LOGGER //
@@ -61,7 +61,7 @@ export class AuthService {
   // *************** //
 
   async toggleTwoFactor(userId: string) {
-    const user = await this.usersService.findOneById(userId)
+    const user = await this.usersService.findOneByIdWithAuthInfos(userId)
 
     if (user.isTwoFactorEnabled) {
       user.isTwoFactorEnabled = false

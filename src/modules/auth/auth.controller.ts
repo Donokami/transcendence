@@ -11,8 +11,6 @@ import {
 
 import { AuthGuard } from '@nestjs/passport'
 
-import { Serialize } from '@/core/interceptors/serialize.interceptor'
-import { UserDto } from '@/modules/users/dtos/user.dto'
 import { RegisterUserDto } from '@/modules/users/dtos/register-user.dto'
 import { SignInUserDto } from '@/modules/users/dtos/signin-user.dto'
 

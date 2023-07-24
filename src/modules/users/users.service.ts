@@ -197,6 +197,30 @@ export class UsersService {
   // findOneByIdWithAuthInfos //
   // ************************ //
 
+  async findOneByIdWithAuthInfos(id: string): Promise<User> {
+    if (!id) {
+      return null
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: [
+        'id',
+        'username',
+        'email',
+        'password',
+        'twoFactorSecret',
+        'isTwoFactorEnabled'
+      ]
+    })
+
+    return user
+  }
+
+  // ************************ //
+  // findOneByIdWithAuthInfos //
+  // ************************ //
+
   async findOneByIdWithStats(id: string): Promise<User> {
     if (!id) {
       return null
