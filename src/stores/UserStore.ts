@@ -170,7 +170,7 @@ export const useUserStore = defineStore('users', {
     // ********* //
 
     async fetchUser(): Promise<User> {
-      const response = await fetch(`http://localhost:3000/api/users/me`, {
+      const response = await fetch(`http://localhost:3000/api/user/me`, {
         method: 'GET',
         credentials: 'include'
       })
