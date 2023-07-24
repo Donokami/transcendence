@@ -22,10 +22,9 @@ import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { ApiOperation } from '@nestjs/swagger'
 
 @Controller('auth')
-@Serialize(UserDto)
 @UseFilters(new GlobalExceptionFilter())
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Get('42/signIn')
   @UseGuards(AuthGuard('42'))
