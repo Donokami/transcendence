@@ -97,7 +97,7 @@ export const useUserStore = defineStore('users', {
     // ************* //
 
     async fetchAllUsers(): Promise<User[]> {
-      const response = await fetch(`http://localhost:3000/api/users/stats`, {
+      const response = await fetch(`http://localhost:3000/api/user/stats`, {
         method: 'GET',
         credentials: 'include'
       })
@@ -186,7 +186,7 @@ export const useUserStore = defineStore('users', {
     // ************* //
 
     async fetchUserById(id: string): Promise<User> {
-      const response = await fetch(`http://localhost:3000/api/users/${id}`, {
+      const response = await fetch(`http://localhost:3000/api/user/${id}`, {
         method: 'GET',
         credentials: 'include'
       })
@@ -202,7 +202,7 @@ export const useUserStore = defineStore('users', {
 
     async fetchUserByIdWithStats(id: string): Promise<User> {
       const response = await fetch(
-        `http://localhost:3000/api/users/${id}/stats`,
+        `http://localhost:3000/api/user/${id}/stats`,
         {
           method: 'GET',
           credentials: 'include'
@@ -405,7 +405,7 @@ export const useUserStore = defineStore('users', {
     // ********** //
 
     async updateUser(id: string, userData: UserData) {
-      const response = await fetch(`http://localhost:3000/api/users/${id}`, {
+      const response = await fetch(`http://localhost:3000/api/user/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json'
@@ -430,7 +430,7 @@ export const useUserStore = defineStore('users', {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await fetch('http://localhost:3000/api/users/upload', {
+      const response = await fetch('http://localhost:3000/api/user/upload', {
         method: 'POST',
         credentials: 'include',
         body: formData
