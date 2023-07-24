@@ -2,7 +2,7 @@
   <input type="checkbox" id="my-modal-3" class="modal-toggle" />
   <div class="modal">
     <div class="modal-box rounded-none">
-      <Form ref="formRef" :validation-schema="privateSchema" @submit="submitForm">
+      <Form ref="formRef" @submit="submitForm">
         <!-- CLOSING CROSS -->
         <div class="flex items-center justify-end">
           <label for="my-modal-3"
@@ -18,7 +18,8 @@
           <!-- CHANNEL NAME -->
           <div class="form-control py-4">
             <span class="text-base text-black">Channel Name</span>
-            <input class="neobrutalist-input py-2" placeholder="Enter a channel name" />
+            <input v-model="channelName" class="neobrutalist-input py-2" placeholder="Enter a channel name" />
+            <div v-if="channelNameError" class="text-red-500">{{ channelNameError }}</div>
           </div>
           <!-- FRIENDS LIST -->
           <div class="form-control py-4">
@@ -46,6 +47,7 @@
               </div>
             </div>
           </div>
+          <div v-if="friendListError" class="text-red-500">{{ friendListError }}</div>
           <!-- PASSWORD -->
           <div class="form-control py-2">
             <label class="label cursor-pointer">
@@ -53,17 +55,18 @@
               <input type="checkbox" class="checkbox border-2 border-black rounded-none"
                 @click="setPasswordRequirement()" />
             </label>
-            <input v-if="passwordRequired === true" class="neobrutalist-input py-4"
+            <input v-model="password" v-if="passwordRequired === true" class="neobrutalist-input py-4"
               placeholder="Choose a password for your channel" />
+            <div v-if="passwordError" class="text-red-500">{{ passwordError }}</div>
           </div>
         </div>
         <!-- CREATE CHANNEL BUTTON -->
         <div>
-          <label
-            class="btn bg-white border-2 border-black my-4 mb-2 text-black hover:bg-primary hover:border-primary hover:text-white"
-            type="button" @click="createGroupChannel()">
+          <button
+            class="btn bg-white border-2 border-black my-4 mb-2 text-black hover:bg-black hover:border-black hover:text-white"
+            type="submit">
             CREATE CHANNEL
-          </label>
+          </button>
         </div>
       </Form>
     </div>
@@ -79,7 +82,7 @@
 import { ref, onBeforeMount } from 'vue'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router';
 
-import { Form, Field, ErrorMessage } from 'vee-validate'
+import { Form, Field, ErrorMessage, useForm } from 'vee-validate'
 
 import { storeToRefs } from 'pinia';
 
@@ -97,15 +100,16 @@ const router = useRouter()
 const userStore = useUserStore()
 const channelStore = useChannelStore()
 
+const channelName = ref<string>('')
+const channelNameError = ref<string | null>(null);
+
+
 const usersToAdd = ref<string[]>([])
+const friendListError = ref<string | null>(null);
+
 const password = ref<string | null>(null)
 const passwordRequired = ref<boolean>(false)
-
-const inSubmission = ref(false)
-
-const privateSchema = {
-  password: 'required|min:8|max:100'
-}
+const passwordError = ref<string | null>(null);
 
 // **************************** //
 // loggedUser RELATED VARIABLES //
@@ -137,14 +141,21 @@ const createGroupChannel = async (): Promise<Channel | null> => {
   if (!loggedUser.value || !usersToAdd.value) {
     return null;
   }
+
+  if (passwordRequired.value && !password.value) {
+    console.error(`[ChatGroupChannelsModal] - Password is required but not provided!`)
+    return null;
+  }
+
   try {
     console.log(`[ChatGroupChannelsModal] - Creating group channel...`)
+    console.log('channelName.value : ', channelName.value)
     console.log('loggedUser.value.id : ', loggedUser.value.id)
     console.log('usersToAdd.value : ', usersToAdd.value)
     console.log('passwordRequired.value : ', passwordRequired.value)
     console.log('password.value : ', password.value)
 
-    const groupChannel = await channelStore.createGroupChannel(loggedUser.value.id, usersToAdd.value, passwordRequired.value, password.value);
+    const groupChannel = await channelStore.createGroupChannel(channelName.value, loggedUser.value.id, usersToAdd.value, passwordRequired.value, password.value);
     console.log(`[ChatGroupChannelsModal] - Group channel created successfully !`)
     return groupChannel;
   }
@@ -174,13 +185,41 @@ const setPasswordRequirement = () => {
     passwordRequired.value = false
   else
     passwordRequired.value = true
+  passwordError.value = null;
 }
 
 // ********** //
 // submitForm //
 // ********** //
 
-const submitForm = async (values: Record<string, any>) => { }
+const submitForm = async (values: Record<string, any>) => {
+
+  if (!channelName.value.length) {
+    channelNameError.value = 'You need to name the channel before creating it.';
+    return;
+  }
+
+  if (!usersToAdd.value.length) {
+    friendListError.value = 'You need to add friends to the channel before creating it.';
+    return;
+  }
+
+  if (passwordRequired.value && !password.value) {
+    passwordError.value = 'The password field is required.';
+    return;
+  }
+
+  if (password.value && (password.value.length < 8 || password.value.length > 100)) {
+    passwordError.value = 'The password must be between 8 and 100 characters.';
+    return;
+  }
+
+  passwordError.value = null;
+  channelNameError.value = null;
+  friendListError.value = null;
+
+  createGroupChannel();
+};
 
 // ********************* //
 // VueJs LIFECYCLE HOOKS //
