@@ -12,9 +12,9 @@ import {
 
 import { Logger } from '@nestjs/common'
 
-import { Channel } from '@/modules/channels/entities/channel.entity'
+import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { Friendship } from '@/modules/social/entities/friendship.entity'
-import { type Message } from '@/modules/channels/entities/message.entity'
+import { type Message } from '@/modules/chat/channels/entities/message.entity'
 import { ApiProperty } from '@nestjs/swagger'
 
 // ****** //

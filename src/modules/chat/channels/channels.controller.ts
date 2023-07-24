@@ -5,6 +5,7 @@ import {
   Logger,
   Param,
   Post,
+  UseFilters,
   UseGuards
 } from '@nestjs/common'
 
@@ -14,11 +15,12 @@ import { ChannelsService } from './channels.service'
 
 import { CreateChannelDto } from './dtos/create-channel.dto'
 import { MessageDto } from './dtos/message.dto'
-import { channelErrorHandler } from './utils/channels-errors-handler'
+import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 
 @Controller('channels')
+@UseFilters(new GlobalExceptionFilter())
 export class ChannelsController {
-  constructor(private readonly channelsService: ChannelsService) {}
+  constructor(private readonly channelsService: ChannelsService) { }
 
   // ****** //
   // LOGGER //
@@ -35,16 +37,12 @@ export class ChannelsController {
   // todo: add MemberGuard
   async postMessages(@Param('id') id: string, @Body() body: MessageDto) {
     const { userId, messageBody, date } = body
-    const { data: message, error } = await this.channelsService.postMessage({
+    const message = await this.channelsService.postMessage({
       userId,
       channelId: id,
       messageBody,
       date
     })
-
-    if (error) {
-      channelErrorHandler(error)
-    }
 
     return message
   }
@@ -57,11 +55,7 @@ export class ChannelsController {
   @UseGuards(AuthGuard)
   // todo: add MemberGuard
   async getMessages(@Param('id') id: string) {
-    const { data: messages, error } = await this.channelsService.getMessages(id)
-
-    if (error) {
-      channelErrorHandler(error)
-    }
+    const messages = await this.channelsService.getMessages(id)
 
     return messages
   }

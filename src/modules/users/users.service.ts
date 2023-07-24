@@ -10,7 +10,7 @@ import {
   Paginated
 } from 'nestjs-paginate'
 
-import { type Channel } from '@/modules/channels/entities/channel.entity'
+import { type Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { type IUserDetails } from '@/core/types/user-details'
 import {
   Friendship,

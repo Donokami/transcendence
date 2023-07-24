@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { Expose } from 'class-transformer'
 
-import { Channel } from '@/modules/channels/entities/channel.entity'
+import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { type Friendship } from '@/modules/social/entities/friendship.entity'
-import { type Message } from '@/modules/channels/entities/message.entity'
+import { type Message } from '@/modules/chat/channels/entities/message.entity'
 import { type User } from '@/modules/users/user.entity'
 
 export class UserDto {

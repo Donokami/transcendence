@@ -37,8 +37,9 @@ import * as sharp from 'sharp'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { UserNotFound } from '@/core/exceptions'
 import { ChannelsService } from '@/modules/chat/channels/channels.service'
+import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 
-@Controller('users')
+@Controller('user')
 @UseFilters(new GlobalExceptionFilter())
 export class UsersController {
   // *********** //
@@ -107,7 +108,7 @@ export class UsersController {
   // upload file //
   // *********** //
 
-  @Post('upload')
+  @Post('/upload')
   @UseGuards(AuthGuard)
   @UseInterceptors(
     FileInterceptor('file', {
@@ -210,6 +211,14 @@ export class UsersController {
       throw new UserNotFound()
     }
     return user
+  }
+
+  @Get('/:id/channels')
+  @UseGuards(AuthGuard)
+  async getUserChannels(@Param('id') id: string): Promise<Channel[]> {
+    const channels = await this.channelsService.getChannels(id)
+
+    return channels
   }
 
   // ********** //

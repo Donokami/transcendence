@@ -7,7 +7,7 @@ import {
   forwardRef
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository, SelectQueryBuilder } from 'typeorm'
+import { Repository } from 'typeorm'
 
 import { UsersService } from '@/modules/users/users.service'
 
@@ -18,9 +18,6 @@ import { User } from '@/modules/users/user.entity'
 import { CreateChannelDto } from './dtos/create-channel.dto'
 import { MessageDto } from './dtos/message.dto'
 
-import type { ServiceResponse } from '@/core/types/service-response'
-import { response } from '@/core/utils'
-import { ChannelError } from '@/core/constants/errors/channel-error'
 import { ChatGateway } from '../chat.gateway'
 
 @Injectable()
@@ -33,7 +30,7 @@ export class ChannelsService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway
-  ) {}
+  ) { }
 
   // ****** //
   // LOGGER //
@@ -156,22 +153,17 @@ export class ChannelsService {
   // getMessages //
   // *********** //
 
-  async getMessages(channelId: string): Promise<ServiceResponse<Message[]>> {
+  async getMessages(channelId: string): Promise<Message[]> {
     if (!channelId) {
-      this.logger.warn(`ID of the channel is required.`)
-      return response(null, {
-        message: 'ID of the channel is required.',
-        code: ChannelError.MISSING_ID
-      })
+      throw new BadRequestException('ID of the channel is required.')
     }
 
     const channel = await this.channelsRepository.findOneBy({ id: channelId })
     if (!channel) {
       this.logger.warn(`Channel with ID : ${channelId} not found in database.`)
-      return response(null, {
-        message: `Channel with ID : ${channelId} not found in database.`,
-        code: ChannelError.NOT_FOUND
-      })
+      throw new NotFoundException(
+        `Channel with ID : ${channelId} not found in database.`
+      )
     }
 
     const messages = await this.messagesRepository.find({
@@ -185,14 +177,14 @@ export class ChannelsService {
 
     console.log('messages : ', messages)
 
-    return response(messages)
+    return messages
   }
 
   // *********** //
   // postMessage //
   // *********** //
 
-  async postMessage(messageDto: MessageDto): Promise<ServiceResponse<Message>> {
+  async postMessage(messageDto: MessageDto): Promise<Message> {
     const { messageBody, channelId, userId, date } = messageDto
 
     // todo: check errors
@@ -212,6 +204,6 @@ export class ChannelsService {
 
     this.chatGateway.server.to(channel.id).emit('message', message)
 
-    return response(message)
+    return message
   }
 }

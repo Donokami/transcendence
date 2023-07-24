@@ -4,9 +4,9 @@ import {
   type TypeOrmModuleOptions
 } from '@nestjs/typeorm'
 
-import { Channel } from '@/modules/channels/entities/channel.entity'
+import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { Friendship } from '@/modules/social/entities/friendship.entity'
-import { Message } from '@/modules/channels/entities/message.entity'
+import { Message } from '@/modules/chat/channels/entities/message.entity'
 import { User } from '@/modules/users/user.entity'
 import { ConfigService } from '@nestjs/config'
 
