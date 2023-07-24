@@ -20,7 +20,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="user in users" :key="user.rank">
+          <tr v-for="user in users.data" :key="user.rank">
             <th class="text-center">{{ user.rank }}</th>
             <th>
               <router-link :to="{ name: 'profile', params: { id: user.id } }"> {{ user.username }} </router-link>
