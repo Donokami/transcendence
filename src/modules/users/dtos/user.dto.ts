@@ -27,6 +27,7 @@ export class UserDto {
   profilePicture: string
 
   @ApiProperty()
+  @Expose()
   isTwoFactorEnabled: string
 
   @ApiProperty()

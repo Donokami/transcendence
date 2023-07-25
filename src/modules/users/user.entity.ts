@@ -51,10 +51,10 @@ export class User {
   @ApiProperty()
   profilePicture: string
 
-  @Column({ nullable: true, select: false })
+  @Column({ nullable: true })
   twoFactorSecret: string
 
-  @Column({ default: false, select: false })
+  @Column({ default: false })
   isTwoFactorEnabled: boolean
 
   // ****************** //

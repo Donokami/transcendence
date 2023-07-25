@@ -22,7 +22,7 @@ import { ApiOperation } from '@nestjs/swagger'
 @Controller('auth')
 @UseFilters(new GlobalExceptionFilter())
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Get('42/signIn')
   @UseGuards(AuthGuard('42'))
@@ -113,6 +113,7 @@ export class AuthController {
   })
   async enableTwoFactor(@Session() session: any) {
     const result = await this.authService.toggleTwoFactor(session.userId)
+
     return result
   }
 
@@ -125,7 +126,6 @@ export class AuthController {
   })
   async verifyToken(@Body() body: VerifyTokenDto, @Session() session: any) {
     const token = body.token
-
     try {
       const user = await this.authService.verifyTwoFactorToken(
         session.twoFactorUserId,
@@ -151,5 +151,6 @@ export class AuthController {
   signOut(@Session() session: any) {
     session.userId = null
     session.twoFactorUserId = null
+    return { status: 'ok' }
   }
 }

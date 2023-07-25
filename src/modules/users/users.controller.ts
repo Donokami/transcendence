@@ -49,7 +49,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly socialService: SocialService,
     private readonly channelsService: ChannelsService
-  ) { }
+  ) {}
 
   // ****** //
   // LOGGER //
@@ -238,6 +238,7 @@ export class UsersController {
     @Param('id') id: string,
     @Body() body: UpdateUserDto
   ): Promise<User> {
+    console.log('id, body', id, body)
     return await this.usersService.update(id, body)
   }
 

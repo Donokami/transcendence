@@ -29,7 +29,7 @@ export class AuthService {
   // CONSTRUCTOR //
   // *********** //
 
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   // ****** //
   // LOGGER //
@@ -68,7 +68,7 @@ export class AuthService {
       user.twoFactorSecret = null
       await this.usersService.update(user.id, user)
 
-      return { isTwoFactorEnabled: false }
+      return { isTwoFactorEnabled: false, dataUrl: null }
     } else {
       const secret = authenticator.generateSecret()
       user.twoFactorSecret = secret
