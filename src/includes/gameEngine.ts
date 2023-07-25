@@ -1,6 +1,5 @@
 import { Vector3, type Object3D } from 'three'
-import type { Game } from '@/types/Game'
-import type { Metrics } from '@/types/Metrics'
+import type { Game, Metrics } from '@/types'
 // import { reactive } from 'vue'
 
 type SimObject3D = Object3D & {

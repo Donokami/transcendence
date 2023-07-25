@@ -101,9 +101,7 @@ import { type ShallowRef, shallowRef, computed, ref, type Ref } from 'vue'
 import { useRenderLoop } from '@tresjs/core'
 import { Text3D } from '@tresjs/cientos'
 import { renderPong, type SimObject3D } from '@/includes/gameEngine'
-import type { Room } from '@/types/Room'
-import type { Game } from '@/types/Game'
-import type { Metrics } from '@/types/Metrics'
+import type { Room, Game, Metrics } from '@/types'
 import { socket } from '@/includes/gameSocket'
 
 const props = defineProps<{

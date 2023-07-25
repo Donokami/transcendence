@@ -31,7 +31,7 @@ const routes: RouteRecordRaw[] = [
   {
     component: ChatView,
     path: '/chat:catchAll(.*)',
-    name: 'chat'
+    name: 'chat',
   },
   {
     component: GameView,
@@ -73,10 +73,10 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
-  if (!userStore.loggedUser) {
+  if (userStore.loggedUser == null) {
     await userStore.refreshUser()
   }
-  if (to.name !== 'auth' && to.name !== 'mfa' && !userStore.loggedUser) {
+  if (to.name !== 'auth' && to.name !== 'mfa' && (userStore.loggedUser == null)) {
     next({ name: 'auth' })
   } else {
     next()

@@ -1,9 +1,6 @@
 import { defineStore } from 'pinia'
 
-import fetcher from '@/utils/fetcher'
-
-import type { User } from '@/types/user'
-import type { Channel } from '@/types/Channel'
+import type { User } from '@/types'
 
 interface UserData {
   email?: string
@@ -440,7 +437,7 @@ export const useUserStore = defineStore('users', {
         throw new Error(`HTTP error status: ${response.status}`)
       }
 
-      return response.json()
+      return await response.json()
     }
   }
 })

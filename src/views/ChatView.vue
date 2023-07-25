@@ -3,20 +3,17 @@
     <div class="flex h-[75vh]">
       <div
         class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify min-w-min w-1/4 overflow-y-auto">
-        <chat-direct-messages
-          v-if="listState === 'dm'"
-          @list-state-changed="listState = $event"></chat-direct-messages>
-        <chat-group-channels
-          v-if="listState === 'groupChannels'"
-          @list-state-changed="listState = $event"></chat-group-channels>
+        <chat-sidebar
+          :list-state="listState"
+          @list-state-changed="listState = $event"></chat-sidebar>
       </div>
 
       <div
         class="flex flex-col justify-between text-justify w-3/4"
-        v-if="selectedChannel">
+        v-if="selectedChannel && channelsList?.loading === false">
         <div class="border-black border-2 mx-2 my-3 mt-1 p-5 h-1/6">
           <h2 class="text-2xl font-bold text-black">
-            {{ selectedChannel.name }}
+            {{ channelStore.getChannel(selectedChannel)?.name }}
           </h2>
         </div>
         <div
@@ -37,20 +34,27 @@
 // IMPORTS //
 // ******* //
 
-import { ref, onBeforeMount, onBeforeUnmount, onMounted } from 'vue'
+import { ref, onBeforeMount, onBeforeUnmount } from 'vue'
 
-import { onBeforeRouteLeave, useRouter } from 'vue-router'
+import {
+  onBeforeRouteLeave,
+  onBeforeRouteUpdate,
+  useRoute,
+  useRouter
+} from 'vue-router'
 
 import { storeToRefs } from 'pinia'
+import InfiniteLoading from 'v3-infinite-loading'
 
 import { chatSocket } from '@/includes/chatSocket'
 
 import { useChannelStore } from '@/stores/ChannelStore.js'
 
-import ChatGroupChannels from '@/components/ChatGroupChannels.vue'
-import ChatDirectMessages from '@/components/ChatDirectMessages.vue'
+import ChatSidebar from '@/components/ChatSidebar.vue'
 import ChatDiscussion from '@/components/ChatDiscussion.vue'
 import ChatInput from '@/components/ChatInput.vue'
+
+import type { Message } from '@/types'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -58,8 +62,10 @@ import ChatInput from '@/components/ChatInput.vue'
 
 const channelStore = useChannelStore()
 const chatbox = ref<HTMLElement | null>(null)
-const listState = ref('dm')
+const listState = ref('dms')
 const router = useRouter()
+const route = useRoute()
+const fetchingMessages = ref(false)
 
 const { selectedChannel, channelsList } = storeToRefs(channelStore)
 
@@ -67,7 +73,7 @@ const { selectedChannel, channelsList } = storeToRefs(channelStore)
 // FUNCTIONS DEFINITIONS //
 // ********************* //
 
-const scrollToBottom = () => {
+function scrollToBottom(): void {
   if (chatbox.value != null)
     chatbox.value.scrollTop = chatbox.value.scrollHeight
 }
@@ -86,9 +92,9 @@ chatSocket.on('error', (error) => {
   console.error('[ChatView] - Error : ', error)
 })
 
-chatSocket.on('message', async (message) => {
+chatSocket.on('message', async (message: Message) => {
   // selectedChannel.value?.messages.push(message)
-  await channelStore.addMessage(message)
+  channelStore.addMessage(message, message.channel.id)
   if (chatbox.value != null) {
     // && (chatbox.value.scrollHeight - 200 < chatbox.value.scrollTop)
     console.log('height : ', chatbox.value.scrollHeight)
@@ -97,17 +103,27 @@ chatSocket.on('message', async (message) => {
   }
 })
 
+const getChannelId = (observedRoute: any): string | null => {
+  console.log('route.params : ', observedRoute)
+
+  if (observedRoute.params.catchAll !== '') {
+    return observedRoute.params.catchAll.slice(1)
+  }
+  return null
+}
+
 // ********************* //
 // VueJs LIFECYCLE HOOKS //
 // ********************* //
 
 onBeforeMount(async () => {
-  if (channelsList.value.length === 0) {
+  if (
+    channelsList.value === undefined ||
+    channelsList.value?.data?.length === 0
+  ) {
     try {
-      await channelStore.fetchChannels()
-      console.log('[ChatView] - Channels fetched.');
-      console.log('[ChatView] - Channels : ', channelsList.value);
-
+      channelStore.fetchChannels()
+      console.log('[ChatView] - Channels : ', channelsList.value)
     } catch {
       console.error('[ChatView] - Error while fetching channels.')
     }
@@ -115,10 +131,15 @@ onBeforeMount(async () => {
   chatSocket.on('connect', () => {
     console.log('[ChatView] - Connected to the chat.')
   })
-  if (selectedChannel.value) {
-    router.push(`/chat/${selectedChannel.value.id}`)
+  if (selectedChannel.value !== null) {
+    await router.push(`/chat/${selectedChannel.value}`)
   }
+  channelStore.selectedChannel = getChannelId(route)
   scrollToBottom()
+})
+
+onBeforeRouteUpdate((to, from) => {
+  channelStore.selectedChannel = getChannelId(to)
 })
 
 onBeforeRouteLeave(async () => {

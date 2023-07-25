@@ -40,7 +40,7 @@
 <script setup lang="ts">
 import { useUserStore } from '@/stores/UserStore'
 import { ref } from 'vue'
-import type { Room } from '@/types/Room'
+import type { Room } from '@/types'
 
 const props = defineProps<{
   room: Room

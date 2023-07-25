@@ -1,6 +1,5 @@
 import { Socket, io } from 'socket.io-client'
-import type { Room } from '@/types/Room'
-import type { Game } from '@/types/Game'
+import type { Room, Game } from '@/types/Room'
 import { reactive } from 'vue'
 import { Vector3 } from 'three'
 

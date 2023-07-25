@@ -28,7 +28,7 @@
     </div>
   </div>
 </template>
-  
+
 <script setup lang="ts">
 
 // ******* //
@@ -39,7 +39,7 @@ import { onBeforeMount, ref } from 'vue';
 
 import { storeToRefs } from 'pinia'
 
-import type { Friendship } from '@/types/Friendship'
+import type { Friendship } from '@/types'
 
 import { useUserStore } from '@/stores/UserStore.js'
 
@@ -64,7 +64,7 @@ const emit = defineEmits(['closeModal'])
 // ***************** //
 
 const getFriendRequests = async () => {
-  if (!loggedUser.value)
+  if (loggedUser.value == null)
     return 0
   try {
     const response = await userStore.fetchFriendRequests(loggedUser.value.id);
@@ -131,4 +131,3 @@ const blockUser = async (userToBlockId: string) => {
 onBeforeMount(getFriendRequests);
 
 </script>
-  

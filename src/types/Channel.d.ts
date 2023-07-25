@@ -7,15 +7,15 @@ export interface Channel {
   id: string
   name: string
   isDm: boolean
+  image: string
 
   // **************************** //
   // MEMBERS RELATED INFORMATIONS //
   // **************************** //
 
-  receiver: User
   owner: User
-  members: Array<User>
-  bannedMembers: Array<User>
+  members: User[]
+  bannedMembers: User[]
 
   // **************************** //
   // PRIVACY RELATED INFORMATIONS //
@@ -26,5 +26,5 @@ export interface Channel {
   // ***************************** //
   // MESSAGES RELATED INFORMATIONS //
   // ***************************** //
-  messages: Array<Message>
+  messages: Message[]
 }

@@ -3,7 +3,7 @@ import type { Channel } from './Channel'
 
 export interface Message {
   // MESSAGE INFORMATIONS INSPIRED BY BACKEND MESSAGE ENTITY
-  id: number
+  id: string
   messageBody: string
   channel: Channel
   user: User
