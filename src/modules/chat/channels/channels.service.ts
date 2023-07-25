@@ -127,22 +127,21 @@ export class ChannelsService {
       )
     }
 
-    // fix: take(10) not working
     const channels = await this.channelsRepository
       .createQueryBuilder('channel')
       .leftJoinAndSelect('channel.members', 'members')
       .leftJoinAndSelect('channel.owner', 'owner')
-      .leftJoinAndMapMany(
-        'channel.messages',
-        Message,
-        'message',
-        'message.channelId = channel.id',
-        (qb) => qb.orderBy('message.createdAt', 'ASC')
-      )
-      .leftJoinAndSelect('message.user', 'user')
-      .where('members.id = :userId', { userId })
-      .orderBy('message.createdAt', 'ASC')
-      .getMany()
+      .where((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('channel.id')
+          .from('channel', 'channel')
+          .leftJoin('channel.members', 'members')
+          .where('members.id = :userId', { userId })
+          .getQuery();
+        return 'channel.id IN ' + subQuery;
+      })
+      .getMany();
 
     this.logger.verbose(`DMs list of : ${userId} successfully retrieved.`)
 

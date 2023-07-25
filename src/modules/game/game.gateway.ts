@@ -15,7 +15,6 @@ import { IUserSocket } from '@/core/types/socket'
 import { GameService } from './game.service'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { RoomNotFound } from '@/core/exceptions/game'
-import * as request from 'supertest'
 
 @WebSocketGateway({
   namespace: '/game',
@@ -29,7 +28,7 @@ export class GameGateway {
   constructor(
     @Inject(forwardRef(() => GameService))
     private gameService: GameService
-  ) {}
+  ) { }
 
   private readonly logger = new Logger(GameService.name)
 
