@@ -160,7 +160,7 @@ export class Game {
       ),
       normalizedPos
     )
-    if (this.gameState.players['bot'].paddle !== undefined)
-      this.gameState.players['bot'].paddle.position.x = paddle.position.x
+    // if (this.gameState.players['bot'] !== undefined)
+    //   this.gameState.players['bot'].paddle.position.x = paddle.position.x
   }
 }

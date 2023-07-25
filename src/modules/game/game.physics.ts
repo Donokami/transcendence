@@ -211,6 +211,11 @@ export class PhysicsEngine {
     }
   }
 
+  private processCpuPaddle(): void {
+    this.gameState.players['bot'].paddle.position.x =
+      this.gameState.ball.position.x
+  }
+
   private getPlayer(index: number) {
     const playersArray = Object.keys(this.gameState.players).map(
       (key) => this.gameState.players[key]
@@ -222,6 +227,7 @@ export class PhysicsEngine {
   public calculateFrame(gameState: gameState) {
     this.gameState = gameState
 
+    if (this.gameState.players['bot'] !== undefined) this.processCpuPaddle()
     this.processBallMovement()
   }
 }
