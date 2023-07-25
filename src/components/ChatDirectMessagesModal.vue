@@ -4,8 +4,7 @@
     <div class="modal-box rounded-none">
       <!-- CLOSING CROSS -->
       <div class="flex items-center justify-end">
-        <button
-          class="btn bg-white border-black border-2 text-black hover:bg-black hover:border-black hover:text-white"
+        <button class="btn bg-white border-black border-2 text-black hover:bg-black hover:border-black hover:text-white"
           @click="closeModal()">
           X
         </button>
@@ -15,15 +14,14 @@
         <h3 class="font-bold text-lg">Who do you want to a send a DM to ?</h3>
       </div>
       <!-- FRIENDS LIST -->
-      <div class="collapse collapse-arrow border-2 border-black rounded-none">
+      <div v-if="friendList.length != 0 || noDmWithUserList.length != 0"
+        class="collapse collapse-arrow border-2 border-black rounded-none">
         <input type="checkbox" />
         <div class="collapse-title text-base">Select a friend</div>
         <div class="collapse-content text-base">
           <ul class="menu bg-base-100 w-full">
             <li v-for="friend in noDmWithUserList" :key="friend.username">
-              <a
-                class="flex p-1 modal-action justify-start"
-                @click="createDmChannel(friend)">
+              <a class="flex p-1 modal-action justify-start" @click="createDmChannel(friend)">
                 <button class="block" @click="closeModal">
                   {{ friend.username }}
                 </button>
@@ -31,6 +29,10 @@
             </li>
           </ul>
         </div>
+      </div>
+      <!-- NO FRIENDS -->
+      <div v-else class="py-4">
+        <div class="text-base">Sorry, but you have no friends to DM !</div>
       </div>
     </div>
   </div>
@@ -116,7 +118,6 @@ async function refreshNoDmWithUserList() {
     return
   }
   const dmList = await channelStore.getDms()
-  console.log(`[ChatDirectMessagesModal] - dmList: `, dmList)
   noDmWithUserList.value = friendList.value.filter(
     (friend) =>
       !dmList.some(
@@ -125,7 +126,9 @@ async function refreshNoDmWithUserList() {
           friend.id
       )
   )
+  console.log(`[ChatDirectMessagesModal] - noDmwithUserList.length : `, noDmWithUserList.value.length)
 }
+
 // ********************* //
 // VueJs LIFECYCLE HOOKS //
 // ********************* //

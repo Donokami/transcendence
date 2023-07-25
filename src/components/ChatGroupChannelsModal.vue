@@ -5,9 +5,10 @@
       <Form ref="formRef" @submit="submitForm">
         <!-- CLOSING CROSS -->
         <div class="flex items-center justify-end">
-          <label for="my-modal-3"
-            class="btn bg-white border-black border-2 text-black hover:bg-black hover:border-black hover:text-white">X
-          </label>
+          <button class="btn bg-white border-black border-2 text-black hover:bg-black hover:border-black hover:text-white"
+            @click="closeModal()">
+            X
+          </button>
         </div>
         <!-- TITLE-->
         <div class="py-4 justify-start">
@@ -61,10 +62,9 @@
           </div>
         </div>
         <!-- CREATE CHANNEL BUTTON -->
-        <div>
-          <button
-            class="btn bg-white border-2 border-black my-4 mb-2 text-black hover:bg-black hover:border-black hover:text-white"
-            type="submit">
+        <div class="modal-action" @click="createGroupChannel()">
+          <button class=" btn bg-white border-2 border-black my-4 mb-2 text-black hover:bg-black hover:border-black
+        hover:text-white" type="submit" @click="closeModal">
             CREATE CHANNEL
           </button>
         </div>
@@ -79,44 +79,37 @@
 // IMPORTS //
 // ******* //
 
-import { ref, onBeforeMount } from 'vue'
-import { onBeforeRouteUpdate, useRouter } from 'vue-router';
-
-import { Form, Field, ErrorMessage, useForm } from 'vee-validate'
-
 import { storeToRefs } from 'pinia';
+import { Form } from 'vee-validate'
+import { onBeforeMount, ref, toRefs, watch } from 'vue'
+import { onBeforeRouteUpdate } from 'vue-router';
 
 import { useChannelStore } from '@/stores/ChannelStore';
 import { useUserStore } from '@/stores/UserStore.js'
-
 import type { Channel } from '@/types/Channel';
 
 // ******************** //
 // VARIABLE DEFINITIONS //
 // ******************** //
 
-const router = useRouter()
-
-const userStore = useUserStore()
 const channelStore = useChannelStore()
+const userStore = useUserStore()
 
 const channelName = ref<string>('')
 const channelNameError = ref<string | null>(null);
-
-
-const usersToAdd = ref<string[]>([])
+const emit = defineEmits(['update:showModal'])
 const friendListError = ref<string | null>(null);
-
 const password = ref<string | null>(null)
 const passwordRequired = ref<boolean>(false)
 const passwordError = ref<string | null>(null);
+const props = defineProps({
+  showModal: { type: Boolean }
+})
+const usersToAdd = ref<string[]>([])
 
-// **************************** //
-// loggedUser RELATED VARIABLES //
-// **************************** //
-
+const { friendList } = storeToRefs(userStore)
 const { loggedUser } = storeToRefs(userStore)
-const { friendList } = storeToRefs(userStore);
+const { showModal } = toRefs(props)
 
 // ******************** //
 // FUNCTION DEFINITIONS //
@@ -130,6 +123,18 @@ const cancelUserToAdd = (username: string) => {
   const index = usersToAdd.value.indexOf(username)
   if (index > -1) {
     usersToAdd.value.splice(index, 1)
+  }
+}
+
+// ********** //
+// closeModal //
+// ********** //
+
+function closeModal(): void {
+  const modalElement = document.getElementById('my-modal-3') as HTMLInputElement
+  if (modalElement) {
+    modalElement.checked = !modalElement.checked
+    emit('update:showModal', modalElement.checked)
   }
 }
 
@@ -231,6 +236,13 @@ onBeforeMount(async () => {
 
 onBeforeRouteUpdate(async (to, from) => {
   await userStore.refreshFriendList();
+})
+
+watch(showModal, (newValue) => {
+  const modalElement = document.getElementById('my-modal-3') as HTMLInputElement
+  if (modalElement) {
+    modalElement.checked = newValue
+  }
 })
 
 </script>

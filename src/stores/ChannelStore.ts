@@ -72,7 +72,15 @@ export const useChannelStore = defineStore('channels', {
           `/channels/create/channel`,
           channelParam
         )
-        this.channelsList.push(response)
+
+        this.channelsList.push(response) // fix: not working
+
+        console.log('New group channel created ! Id : ', response.id)
+        console.log(
+          'New group channel pushed to channelsList in store : ',
+          this.channelsList
+        )
+
         return response
       } catch (error) {
         console.error(error)
@@ -105,12 +113,13 @@ export const useChannelStore = defineStore('channels', {
       const response = await this.channelsList
       channels.map((channel: Channel) => {
         if (channel.isDm) {
-          const recieverUser = channel.members[0]
-          console.log('recieverUser : ', recieverUser)
+          const receiverUser = channel.members[0]
+          console.log('receiverUser : ', receiverUser)
+          if (receiverUser === undefined) channel.name
 
-          if (recieverUser != null) {
+          if (receiverUser != null) {
             channel.name = 'ta mere la query' // todo: needs an obvious fix (see backend)
-            channel.image = recieverUser.profilePicture
+            channel.image = receiverUser.profilePicture
           }
         }
         return channel

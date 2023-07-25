@@ -4,12 +4,12 @@
     <a class="tab tab-bordered tab-active text-2xl font-bold mb-8">Channels</a>
   </div>
   <div>
-    <label for="my-modal-3"
+    <button for="my-modal-3"
       class="btn bg-white border-2 border-black mb-2 text-black hover:bg-black hover:border-black hover:text-white"
-      type="button">
+      type="button" @click="toggleModal">
       CREATE A NEW CHANNEL
-    </label>
-    <chat-group-channels-modal></chat-group-channels-modal>
+    </button>
+    <chat-group-channels-modal :showModal="showModal" @update:showModal="showModal = $event"> </chat-group-channels-modal>
     <chat-group-channels-list v-if="hasGroupChannels"></chat-group-channels-list>
   </div>
 </template>
@@ -38,6 +38,7 @@ const channelStore = useChannelStore()
 const emit = defineEmits(['list-state-changed'])
 const groupChannelsList = ref([] as Channel[]);
 let hasGroupChannels = ref(false);
+let showModal = ref(false);
 const userStore = useUserStore()
 
 const { loggedUser } = storeToRefs(userStore);
@@ -69,17 +70,28 @@ const toggleList = () => {
   emit('list-state-changed', 'dm')
 }
 
+// *********** //
+// toggleModal //
+// *********** //
+
+function toggleModal(): void {
+  showModal.value = !showModal.value;
+  console.log(`[ChatGroupChannels] - showModal : `, showModal.value);
+}
+
 // ********************* //
 // VueJs LIFECYCLE HOOKS //
 // ********************* //
 
 onBeforeMount(async () => {
   groupChannelsList.value = await channelStore.getGroupChannels();
+  console.log(`[ChatGroupChannels] - groupChannelsList : `, groupChannelsList.value);
   checkHasGroupChannels();
 });
 
 onBeforeRouteUpdate(async (to, from) => {
   groupChannelsList.value = await channelStore.getGroupChannels();
+  console.log(`[ChatGroupChannels] - groupChannelsList : `, groupChannelsList.value);
   checkHasGroupChannels();
 })
 
