@@ -83,8 +83,8 @@
   </div>
 
   <!-- FRIEND REQUEST MODAL -->
-  <profile-friend-request-modal v-if="showFriendRequestModal" @close-modal="closeFriendRequestModal"
-    @friend-request-accepted="fetchUser"></profile-friend-request-modal>
+  <profile-friend-request-modal v-if="showFriendRequestModal"
+    @close-modal="closeFriendRequestModal"></profile-friend-request-modal>
 </template>
 
 <script setup lang="ts">

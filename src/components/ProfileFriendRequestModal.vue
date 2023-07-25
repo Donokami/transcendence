@@ -53,7 +53,7 @@ const { loggedUser } = storeToRefs(userStore);
 
 const friendRequests = ref<Friendship[]>([]);
 
-const emit = defineEmits(['friendRequestAccepted', 'closeModal'])
+const emit = defineEmits(['closeModal'])
 
 // ******************** //
 // FUNCTION DEFINITIONS //
@@ -85,7 +85,7 @@ const acceptRequest = async (requestId: string) => {
     await userStore.acceptFriendRequest(requestId);
     console.log(`[ProfileFriendRequestListModal] - Friend request accepted successfully`);
     getFriendRequests();
-    emit('friendRequestAccepted', 'closeModal');
+    emit('closeModal');
   }
   catch (error) {
     console.error(`[ProfileFriendRequestListModal] - Failed to accept friend request. Error: `, error);
