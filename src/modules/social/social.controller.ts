@@ -154,9 +154,6 @@ export class SocialController {
   ) {
     const senderId = session.userId
 
-    console.log(`DEBUG: senderId: ${senderId}`)
-    console.log(`DEBUG: friendRequestDto: ${JSON.stringify(friendRequestDto)}`)
-
     return await this.socialService.sendFriendRequest(
       senderId,
       friendRequestDto.receiverId
