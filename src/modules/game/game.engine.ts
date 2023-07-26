@@ -2,7 +2,6 @@ import { Logger } from '@nestjs/common'
 import { Object3D, Vector3 } from 'three'
 import { GameGateway } from './game.gateway'
 import { Room, RoomStatus } from './room'
-import { User } from '@/modules/users/user.entity'
 import { type SimObject3D, type Metrics, PhysicsEngine } from './game.physics'
 
 const metrics: Metrics = {
@@ -23,11 +22,10 @@ export type gameState = {
   deltaTime: number
   ball: SimObject3D
   players: {
-    [id: string]: {
-      paddle: SimObject3D
-      score: number
-    }
-  }
+    userId: string
+    paddle: SimObject3D
+    score: number
+  }[]
   startTime: number
   endTime: number
 }
@@ -43,36 +41,28 @@ export class Game {
     private readonly roomState: Room,
     private readonly gameGateway: GameGateway
   ) {
-    // this.paddle1.position.set(
-    //   0,
-    //   this.metrics.fieldHeight,
-    //   this.metrics.fieldDepth * 0.5 + this.metrics.paddleDepth * 0.5
-    // )
-    // this.paddle2.position.set(
-    //   0,
-    //   this.metrics.fieldHeight,
-    //   -this.metrics.fieldDepth * 0.5 - this.metrics.paddleDepth * 0.5
-    // )
     const additionalPlayer =
       this.roomState.players.length > 1
-        ? {
-            [this.roomState.players[1].id]: {
+        ? [
+            {
+              userId: this.roomState.players[1].id,
               paddle: new Object3D() as SimObject3D,
               score: 0
             }
-          }
-        : {}
+          ]
+        : []
 
     this.gameState = {
       deltaTime: 0,
       ball: new Object3D() as SimObject3D,
-      players: {
-        [this.roomState.players[0].id]: {
+      players: [
+        {
+          userId: this.roomState.players[0].id,
           paddle: new Object3D() as SimObject3D,
           score: 0
         },
         ...additionalPlayer
-      },
+      ],
       startTime: 0,
       endTime: 0
     }
@@ -104,24 +94,40 @@ export class Game {
   }
 
   private async broadcastUpdate() {
-    this.gameGateway.server
-      .to(this.roomState.id)
-      .emit('game:ball', { ...this.gameState.ball.position })
-    this.gameGateway.server
-      .to(this.roomState.id)
-      .emit('game:remainingTime', (this.gameState.endTime - Date.now()) / 1000)
-    this.gameGateway.server
-      .to(this.roomState.id)
-      .emit(`game:player1`, [
-        { ...this.getPlayer(0).paddle.position },
-        this.getPlayer(0).score
-      ])
-    this.gameGateway.server
-      .to(this.roomState.id)
-      .emit(`game:player2`, [
-        { ...this.getPlayer(1).paddle.position },
-        this.getPlayer(1).score
-      ])
+    // this.gameGateway.server
+    //   .to(this.roomState.id)
+    //   .emit('game:ball', { ...this.gameState.ball.position })
+    // this.gameGateway.server
+    //   .to(this.roomState.id)
+    //   .emit('game:remainingTime', (this.gameState.endTime - Date.now()) / 1000)
+    // this.gameGateway.server
+    //   .to(this.roomState.id)
+    //   .emit(`game:player1`, [
+    //     { ...this.gameState.players[0].paddle.position },
+    //     this.gameState.players[0].score
+    //   ])
+    // this.gameGateway.server
+    //   .to(this.roomState.id)
+    //   .emit(`game:player2`, [
+    //     { ...this.gameState.players[1].paddle.position },
+    //     this.gameState.players[1].score
+    //   ])
+    this.gameGateway.server.to(this.roomState.id).emit(`game:state`, {
+      ballPos: this.gameState.ball.position,
+      players: [
+        {
+          userId: this.gameState.players[0].userId,
+          paddlePos: this.gameState.players[0].paddle.position,
+          score: this.gameState.players[0].score
+        },
+        {
+          userId: this.gameState.players[1].userId,
+          paddlePos: this.gameState.players[1].paddle.position,
+          score: this.gameState.players[1].score
+        }
+      ],
+      remainingTime: (this.gameState.endTime - Date.now()) / 1000
+    })
   }
 
   public startGame() {
@@ -135,16 +141,10 @@ export class Game {
     this.logger.log('end of game!')
   }
 
-  private getPlayer(index: number) {
-    const playersArray = Object.keys(this.gameState.players).map(
-      (key) => this.gameState.players[key]
-    )
-
-    return playersArray[index]
-  }
-
   public updatePaddlePosition(normalizedPos: number, userId: string) {
-    const paddle = this.gameState.players[userId].paddle
+    const paddle = this.gameState.players.find(
+      (player) => player.userId === userId
+    ).paddle
     paddle.position.lerpVectors(
       new Vector3(
         -this.metrics.fieldWidth / 2 +
@@ -160,7 +160,5 @@ export class Game {
       ),
       normalizedPos
     )
-    // if (this.gameState.players['bot'] !== undefined)
-    //   this.gameState.players['bot'].paddle.position.x = paddle.position.x
   }
 }

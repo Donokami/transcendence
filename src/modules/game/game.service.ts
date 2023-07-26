@@ -203,7 +203,6 @@ export class GameService {
     if (!room) throw new RoomNotFound()
     if (!user) throw new UserNotFound()
 
-    // const paddle = room.gameState.getUserPaddle(user)
     room.gameState.updatePaddlePosition(posX, user.id)
   }
 }
