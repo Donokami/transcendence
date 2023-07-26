@@ -6,10 +6,7 @@
         <div class="avatar online">
           <input type="file" ref="fileInput" @change="onFileChange" style="display: none" />
           <div class="w-16 rounded-full cursor-pointer" @click="triggerFileInput">
-            <img v-if="userStore.loggedUser &&
-              userStore.loggedUser.profilePicture &&
-              pictureSrc
-              " :src="pictureSrc" />
+            <img v-if="pictureSrc" :src="pictureSrc" />
             <iconify-icon v-else icon="ri:account-circle-line" class="h-16 w-16 text-black"></iconify-icon>
           </div>
         </div>
@@ -143,9 +140,20 @@ const { loggedUser } = storeToRefs(userStore)
 const { observedUser } = storeToRefs(userStore)
 
 const pictureSrc = computed(() => {
-  if (!userStore.loggedUser) return null;
-  const profilePicture = userStore.loggedUser.profilePicture;
-  if (!profilePicture) return null;
+  if (!loggedUser.value || !observedUser.value) {
+    return null;
+  }
+  let profilePicture = "";
+  if (observedUser.value.id === loggedUser.value.id) {
+    profilePicture = loggedUser.value.profilePicture;
+  }
+  else if (observedUser.value.id !== loggedUser.value.id) {
+    profilePicture = observedUser.value.profilePicture;
+  }
+
+  if (!profilePicture) {
+    return null;
+  }
 
   if (profilePicture.includes('cdn.intra.42')) {
     return profilePicture

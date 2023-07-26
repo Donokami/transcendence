@@ -22,11 +22,11 @@
         @click="toggleModal">
         {{ listState === 'dms' ? 'Send a new dm' : 'Create a new channel' }}
       </button>
-      <chat-messages-modal
+      <chat-direct-messages-modal
         v-if="listState === 'dms'"
         :showModal="showModal"
         @update:showModal="showModal = $event">
-      </chat-messages-modal>
+      </chat-direct-messages-modal>
       <chat-group-channels-modal v-else-if="listState === 'channels'">
       </chat-group-channels-modal>
       <div v-if="channelStore.channelsList?.loading === true">
@@ -39,7 +39,7 @@
         class="menu bg-base-100 w-full">
         <li v-for="channel in getChannels()" :key="channel.id">
           <router-link
-            class="flex p-1"
+            class="flex p-1 rounded-none"
             :class="{
               active:
                 channelStore.selectedChannel &&
@@ -69,7 +69,7 @@ import { storeToRefs } from 'pinia'
 import { onBeforeMount, ref } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 
-import ChatMessagesModal from '@/components/ChatMessagesModal.vue'
+import ChatDirectMessagesModal from '@/components/ChatDirectMessagesModal.vue'
 import ChatGroupChannelsModal from '@/components/ChatGroupChannelsModal.vue'
 import { useChannelStore } from '@/stores/ChannelStore.js'
 import { useUserStore } from '@/stores/UserStore.js'

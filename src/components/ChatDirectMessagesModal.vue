@@ -1,35 +1,44 @@
 <template>
-  <input type="checkbox" id="my-modal-3" class="modal-toggle" />
-  <div class="modal">
-    <div class="modal-box rounded-none">
-      <!-- CLOSING CROSS -->
-      <div class="flex items-center justify-end">
-        <button
-          class="btn bg-white border-black border-2 text-black hover:bg-black hover:border-black hover:text-white"
-          @click="closeModal()">
-          X
-        </button>
-      </div>
-      <!-- TITLE-->
-      <div class="py-4">
-        <h3 class="font-bold text-lg">Who do you want to a send a DM to ?</h3>
-      </div>
-      <!-- FRIENDS LIST -->
-      <div class="collapse collapse-arrow border-2 border-black rounded-none">
-        <input type="checkbox" />
-        <div class="collapse-title text-base">Select a friend</div>
-        <div class="collapse-content text-base">
-          <ul class="menu bg-base-100 w-full">
-            <li v-for="friend in noDmWithUserList" :key="friend.username">
-              <a
-                class="flex p-1 modal-action justify-start"
-                @click="createDmChannel(friend)">
-                <button class="block" @click="closeModal">
-                  {{ friend.username }}
-                </button>
-              </a>
-            </li>
-          </ul>
+  <div>
+    <input type="checkbox" id="my-modal-3" class="modal-toggle" />
+    <div class="modal">
+      <div class="modal-box rounded-none">
+        <!-- CLOSING CROSS -->
+        <div class="flex items-center justify-end">
+          <button
+            class="btn bg-white border-black border-2 text-black hover:bg-black hover:border-black hover:text-white"
+            @click="closeModal()">
+            X
+          </button>
+        </div>
+        <!-- TITLE -->
+        <div class="py-4">
+          <h3 class="font-bold text-lg">Who do you want to a send a DM to ?</h3>
+        </div>
+        <!-- FRIENDS LIST -->
+        <div class="collapse collapse-arrow border-2 border-black rounded-none">
+          <input type="checkbox" />
+          <div class="collapse-title text-base">Select a friend</div>
+          <div class="collapse-content text-base">
+            <!-- NO FRIEND TO SEND DM TO -->
+            <div v-if="filteredFriendList.length === 0" class="py-4">
+              <p>
+                You have no friend or you have already send a DM to all your
+                friends
+              </p>
+            </div>
+            <ul class="menu bg-base-100 w-full">
+              <li v-for="friend in filteredFriendList" :key="friend.username">
+                <a
+                  class="flex p-1 modal-action justify-start"
+                  @click="createDmChannel(friend)">
+                  <button class="block" @click="closeModal">
+                    {{ friend.username }}
+                  </button>
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>
@@ -42,7 +51,7 @@
 // ******* //
 
 import { storeToRefs } from 'pinia'
-import { onBeforeMount, ref, toRefs, watch } from 'vue'
+import { onBeforeMount, toRefs, watch, ref, type Ref, computed } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 
 import { useChannelStore } from '@/stores/ChannelStore'
@@ -55,7 +64,6 @@ import type { Channel, User } from '@/types'
 
 const channelStore = useChannelStore()
 const emit = defineEmits(['update:showModal'])
-const noDmWithUserList = ref<User[]>([])
 const props = defineProps({
   showModal: { type: Boolean }
 })
@@ -64,6 +72,19 @@ const userStore = useUserStore()
 
 const { loggedUser } = storeToRefs(userStore)
 const { friendList } = storeToRefs(userStore)
+
+const filteredFriendList = computed(() => {
+  return friendList.value.filter(
+    (friend) =>
+      !channelStore
+        .getDms()
+        .some(
+          (dm) =>
+            dm.members.find((member) => member.username === dm.name)?.id ===
+            friend.id
+        )
+  )
+})
 
 // ******************** //
 // FUNCTION DEFINITIONS //
@@ -74,7 +95,7 @@ const { friendList } = storeToRefs(userStore)
 // *************** //
 
 const createDmChannel = async (friend: User): Promise<Channel | null> => {
-  if (!loggedUser.value || !friend) {
+  if (loggedUser.value == null || !friend) {
     return null
   }
   try {
@@ -82,11 +103,11 @@ const createDmChannel = async (friend: User): Promise<Channel | null> => {
       loggedUser.value.id,
       friend.id
     )
-    console.log(`[ChatDirectMessagesModal] - DM channel created successfully !`)
+    console.log(`[ChatMessagesModal] - DM channel created successfully !`)
     return dmChannel
   } catch (error) {
     console.error(
-      `[ChatDirectMessagesModal] - Failed to create DM channel ! Error: `,
+      `[ChatMessagesModal] - Failed to create DM channel ! Error: `,
       error
     )
     return null
@@ -105,38 +126,20 @@ function closeModal(): void {
   }
 }
 
-// *********************** //
-// refreshNoDmWithUserList //
-// *********************** //
-
-async function refreshNoDmWithUserList() {
-  if (loggedUser.value == null) {
-    noDmWithUserList.value = []
-    return
-  }
-  const dmList = await channelStore.getDms()
-  console.log(`[ChatDirectMessagesModal] - dmList: `, dmList)
-  noDmWithUserList.value = friendList.value.filter(
-    (friend) =>
-      !dmList.some(
-        (dm) =>
-          dm.members.find((member) => member.username === dm.name)?.id ===
-          friend.id
-      )
-  )
-}
 // ********************* //
 // VueJs LIFECYCLE HOOKS //
 // ********************* //
 
 onBeforeMount(async () => {
-  await userStore.refreshFriendList()
-  await refreshNoDmWithUserList()
+  if (friendList.value.length === 0) {
+    await userStore.refreshFriendList()
+  }
 })
 
 onBeforeRouteUpdate(async (to, from) => {
-  await userStore.refreshFriendList()
-  await refreshNoDmWithUserList()
+  if (friendList.value.length === 0) {
+    await userStore.refreshFriendList()
+  }
 })
 
 watch(showModal, (newValue) => {
@@ -146,4 +149,3 @@ watch(showModal, (newValue) => {
   }
 })
 </script>
-@/types/User

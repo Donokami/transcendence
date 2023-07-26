@@ -1,6 +1,6 @@
 <template>
   <div
-    class="navbar bg-base-100 max-w-screen-xl min-w-[95%] mx-auto text-black">
+    class="navbar bg-base-100 max-w-screen-xl min-w-[95%] mx-auto text-black z-40">
     <div
       class="navbar-start p-[6px] border-2 border-black border-r-0 flex-grow md:hidden">
       <div class="dropdown flex">
@@ -10,27 +10,45 @@
         <ul
           tabindex="0"
           class="menu menu-compact dropdown-content shadow bg-base-100">
-          <li><router-link to="/">Home</router-link></li>
-          <li><router-link to="/chat">Chat</router-link></li>
-          <li><router-link to="/stats">Stats</router-link></li>
+          <li>
+            <router-link to="/" class="border-black rounded-none"
+              >Home</router-link
+            >
+          </li>
+          <li>
+            <router-link to="/chat" class="border-black rounded-none"
+              >Chat</router-link
+            >
+          </li>
+          <li>
+            <router-link to="/stats" class="border-black rounded-none"
+              >Stats</router-link
+            >
+          </li>
         </ul>
       </div>
     </div>
     <div
       class="navbar-start border-2 border-black border-r-0 flex-grow hidden md:flex">
-      <ul class="menu menu-horizontal">
+      <ul class="menu menu-horizontal p-0">
         <li>
-          <router-link to="/" class="h-[60px] border-black border-r-2"
+          <router-link
+            to="/"
+            class="h-[60px] flex border-black border-r-2 rounded-none"
             >Home</router-link
           >
         </li>
         <li>
-          <router-link to="/chat" class="h-[60px] border-black border-r-2"
+          <router-link
+            to="/chat"
+            class="h-[60px] flex border-black border-r-2 rounded-none"
             >Chat</router-link
           >
         </li>
         <li>
-          <router-link to="/stats" class="h-[60px] border-black border-r-0"
+          <router-link
+            to="/stats"
+            class="h-[60px] flex border-black border-r-2 rounded-none"
             >Stats</router-link
           >
         </li>
@@ -46,7 +64,11 @@
             <div class="h-[60px] w-20">
               <div class="h-full flex items-center justify-center">
                 <img
-                v-if="userStore.loggedUser && userStore.loggedUser.profilePicture && pictureSrc"
+                  v-if="
+                    userStore.loggedUser &&
+                    userStore.loggedUser.profilePicture &&
+                    pictureSrc
+                  "
                   :src="pictureSrc"
                   class="object-cover h-12 w-12 rounded-full" />
                 <iconify-icon
@@ -64,10 +86,14 @@
           <li>
             <router-link
               :to="{ name: 'profile', params: { id: userStore.loggedUser.id } }"
+              class="border-black rounded-none"
               >Profile</router-link
             >
           </li>
-          <li><a @click="logout">Logout</a></li>
+
+          <li>
+            <a class="border-black rounded-none" @click="logout">Logout</a>
+          </li>
         </ul>
       </div>
     </div>
@@ -90,9 +116,9 @@ import { computed } from 'vue'
 const router = useRouter()
 const userStore = useUserStore()
 
-  const pictureSrc = computed(() => {
-      const profilePicture = userStore.loggedUser?.profilePicture;
-      if (!profilePicture) return null;
+const pictureSrc = computed(() => {
+  const profilePicture = userStore.loggedUser?.profilePicture
+  if (!profilePicture) return null
 
   if (profilePicture.includes('cdn.intra.42')) {
     return profilePicture
@@ -109,8 +135,8 @@ const userStore = useUserStore()
 // logout //
 // ****** //
 
-  const logout = async (): Promise<void> => {
-    await userStore.signOut()
-    await router.push('/auth')
-  }
+const logout = async (): Promise<void> => {
+  await userStore.signOut()
+  await router.push('/auth')
+}
 </script>
