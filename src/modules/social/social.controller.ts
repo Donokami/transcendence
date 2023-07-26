@@ -82,7 +82,7 @@ export class SocialController {
       loggedUserId,
       observedUserId
     )
-    return blockerId
+    return { blockerId }
   }
 
   // ************* //
@@ -153,6 +153,9 @@ export class SocialController {
     @Session() session: any
   ) {
     const senderId = session.userId
+
+    console.log(`DEBUG: senderId: ${senderId}`)
+    console.log(`DEBUG: friendRequestDto: ${JSON.stringify(friendRequestDto)}`)
 
     return await this.socialService.sendFriendRequest(
       senderId,

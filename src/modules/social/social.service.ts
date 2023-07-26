@@ -14,7 +14,7 @@ import { Friendship, FriendshipStatus } from './entities/friendship.entity'
 import { UserNotFound } from '@/core/exceptions'
 import {
   FriendRequestNotFound,
-  OnlyRecieverCanAcceptFriendRequest,
+  OnlyReceiverCanAcceptFriendRequest,
   FriendRequestAlreadyBlocked,
   SameIdsError,
   FriendRequestNotBlocked,
@@ -102,7 +102,7 @@ export class SocialService {
       this.logger.warn(
         `Only the receiver : ${friendshipRequest.receiver.id} can accept this friend request.`
       )
-      throw new OnlyRecieverCanAcceptFriendRequest()
+      throw new OnlyReceiverCanAcceptFriendRequest()
     }
 
     friendshipRequest.status = FriendshipStatus.ACCEPTED

@@ -12,10 +12,10 @@ export class FriendRequestAlreadyExists extends HttpException {
   }
 }
 
-export class OnlyRecieverCanAcceptFriendRequest extends HttpException {
+export class OnlyReceiverCanAcceptFriendRequest extends HttpException {
   constructor() {
     super(
-      'Only the reciever can accept this friend request',
+      'Only the receiver can accept this friend request',
       HttpStatus.UNAUTHORIZED
     )
   }
