@@ -49,7 +49,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly socialService: SocialService,
     private readonly channelsService: ChannelsService
-  ) {}
+  ) { }
 
   // ****** //
   // LOGGER //

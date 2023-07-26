@@ -348,7 +348,7 @@ export class UsersService {
 
   async saveFile(file: Express.Multer.File): Promise<string> {
     const filename = randomUUID() + path.extname(file.originalname)
-    const filePath = this.configService.get('UPLOAD_DIR') + filename
+    const filePath = path.join(this.configService.get('UPLOAD_DIR'), filename)
     await fs.promises.writeFile(filePath, file.buffer)
 
     return filePath
