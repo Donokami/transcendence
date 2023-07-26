@@ -30,14 +30,15 @@ function renderPong(
   ball: SimObject3D,
   paddle1: SimObject3D,
   paddle2: SimObject3D,
-  camera: SimObject3D
+  camera: SimObject3D,
+  score: SimObject3D
 ): void {
   const animationTime = delta / (1 / gameMetrics.tps)
   ball.position.lerp(gameState.ballPos, animationTime)
-  paddle1.position.lerp(gameState.paddle1Pos, animationTime)
-  paddle2.position.lerp(gameState.paddle2Pos, animationTime)
+  paddle1.position.lerp(gameState.players[0].paddlePos, animationTime)
+  paddle2.position.lerp(gameState.players[1].paddlePos, animationTime)
   camera.position.lerp(
-    new Vector3(gameState.paddle1Pos.x, 5, gameMetrics.fieldDepth),
+    new Vector3(gameState.players[0].paddlePos.x, 5, gameMetrics.fieldDepth),
     animationTime
   )
 }

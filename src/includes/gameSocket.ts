@@ -21,13 +21,31 @@ export const room: Room = reactive({
   maxPlayers: 0
 })
 
+// export const game: Game = reactive({
+//   paddle1Pos: new Vector3(0, 0, 0),
+//   paddle2Pos: new Vector3(0, 0, 0),
+//   ballPos: new Vector3(0, 3, 0),
+//   score1: 0,
+//   score2: 0,
+//   isUserPaddle1: true,
+//   remainingTime: 0,
+//   fps: 0
+// })
+
 export const game: Game = reactive({
-  paddle1Pos: new Vector3(0, 0, 0),
-  paddle2Pos: new Vector3(0, 0, 0),
-  ballPos: new Vector3(0, 3, 0),
-  score1: 0,
-  score2: 0,
-  isUserPaddle1: true,
+  ballPos: new Vector3(0, 0, 0),
+  players: [
+    {
+      userId: '',
+      paddlePos: new Vector3(0, 0, 0),
+      score: 0
+    },
+    {
+      userId: '',
+      paddlePos: new Vector3(0, 0, 0),
+      score: 0
+    }
+  ],
   remainingTime: 0,
   fps: 0
 })
@@ -49,20 +67,50 @@ socket.on('room:update', (data: Room) => {
   Object.assign(room, data)
 })
 
-socket.on('game:ball', ({ x, y, z }) => {
-  game.ballPos = new Vector3(x, y, z)
-})
+// socket.on('game:ball', ({ x, y, z }) => {
+//   game.ballPos = new Vector3(x, y, z)
+// })
 
-socket.on('game:player1', ([{ x, y, z }, score]) => {
-  game.paddle1Pos = new Vector3(x, y, z)
-  game.score1 = score
-})
+// socket.on('game:player1', ([{ x, y, z }, score]) => {
+//   game.paddle1Pos = new Vector3(x, y, z)
+//   game.score1 = score
+// })
 
-socket.on('game:player2', ([{ x, y, z }, score]) => {
-  game.paddle2Pos = new Vector3(x, y, z)
-  game.score2 = score
-})
+// socket.on('game:player2', ([{ x, y, z }, score]) => {
+//   game.paddle2Pos = new Vector3(x, y, z)
+//   game.score2 = score
+// })
 
-socket.on('game:remainingTime', (remainingTime: number) => {
-  game.remainingTime = remainingTime
+// socket.on('game:remainingTime', (remainingTime: number) => {
+//   game.remainingTime = remainingTime
+// })
+
+socket.on('game:state', (remoteGameState) => {
+  game.ballPos = new Vector3(
+    remoteGameState.ballPos.x,
+    remoteGameState.ballPos.y,
+    remoteGameState.ballPos.z
+  )
+  game.players = [
+    {
+      userId: remoteGameState.players[0].userId,
+      paddlePos: new Vector3(
+        remoteGameState.players[0].paddlePos.x,
+        remoteGameState.players[0].paddlePos.y,
+        remoteGameState.players[0].paddlePos.z
+      ),
+      score: remoteGameState.players[0].score
+    },
+    {
+      userId: remoteGameState.players[1].userId,
+      paddlePos: new Vector3(
+        remoteGameState.players[1].paddlePos.x,
+        remoteGameState.players[1].paddlePos.y,
+        remoteGameState.players[1].paddlePos.z
+      ),
+      score: remoteGameState.players[1].score
+    }
+  ]
+  game.remainingTime = remoteGameState.remainingTime
+  // game.paddle2Pos = new Vector3(...gameState.players[1].paddlePos)
 })

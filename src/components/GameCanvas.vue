@@ -80,7 +80,7 @@
               0,
               (gameMetrics.fieldHeight + gameMetrics.paddleHeight) * 4,
               -gameMetrics.fieldDepth * 0.5
-            ]" ref="textRef" :text="scoring" center need-updates
+            ]" ref="scoreRef" center need-updates
               font="https://raw.githubusercontent.com/Tresjs/assets/main/fonts/FiraCodeRegular.json">
               <TresMeshToonMaterial color="#fff" />
             </Text3D>
@@ -129,14 +129,15 @@ const gameMetrics: Metrics = {
 }
 
 const scoring = computed(() => {
-  return `${gameState.value.score1} - ${gameState.value.score2}`
+  // return `${gameState.value.players[1].score} - ${gameState.value.players[1].score}`
+  return `tristesse`
 })
 
 const cameraRef: ShallowRef<SimObject3D | null> = shallowRef(null)
 const ballRef: ShallowRef<SimObject3D | null> = shallowRef(null)
 const paddle1Ref: ShallowRef<SimObject3D | null> = shallowRef(null)
 const paddle2Ref: ShallowRef<SimObject3D | null> = shallowRef(null)
-const textRef: ShallowRef<SimObject3D | null> = shallowRef(null)
+const scoreRef: ShallowRef<SimObject3D | null> = shallowRef(null)
 
 const { onLoop } = useRenderLoop()
 
@@ -153,7 +154,8 @@ onLoop(({ delta }) => {
     ballRef.value != null &&
     paddle1Ref.value != null &&
     paddle2Ref.value != null &&
-    cameraRef.value != null
+    cameraRef.value != null &&
+    scoreRef.value != null
   ) {
     renderPong(
       delta,
@@ -162,7 +164,8 @@ onLoop(({ delta }) => {
       ballRef.value,
       paddle1Ref.value,
       paddle2Ref.value,
-      cameraRef.value
+      cameraRef.value,
+      scoreRef.value
     )
   }
 })
