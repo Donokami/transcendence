@@ -18,7 +18,7 @@ export default {
     const radius = 2
 
     // Define a function to draw the ball on the canvas
-    function drawBall() {
+    function drawBall(): void {
       ctx.beginPath()
       ctx.arc(x, y, radius, 0, Math.PI * 2)
       ctx.fillStyle = 'black'
@@ -27,12 +27,12 @@ export default {
     }
 
     // Define a function to clear the canvas
-    function clearCanvas() {
+    function clearCanvas(): void {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
     }
 
     // Define a function to update the ball's position and velocity
-    function update() {
+    function update(): void {
       // Bounce off the left or right walls
       if (x + dx > canvas.width - radius || x + dx < radius) {
         dx = -dx
@@ -49,7 +49,7 @@ export default {
     }
 
     // Define the animation loop
-    function animate() {
+    function animate(): void {
       clearCanvas()
       drawBall()
       update()

@@ -12,11 +12,4 @@
 <script setup lang="ts">
   import AuthMfaForm from '../components/AuthMfaForm.vue'
   import AuthBallCanvas from '../components/AuthBallCanvas.vue'
-
-  const props = defineProps({
-    formState: { type: String, default: 'signIn'},
-  })
-
-  props.formState
-
 </script>

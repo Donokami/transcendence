@@ -10,6 +10,7 @@ module.exports = {
   ],
   rules: {
     // 'space-before-function-paren': ['error', 'never']
+    '@typescript-eslint/strict-boolean-expressions': 'off'
   },
   parserOptions: {
     ecmaVersion: 'latest'

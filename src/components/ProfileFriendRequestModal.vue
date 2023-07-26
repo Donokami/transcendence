@@ -43,9 +43,13 @@ import type { Friendship } from '@/types'
 
 import { useUserStore } from '@/stores/UserStore.js'
 
+import { useToast } from "vue-toastification";
+
 // ******************** //
 // VARIABLE DEFINITIONS //
 // ******************** //
+
+const toast = useToast()
 
 const userStore = useUserStore()
 
@@ -63,16 +67,18 @@ const emit = defineEmits(['closeModal'])
 // getFriendRequests //
 // ***************** //
 
-const getFriendRequests = async () => {
-  if (loggedUser.value == null)
+const getFriendRequests = async (): Promise<number> => {
+  if (loggedUser.value === null)
     return 0
   try {
     const response = await userStore.fetchFriendRequests(loggedUser.value.id);
     friendRequests.value = response;
     console.log(`[ProfileFriendRequestListModal] - Friend request fetched successfully`);
+    return response.length;
   }
   catch (error) {
-    console.error(`[ProfileStatsCard] - Failed to fetch friend requests ! Error : `, error);
+    toast.error("Failed to fetch friend requests !");
+    return 0
   }
 };
 
@@ -80,15 +86,16 @@ const getFriendRequests = async () => {
 // acceptRequest //
 // ************* //
 
-const acceptRequest = async (requestId: string) => {
+const acceptRequest = async (requestId: string): Promise<void> => {
   try {
     await userStore.acceptFriendRequest(requestId);
     console.log(`[ProfileFriendRequestListModal] - Friend request accepted successfully`);
-    getFriendRequests();
+    toast.success("Friend request accepted !");
+    await getFriendRequests();
     emit('closeModal');
   }
   catch (error) {
-    console.error(`[ProfileFriendRequestListModal] - Failed to accept friend request. Error: `, error);
+    toast.error("Failed to accept friend request !");
   }
 };
 
@@ -96,15 +103,15 @@ const acceptRequest = async (requestId: string) => {
 // rejectRequest //
 // ************* //
 
-const rejectRequest = async (requestId: string) => {
+const rejectRequest = async (requestId: string): Promise<void> => {
   try {
     await userStore.rejectFriendRequest(requestId);
-    console.log(`[ProfileFriendRequestListModal] - Friend request rejected successfully`);
-    getFriendRequests();
+    toast.success("Friend request rejected !");
+    await getFriendRequests();
     emit('closeModal');
   }
   catch (error) {
-    console.error(`[ProfileFriendRequestListModal] - Failed to reject friend request. Error: `, error);
+    toast.error("Failed to reject friend request !");
   }
 };
 
@@ -112,15 +119,15 @@ const rejectRequest = async (requestId: string) => {
 // blockUser //
 // ********* //
 
-const blockUser = async (userToBlockId: string) => {
+const blockUser = async (userToBlockId: string): Promise<void> => {
   try {
     await userStore.blockUser(userToBlockId);
-    console.log(`[ProfileFriendRequestListModal] - Friend request rejected successfully`);
-    getFriendRequests();
+    toast.success("User blocked !");
+    await getFriendRequests();
     emit('closeModal');
   }
   catch (error) {
-    console.error(`[ProfileFriendRequestListModal] - Failed to reject friend request. Error: `, error);
+    toast.error("Failed to block user !");
   }
 };
 

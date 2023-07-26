@@ -19,10 +19,7 @@ export const useChannelStore = defineStore('channels', {
     // createDmChannel //
     // *************** //
 
-    async createDmChannel(
-      ownerId: string,
-      receiverId: string
-    ) {
+    async createDmChannel(ownerId: string, receiverId: string) {
       const channelParam = {
         isDm: true,
         ownerId,
@@ -140,7 +137,9 @@ export const useChannelStore = defineStore('channels', {
     // ****** //
 
     getDms() {
-      const channels = this.channelsList?.data?.filter((channel) => channel.isDm)
+      const channels = this.channelsList?.data?.filter(
+        (channel) => channel.isDm
+      )
       return channels ?? []
     },
 
@@ -149,7 +148,9 @@ export const useChannelStore = defineStore('channels', {
     // **************** //
 
     getGroupChannels() {
-      const channels = this.channelsList?.data?.filter((channel) => !channel.isDm)
+      const channels = this.channelsList?.data?.filter(
+        (channel) => !channel.isDm
+      )
       return channels ?? []
     },
 
@@ -159,12 +160,10 @@ export const useChannelStore = defineStore('channels', {
 
     async fetchChannelMessages(channelId: string) {
       try {
-        const messages = await fetcher.get(
-          `/channels/${channelId}/messages`
-        )
+        const messages = await fetcher.get(`/channels/${channelId}/messages`)
         const channel = this.getChannel()
-        console.log('[Message Fetch] channel : ', channel);
-        console.log('[Message Fetch] messages : ', messages);
+        console.log('[Message Fetch] channel : ', channel)
+        console.log('[Message Fetch] messages : ', messages)
 
         if (channel != null) channel.messages = messages
       } catch (error) {
@@ -213,7 +212,9 @@ export const useChannelStore = defineStore('channels', {
         channelId = this.selectedChannel as string
       }
 
-      return this.channelsList?.data?.find((channel) => channel.id === channelId)
+      return this.channelsList?.data?.find(
+        (channel) => channel.id === channelId
+      )
     },
 
     // ****************** //
@@ -288,7 +289,7 @@ export const useChannelStore = defineStore('channels', {
     },
 
     addMessage(message: Message, channelId?: string) {
-      console.log('message : ', message);
+      console.log('message : ', message)
       const channel = this.getChannel(channelId)
       if (channel != null) {
         // fix: this line make a bug when the channel messages are not loaded

@@ -1,6 +1,8 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { Icon } from '@iconify/vue'
+import Toast, { type PluginOptions, POSITION } from 'vue-toastification'
+import 'vue-toastification/dist/index.css'
 
 import App from './App.vue'
 import router from './router'
@@ -20,5 +22,11 @@ app.use(Tres)
 app.use(VueQueryPlugin)
 
 app.component('iconify-icon', Icon)
+
+const options: PluginOptions = {
+  position: POSITION.TOP_CENTER
+}
+
+app.use(Toast, options)
 
 app.mount('#app')

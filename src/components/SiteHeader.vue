@@ -46,9 +46,7 @@
             <div class="h-[60px] w-20">
               <div class="h-full flex items-center justify-center">
                 <img
-                  v-if="
-                    userStore.loggedUser && userStore.loggedUser.profilePicture
-                  "
+                v-if="userStore.loggedUser && userStore.loggedUser.profilePicture && pictureSrc"
                   :src="pictureSrc"
                   class="object-cover h-12 w-12 rounded-full" />
                 <iconify-icon
@@ -92,9 +90,9 @@ import { computed } from 'vue'
 const router = useRouter()
 const userStore = useUserStore()
 
-const pictureSrc = computed(() => {
-  const profilePicture = userStore.loggedUser.profilePicture
-  if (!profilePicture) return null
+  const pictureSrc = computed(() => {
+      const profilePicture = userStore.loggedUser?.profilePicture;
+      if (!profilePicture) return null;
 
   if (profilePicture.includes('cdn.intra.42')) {
     return profilePicture
@@ -111,8 +109,8 @@ const pictureSrc = computed(() => {
 // logout //
 // ****** //
 
-const logout = async () => {
-  await userStore.signOut()
-  router.push('/auth')
-}
+  const logout = async (): Promise<void> => {
+    await userStore.signOut()
+    await router.push('/auth')
+  }
 </script>

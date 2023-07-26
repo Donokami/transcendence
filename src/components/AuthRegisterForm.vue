@@ -84,11 +84,14 @@
   import { ref } from 'vue'
   import { Form, Field, ErrorMessage } from 'vee-validate'
   import { useUserStore } from '../stores/UserStore' 
+  import { useToast } from 'vue-toastification'
 
   const alertMsg = ref('Your account is being created...')
   const alertColor = ref('bg-blue-500')
   const inSubmission = ref(false)
   const showAlert = ref(false)
+
+  const toast = useToast()
 
   const userStore = useUserStore();
 
@@ -101,28 +104,25 @@
     confirmPassword: 'required|password_mismatch:@password',
   };
 
-  const submitForm = async (values: Record<string, any>) => {
+  const submitForm = async (values: Record<string, any>): Promise<void> => {
     showAlert.value = true
     inSubmission.value = true
     alertMsg.value = 'Account is being created...'
     alertColor.value = 'bg-blue-500'
     
     try {
-      const response = await userStore.register(values)
-      if(response.ok) {
-        alertColor.value = 'bg-green-500'
-        alertMsg.value = 'Account created!'
-        setTimeout( () => toggleForm(), 2000);
-      }
-      else {
+      await userStore.register(values)
+      alertColor.value = 'bg-green-500'
+      alertMsg.value = 'Account created!'
+      setTimeout( () => toggleForm(), 2000);
+    }
+    catch (error: any) {
+      if (error.message === 'User already exists') {
         alertColor.value = 'bg-red-500'
         alertMsg.value = 'Email already in use!'
-        throw new Error('Something went wrong');
+      } else {
+        toast.error('Something went wrong')
       }
-    }
-    catch (error) {
-      console.log(`[AuthRegisterForm] - Register failed ! Error : `,error)
-      throw error
     }
     finally {
       inSubmission.value = false

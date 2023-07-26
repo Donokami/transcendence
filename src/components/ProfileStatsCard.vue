@@ -174,32 +174,36 @@ import { storeToRefs } from 'pinia'
 import { computed, onBeforeMount, ref, type Ref } from 'vue'
 import { onBeforeRouteUpdate, useRoute } from 'vue-router'
 
-import ProfileFriendRequestModal from '@/components/ProfileFriendRequestModal.vue'
 import { useUserStore } from '@/stores/UserStore'
-import type { User } from '@/types/user'
+
+import { useToast } from "vue-toastification";
+
+import type { User } from '@/types'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
 // ******************** //
+const toast = useToast()
 
-const fileInput = ref(null) as Ref<HTMLElement | null>
-const iconBlockUser = ref('mdi:account-cancel-outline')
-const iconRequestNotification = ref('mdi:account-alert-outline')
-const iconSendRequest = ref('mdi:account-plus-outline')
-const iconUnblockUser = ref('mdi:account-cancel')
-const isFriend = ref(false)
-const nFriendRequests = ref(0)
-const route = useRoute()
-const showFriendRequestModal = ref(false)
-const userStore = useUserStore()
+const fileInput = ref(null) as Ref<HTMLElement | null>;
+const iconBlockUser = ref('mdi:account-cancel-outline');
+const iconRequestNotification = ref('mdi:account-alert-outline');
+const iconSendRequest = ref('mdi:account-plus-outline');
+const iconUnblockUser = ref('mdi:account-cancel');
+const isFriend = ref(false);
+const nFriendRequests = ref(0);
+const route = useRoute();
+const showFriendRequestModal = ref(false);
+const userStore = useUserStore();
+
 
 const { loggedUser } = storeToRefs(userStore)
 const { observedUser } = storeToRefs(userStore)
 
 const pictureSrc = computed(() => {
-  if (userStore.loggedUser == null) return null
-  const profilePicture = userStore.loggedUser.profilePicture
-  if (!profilePicture) return null
+      if (!userStore.loggedUser) return null;
+      const profilePicture = userStore.loggedUser.profilePicture;
+      if (!profilePicture) return null;
 
   if (profilePicture.includes('cdn.intra.42')) {
     return profilePicture
@@ -209,12 +213,10 @@ const pictureSrc = computed(() => {
 })
 
 const statusColor = computed(() => {
-  if (observedUser.value != null && observedUser.value.status === 'online')
-    return 'text-[#62D49A]'
-  if (observedUser.value != null && observedUser.value.status === 'offline')
-    return 'text-red-500'
-  return 'text-gray-500'
-})
+  if (observedUser.value !== null && observedUser.value.status === 'online') return 'text-[#62D49A]';
+  if (observedUser.value !== null && observedUser.value.status === 'offline') return 'text-red-500';
+  return 'text-gray-500';
+});
 
 // ******************** //
 // FUNCTION DEFINITIONS //
@@ -224,46 +226,38 @@ const statusColor = computed(() => {
 // blockUser //
 // ********* //
 
-const blockUser = async () => {
-  if (observedUser.value == null) return
+const blockUser = async (): Promise<void> => {
+  if (observedUser.value === null)
+    return;
   try {
-    await userStore.blockUser(observedUser.value.id)
-    console.log(`[ProfileStatsCard] - User blocked !`)
+    await userStore.blockUser(observedUser.value.id);
+    toast.success("User blocked !")
   } catch (error) {
-    console.log(`[ProfileStatsCard] - Failed to block user! Error : `, error)
+    console.log(`[ProfileStatsCard] - Failed to block user! Error : `, error);
   }
-}
+};
 
 // ****************** //
 // checkBlockedStatus //
 // ****************** //
 
-const checkBlockedStatus = async () => {
-  if (loggedUser.value == null || observedUser.value == null) return
+const checkBlockedStatus = async (): Promise<void> => {
+  if (!loggedUser.value || !observedUser.value)
+    return;
   try {
-    const response = await userStore.fetchBlockerId(
-      loggedUser.value.id,
-      observedUser.value.id
-    )
-    console.log(`[ProfileStatsCard] - fetchBlockerId response : ${response}`)
-    if (!response) {
-      console.log(`[ProfileStatsCard] - No blocker found !`)
-    } else if (response === loggedUser.value.id) {
-      observedUser.value.isBlockedBy = true
-      console.log(
-        `[ProfileStatsCard] - ${observedUser.value.id} isBlockedBy : ${loggedUser.value.id}`
-      )
-    } else if (response === observedUser.value.id) {
-      loggedUser.value.isBlockedBy = true
-      console.log(
-        `[ProfileStatsCard] - ${loggedUser.value.id} isBlockedBy : ${observedUser.value.id}`
-      )
+    const response = await userStore.fetchBlockerId(loggedUser.value.id, observedUser.value.id);
+    console.log(`[ProfileStatsCard] - fetchBlockerId response : ${response}`);
+    if (response === loggedUser.value.id) {
+      observedUser.value.isBlockedBy = true;
+      console.log(`[ProfileStatsCard] - ${observedUser.value.id} isBlockedBy : ${loggedUser.value.id}`);
     }
-  } catch (error) {
-    console.error(
-      `[ProfileStatsCard] - Failed to fetch blocked user and check friendship! Error: `,
-      error
-    )
+    else if (response === observedUser.value.id) {
+      loggedUser.value.isBlockedBy = true;
+      console.log(`[ProfileStatsCard] - ${loggedUser.value.id} isBlockedBy : ${observedUser.value.id}`);
+    }
+  }
+  catch (error) {
+    toast.error("Failed to fetch blocked user and check friendship !")
   }
 }
 
@@ -271,19 +265,23 @@ const checkBlockedStatus = async () => {
 // fetchUser //
 // ********* //
 
-const fetchUser = async (id: string | undefined) => {
-  if (id) {
-    observedUser.value = await userStore.fetchUserByIdWithStats(id)
-    console.log(
-      `[ProfileView] - The current observed user is ${observedUser.value.username}`
-    )
-  } else if (loggedUser.value != null) {
-    observedUser.value = loggedUser.value
-    console.log(
-      `[ProfileView] - The current observed user is ${observedUser.value.username}`
-    )
-  } else {
-    console.log(`[ProfileView] - The current observed user is not defined`)
+const fetchUser = async (id: string | undefined): Promise<void> => {
+  try {
+    if (id) {
+      observedUser.value = await userStore.fetchUserByIdWithStats(id)
+      console.log(
+        `[ProfileView] - The current observed user is ${observedUser.value.username}`
+      )
+    } else if (loggedUser.value != null) {
+      observedUser.value = loggedUser.value
+      console.log(
+        `[ProfileView] - The current observed user is ${observedUser.value.username}`
+      )
+    } else {
+      console.log(`[ProfileView] - The current observed user is not defined`)
+    }
+  } catch (error) {
+    toast.error("Failed to fetch user !")
   }
 }
 
@@ -291,7 +289,7 @@ const fetchUser = async (id: string | undefined) => {
 // getFriendRequestsNumber //
 // *********************** //
 
-const getFriendRequestsNumber = async () => {
+const getFriendRequestsNumber = async (): Promise<number> => {
   if (loggedUser.value == null) return 0
   try {
     const response = await userStore.fetchFriendRequests(loggedUser.value.id)
@@ -300,11 +298,10 @@ const getFriendRequestsNumber = async () => {
       `[ProfileStatsCard] - Number of friend requests : `,
       nFriendRequests.value
     )
+    return response.length
   } catch (error) {
-    console.error(
-      `[ProfileStatsCard] - Failed to fetch friend requests ! Error : `,
-      error
-    )
+    toast.error("Failed to get friend requests number !")
+    return 0
   }
 }
 
@@ -312,7 +309,7 @@ const getFriendRequestsNumber = async () => {
 // closeFriendRequestModal //
 // *********************** //
 
-const closeFriendRequestModal = () => {
+const closeFriendRequestModal = (): void => {
   showFriendRequestModal.value = false
   location.reload()
 }
@@ -321,37 +318,36 @@ const closeFriendRequestModal = () => {
 // onFileChange //
 // ************ //
 
-const onFileChange = async (event: Event) => {
-  const target = event.target as HTMLInputElement
+const onFileChange = async (event: Event): Promise<void> => {
+  const target = event.target as HTMLInputElement;
   if (target.files != null) {
-    const file = target.files[0]
+    const file = target.files[0];
     try {
-      if (userStore.loggedUser == null) return
-      await userStore.uploadProfilePicture(userStore.loggedUser.id, file)
-      location.reload()
+      if (userStore.loggedUser == null) return;
+      await userStore.uploadProfilePicture(userStore.loggedUser.id, file);
+      location.reload();
     } catch (error) {
-      console.error('Error updating profile picture:', error)
+      toast.error("Failed to upload profile picture !")
     }
   }
-}
+};
 
 // ****************** //
 // searchInFriendList //
 // ****************** //
 
-const searchInFriendList = async (user: User) => {
-  if (!user) return
+const searchInFriendList = async (user: User): Promise<boolean> => {
+  if (!user) return false
   try {
     const friend = userStore.friendList.find(
       (friend: User) => friend.id === user.id
     )
     isFriend.value = !(friend == null)
     console.log(`[ProfileStatsCard] - isFriend : `, isFriend.value)
+    return true
   } catch (error) {
-    console.error(
-      `[ProfileStatsCard] - Failed to fetch friends and check friendship! Error: `,
-      error
-    )
+    toast.error("Failed to get friend requests number !")
+    return false
   }
 }
 
@@ -359,16 +355,15 @@ const searchInFriendList = async (user: User) => {
 // sendFriendRequest //
 // ***************** //
 
-const sendFriendRequest = async () => {
-  if (observedUser.value == null) return
+const sendFriendRequest = async (): Promise<void> => {
+  if (observedUser.value === null)
+    return;
   try {
-    await userStore.sendFriendRequest(observedUser.value.id)
-    console.log(`[ProfileStatsCard] - Friend request sent !`)
-  } catch (error) {
-    console.error(
-      `[ProfileStatsCard] - Failed to send friend requests ! Error : `,
-      error
-    )
+    await userStore.sendFriendRequest(observedUser.value.id);
+    toast.success("Friend request sent !")
+  }
+  catch (error) {
+    toast.error("Failed to send friend request !")
   }
 }
 
@@ -376,7 +371,7 @@ const sendFriendRequest = async () => {
 // triggerFileInput //
 // **************** //
 
-const triggerFileInput = () => {
+const triggerFileInput = (): void => {
   fileInput.value?.click()
 }
 
@@ -384,13 +379,14 @@ const triggerFileInput = () => {
 // unblockUser //
 // *********** //
 
-const unblockUser = async () => {
-  if (observedUser.value == null) return
+const unblockUser = async (): Promise<void> => {
+  if (observedUser.value === null)
+    return;
   try {
-    await userStore.unblockUser(observedUser.value.id)
-    console.log(`[ProfileStatsCard] - User unblocked !`)
+    await userStore.unblockUser(observedUser.value.id);
+    toast.success("User unblocked !")
   } catch (error) {
-    console.log(`[ProfileStatsCard] - Failed to unblock user! Error : `, error)
+    toast.error("Failed to unblock user !")
   }
 }
 
@@ -403,38 +399,37 @@ onBeforeMount(async () => {
   if (Array.isArray(id)) {
     id = id[0]
   }
-
-  await fetchUser(id)
-
-  await userStore.refreshFriendList()
-
-  if (
-    loggedUser.value != null &&
-    observedUser.value != null &&
-    observedUser.value.id !== loggedUser.value.id
-  ) {
-    await searchInFriendList(observedUser.value)
-    await checkBlockedStatus()
+  try {
+    await fetchUser(id)
+  
+    await userStore.refreshFriendList()
+  
+    if ((loggedUser.value != null) && observedUser.value !== null && (observedUser.value.id !== loggedUser.value.id)) {
+      await searchInFriendList(observedUser.value);
+      await checkBlockedStatus();
+    }
+  
+    await getFriendRequestsNumber()
+  } catch(error: any) {
+    toast.error("Something went wrong !")
   }
-
-  await getFriendRequestsNumber()
 })
 
 onBeforeRouteUpdate(async (to, from) => {
-  const id = to.path.split('/').pop()
-  await fetchUser(id)
-
-  await userStore.refreshFriendList()
-
-  if (
-    loggedUser.value != null &&
-    observedUser.value != null &&
-    observedUser.value.id !== loggedUser.value.id
-  ) {
-    await searchInFriendList(observedUser.value)
-    await checkBlockedStatus()
+  const id = to.path.split("/").pop();
+  try {
+    await fetchUser(id);
+  
+    await userStore.refreshFriendList();
+  
+    if (loggedUser.value && observedUser.value && (observedUser.value.id !== loggedUser.value.id)) {
+      await searchInFriendList(observedUser.value);
+      await checkBlockedStatus();
+    }
+  
+    await getFriendRequestsNumber();
+  } catch(error: any) {
+    toast.error("Something went wrong !")
   }
-
-  await getFriendRequestsNumber()
-})
+});
 </script>

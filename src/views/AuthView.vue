@@ -17,11 +17,12 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import AuthSignInForm from '../components/AuthSignInForm.vue'
 import AuthRegisterForm from '../components/AuthRegisterForm.vue'
 import AuthBallCanvas from '../components/AuthBallCanvas.vue'
-import { ref } from 'vue'
+
 
 const formState = ref('signIn')
-
 </script>
+

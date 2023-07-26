@@ -52,6 +52,7 @@ import ProfileStatsCard from '@/components/ProfileStatsCard.vue'
 import StatsRankingTable from '@/components/StatsRankingTable.vue'
 import StatsMatchHistoryTable from '@/components/StatsMatchHistoryTable.vue'
 import { useUserStore } from '@/stores/UserStore';
+import { useToast } from "vue-toastification";
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -62,6 +63,7 @@ const qrCodeUrl = ref('')
 const showUsernameModal = ref(false)
 const tableState = ref('ranking')
 const userStore = useUserStore();
+const toast = useToast()
 
 // ******************** //
 // FUNCTION DEFINITIONS //
@@ -71,7 +73,7 @@ const userStore = useUserStore();
 // handleCloseUsernameModal //
 // ************************ //
 
-const handleCloseUsernameModal = () => {
+const handleCloseUsernameModal = (): void => {
   showUsernameModal.value = false;
   location.reload();
 };
@@ -80,7 +82,7 @@ const handleCloseUsernameModal = () => {
 // switchAuthMessage //
 // ***************** //
 
-const switchAuthMessage = async () => {
+const switchAuthMessage = async (): Promise<void> => {
   try {
     const data = await userStore.enableTwoFactor();
     if (data.isTwoFactorEnabled) {
@@ -92,8 +94,8 @@ const switchAuthMessage = async () => {
       authMessage.value = 'Activate 2FA'
     }
   }
-  catch (error) {
-    console.error(error);
+  catch (error: any) {
+    toast.error('An error occured while enabling 2FA');
   }
 };
 

@@ -18,7 +18,6 @@ import { onBeforeRouteLeave, useRoute } from 'vue-router'
 import RoomSummary from '@/components/RoomSummary.vue'
 import GameCanvas from '@/components/GameCanvas.vue'
 import { socket, room, game } from '@/includes/gameSocket'
-import { onMounted } from 'vue'
 import { useUserStore } from '@/stores/UserStore'
 // import { onMounted } from 'vue';
 

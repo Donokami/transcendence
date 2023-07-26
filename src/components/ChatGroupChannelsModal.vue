@@ -109,7 +109,7 @@ import { onBeforeRouteUpdate } from 'vue-router'
 
 import { useChannelStore } from '@/stores/ChannelStore'
 import { useUserStore } from '@/stores/UserStore.js'
-import type { Channel } from '@/types/Channel'
+import type { Channel } from '@/types'
 
 // ******************** //
 // VARIABLE DEFINITIONS //

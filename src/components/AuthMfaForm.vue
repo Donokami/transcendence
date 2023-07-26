@@ -34,50 +34,49 @@
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue'
-  import { Form, Field, ErrorMessage } from 'vee-validate'
-  import { useUserStore } from '../stores/UserStore' 
-  import { useRouter } from 'vue-router'
+import { ref } from 'vue'
+import { Form, Field, ErrorMessage } from 'vee-validate'
+import { useUserStore } from '../stores/UserStore' 
+import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 
-  const alertMsg = ref('Your account is being created...')
-  const alertColor = ref('bg-blue-500')
-  const inSubmission = ref(false)
-  const showAlert = ref(false)
+const alertMsg = ref('Your account is being created...')
+const alertColor = ref('bg-blue-500')
+const inSubmission = ref(false)
+const showAlert = ref(false)
 
-  const userStore = useUserStore();
+const toast = useToast()
 
-  const router = useRouter()
+const userStore = useUserStore();
 
-  const mfaSchema = {
-    token: 'required|numeric|min:6|max:6'
-  }
-    
-  const submitForm = async (values: Record<string, any>) => {
-    showAlert.value = true
-    inSubmission.value = true
-    alertMsg.value = 'Verifying your 2FA code...'
-    alertColor.value = 'bg-blue-500'
+const router = useRouter()
 
-    values.tempUserId = userStore.tempUserId
-          
-    try {
-      const response = await userStore.verifyTwoFactor(values)
-      if (response.ok) {      
-        alertColor.value = 'bg-green-500'
-        alertMsg.value = 'Your 2FA code has been verified!'
-        router.push('/')
-      } else {
-        alertColor.value = 'bg-red-500'
-        alertMsg.value = 'Your 2FA code could not be verified!'
-        throw new Error('Something went wrong');
-      } 
-    } catch (error) {
-      console.log(error)
-      throw error
-    }
-    finally {
-      inSubmission.value = false
+const mfaSchema = {
+  token: 'required|numeric|min:6|max:6'
+}
+  
+const submitForm = async (values: Record<string, any>): Promise<any> => {
+  showAlert.value = true
+  inSubmission.value = true
+  alertMsg.value = 'Verifying your 2FA code...'
+  alertColor.value = 'bg-blue-500'
+
+  try {
+    await userStore.verifyTwoFactor(values)
+    alertColor.value = 'bg-green-500'
+    alertMsg.value = 'Your 2FA code has been verified!'
+    await router.push('/')
+  } catch (error: any) {
+    console.log(JSON.stringify(error, Object.getOwnPropertyNames(error)));
+    if (error.message === 'Invalid 2FA token') {
+      alertColor.value = 'bg-red-500'
+      alertMsg.value = 'Your 2FA code could not be verified!'
+    } else {
+      toast.error('Something went wrong!')
     }
   }
-
+  finally {
+    inSubmission.value = false
+  }
+}
 </script>

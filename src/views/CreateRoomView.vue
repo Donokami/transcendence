@@ -40,7 +40,7 @@
 
 <script setup lang="ts">
 import { Form, Field, ErrorMessage } from 'vee-validate'
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import fetcher from '@/utils/fetcher'
 
@@ -54,7 +54,7 @@ const isFetching = ref(false)
 const error = ref('')
 const isPrivate = ref(false)
 
-const submitForm = async (values: Record<string, any>) => {
+const submitForm = async (values: Record<string, any>): Promise<void> => {
   try {
     isFetching.value = true
     const res = await fetcher.post('/games', {
@@ -62,7 +62,7 @@ const submitForm = async (values: Record<string, any>) => {
       isPrivate: isPrivate.value
     })
 
-    router.push(`/room/${res.id}`)
+    await router.push(`/room/${res.id}`)
   } catch (err: any) {
     error.value = err.message
   } finally {

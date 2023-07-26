@@ -50,9 +50,13 @@ import { Form, Field, ErrorMessage } from 'vee-validate'
 
 import { useUserStore } from '@/stores/UserStore'
 
+import { useToast } from 'vue-toastification'
+
 // ******************** //
 // VARIABLE DEFINITIONS //
 // ******************** //
+
+const toast = useToast()
 
 const router = useRouter()
 
@@ -78,37 +82,33 @@ const signInSchema = {
 // submitForm //
 // ********** //
 
-const submitForm = async (values: Record<string, any>) => {
+const submitForm = async (values: Record<string, any>): Promise<void> => {
   showAlert.value = true
   inSubmission.value = true
   alertMsg.value = 'Searching for account in database...'
   alertColor.value = 'bg-blue-500'
 
   try {
-    const response = await userStore.signIn(values)
-
-    if (response.ok) {
-      if (userStore.twoFactorEnabled) {
-        router.push('/mfa')
-      } else {
-        alertColor.value = 'bg-green-500'
-        alertMsg.value = 'Account found in database!'
-        setTimeout(() => { router.push('/') }, 2000);
-      }
-    }
-    else {
-      alertColor.value = 'bg-red-500'
-      alertMsg.value = 'Account not found in database!'
-      throw new Error('Something went wrong');
+    await userStore.signIn(values)
+    if (userStore.twoFactorEnabled) {
+      await router.push('/mfa')
+    } else {
+      alertColor.value = 'bg-green-500'
+      alertMsg.value = 'Account found in database!'
+      await router.push('/')
     }
   }
-  catch (error) {
-    console.log(`[AuthSignInForm] - Sign In failed ! Error : `, error)
-    throw error
+  catch (error: any) {
+    if (error.message === 'User not found') {
+      alertColor.value = 'bg-red-500'
+      alertMsg.value = 'Account not found in database!'
+      setTimeout(() => { showAlert.value = false; }, 2000);
+    } else {
+      toast.error('Something went wrong !')
+    }
   }
   finally {
     inSubmission.value = false
-    setTimeout(() => { showAlert.value = false; }, 2000);
   }
 }
 
@@ -124,7 +124,7 @@ const toggleForm = (): void => {
 // handleOauth //
 // *********** //
 
-const handleOauth = async () => {
+const handleOauth = async (): Promise<void> => {
   inSubmission.value = true;
 
   const authUrl = 'http://localhost:3000/api/auth/42/signIn';
@@ -132,23 +132,25 @@ const handleOauth = async () => {
 
     const intervalId = setInterval(async () => {
       try {
-        if (popup.closed) return clearInterval(intervalId);          
+        if (popup?.closed) return clearInterval(intervalId);          
         const authStatus = await userStore.getAuthStatus();
+
+        console.log('authStatus', authStatus);
 
         if (authStatus.status === 'authenticated') {
           clearInterval(intervalId);
-          if (popup) popup.close();
+          if (popup != null) popup.close();
           await userStore.refreshUser();
-          router.push('/');
+          await router.push('/');
         } 
         
         if (authStatus.status === 'requires_2fa') {
           clearInterval(intervalId);
-          if (popup) popup.close();
-          router.push('/mfa');
+          if (popup != null) popup.close();
+          await router.push('/mfa');
         }
-      } catch (error) {
-        console.error('Error fetching auth status:', error);
+      } catch (error: any) {
+        toast.error('Something went wrong !');
       }
     }, 1000);
 

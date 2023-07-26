@@ -1,4 +1,4 @@
-import { ref, type Ref, type UnwrapRef } from "vue"
+import { ref, type Ref, type UnwrapRef } from 'vue'
 
 export class HttpError extends Error {
   status: number
@@ -10,8 +10,10 @@ export class HttpError extends Error {
 }
 
 class Fetcher {
-  async get(url: string = '', config: RequestInit = {}) {
-    const res = await fetch(import.meta.env.VITE_API_URL + url, {
+  private readonly baseURL = import.meta.env.VITE_API_URL
+
+  async get(url: string = '', config: RequestInit = {}): Promise<any> {
+    const res = await fetch(this.baseURL + url, {
       method: 'GET',
       credentials: 'include',
       ...config
@@ -23,9 +25,57 @@ class Fetcher {
     return await res.json()
   }
 
-  async post(url: string = '', body: any = {}, config: RequestInit = {}) {
-    const res = await fetch(import.meta.env.VITE_API_URL + url, {
+  async post(
+    url: string = '',
+    body: any = {},
+    config: RequestInit = {}
+  ): Promise<any> {
+    const res = await fetch(this.baseURL + url, {
       method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body),
+      ...config
+    })
+    if (!res.ok) {
+      const error = await res.json()
+      throw new HttpError(error.message, res.status)
+    }
+    console.log(`[Fetcher] - post : `, res)
+    return await res.json()
+  }
+
+  async put(
+    url: string = '',
+    body: any = {},
+    config: RequestInit = {}
+  ): Promise<any> {
+    const res = await fetch(this.baseURL + url, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body),
+      ...config
+    })
+
+    if (!res.ok) {
+      const error = await res.json()
+      throw new HttpError(error.message, res.status)
+    }
+    return await res.json()
+  }
+
+  async patch(
+    url: string = '',
+    body: any = {},
+    config: RequestInit = {}
+  ): Promise<any> {
+    const res = await fetch(this.baseURL + url, {
+      method: 'PATCH',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
@@ -42,14 +92,14 @@ class Fetcher {
 }
 
 export interface FetcherResponse<T> {
-  data: Ref<UnwrapRef<T | null>>,
-  error: Ref<UnwrapRef<HttpError | null>>,
+  data: Ref<UnwrapRef<T | null>>
+  error: Ref<UnwrapRef<HttpError | null>>
   loading: Ref<UnwrapRef<boolean>>
 }
 
 export function useFetcher<T>({
   queryFn,
-  onSuccess,
+  onSuccess
 }: {
   queryFn: Promise<any>
   onSuccess?: (data: T) => void
@@ -58,26 +108,29 @@ export function useFetcher<T>({
   const error = ref<HttpError | null>(null)
   const loading = ref(true)
 
-  queryFn.then((res) => {
-    data.value = res
+  queryFn
+    .then((res) => {
+      data.value = res
 
-    if (onSuccess != null) {
-      onSuccess(res)
-    }
-  }).catch((err) => {
-    if (err instanceof HttpError) {
-      error.value = err as unknown as HttpError
-    } else {
-      error.value = new HttpError(err.message, 500)
-    }
-  }).finally(() => {
-    loading.value = false
-  })
+      if (onSuccess != null) {
+        onSuccess(res)
+      }
+    })
+    .catch((err) => {
+      if (err instanceof HttpError) {
+        error.value = err as unknown as HttpError
+      } else {
+        error.value = new HttpError(err.message, 500)
+      }
+    })
+    .finally(() => {
+      loading.value = false
+    })
 
   return {
     data,
     error,
-    loading,
+    loading
   }
 }
 

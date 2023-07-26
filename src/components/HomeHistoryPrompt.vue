@@ -15,10 +15,10 @@ Manufactured by Atari, it was released in 1972, which makes it one of the very f
 It was created by Allan Alcorn as a training exercise assigned to him by Atari co-founders.
 They were so surprised by the quality of Alcorn's work that they decided to manufacture the game!`;
 
-let index = ref(0);
+const index = ref(0);
 const speed = 100;
 
-const type = () => {
+const type = (): void => {
   if (index.value < text.length) {
     consoleText.value += text.charAt(index.value);
     index.value++;

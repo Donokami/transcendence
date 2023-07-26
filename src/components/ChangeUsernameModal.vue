@@ -37,10 +37,13 @@
 
 import { useUserStore } from '@/stores/UserStore.js'
 import { Form, Field, ErrorMessage } from 'vee-validate'
+import { useToast } from 'vue-toastification'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
 // ******************** //
+
+const toast = useToast()
 
 const emit = defineEmits(['close-modal'])
 const userStore = useUserStore()
@@ -56,14 +59,14 @@ const usernameSchema = {
 // submitForm //
 // ********** //
 
-const submitForm = async (values: Record<string, string>) => {
-  console.log(values)
+const submitForm = async (values: Record<string, string>): Promise<void> => {
   try {
     if (!userStore.loggedUser) return;
+
     await userStore.updateUser(userStore.loggedUser.id, { username: values.username });
     emit('close-modal');
   } catch (error) {
-    console.log(error)
+    toast.error('Error changing username')
   }
 };
 
