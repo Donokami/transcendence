@@ -4,9 +4,8 @@ import type { User, Friendship, Paginated } from '@/types'
 import fetcher from '@/utils/fetcher'
 
 interface UserData {
-  email?: string
-  password?: string
   username?: string
+  password?: string
   profilePicture?: string
 }
 
@@ -173,7 +172,7 @@ export const useUserStore = defineStore('users', {
         const user = await this.fetchUser()
         this.loggedUser = user
         this.twoFactorEnabled = user.isTwoFactorEnabled
-      } catch (error) {}
+      } catch (error) { }
     },
 
     // ******** //

@@ -3,10 +3,10 @@
     <h2 class="text-2xl font-bold mb-8 text-black">Sign In</h2>
     <Form ref="formRef" :validation-schema="signInSchema" @submit="submitForm">
       <div class="mb-6">
-        <label class="block font-medium mb-1" for="email"> Email </label>
-        <Field class="neobrutalist-input w-full text-black" name="email" type="email"
-          placeholder="Enter your email address" />
-        <ErrorMessage class="font-normal text-base text-red-600" name="email" />
+        <label class="block font-medium mb-1" for="username">Username</label>
+        <Field class="neobrutalist-input w-full text-black" name="username" type="username"
+          placeholder="Enter your username" />
+        <ErrorMessage class="font-normal text-base text-red-600" name="username" />
       </div>
       <div class="mb-6">
         <label class="block font-medium mb-1" for="password">Password</label>
@@ -70,7 +70,7 @@ const inSubmission = ref(false)
 const showAlert = ref(false)
 
 const signInSchema = {
-  email: 'required|min:3|max:100|email',
+  username: 'required|min:3|max:100',
   password: 'required|min:8|max:100'
 }
 
@@ -132,7 +132,7 @@ const handleOauth = async (): Promise<void> => {
 
     const intervalId = setInterval(async () => {
       try {
-        if (popup?.closed) return clearInterval(intervalId);          
+        if (popup?.closed) return clearInterval(intervalId);
         const authStatus = await userStore.getAuthStatus();
 
         console.log('authStatus', authStatus);
@@ -142,8 +142,8 @@ const handleOauth = async (): Promise<void> => {
           if (popup != null) popup.close();
           await userStore.refreshUser();
           await router.push('/');
-        } 
-        
+        }
+
         if (authStatus.status === 'requires_2fa') {
           clearInterval(intervalId);
           if (popup != null) popup.close();

@@ -14,16 +14,6 @@
         <ErrorMessage class="font-normal text-base text-red-600" name="username" />
       </div>
       <div class="mb-6">
-        <label class="block font-medium mb-1" for="email">Email</label>
-        <Field
-          class="neobrutalist-input w-full text-black"
-          name="email"
-          type="email"
-          placeholder="Enter your email address"
-        />
-        <ErrorMessage class="font-normal text-base text-red-600" name="email" />
-      </div>
-      <div class="mb-6">
         <label class="block font-medium mb-1" for="password">Password</label>
         <Field
           class="neobrutalist-input w-full text-black"
@@ -83,7 +73,7 @@
 <script setup lang="ts">
   import { ref } from 'vue'
   import { Form, Field, ErrorMessage } from 'vee-validate'
-  import { useUserStore } from '../stores/UserStore' 
+  import { useUserStore } from '../stores/UserStore'
   import { useToast } from 'vue-toastification'
 
   const alertMsg = ref('Your account is being created...')
@@ -99,7 +89,6 @@
 
   const registerSchema = {
     username: 'required|min:3|max:100',
-    email: 'required|email',
     password: 'required|min:8|max:100',
     confirmPassword: 'required|password_mismatch:@password',
   };
@@ -109,7 +98,7 @@
     inSubmission.value = true
     alertMsg.value = 'Account is being created...'
     alertColor.value = 'bg-blue-500'
-    
+
     try {
       await userStore.register(values)
       alertColor.value = 'bg-green-500'
@@ -119,7 +108,7 @@
     catch (error: any) {
       if (error.message === 'User already exists') {
         alertColor.value = 'bg-red-500'
-        alertMsg.value = 'Email already in use!'
+        alertMsg.value = 'User already exist!'
       } else {
         toast.error('Something went wrong')
       }

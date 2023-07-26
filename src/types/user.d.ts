@@ -8,11 +8,10 @@ export interface User {
 
   id: string;
   username: string
-  email: string
   password: string
   profilePicture: string
   isTwoFactorEnabled: boolean
-  
+
   // ****************** //
   // OTHER INFORMATIONS //
   // ****************** //
@@ -50,5 +49,5 @@ export interface User {
   pointsScored: number
   pointsConceded: number
   pointsDifference: number
-  
+
 }
