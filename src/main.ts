@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { Icon } from '@iconify/vue'
 import Toast, { type PluginOptions, POSITION } from 'vue-toastification'
-import 'vue-toastification/dist/index.css'
+import 'vue-toastification/dist/index.css' // todo: remove this import if using custom css file
 
 import App from './App.vue'
 import router from './router'

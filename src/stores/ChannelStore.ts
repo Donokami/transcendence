@@ -116,7 +116,7 @@ export const useChannelStore = defineStore('channels', {
               const receiverUser = channel.members.find(
                 (user) => user.id !== loggedUser.id
               )
-              console.log('recieverUser : ', receiverUser)
+              console.log('receiverUser : ', receiverUser)
 
               if (receiverUser != null) {
                 channel.name = receiverUser.username

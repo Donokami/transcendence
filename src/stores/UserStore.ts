@@ -203,7 +203,7 @@ export const useUserStore = defineStore('users', {
     async sendFriendRequest(receiverId: string): Promise<Friendship> {
       const response: Friendship = await fetcher.post(
         `/social/friendship/request`,
-        JSON.stringify({ receiverId })
+        { receiverId }
       )
       console.log(
         `[UserStore] - Friend request successfully sent to ${receiverId} !`
