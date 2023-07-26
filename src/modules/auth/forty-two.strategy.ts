@@ -16,7 +16,6 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
           return String(obj.id);
         },
         username: 'login',
-        'emails.0.value': 'email',
         'photos.0.value': 'profilePicture',
       },
     });
@@ -25,7 +24,6 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
   async validate(accessToken: string, refreshToken: string, profile: any) {
     const {
       username,
-      emails: [{ value: email }],
       _json: {
         image: { link: profilePicture },
       },
@@ -33,7 +31,6 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
 
     const user = await this.authService.validateUser({
       username,
-      email,
       profilePicture,
     });
 

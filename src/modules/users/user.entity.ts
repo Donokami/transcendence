@@ -41,9 +41,6 @@ export class User {
   @ApiProperty()
   username: string
 
-  @Column({ select: false, unique: true })
-  email: string
-
   @Column({ nullable: true, select: false })
   password: string
 

@@ -22,7 +22,7 @@ import { ApiOperation } from '@nestjs/swagger'
 @Controller('auth')
 @UseFilters(new GlobalExceptionFilter())
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Get('42/signIn')
   @UseGuards(AuthGuard('42'))
@@ -79,21 +79,21 @@ export class AuthController {
     tags: ['auth']
   })
   async createUser(@Body() body: RegisterUserDto, @Session() session: any) {
-    const { email, password, username } = body
-    const user = await this.authService.register(email, password, username)
+    const { password, username } = body
+    const user = await this.authService.register(username, password)
     session.userId = user.id
     return user
   }
 
   @Post('/signIn')
   @ApiOperation({
-    summary: 'Sign in with email and password',
+    summary: 'Sign in with username and password',
     operationId: 'signIn',
-    description: 'Sign in with email and password',
+    description: 'Sign in with username and password',
     tags: ['auth']
   })
   async signIn(@Body() body: SignInUserDto, @Session() session: any) {
-    const user = await this.authService.signIn(body.email, body.password)
+    const user = await this.authService.signIn(body.username, body.password)
 
     if (user.isTwoFactorEnabled) {
       session.twoFactorUserId = user.id

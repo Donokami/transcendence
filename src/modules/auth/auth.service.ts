@@ -29,7 +29,7 @@ export class AuthService {
   // CONSTRUCTOR //
   // *********** //
 
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   // ****** //
   // LOGGER //
@@ -46,8 +46,8 @@ export class AuthService {
   // ************ //
 
   async validateUser(details: IUserDetails) {
-    const user = await this.usersService.findOneByEmailWithAuthInfos(
-      details.email
+    const user = await this.usersService.findOneByUsernameWithAuthInfos(
+      details.username
     )
     if (!user) {
       const newUser = await this.usersService.createOauth(details)
@@ -75,7 +75,7 @@ export class AuthService {
       user.isTwoFactorEnabled = true
       await this.usersService.update(user.id, user)
 
-      const otpauth = authenticator.keyuri(user.email, 'YourService', secret)
+      const otpauth = authenticator.keyuri(user.username, 'YourService', secret) // todo: change YourService to something else
       const dataUrl = await qrcode.toDataURL(otpauth)
 
       return { isTwoFactorEnabled: true, dataUrl }
@@ -113,15 +113,14 @@ export class AuthService {
   // register //
   // ******** //
 
-  async register(email: string, password: string, username: string) {
+  async register(username: string, password: string) {
     const salt = randomBytes(8).toString('hex')
     const hash = (await scrypt(password, salt, 32)) as Buffer
     const hashedPassword = salt + '.' + hash.toString('hex')
 
     const newUser = await this.usersService.create(
-      email,
-      hashedPassword,
-      username
+      username,
+      hashedPassword
     )
     return newUser
   }
@@ -130,8 +129,8 @@ export class AuthService {
   // signIn //
   // ****** //
 
-  async signIn(email: string, password: string) {
-    const user = await this.usersService.findOneByEmailWithAuthInfos(email)
+  async signIn(username: string, password: string) {
+    const user = await this.usersService.findOneByUsernameWithAuthInfos(username)
     if (!user) {
       this.logger.warn('User not found')
       throw new UserNotFound()

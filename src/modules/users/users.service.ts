@@ -49,11 +49,10 @@ export class UsersService {
   // ****** //
 
   async create(
-    email: string,
-    password: string,
-    username: string
+    username: string,
+    password: string
   ): Promise<User> {
-    const user = this.userRepository.create({ email, password, username })
+    const user = this.userRepository.create({ password, username })
     return await this.userRepository.save(user)
   }
 
@@ -156,35 +155,34 @@ export class UsersService {
     })
   }
 
-  // ************** //
-  // findOneByEmail //
-  // ************** //
+  // ***************** //
+  // findOneByUsername //
+  // ***************** //
 
-  async findOneByEmail(email: string): Promise<User> {
-    if (!email) {
+  async findOneByUsername(username: string): Promise<User> {
+    if (!username) {
       return null
     }
 
-    const user = await this.userRepository.findOne({ where: { email } })
+    const user = await this.userRepository.findOne({ where: { username } })
 
     return user
   }
 
-  // *************************** //
-  // findOneByEmailWithAuthInfos //
-  // *************************** //
+  // ************************** //
+  // findOneByUserWithAuthInfos //
+  // ************************** //
 
-  async findOneByEmailWithAuthInfos(email: string): Promise<User> {
-    if (!email) {
+  async findOneByUsernameWithAuthInfos(username: string): Promise<User> {
+    if (!username) {
       return null
     }
 
     const user = await this.userRepository.findOne({
-      where: { email },
+      where: { username },
       select: [
         'id',
         'username',
-        'email',
         'password',
         'twoFactorSecret',
         'isTwoFactorEnabled'
@@ -208,7 +206,6 @@ export class UsersService {
       select: [
         'id',
         'username',
-        'email',
         'password',
         'twoFactorSecret',
         'isTwoFactorEnabled'

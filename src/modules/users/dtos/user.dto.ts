@@ -20,9 +20,6 @@ export class UserDto {
   username: string
 
   @ApiProperty()
-  email: string
-
-  @ApiProperty()
   @Expose()
   profilePicture: string
 
