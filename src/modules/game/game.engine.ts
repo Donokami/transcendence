@@ -142,9 +142,12 @@ export class Game {
   }
 
   public updatePaddlePosition(normalizedPos: number, userId: string) {
-    const paddle = this.gameState.players.find(
+    const playerIndex = this.gameState.players.findIndex(
       (player) => player.userId === userId
-    ).paddle
+    )
+    const paddle = this.gameState.players[playerIndex].paddle
+    const rotatedNormalizedPos =
+      playerIndex == 1 ? 1 - normalizedPos : normalizedPos
     paddle.position.lerpVectors(
       new Vector3(
         -this.metrics.fieldWidth / 2 +
@@ -158,7 +161,7 @@ export class Game {
         paddle.position.y,
         paddle.position.z
       ),
-      normalizedPos
+      rotatedNormalizedPos
     )
   }
 }
