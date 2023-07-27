@@ -15,14 +15,23 @@
     <div class="w-[720px] h-[480px]">
       <TresCanvas clear-color="#7dd3fc" shadows @mousemove="MovePaddle">
         <TresScene>
-          <TresAmbientLight color="#ffffff" :position="[0, 3, 0]" :intensity="1" />
+          <TresAmbientLight
+            color="#ffffff"
+            :position="[0, 3, 0]"
+            :intensity="1" />
           <TresDirectionalLight color="#ffffff" :intensity="2" />
           <!-- <TresDirectionalLight color="#ffaaaa" :position="[0, 5, 3]" :intensity="0.5" /> -->
-          <TresPerspectiveCamera ref="cameraRef" :position="[
-            0,
-            gameMetrics.fieldHeight * 2,
-            gameMetrics.fieldDepth * 0.5 + gameMetrics.paddleDepth * 0.5
-          ]" :fov="25" :aspect="1" :near="0.1" :far="1000" />
+          <TresPerspectiveCamera
+            ref="cameraRef"
+            :position="[
+              0,
+              gameMetrics.fieldHeight * 2,
+              gameMetrics.fieldDepth * 0.5 + gameMetrics.paddleDepth * 0.5
+            ]"
+            :fov="25"
+            :aspect="1"
+            :near="0.1"
+            :far="1000" />
           <!-- <TresPerspectiveCamera :position="[
             10,
             40,
@@ -30,14 +39,17 @@
           ]" :fov="45" :aspect="1" :near="0.1" :far="1000" /> -->
           <TresGroup>
             <TresMesh>
-              <TresBoxGeometry :args="[
-                gameMetrics.fieldWidth,
-                gameMetrics.fieldHeight,
-                gameMetrics.fieldDepth
-              ]" />
+              <TresBoxGeometry
+                :args="[
+                  gameMetrics.fieldWidth,
+                  gameMetrics.fieldHeight,
+                  gameMetrics.fieldDepth
+                ]" />
               <TresMeshToonMaterial color="#f80" />
             </TresMesh>
-            <TresMesh :rotate-x="-Math.PI * 0.5" :position-y="gameMetrics.fieldHeight * 0.5 + 0.01">
+            <TresMesh
+              :rotate-x="-Math.PI * 0.5"
+              :position-y="gameMetrics.fieldHeight * 0.5 + 0.01">
               <TresPlaneGeometry :args="[gameMetrics.fieldWidth, 1]" />
               <TresMeshToonMaterial color="#fff" />
             </TresMesh>
@@ -48,23 +60,27 @@
             gameMetrics.fieldDepth * 0.5 + gameMetrics.paddleDepth * 0.5
           ]" ref="paddle1Ref"> -->
           <TresMesh ref="paddle1Ref">
-            <TresBoxGeometry :args="[
-              gameMetrics.paddleRatio * gameMetrics.fieldWidth,
-              gameMetrics.paddleHeight,
-              gameMetrics.paddleDepth
-            ]" />
+            <TresBoxGeometry
+              :args="[
+                gameMetrics.paddleRatio * gameMetrics.fieldWidth,
+                gameMetrics.paddleHeight,
+                gameMetrics.paddleDepth
+              ]" />
             <TresMeshToonMaterial color="#fff" />
           </TresMesh>
-          <TresMesh :position="[
-            0,
-            gameMetrics.fieldHeight,
-            -gameMetrics.fieldDepth * 0.5 - gameMetrics.paddleDepth * 0.5
-          ]" ref="paddle2Ref">
-            <TresBoxGeometry :args="[
-              gameMetrics.paddleRatio * gameMetrics.fieldWidth,
-              gameMetrics.paddleHeight,
-              gameMetrics.paddleDepth
-            ]" />
+          <TresMesh
+            :position="[
+              0,
+              gameMetrics.fieldHeight,
+              -gameMetrics.fieldDepth * 0.5 - gameMetrics.paddleDepth * 0.5
+            ]"
+            ref="paddle2Ref">
+            <TresBoxGeometry
+              :args="[
+                gameMetrics.paddleRatio * gameMetrics.fieldWidth,
+                gameMetrics.paddleHeight,
+                gameMetrics.paddleDepth
+              ]" />
             <TresMeshToonMaterial color="#fff" />
           </TresMesh>
           <TresMesh ref="ballRef">
@@ -76,16 +92,21 @@
             <TresMeshToonMaterial color="blue" />
           </TresMesh> -->
           <Suspense>
-            <Text3D :size="3" :height="1" :position="[
-              0,
-              (gameMetrics.fieldHeight + gameMetrics.paddleHeight) * 4,
-              -gameMetrics.fieldDepth * 0.5
-            ]" ref="scoreRef" center need-updates
+            <Text3D
+              :size="3"
+              :height="1"
+              :position="[
+                0,
+                (gameMetrics.fieldHeight + gameMetrics.paddleHeight) * 4,
+                -gameMetrics.fieldDepth * 0.5
+              ]"
+              :text="scoreText"
+              center
+              need-updates
               font="https://raw.githubusercontent.com/Tresjs/assets/main/fonts/FiraCodeRegular.json">
               <TresMeshToonMaterial color="#fff" />
             </Text3D>
           </Suspense>
-
           <!-- <Suspense>
             <Environment ref="envRef" :files="'game/environment.hdr'" />
           </Suspense> -->
@@ -97,11 +118,12 @@
 </template>
 
 <script setup lang="ts">
-import { type ShallowRef, shallowRef, computed, ref, type Ref } from 'vue'
+import { type ShallowRef, shallowRef, ref, type Ref } from 'vue'
 import { useRenderLoop } from '@tresjs/core'
 import { Text3D } from '@tresjs/cientos'
-import { renderPong, type SimObject3D } from '@/includes/gameEngine'
+import { renderPong } from '@/includes/gameEngine'
 import type { Room, Game, Metrics } from '@/types'
+import type { Object3D } from 'three'
 import { socket } from '@/includes/gameSocket'
 
 const props = defineProps<{
@@ -111,7 +133,7 @@ const props = defineProps<{
 
 const room: Ref<Room> = ref(props.room)
 const gameState: Ref<Game> = ref(props.game)
-
+const scoreText: Ref<string> = ref('0 - 0')
 // const envRef: ShallowRef = shallowRef(null)
 
 const gameMetrics: Metrics = {
@@ -128,16 +150,15 @@ const gameMetrics: Metrics = {
   tps: 20
 }
 
-const scoring = computed(() => {
-  // return `${gameState.value.players[1].score} - ${gameState.value.players[1].score}`
-  return `tristesse`
-})
+// const scoring = computed(() => {
+//   // return `${gameState.value.players[1].score} - ${gameState.value.players[1].score}`
+//   return `tristesse`
+// })
 
-const cameraRef: ShallowRef<SimObject3D | null> = shallowRef(null)
-const ballRef: ShallowRef<SimObject3D | null> = shallowRef(null)
-const paddle1Ref: ShallowRef<SimObject3D | null> = shallowRef(null)
-const paddle2Ref: ShallowRef<SimObject3D | null> = shallowRef(null)
-const scoreRef: ShallowRef<SimObject3D | null> = shallowRef(null)
+const cameraRef: ShallowRef<Object3D | null> = shallowRef(null)
+const ballRef: ShallowRef<Object3D | null> = shallowRef(null)
+const paddle1Ref: ShallowRef<Object3D | null> = shallowRef(null)
+const paddle2Ref: ShallowRef<Object3D | null> = shallowRef(null)
 
 const { onLoop } = useRenderLoop()
 
@@ -154,8 +175,7 @@ onLoop(({ delta }) => {
     ballRef.value != null &&
     paddle1Ref.value != null &&
     paddle2Ref.value != null &&
-    cameraRef.value != null &&
-    scoreRef.value != null
+    cameraRef.value != null
   ) {
     renderPong(
       delta,
@@ -165,7 +185,7 @@ onLoop(({ delta }) => {
       paddle1Ref.value,
       paddle2Ref.value,
       cameraRef.value,
-      scoreRef.value
+      scoreText
     )
   }
 })
