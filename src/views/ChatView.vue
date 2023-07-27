@@ -11,10 +11,19 @@
       <div
         class="flex flex-col justify-between text-justify w-3/4"
         v-if="selectedChannel && channelsList?.loading === false">
-        <div class="border-black border-2 mx-2 my-3 mt-1 p-5 h-1/6">
+        <div
+          class="flex justify-between border-black border-2 mx-2 my-3 mt-1 p-5 h-1/6">
           <h2 class="text-2xl font-bold text-black">
             {{ channelStore.getChannel(selectedChannel)?.name }}
           </h2>
+          <router-link
+            v-if="channelStore.getChannel(selectedChannel)?.isDm === true"
+            to="/room/create"
+            class="neobrutalist-box max-w-sm flex px-2">
+            <iconify-icon icon="tabler:plus" class="mr-2"></iconify-icon>
+            <span>Invite to a game</span>
+          </router-link>
+          <chat-drawer v-else></chat-drawer>
         </div>
         <div
           ref="chatbox"
@@ -52,6 +61,7 @@ import { useChannelStore } from '@/stores/ChannelStore.js'
 
 import ChatSidebar from '@/components/ChatSidebar.vue'
 import ChatDiscussion from '@/components/ChatDiscussion.vue'
+import ChatDrawer from '@/components/ChatDrawer.vue'
 import ChatInput from '@/components/ChatInput.vue'
 
 import type { Message } from '@/types'

@@ -35,7 +35,7 @@ export const useChannelStore = defineStore('channels', {
 
       this.channelsList?.data?.push(response) // fix: bug when creating a dm channel, the name is not set
 
-      console.log('New DM channel created ! Id : ', response.id)
+      console.log('New DM channel created ! ID : ', response.id)
       console.log(
         'New DM channel pushed to channelsList in store : ',
         this.channelsList
@@ -61,14 +61,21 @@ export const useChannelStore = defineStore('channels', {
         passwordRequired,
         password
       }
+
       const response: Channel = await fetcher.post(
-        `/channels/create/channel`,
+        `/channels/create/group-channel`,
         channelParam
       )
 
       await this.asyncFetchChannels()
 
       this.channelsList?.data?.push(response)
+
+      console.log('New group channel created ! ID : ', response.id)
+      console.log(
+        'New group channel pushed to channelsList in store : ',
+        this.channelsList
+      )
     },
 
     // ************* //
@@ -116,14 +123,11 @@ export const useChannelStore = defineStore('channels', {
               const receiverUser = channel.members.find(
                 (user) => user.id !== loggedUser.id
               )
-              console.log('receiverUser : ', receiverUser)
 
               if (receiverUser != null) {
                 channel.name = receiverUser.username
                 channel.image = receiverUser.profilePicture
               }
-
-              console.log('channel : ', channel)
 
               return channel
             }
@@ -171,38 +175,6 @@ export const useChannelStore = defineStore('channels', {
       }
     },
 
-    // *********** //
-    // fetchDmList //
-    // *********** //
-
-    // async fetchDmList(id: string): Promise<Channel[]> {
-    //   const { loggedUser } = useUserStore()
-    //   const response: Channel[] = await fetcher.get(`/channels/${id}/dm-list`)
-
-    //   response.forEach((channel: Channel) => {
-    //     channel.receiver = channel.members.filter((user: User) => {
-    //       if (!loggedUser) {
-    //         return false
-    //       }
-    //       return user.id !== loggedUser.id
-    //     })[0]
-    //   })
-
-    //   return response
-    // },
-
-    // ********************** //
-    // fetchGroupChannelsList //
-    // ********************** //
-
-    // async fetchGroupChannelsList(id: string): Promise<Channel[]> {
-    //   const response: Channel[] = await fetcher.get(
-    //     `/channels/${id}/group-channels-list`
-    //   )
-
-    //   return response
-    // },
-
     // ********** //
     // getChannel //
     // ********** //
@@ -227,48 +199,6 @@ export const useChannelStore = defineStore('channels', {
         return channel.messages
       }
     },
-
-    // ************* //
-    // refreshDmList //
-    // ************* //
-
-    // async refreshDmList() {
-    //   const { loggedUser } = useUserStore()
-    //   if (!loggedUser) {
-    //     return []
-    //   }
-    //   try {
-    //     const response = await this.fetchDmList(loggedUser.id)
-    //     this.dmList = response
-    //     console.log(`[UserStore] - dmList : `, this.dmList)
-    //   } catch (error) {
-    //     console.error(`[UserStore] - Failed to fetch DMs! Error: `, error)
-    //   }
-    // },
-
-    // ************************ //
-    // refreshGroupChannelsList //
-    // ************************ //
-
-    // async refreshGroupChannelsList() {
-    //   const { loggedUser } = useUserStore()
-    //   if (!loggedUser) {
-    //     return []
-    //   }
-    //   try {
-    //     const response = await this.fetchGroupChannelsList(loggedUser.id)
-    //     this.groupChannelsList = response
-    //     console.log(
-    //       `[UserStore] - groupChannelsList : `,
-    //       this.groupChannelsList
-    //     )
-    //   } catch (error) {
-    //     console.error(
-    //       `[UserStore] - Failed to fetch group channels ! Error: `,
-    //       error
-    //     )
-    //   }
-    // },
 
     // *********** //
     // sendMessage //

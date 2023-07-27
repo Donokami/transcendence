@@ -35,6 +35,7 @@
           <router-link
             to="/"
             class="h-[60px] flex border-black border-r-2 rounded-none"
+            active-class="active-link"
             >Home</router-link
           >
         </li>
@@ -42,6 +43,7 @@
           <router-link
             to="/chat"
             class="h-[60px] flex border-black border-r-2 rounded-none"
+            active-class="active-link"
             >Chat</router-link
           >
         </li>
@@ -49,6 +51,7 @@
           <router-link
             to="/stats"
             class="h-[60px] flex border-black border-r-2 rounded-none"
+            active-class="active-link"
             >Stats</router-link
           >
         </li>
@@ -140,3 +143,10 @@ const logout = async (): Promise<void> => {
   await router.push('/auth')
 }
 </script>
+
+<style scoped>
+.active-link {
+  background-color: black !important;
+  color: white !important;
+}
+</style>

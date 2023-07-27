@@ -12,22 +12,18 @@
           </button>
         </div>
         <!-- TITLE -->
-        <div class="py-4">
+        <div class="py-4 justify-start">
           <h3 class="font-bold text-lg">Who do you want to a send a DM to ?</h3>
         </div>
         <!-- FRIENDS LIST -->
         <div class="collapse collapse-arrow border-2 border-black rounded-none">
           <input type="checkbox" />
           <div class="collapse-title text-base">Select a friend</div>
+          <!-- AVAILABLE FRIENDS TO SEND DM TO -->
           <div class="collapse-content text-base">
-            <!-- NO FRIEND TO SEND DM TO -->
-            <div v-if="filteredFriendList.length === 0" class="py-4">
-              <p>
-                You have no friend or you have already send a DM to all your
-                friends
-              </p>
-            </div>
-            <ul class="menu bg-base-100 w-full">
+            <ul
+              v-if="filteredFriendList.length > 0"
+              class="menu bg-base-100 w-full">
               <li v-for="friend in filteredFriendList" :key="friend.username">
                 <a
                   class="flex p-1 modal-action justify-start"
@@ -38,6 +34,13 @@
                 </a>
               </li>
             </ul>
+            <!-- NO FRIEND TO SEND DM TO -->
+            <div v-else class="py-4">
+              <p>
+                You have no friend or you have already send a DM to all your
+                friends
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -51,7 +54,7 @@
 // ******* //
 
 import { storeToRefs } from 'pinia'
-import { onBeforeMount, toRefs, watch, ref, type Ref, computed } from 'vue'
+import { computed, onBeforeMount, toRefs, watch } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 
 import { useChannelStore } from '@/stores/ChannelStore'
