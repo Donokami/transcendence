@@ -23,11 +23,10 @@
           <!-- <TresDirectionalLight color="#ffaaaa" :position="[0, 5, 3]" :intensity="0.5" /> -->
           <TresPerspectiveCamera
             ref="cameraRef"
-            :position="[
-              0,
-              gameMetrics.fieldHeight * 2,
-              gameMetrics.fieldDepth * 0.5 + gameMetrics.paddleDepth * 0.5
-            ]"
+            :rotation-y="
+              loggedUser?.id === gameState.players[1].userId ? 1 * Math.PI : 0
+            "
+            :position="[0, 1, 0]"
             :fov="25"
             :aspect="1"
             :near="0.1"
@@ -68,13 +67,7 @@
               ]" />
             <TresMeshToonMaterial color="#fff" />
           </TresMesh>
-          <TresMesh
-            :position="[
-              0,
-              gameMetrics.fieldHeight,
-              -gameMetrics.fieldDepth * 0.5 - gameMetrics.paddleDepth * 0.5
-            ]"
-            ref="paddle2Ref">
+          <TresMesh ref="paddle2Ref">
             <TresBoxGeometry
               :args="[
                 gameMetrics.paddleRatio * gameMetrics.fieldWidth,
@@ -111,20 +104,46 @@
             <Environment ref="envRef" :files="'game/environment.hdr'" />
           </Suspense> -->
         </TresScene>
-        <!-- <OrbitControls /> -->
+        <!-- <OrbitControls v-if="isSpectator" /> -->
       </TresCanvas>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { type ShallowRef, shallowRef, ref, type Ref } from 'vue'
+import { type ShallowRef, shallowRef, ref, type Ref, computed } from 'vue'
 import { useRenderLoop } from '@tresjs/core'
 import { Text3D } from '@tresjs/cientos'
-import { renderPong } from '@/includes/gameEngine'
 import type { Room, Game, Metrics } from '@/types'
-import type { Object3D } from 'three'
+import { Vector3, type Object3D } from 'three'
 import { socket } from '@/includes/gameSocket'
+import { useUserStore } from '@/stores/UserStore'
+
+const { loggedUser } = useUserStore()
+
+const isSpectator = computed(() => {
+  return (
+    loggedUser?.id !== gameState.value.players[0].userId &&
+    loggedUser?.id !== gameState.value.players[1].userId
+  )
+})
+
+function cameraPos(): Vector3 {
+  if (isSpectator.value) {
+    return new Vector3(0, 1, 0)
+  } else if (loggedUser?.id === gameState.value.players[1].userId) {
+    return new Vector3(
+      gameState.value.players[1].paddlePos.x,
+      5,
+      -gameMetrics.fieldDepth
+    )
+  }
+  return new Vector3(
+    gameState.value.players[0].paddlePos.x,
+    5,
+    gameMetrics.fieldDepth
+  )
+}
 
 const props = defineProps<{
   room: Room
@@ -150,11 +169,6 @@ const gameMetrics: Metrics = {
   tps: 20
 }
 
-// const scoring = computed(() => {
-//   // return `${gameState.value.players[1].score} - ${gameState.value.players[1].score}`
-//   return `tristesse`
-// })
-
 const cameraRef: ShallowRef<Object3D | null> = shallowRef(null)
 const ballRef: ShallowRef<Object3D | null> = shallowRef(null)
 const paddle1Ref: ShallowRef<Object3D | null> = shallowRef(null)
@@ -179,8 +193,8 @@ onLoop(({ delta }) => {
   ) {
     renderPong(
       delta,
-      gameState.value,
       gameMetrics,
+      // gameState.value,
       ballRef.value,
       paddle1Ref.value,
       paddle2Ref.value,
@@ -189,4 +203,22 @@ onLoop(({ delta }) => {
     )
   }
 })
+
+function renderPong(
+  delta: number,
+  gameMetrics: Metrics,
+  // gameState: Game,
+  ball: Object3D,
+  paddle1: Object3D,
+  paddle2: Object3D,
+  camera: Object3D,
+  scoreText: Ref<string>
+): void {
+  const animationTime = delta / (1 / gameMetrics.tps)
+  ball.position.lerp(gameState.value.ballPos, animationTime)
+  paddle1.position.lerp(gameState.value.players[0].paddlePos, animationTime)
+  paddle2.position.lerp(gameState.value.players[1].paddlePos, animationTime)
+  camera.position.lerp(cameraPos(), animationTime)
+  scoreText.value = `${gameState.value.players[0].score} - ${gameState.value.players[1].score}`
+}
 </script>

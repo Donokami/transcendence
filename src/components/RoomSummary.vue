@@ -10,14 +10,10 @@
       </li>
       <li>
         <div class="flex flex-row items-center">
-          <label class="block mb-1 font-medium" for="private"
-            >Private game</label
-          >
-          <input
-            type="checkbox"
-            name="private"
-            @click="togglePrivacy"
-            class="ml-4 rounded-none toggle"
+          <label class="block mb-1 font-medium" for="private">
+            Private game
+          </label>
+          <input type="checkbox" name="private" @click="togglePrivacy" class="ml-4 rounded-none toggle"
             :disabled="loggedUser?.id !== room.owner.id" />
         </div>
       </li>
