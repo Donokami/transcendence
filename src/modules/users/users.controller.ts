@@ -49,7 +49,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly socialService: SocialService,
     private readonly channelsService: ChannelsService
-  ) { }
+  ) {}
 
   // ****** //
   // LOGGER //
@@ -78,7 +78,7 @@ export class UsersController {
     description: 'Get all users',
     tags: ['users']
   })
-  getAllUsers(@Paginate() query: PaginateQuery) {
+  getAllUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
     return this.usersService.findAll(query)
   }
 
@@ -128,7 +128,7 @@ export class UsersController {
   async uploadFile(
     @CurrentUser() user: User,
     @UploadedFile() file: Express.Multer.File
-  ) {
+  ): Promise<{ status: string }> {
     try {
       await sharp(file.buffer).metadata()
     } catch (error) {
@@ -255,7 +255,7 @@ export class UsersController {
     description: 'Remove user',
     tags: ['users']
   })
-  async removeUser(@Param('id') id: string) {
+  async removeUser(@Param('id') id: string): Promise<User> {
     return await this.usersService.remove(id)
   }
 }

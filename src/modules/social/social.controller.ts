@@ -13,6 +13,8 @@ import { SocialService } from './social.service'
 import { FriendRequestDto } from './dtos/friend-request.dto'
 import { ApiOperation } from '@nestjs/swagger'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
+import { Friendship } from './entities/friendship.entity'
+import { User } from '@/modules/users/user.entity'
 
 @Controller('social')
 @UseFilters(new GlobalExceptionFilter())
@@ -37,7 +39,7 @@ export class SocialController {
   async acceptFriendRequest(
     @Param('senderId') senderId: string,
     @Session() session: any
-  ) {
+  ): Promise<Friendship> {
     const receiverId = session.userId
 
     return this.socialService.acceptFriendRequest(receiverId, senderId)
@@ -57,7 +59,7 @@ export class SocialController {
   async blockUser(
     @Param('userToBlockId') userToBlockId: string,
     @Session() session: any
-  ) {
+  ): Promise<Friendship> {
     const userId = session.userId
 
     return this.socialService.blockUser(userId, userToBlockId)
@@ -77,7 +79,7 @@ export class SocialController {
   async getBlockerId(
     @Param('loggedUserId') loggedUserId: string,
     @Param('observedUserId') observedUserId: string
-  ) {
+  ): Promise<{ blockerId: string }> {
     const blockerId = await this.socialService.getBlockerId(
       loggedUserId,
       observedUserId
@@ -96,7 +98,7 @@ export class SocialController {
     description: 'Get friend list for the given user id',
     tags: ['social']
   })
-  async getFriendList(@Param('id') id: string) {
+  async getFriendList(@Param('id') id: string): Promise<User[]> {
     const friendList = await this.socialService.getFriendList(id)
     return friendList
   }
@@ -112,7 +114,7 @@ export class SocialController {
     description: 'Get friend requests for the given user id',
     tags: ['social']
   })
-  async getFriendRequests(@Param('id') id: string) {
+  async getFriendRequests(@Param('id') id: string): Promise<Friendship[]> {
     const friendRequests = await this.socialService.getFriendRequests(id)
     return friendRequests
   }
@@ -131,7 +133,7 @@ export class SocialController {
   async rejectFriendRequest(
     @Param('senderId') senderId: string,
     @Session() session: any
-  ) {
+  ): Promise<Friendship> {
     const receiverId = session.userId
 
     return this.socialService.rejectFriendRequest(receiverId, senderId)
@@ -151,7 +153,7 @@ export class SocialController {
   async sendFriendRequest(
     @Body() friendRequestDto: FriendRequestDto,
     @Session() session: any
-  ) {
+  ): Promise<Friendship> {
     const senderId = session.userId
 
     return await this.socialService.sendFriendRequest(
@@ -174,7 +176,7 @@ export class SocialController {
   async unblockUser(
     @Param('userToUnblockId') userToUnblockId: string,
     @Session() session: any
-  ) {
+  ): Promise<Friendship> {
     const userId = session.userId
 
     return await this.socialService.unblockUser(userId, userToUnblockId)
