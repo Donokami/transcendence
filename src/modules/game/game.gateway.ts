@@ -28,7 +28,7 @@ export class GameGateway {
   constructor(
     @Inject(forwardRef(() => GameService))
     private gameService: GameService
-  ) {}
+  ) { }
 
   private readonly logger = new Logger(GameService.name)
 
@@ -45,7 +45,7 @@ export class GameGateway {
   }
 
   @SubscribeMessage('room:join')
-  handleJoin(
+  async handleJoin(
     @MessageBody() roomId: string,
     @ConnectedSocket() client: IUserSocket
   ) {
@@ -55,13 +55,7 @@ export class GameGateway {
       throw new RoomNotFound()
     }
 
-    this.gameService.join(roomId, client.request.user.id)
-
-    // if (error) {
-    //   client.emit('error', error)
-    //   this.logger.error(error)
-    //   return
-    // }
+    await this.gameService.join(roomId, client.request.user.id)
 
     client.join(roomId)
 

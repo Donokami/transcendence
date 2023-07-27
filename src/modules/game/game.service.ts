@@ -2,7 +2,6 @@ import {
   Inject,
   Injectable,
   Logger,
-  NotFoundException,
   forwardRef
 } from '@nestjs/common'
 
@@ -29,7 +28,7 @@ export class GameService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => GameGateway))
     private readonly gameGateway: GameGateway
-  ) {}
+  ) { }
 
   private readonly logger = new Logger(GameService.name)
 

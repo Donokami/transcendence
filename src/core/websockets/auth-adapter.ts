@@ -43,7 +43,7 @@ export class SocketIoAdapter extends AbstractWsAdapter {
         session: {},
       };
 
-      const response: any = { getHeader: () => {}, setHeader: () => {} };
+      const response: any = { getHeader: () => { }, setHeader: () => { } };
 
       session(request, response, async () => {
         if (!request.session.userId) {
@@ -65,8 +65,8 @@ export class SocketIoAdapter extends AbstractWsAdapter {
     return server && isFunction(server.of)
       ? server.of(namespace)
       : namespace
-      ? this.createIOServer(port, opt).of(namespace)
-      : this.createIOServer(port, opt);
+        ? this.createIOServer(port, opt).of(namespace)
+        : this.createIOServer(port, opt);
   }
 
   public createIOServer(port: number, options?: any): any {

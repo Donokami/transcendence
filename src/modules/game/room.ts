@@ -84,7 +84,7 @@ export class Room implements RoomObject {
 
   public join(user: User) {
     if (this.players.find((u) => u.id === user.id)) {
-      throw new UserAlreadyInRoom()
+      throw new UserNotInvited()
     }
 
     if (this.isPrivate && !this.invited.find((u) => u.id === user.id)) {
