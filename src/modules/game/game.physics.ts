@@ -88,19 +88,19 @@ export class PhysicsEngine {
     const ballPos = ball.position
     const delta = this.gameState.deltaTime
 
-    // update the ballRef's position.
     ballPos.x += ball.velocity.x * delta * 60
     ballPos.z += ball.velocity.z * delta * 60
 
-    // add an arc to the ballRef's flight. Comment this out for boring, flat pong.
-    // ballPos.y = -(((ballPos.z - 1) * (ballPos.z - 1)) / 5000) + 2
     ballPos.y =
       -((ballPos.z - 1) ** 2 / this.metrics.fieldDepth ** 2) *
         this.metrics.fieldDepth *
         0.5 +
       1.4 * this.metrics.fieldDepth * 0.1
 
-    // -(((0 - 1) * (0 - 1)) / (60 * 60)) * 60 * 0.5 + 1.4 * 60 * 0.1
+    ballPos.x = Math.min(
+      Math.max(ballPos.x, -this.metrics.fieldWidth * 0.5),
+      this.metrics.fieldWidth * 0.5
+    )
   }
 
   private hitBallBack(ball: SimObject3D, paddle: SimObject3D): void {
@@ -111,14 +111,14 @@ export class PhysicsEngine {
   private isPastPaddle1(ball: SimObject3D): boolean {
     return (
       ball.position.z >
-      this.metrics.fieldDepth * 0.5 + this.metrics.paddleDepth * 0.5
+      this.metrics.fieldDepth * 0.5 + this.metrics.paddleDepth * 2
     )
   }
 
   private isPastPaddle2(ball: SimObject3D): boolean {
     return (
       ball.position.z <
-      this.metrics.fieldDepth * -0.5 - this.metrics.paddleDepth * 0.5
+      this.metrics.fieldDepth * -0.5 - this.metrics.paddleDepth * 2
     )
   }
 
@@ -126,8 +126,8 @@ export class PhysicsEngine {
     const ballX = ball.position.x
     const halfFieldWidth = this.metrics.fieldWidth * 0.5
     return (
-      ballX >= halfFieldWidth + this.metrics.ballRadius * 0.5 ||
-      ballX <= -halfFieldWidth - this.metrics.ballRadius * 0.5
+      ballX >= halfFieldWidth - this.metrics.ballRadius * 0.5 ||
+      ballX <= -halfFieldWidth + this.metrics.ballRadius * 0.5
     )
   }
 
