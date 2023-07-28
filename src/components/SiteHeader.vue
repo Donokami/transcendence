@@ -63,7 +63,9 @@
       </div>
       <div class="navbar-end items-stretch border-y-2 border-black flex-grow">
         <div class="dropdown flex items-center border-x-2 border-black">
-          <label tabindex="0" class="hover:bg-gray-300">
+          <label
+            tabindex="0"
+            class="flex items-center h-full cursor-pointer hover:bg-gray-300">
             <div class="flex justify-center items-center">
               <div class="flex items-center justify-center w-20">
                 <img

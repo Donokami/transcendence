@@ -1,10 +1,11 @@
 <template>
-  <div v-if="loggedUser && channel" class="chat-messages">
+  <div v-if="loggedUser && channel" class="overflow-auto">
     <div
+      class="flex flex-col max-w-sm w-fit mb-2 p-2 text-justify border-black border-2"
       :class="messageClass(message)"
       v-for="message in channel.messages"
       :key="message.id">
-      <p class="text-sm" :class="textClass(message)">
+      <p class="text-sm break-words" :class="textClass(message)">
         {{ message.messageBody }}
       </p>
     </div>
@@ -43,9 +44,9 @@ console.log('channelsList :', channelsList.value)
 
 const messageClass = computed(() => (message: Message) => {
   if (message.user.id === loggedUser.value?.id) {
-    return 'border-black border-2 bg-zinc-900 flex flex-col mx-2 my-3 mt-1 p-2.5 text-justify w-2/6 ml-auto'
+    return 'bg-zinc-900 ml-auto'
   } else {
-    return 'border-black border-2 flex flex-col mx-2 my-3 mt-1 p-2.5 text-justify w-2/6 min-w-min'
+    return 'min-w-min'
   }
 })
 

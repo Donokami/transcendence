@@ -1,5 +1,5 @@
 <template>
-  <div class="border-black border-2 my-1 mx-1 p-2">
+  <div class="border-black border-2 mt-1 ml-1 p-5">
     <form @submit.prevent="sendMessage" class="flex justify-between gap-2">
       <div class="w-full">
         <textarea
@@ -25,7 +25,7 @@
 </template>
 
 <script setup lang="ts">
-import { type Ref, ref, onMounted } from 'vue'
+import { type Ref, nextTick, onMounted, ref } from 'vue'
 import { useChannelStore } from '@/stores/ChannelStore.js'
 
 const channelStore = useChannelStore()
@@ -40,6 +40,8 @@ async function sendMessage(): Promise<void> {
   if (input.value.trim() !== '') {
     await channelStore.sendMessage(input.value)
     input.value = ''
+    await nextTick()
+    autoResize()
   }
 }
 

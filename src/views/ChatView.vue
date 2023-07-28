@@ -1,8 +1,8 @@
 <template>
-  <div class="flex w-full mx-auto text-black">
+  <div class="flex w-full max-h-[calc(100vh-156px)] my-1 mx-auto text-black">
     <!-- SIDEBAR -->
     <div
-      class="flex flex-col min-w-min max-h-full my-1 p-5 border-2 border-black text-justify w-1/4 overflow-y-auto">
+      class="flex flex-col min-w-min min-h-[calc(100vh-156px)] p-5 border-2 border-black text-justify w-1/4 overflow-y-auto">
       <chat-sidebar
         :list-state="listState"
         @list-state-changed="listState = $event"></chat-sidebar>
@@ -13,7 +13,7 @@
       v-if="selectedChannel && channelsList?.loading === false">
       <!-- TITLE -->
       <div
-        class="flex border-2 border-black items-center justify-between ml-1 mt-1 p-5">
+        class="flex border-2 border-black items-center justify-between ml-1 p-5">
         <h2 class="text-2xl font-bold text-black">
           {{ channelStore.getChannel(selectedChannel)?.name }}
         </h2>
@@ -29,8 +29,8 @@
       <!-- CHAT BOX -->
       <div
         ref="chatbox"
-        class="border-black border-2 ml-1 mt-1 p-5 max-h-96 overflow-auto">
-        <chat-discussion @scroll-to-bottom="scrollToBottom"></chat-discussion>
+        class="border-black border-2 ml-1 mt-1 p-5 h-full overflow-auto">
+        <chat-box @scroll-to-bottom="scrollToBottom"></chat-box>
       </div>
       <!-- MESSAGE INPUT -->
       <chat-input></chat-input>
@@ -60,7 +60,7 @@ import { chatSocket } from '@/includes/chatSocket'
 import { useChannelStore } from '@/stores/ChannelStore.js'
 
 import ChatSidebar from '@/components/ChatSidebar.vue'
-import ChatDiscussion from '@/components/ChatDiscussion.vue'
+import ChatBox from '@/components/ChatBox.vue'
 import ChatDrawer from '@/components/ChatDrawer.vue'
 import ChatInput from '@/components/ChatInput.vue'
 

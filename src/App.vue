@@ -3,7 +3,7 @@
     v-if="route.path !== '/auth' && route.path !== '/mfa'"></site-header>
   <auth-header v-else></auth-header>
   <div
-    class="bg-white max-w-screen-xl mx-auto min-h-[calc(100vh-92px)] flex flex-col">
+    class="bg-white max-w-screen-xl mx-auto min-h-[calc(100vh-156px)] flex flex-col">
     <router-view></router-view>
   </div>
   <app-footer class="relative px-6 py-4 text-white bg-zinc-900"></app-footer>
