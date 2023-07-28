@@ -1,38 +1,40 @@
 <template>
-  <div class="max-w-screen-xl min-w-[95%] mx-auto h-[86vh] text-black">
-    <div class="flex h-[75vh]">
+  <div class="flex w-full mx-auto text-black">
+    <!-- SIDEBAR -->
+    <div
+      class="flex min-w-min min-h-screen border-2 border-black flex-col my-1 p-5 text-justify w-1/4 overflow-y-auto">
+      <chat-sidebar
+        :list-state="listState"
+        @list-state-changed="listState = $event"></chat-sidebar>
+    </div>
+    <!-- DISCUSSION -->
+    <div
+      class="flex flex-col justify-between text-justify w-3/4"
+      v-if="selectedChannel && channelsList?.loading === false">
+      <!-- TITLE -->
       <div
-        class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify min-w-min w-1/4 overflow-y-auto">
-        <chat-sidebar
-          :list-state="listState"
-          @list-state-changed="listState = $event"></chat-sidebar>
+        class="flex border-2 border-black items-center justify-between ml-1 mt-1 p-5 h-1/6">
+        <h2 class="text-2xl font-bold text-black">
+          {{ channelStore.getChannel(selectedChannel)?.name }}
+        </h2>
+        <router-link
+          v-if="channelStore.getChannel(selectedChannel)?.isDm === true"
+          to="/room/create"
+          class="neobrutalist-box max-w-sm flex px-2">
+          <iconify-icon icon="tabler:plus" class="mr-2"></iconify-icon>
+          <span>Invite to a game</span>
+        </router-link>
+        <chat-drawer v-else></chat-drawer>
       </div>
-
+      <!-- CHAT BOX -->
       <div
-        class="flex flex-col justify-between text-justify w-3/4"
-        v-if="selectedChannel && channelsList?.loading === false">
-        <div
-          class="flex justify-between border-black border-2 mx-2 my-3 mt-1 p-5 h-1/6">
-          <h2 class="text-2xl font-bold text-black">
-            {{ channelStore.getChannel(selectedChannel)?.name }}
-          </h2>
-          <router-link
-            v-if="channelStore.getChannel(selectedChannel)?.isDm === true"
-            to="/room/create"
-            class="neobrutalist-box max-w-sm flex px-2">
-            <iconify-icon icon="tabler:plus" class="mr-2"></iconify-icon>
-            <span>Invite to a game</span>
-          </router-link>
-          <chat-drawer v-else></chat-drawer>
-        </div>
-        <div
-          ref="chatbox"
-          class="border-black border-2 mx-2 my-3 p-5 h-4/6 overflow-auto">
-          <chat-discussion @scroll-to-bottom="scrollToBottom"></chat-discussion>
-        </div>
-        <div class="border-black border-2 mx-2 my-3 p-5 h-1/6">
-          <chat-input></chat-input>
-        </div>
+        ref="chatbox"
+        class="border-black border-2 ml-1 mt-1 p-5 h-4/6 overflow-auto">
+        <chat-discussion @scroll-to-bottom="scrollToBottom"></chat-discussion>
+      </div>
+      <!-- MESSAGE INPUT -->
+      <div class="border-black border-2 ml-1 my-1 p-5 h-1/6">
+        <chat-input></chat-input>
       </div>
     </div>
   </div>

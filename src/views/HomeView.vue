@@ -1,14 +1,11 @@
 <template>
-  <div class="max-w-screen-xl min-w-[95%] mx-auto text-black">
-    <div class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify">
-      <home-history-prompt></home-history-prompt>
-    </div>
-    <div class="border-black border-2 flex-col items-center mx-2 my-3 p-5 text-justify">
-      <home-game-mode-selection></home-game-mode-selection>
-    </div>
-    <div class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify">
-      <home-room-selection></home-room-selection>
-    </div>
+  <div class="w-full mx-auto text-black text-justify">
+    <!-- HISTORY PROMPT -->
+    <home-history-prompt></home-history-prompt>
+    <!-- PLAY GAME -->
+    <home-game-mode-selection></home-game-mode-selection>
+    <!-- WATCH GAME -->
+    <home-room-selection></home-room-selection>
   </div>
 </template>
 

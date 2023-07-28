@@ -1,21 +1,28 @@
 <template>
-  <div class="flex justify-between">
-    <h2 class="text-2xl font-bold mb-8 text-black">Play a game</h2>
-
-    <router-link to="/room/create" class="neobrutalist-box flex px-2">
-      <iconify-icon icon="tabler:plus" class="mr-2"></iconify-icon>
-      <span>Create a game</span>
-    </router-link>
-  </div>
-
-  <div class="flex flex-grow items-center justify-center">
-    <p class="font-bold text-l">PLEASE SELECT A MODE</p>
-    <iconify-icon icon="fa6-solid:table-tennis-paddle-ball" class="mx-2"></iconify-icon>
-  </div>
-  <div class="flex flex-grow items-center justify-center">
-    <div class="flex flex-row justify-center w-full">
+  <div class="border-black border-2 mt-1 p-5">
+    <div class="flex items-center justify-between mb-2">
+      <!-- TITLE -->
+      <h2 class="text-2xl font-bold text-black">Play Game</h2>
+      <!-- GO TO LOBBY BUTTON -->
+      <router-link to="/room/create" class="neobrutalist-box flex p-2">
+        <iconify-icon icon="tabler:plus" class="mr-2"></iconify-icon>
+        <span>Create a game</span>
+      </router-link>
+    </div>
+    <!-- MODE TITLE -->
+    <div class="flex flex-grow items-center justify-center">
+      <p class="font-bold text-l">PLEASE SELECT A MODE</p>
+      <iconify-icon
+        icon="fa6-solid:table-tennis-paddle-ball"
+        class="mx-2"></iconify-icon>
+    </div>
+    <!-- MODE BUTTONS -->
+    <div class="flex flex-grow justify-center">
+      <!-- PLAY VS FRIEND BUTTON -->
       <div class="tooltip tooltip-left" data-tip="Play vs a friend">
-        <button class="neobrutalist-box flex m-2.5 px-2 py-2" @click="selectFriendlyGame">
+        <button
+          class="neobrutalist-box flex m-2.5 px-2 py-2"
+          @click="selectFriendlyGame">
           <span class="icon">
             <iconify-icon icon="tabler:user"></iconify-icon>
           </span>
@@ -25,8 +32,11 @@
           </span>
         </button>
       </div>
+      <!-- PLAY VS RANDOM BUTTON -->
       <div class="tooltip tooltip-right" data-tip="Play vs random">
-        <button class="neobrutalist-box flex m-2.5 px-2 py-2" @click="selectRandomGame">
+        <button
+          class="neobrutalist-box flex m-2.5 px-2 py-2"
+          @click="selectRandomGame">
           <span class="icon">
             <iconify-icon icon="tabler:user"></iconify-icon>
           </span>
@@ -41,21 +51,31 @@
 </template>
 
 <script setup lang="ts">
-// import { ref } from 'vue';
+// ******* //
+// IMPORTS //
+// ******* //
 
-import { useRouter } from "vue-router";
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+// ******************** //
+// VARIABLE DEFINITIONS //
+// ******************** //
+
+const router = useRouter()
+
+// ******************** //
+// FUNCTION DEFINITIONS //
+// ******************** //
 
 const selectFriendlyGame = () => {
   // handle the click event for PVE button
-};
+}
 
 const selectRandomGame = () => {
   // handle the click event for PVP button
-};
+}
 
 const selectRoom = () => {
   // handle the click event for Room buttons
-};
+}
 </script>

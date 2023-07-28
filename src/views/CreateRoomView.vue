@@ -1,10 +1,15 @@
 <template>
-  <div class="max-w-screen-xl min-w-[95%] mx-auto text-black">
-    <div class="border-black border-2 flex flex-col mx-2 my-3 mt-1 p-5 text-justify">
+  <div class="w-full mx-auto text-black">
+    <div class="border-black border-2 flex flex-col my-1 p-5 text-justify">
+      <!-- TITLE -->
       <h2 class="text-2xl font-bold mb-8 text-black">Create a game</h2>
-
+      <!-- FORM -->
       <div class="w-fit flex items-center justify-center z-10">
-        <Form ref="formRef" :validation-schema="signInSchema" @submit="submitForm">
+        <Form
+          ref="formRef"
+          :validation-schema="signInSchema"
+          @submit="submitForm">
+          <!-- ROOM NAME -->
           <div class="mb-6">
             <label class="block font-medium mb-1" for="name">Name</label>
             <Field
@@ -12,24 +17,33 @@
               id="name"
               name="name"
               type="text"
-              placeholder="Enter a name for your game"
-            />
-            <ErrorMessage class="font-normal text-base text-red-600" name="name" />
+              placeholder="Enter a name for your game" />
+            <ErrorMessage
+              class="font-normal text-base text-red-600"
+              name="name" />
           </div>
+          <!-- PRIVATE GAME TOGGLER -->
           <div class="flex flex-row items-center">
-            <label class="block font-medium mb-1" for="private">Private game</label>
-            <input type="checkbox" name="private" v-model="isPrivate" class="ml-4 toggle rounded-none" />
+            <label class="block font-medium mb-1" for="private"
+              >Private game</label
+            >
+            <input
+              type="checkbox"
+              name="private"
+              v-model="isPrivate"
+              class="ml-4 toggle rounded-none" />
           </div>
+          <!-- CREATE GAME BUTTON -->
           <div class="flex items-center justify-between mt-8">
             <button
-              class="btn border-zinc-900 bg-zinc-900 text-white"
+              class="btn bg-white border-2 border-black mb-8 text-black hover:bg-black hover:border-black hover:text-white"
               type="submit"
-              :disabled="isFetching"
-            >
+              :disabled="isFetching">
               Create game
             </button>
             <div>
-              {{ error }} <!-- todo: add style -->
+              {{ error }}
+              <!-- todo: add style -->
             </div>
           </div>
         </Form>

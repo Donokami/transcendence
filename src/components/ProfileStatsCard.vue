@@ -4,10 +4,19 @@
     <div class="border-r-2 border-black stat">
       <div class="stat-figure text-secondary">
         <div class="avatar online">
-          <input type="file" ref="fileInput" @change="onFileChange" style="display: none" />
-          <div class="w-16 rounded-full cursor-pointer" @click="triggerFileInput">
+          <input
+            type="file"
+            ref="fileInput"
+            @change="onFileChange"
+            style="display: none" />
+          <div
+            class="w-16 rounded-full cursor-pointer"
+            @click="triggerFileInput">
             <img v-if="pictureSrc" :src="pictureSrc" />
-            <iconify-icon v-else icon="ri:account-circle-line" class="h-16 w-16 text-black"></iconify-icon>
+            <iconify-icon
+              v-else
+              icon="ri:account-circle-line"
+              class="h-16 w-16 text-black"></iconify-icon>
           </div>
         </div>
       </div>
@@ -22,7 +31,10 @@
     <!-- USER RANK -->
     <div class="border-none stat">
       <div class="stat-figure text-primary">
-        <iconify-icon class="w-10 h-10" icon="icon-park-outline:ranking" style="color: #5d4df8"></iconify-icon>
+        <iconify-icon
+          class="w-10 h-10"
+          icon="icon-park-outline:ranking"
+          style="color: #5d4df8"></iconify-icon>
       </div>
       <div class="stat-value text-xl">Rank</div>
       <div v-if="observedUser" class="stat-value text-primary">
@@ -32,7 +44,10 @@
     <!-- USER WIN RATE -->
     <div class="stat border-black !border-l-2">
       <div class="stat-figure text-primary">
-        <iconify-icon class="w-10 h-10" icon="mdi:target-arrow" style="color: #5d4df8"></iconify-icon>
+        <iconify-icon
+          class="w-10 h-10"
+          icon="mdi:target-arrow"
+          style="color: #5d4df8"></iconify-icon>
       </div>
       <div class="stat-value text-xl">Win Rate</div>
       <div v-if="observedUser" class="stat-value text-primary">
@@ -40,55 +55,96 @@
       </div>
     </div>
     <!-- USER FRIENDS & FRIEND REQUESTS -->
-    <div class="stat border-black !border-l-2" v-if="loggedUser && observedUser && observedUser.id !== loggedUser.id">
+    <div
+      class="stat border-black !border-l-2"
+      v-if="loggedUser && observedUser && observedUser.id !== loggedUser.id">
       <!-- SEND REQUEST -->
-      <div class="stat-figure text-primary tooltip tooltip-top" v-if="isFriend === false &&
-        loggedUser.isBlockedBy == null &&
-        observedUser.isBlockedBy == null
-        " data-tip="Add friend">
-        <iconify-icon class="w-10 h-10" :icon="iconSendRequest" style="color: #5d4df8" @click="sendFriendRequest"
-          @mouseover="iconSendRequest = 'mdi:account-plus'" @mouseout="
+      <div
+        class="stat-figure text-primary tooltip tooltip-top"
+        v-if="
+          isFriend === false &&
+          loggedUser.isBlockedBy == null &&
+          observedUser.isBlockedBy == null
+        "
+        data-tip="Add friend">
+        <iconify-icon
+          class="w-10 h-10"
+          :icon="iconSendRequest"
+          style="color: #5d4df8"
+          @click="sendFriendRequest"
+          @mouseover="iconSendRequest = 'mdi:account-plus'"
+          @mouseout="
             iconSendRequest = 'mdi:account-plus-outline'
-            "></iconify-icon>
+          "></iconify-icon>
       </div>
       <!-- BLOCK USER -->
-      <div class="stat-figure text-primary tooltip tooltip-top"
-        v-else-if="isFriend === true && loggedUser.isBlockedBy != true" data-tip="Block user">
-        <iconify-icon class="w-10 h-10" :icon="iconBlockUser" style="color: #5d4df8" @click="blockUser"
-          @mouseover="iconBlockUser = 'mdi:account-cancel'" @mouseout="
+      <div
+        class="stat-figure text-primary tooltip tooltip-top"
+        v-else-if="isFriend === true && loggedUser.isBlockedBy != true"
+        data-tip="Block user">
+        <iconify-icon
+          class="w-10 h-10"
+          :icon="iconBlockUser"
+          style="color: #5d4df8"
+          @click="blockUser"
+          @mouseover="iconBlockUser = 'mdi:account-cancel'"
+          @mouseout="
             iconBlockUser = 'mdi:account-cancel-outline'
-            "></iconify-icon>
+          "></iconify-icon>
       </div>
       <!-- UNBLOCK USER -->
-      <div class="stat-figure text-primary tooltip tooltip-top"
-        v-else-if="isFriend === false && observedUser.isBlockedBy == true" data-tip="Unblock user">
-        <iconify-icon class="w-10 h-10" :icon="iconUnblockUser" style="color: #5d4df8" @click="unblockUser"
+      <div
+        class="stat-figure text-primary tooltip tooltip-top"
+        v-else-if="isFriend === false && observedUser.isBlockedBy == true"
+        data-tip="Unblock user">
+        <iconify-icon
+          class="w-10 h-10"
+          :icon="iconUnblockUser"
+          style="color: #5d4df8"
+          @click="unblockUser"
           @mouseover="iconUnblockUser = 'mdi:account-cancel-outline'"
           @mouseout="iconUnblockUser = 'mdi:account-cancel'"></iconify-icon>
       </div>
       <!-- BLOCK USER -->
-      <div class="stat-figure text-primary tooltip tooltip-top" v-else data-tip="Block user">
-        <iconify-icon class="w-10 h-10" :icon="iconBlockUser" style="color: #5d4df8" @click="blockUser"
-          @mouseover="iconBlockUser = 'mdi:account-cancel'" @mouseout="
+      <div
+        class="stat-figure text-primary tooltip tooltip-top"
+        v-else
+        data-tip="Block user">
+        <iconify-icon
+          class="w-10 h-10"
+          :icon="iconBlockUser"
+          style="color: #5d4df8"
+          @click="blockUser"
+          @mouseover="iconBlockUser = 'mdi:account-cancel'"
+          @mouseout="
             iconBlockUser = 'mdi:account-cancel-outline'
-            "></iconify-icon>
+          "></iconify-icon>
       </div>
       <!-- NUMBER OF FRIENDS -->
       <div class="text-xl stat-value">Friends</div>
       <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
     </div>
     <!-- FRIEND REQUEST NOTIFICATION -->
-    <div class="stat border-black !border-l-2" v-if="loggedUser && observedUser && observedUser.id === loggedUser.id">
+    <div
+      class="stat border-black !border-l-2"
+      v-if="loggedUser && observedUser && observedUser.id === loggedUser.id">
       <div class="stat-figure text-primary" v-if="nFriendRequests > 0">
         <div class="indicator">
-          <label for="my-modal-3" type="button" @click="showFriendRequestModal = true">
+          <label
+            for="my-modal-3"
+            type="button"
+            @click="showFriendRequestModal = true">
             <span class="badge badge-secondary indicator-item text-white">{{
               nFriendRequests
             }}</span>
-            <iconify-icon class="w-10 h-10" :icon="iconRequestNotification" style="color: 5d4df8"
-              @mouseover="iconRequestNotification = 'mdi:account-alert'" @mouseout="
+            <iconify-icon
+              class="w-10 h-10"
+              :icon="iconRequestNotification"
+              style="color: 5d4df8"
+              @mouseover="iconRequestNotification = 'mdi:account-alert'"
+              @mouseout="
                 iconRequestNotification = 'mdi:account-alert-outline'
-                "></iconify-icon>
+              "></iconify-icon>
           </label>
         </div>
       </div>
@@ -98,7 +154,8 @@
   </div>
 
   <!-- FRIEND REQUEST MODAL -->
-  <profile-friend-request-modal v-if="showFriendRequestModal"
+  <profile-friend-request-modal
+    v-if="showFriendRequestModal"
     @close-modal="closeFriendRequestModal"></profile-friend-request-modal>
 </template>
 
@@ -114,8 +171,7 @@ import { onBeforeRouteUpdate, useRoute } from 'vue-router'
 import { useUserStore } from '@/stores/UserStore'
 import ProfileFriendRequestModal from '@/components/ProfileFriendRequestModal.vue'
 
-
-import { useToast } from "vue-toastification";
+import { useToast } from 'vue-toastification'
 
 import type { User } from '@/types'
 
@@ -124,35 +180,33 @@ import type { User } from '@/types'
 // ******************** //
 const toast = useToast()
 
-const fileInput = ref(null) as Ref<HTMLElement | null>;
-const iconBlockUser = ref('mdi:account-cancel-outline');
-const iconRequestNotification = ref('mdi:account-alert-outline');
-const iconSendRequest = ref('mdi:account-plus-outline');
-const iconUnblockUser = ref('mdi:account-cancel');
-const isFriend = ref(false);
-const nFriendRequests = ref(0);
-const route = useRoute();
-const showFriendRequestModal = ref(false);
-const userStore = useUserStore();
-
+const fileInput = ref(null) as Ref<HTMLElement | null>
+const iconBlockUser = ref('mdi:account-cancel-outline')
+const iconRequestNotification = ref('mdi:account-alert-outline')
+const iconSendRequest = ref('mdi:account-plus-outline')
+const iconUnblockUser = ref('mdi:account-cancel')
+const isFriend = ref(false)
+const nFriendRequests = ref(0)
+const route = useRoute()
+const showFriendRequestModal = ref(false)
+const userStore = useUserStore()
 
 const { loggedUser } = storeToRefs(userStore)
 const { observedUser } = storeToRefs(userStore)
 
 const pictureSrc = computed(() => {
   if (!loggedUser.value || !observedUser.value) {
-    return null;
+    return null
   }
-  let profilePicture = "";
+  let profilePicture = ''
   if (observedUser.value.id === loggedUser.value.id) {
-    profilePicture = loggedUser.value.profilePicture;
-  }
-  else if (observedUser.value.id !== loggedUser.value.id) {
-    profilePicture = observedUser.value.profilePicture;
+    profilePicture = loggedUser.value.profilePicture
+  } else if (observedUser.value.id !== loggedUser.value.id) {
+    profilePicture = observedUser.value.profilePicture
   }
 
   if (!profilePicture) {
-    return null;
+    return null
   }
 
   if (profilePicture.includes('cdn.intra.42')) {
@@ -163,10 +217,12 @@ const pictureSrc = computed(() => {
 })
 
 const statusColor = computed(() => {
-  if (observedUser.value !== null && observedUser.value.status === 'online') return 'text-[#62D49A]';
-  if (observedUser.value !== null && observedUser.value.status === 'offline') return 'text-red-500';
-  return 'text-gray-500';
-});
+  if (observedUser.value !== null && observedUser.value.status === 'online')
+    return 'text-[#62D49A]'
+  if (observedUser.value !== null && observedUser.value.status === 'offline')
+    return 'text-red-500'
+  return 'text-gray-500'
+})
 
 // ******************** //
 // FUNCTION DEFINITIONS //
@@ -177,37 +233,40 @@ const statusColor = computed(() => {
 // ********* //
 
 const blockUser = async (): Promise<void> => {
-  if (observedUser.value === null)
-    return;
+  if (observedUser.value === null) return
   try {
-    await userStore.blockUser(observedUser.value.id);
-    toast.success("User blocked !")
+    await userStore.blockUser(observedUser.value.id)
+    toast.success('User blocked !')
   } catch (error) {
-    console.log(`[ProfileStatsCard] - Failed to block user! Error : `, error);
+    console.log(`[ProfileStatsCard] - Failed to block user! Error : `, error)
   }
-};
+}
 
 // ****************** //
 // checkBlockedStatus //
 // ****************** //
 
 const checkBlockedStatus = async (): Promise<void> => {
-  if (!loggedUser.value || !observedUser.value)
-    return;
+  if (!loggedUser.value || !observedUser.value) return
   try {
-    const response = await userStore.fetchBlockerId(loggedUser.value.id, observedUser.value.id);
-    console.log(`[ProfileStatsCard] - fetchBlockerId response : ${response}`);
+    const response = await userStore.fetchBlockerId(
+      loggedUser.value.id,
+      observedUser.value.id
+    )
+    console.log(`[ProfileStatsCard] - fetchBlockerId response : ${response}`)
     if (response === loggedUser.value.id) {
-      observedUser.value.isBlockedBy = true;
-      console.log(`[ProfileStatsCard] - ${observedUser.value.id} isBlockedBy : ${loggedUser.value.id}`);
+      observedUser.value.isBlockedBy = true
+      console.log(
+        `[ProfileStatsCard] - ${observedUser.value.id} isBlockedBy : ${loggedUser.value.id}`
+      )
+    } else if (response === observedUser.value.id) {
+      loggedUser.value.isBlockedBy = true
+      console.log(
+        `[ProfileStatsCard] - ${loggedUser.value.id} isBlockedBy : ${observedUser.value.id}`
+      )
     }
-    else if (response === observedUser.value.id) {
-      loggedUser.value.isBlockedBy = true;
-      console.log(`[ProfileStatsCard] - ${loggedUser.value.id} isBlockedBy : ${observedUser.value.id}`);
-    }
-  }
-  catch (error) {
-    toast.error("Failed to fetch blocked user and check friendship !")
+  } catch (error) {
+    toast.error('Failed to fetch blocked user and check friendship !')
   }
 }
 
@@ -231,7 +290,7 @@ const fetchUser = async (id: string | undefined): Promise<void> => {
       console.log(`[ProfileView] - The current observed user is not defined`)
     }
   } catch (error) {
-    toast.error("Failed to fetch user !")
+    toast.error('Failed to fetch user !')
   }
 }
 
@@ -250,7 +309,7 @@ const getFriendRequestsNumber = async (): Promise<number> => {
     )
     return response.length
   } catch (error) {
-    toast.error("Failed to get friend requests number !")
+    toast.error('Failed to get friend requests number !')
     return 0
   }
 }
@@ -269,18 +328,18 @@ const closeFriendRequestModal = (): void => {
 // ************ //
 
 const onFileChange = async (event: Event): Promise<void> => {
-  const target = event.target as HTMLInputElement;
+  const target = event.target as HTMLInputElement
   if (target.files != null) {
-    const file = target.files[0];
+    const file = target.files[0]
     try {
-      if (userStore.loggedUser == null) return;
-      await userStore.uploadProfilePicture(userStore.loggedUser.id, file);
-      location.reload();
+      if (userStore.loggedUser == null) return
+      await userStore.uploadProfilePicture(userStore.loggedUser.id, file)
+      location.reload()
     } catch (error) {
-      toast.error("Failed to upload profile picture !")
+      toast.error('Failed to upload profile picture !')
     }
   }
-};
+}
 
 // ****************** //
 // searchInFriendList //
@@ -296,7 +355,7 @@ const searchInFriendList = async (user: User): Promise<boolean> => {
     console.log(`[ProfileStatsCard] - isFriend : `, isFriend.value)
     return true
   } catch (error) {
-    toast.error("Failed to get friend requests number !")
+    toast.error('Failed to get friend requests number !')
     return false
   }
 }
@@ -306,14 +365,12 @@ const searchInFriendList = async (user: User): Promise<boolean> => {
 // ***************** //
 
 const sendFriendRequest = async (): Promise<void> => {
-  if (observedUser.value === null)
-    return;
+  if (observedUser.value === null) return
   try {
-    await userStore.sendFriendRequest(observedUser.value.id);
-    toast.success("Friend request sent !")
-  }
-  catch (error) {
-    toast.error("Failed to send friend request !")
+    await userStore.sendFriendRequest(observedUser.value.id)
+    toast.success('Friend request sent !')
+  } catch (error) {
+    toast.error('Failed to send friend request !')
   }
 }
 
@@ -330,13 +387,12 @@ const triggerFileInput = (): void => {
 // *********** //
 
 const unblockUser = async (): Promise<void> => {
-  if (observedUser.value === null)
-    return;
+  if (observedUser.value === null) return
   try {
-    await userStore.unblockUser(observedUser.value.id);
-    toast.success("User unblocked !")
+    await userStore.unblockUser(observedUser.value.id)
+    toast.success('User unblocked !')
   } catch (error) {
-    toast.error("Failed to unblock user !")
+    toast.error('Failed to unblock user !')
   }
 }
 
@@ -354,32 +410,40 @@ onBeforeMount(async () => {
 
     await userStore.refreshFriendList()
 
-    if ((loggedUser.value != null) && observedUser.value !== null && (observedUser.value.id !== loggedUser.value.id)) {
-      await searchInFriendList(observedUser.value);
-      await checkBlockedStatus();
+    if (
+      loggedUser.value != null &&
+      observedUser.value !== null &&
+      observedUser.value.id !== loggedUser.value.id
+    ) {
+      await searchInFriendList(observedUser.value)
+      await checkBlockedStatus()
     }
 
     await getFriendRequestsNumber()
   } catch (error: any) {
-    toast.error("Something went wrong !")
+    toast.error('Something went wrong !')
   }
 })
 
 onBeforeRouteUpdate(async (to, from) => {
-  const id = to.path.split("/").pop();
+  const id = to.path.split('/').pop()
   try {
-    await fetchUser(id);
+    await fetchUser(id)
 
-    await userStore.refreshFriendList();
+    await userStore.refreshFriendList()
 
-    if (loggedUser.value && observedUser.value && (observedUser.value.id !== loggedUser.value.id)) {
-      await searchInFriendList(observedUser.value);
-      await checkBlockedStatus();
+    if (
+      loggedUser.value &&
+      observedUser.value &&
+      observedUser.value.id !== loggedUser.value.id
+    ) {
+      await searchInFriendList(observedUser.value)
+      await checkBlockedStatus()
     }
 
-    await getFriendRequestsNumber();
+    await getFriendRequestsNumber()
   } catch (error: any) {
-    toast.error("Something went wrong !")
+    toast.error('Something went wrong !')
   }
-});
+})
 </script>

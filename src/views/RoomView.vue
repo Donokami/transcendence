@@ -1,12 +1,17 @@
 <template>
-  <div class="max-w-screen-xl min-w-[95%] mx-auto text-black">
-    <div class="flex flex-col p-5 mx-2 my-3 mt-1 text-justify border-2 border-black">
+  <div class="w-full mx-auto text-black">
+    <div class="flex flex-col p-5 my-1 text-justify border-2 border-black">
       <template v-if="room">
         <room-summary :room="room" />
-        <button @click="startGame" :disabled="loggedUser?.id !== room?.owner?.id">
+        <button
+          @click="startGame"
+          :disabled="loggedUser?.id !== room?.owner?.id">
           Start game
         </button>
-        <game-canvas :room="room" :game="game" v-if="room.status === 'ingame'" />
+        <game-canvas
+          :room="room"
+          :game="game"
+          v-if="room.status === 'ingame'" />
       </template>
     </div>
   </div>
@@ -29,8 +34,7 @@ socket.connect()
 
 socket.emit('room:join', roomId)
 
-console.log('room', room);
-
+console.log('room', room)
 
 // to do: to move into a component
 function startGame(): void {
