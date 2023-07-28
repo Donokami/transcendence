@@ -26,7 +26,7 @@
               class="menu bg-base-100 w-full">
               <li v-for="friend in filteredFriendList" :key="friend.username">
                 <a
-                  class="flex p-1 modal-action justify-start"
+                  class="flex p-1 rounded-none modal-action justify-start"
                   @click="createDmChannel(friend)">
                   <button class="block" @click="closeModal">
                     {{ friend.username }}

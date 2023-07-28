@@ -47,7 +47,7 @@
                       v-for="friend in filteredFriendList"
                       :key="friend.username">
                       <a
-                        class="flex p-1"
+                        class="flex p-1 rounded-none"
                         @click="pushUserToAdd(friend.username, friend.id)">
                         {{ friend.username }}
                       </a>
@@ -64,11 +64,12 @@
             <div>
               <div v-for="username in usersToAdd" :key="username">
                 <div
-                  class="label cursor-pointer bg-primary w-1/3 my-1"
+                  class="label cursor-pointer bg-black w-1/3 my-1"
                   @click="cancelUserToAdd(username)">
-                  <span class="badge bg-primary border-none rounded-none">{{
-                    username
-                  }}</span>
+                  <span
+                    class="badge bg-black text-white border-none rounded-none"
+                    >{{ username }}</span
+                  >
                   <span class="text-white">x</span>
                 </div>
               </div>

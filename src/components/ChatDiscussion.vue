@@ -57,9 +57,13 @@ const textClass = computed(() => (message: Message) => {
   }
 })
 
-// ********************* //
-// VueJs LIFECYCLE HOOKS //
-// ********************* //
+// ******************** //
+// FUNCTION DEFINITIONS //
+// ******************** //
+
+// ****************** //
+// getChannelMessages //
+// ****************** //
 
 async function getChannelMessages(): Promise<void> {
   console.log('selectedChannel :', selectedChannel.value)
@@ -74,6 +78,10 @@ async function getChannelMessages(): Promise<void> {
 
   emit('scroll-to-bottom')
 }
+
+// ********************* //
+// VueJs LIFECYCLE HOOKS //
+// ********************* //
 
 onBeforeMount(async () => {
   await getChannelMessages()

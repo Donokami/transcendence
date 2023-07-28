@@ -10,7 +10,7 @@
         <!-- BUTTON -->
         <label
           for="my-modal-4"
-          class="mb-2 text-black bg-white border-2 border-black btn hover:bg-primary hover:border-primary hover:text-white"
+          class="mb-2 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white"
           type="button"
           @click="showUsernameModal = true">
           CHANGE USERNAME

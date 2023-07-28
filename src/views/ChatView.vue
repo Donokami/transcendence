@@ -2,7 +2,7 @@
   <div class="flex w-full mx-auto text-black">
     <!-- SIDEBAR -->
     <div
-      class="flex min-w-min min-h-screen border-2 border-black flex-col my-1 p-5 text-justify w-1/4 overflow-y-auto">
+      class="flex flex-col min-w-min max-h-full my-1 p-5 border-2 border-black text-justify w-1/4 overflow-y-auto">
       <chat-sidebar
         :list-state="listState"
         @list-state-changed="listState = $event"></chat-sidebar>
@@ -13,7 +13,7 @@
       v-if="selectedChannel && channelsList?.loading === false">
       <!-- TITLE -->
       <div
-        class="flex border-2 border-black items-center justify-between ml-1 mt-1 p-5 h-1/6">
+        class="flex border-2 border-black items-center justify-between ml-1 mt-1 p-5">
         <h2 class="text-2xl font-bold text-black">
           {{ channelStore.getChannel(selectedChannel)?.name }}
         </h2>
@@ -29,13 +29,11 @@
       <!-- CHAT BOX -->
       <div
         ref="chatbox"
-        class="border-black border-2 ml-1 mt-1 p-5 h-4/6 overflow-auto">
+        class="border-black border-2 ml-1 mt-1 p-5 max-h-96 overflow-auto">
         <chat-discussion @scroll-to-bottom="scrollToBottom"></chat-discussion>
       </div>
       <!-- MESSAGE INPUT -->
-      <div class="border-black border-2 ml-1 my-1 p-5 h-1/6">
-        <chat-input></chat-input>
-      </div>
+      <chat-input></chat-input>
     </div>
   </div>
 </template>

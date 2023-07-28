@@ -24,23 +24,11 @@ interface UploadData {
 
 export const useUserStore = defineStore('users', {
   state: () => ({
-    // ********** //
-    // loggedUser //
-    // ********** //
-
     loggedUser: null as unknown as User | null,
     friendList: [] as User[],
     twoFactorEnabled: false,
 
-    // ********************** //
-    // observedUser (PROFILE) //
-    // ********************** //
-
     observedUser: null as unknown as User | null,
-
-    // **************** //
-    // tempUserId (2FA) //
-    // **************** //
 
     tempUserId: null as unknown as string | null
   }),

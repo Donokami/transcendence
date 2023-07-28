@@ -70,7 +70,7 @@
             </div>
             <div class="py-4" v-else-if="channel.isDm === false">
               <div class="flex items-center mx-auto md:mx-0 pl-4 w-18">
-                <span class="hidden md:block">{{ channel.name }}</span>
+                <span>{{ channel.name }}</span>
               </div>
             </div>
           </router-link>

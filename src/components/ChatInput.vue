@@ -1,39 +1,54 @@
 <template>
-  <form @submit.prevent="sendMessage" class="flex">
-    <input class="w-full text-black outline-none" name="message" type="message" v-model="input"
-      placeholder="Type your message" />
-    <button type="submit"
-      class="btn bg-white border-2 border-black mb-2 text-black hover:bg-black hover:border-black hover:text-white">
-      Send
-    </button>
-  </form>
+  <div class="border-black border-2 my-1 mx-1 p-2">
+    <form @submit.prevent="sendMessage" class="flex justify-between gap-2">
+      <div class="w-full">
+        <textarea
+          v-model="input"
+          id="prompt-textarea"
+          ref="myTextarea"
+          @input="autoResize"
+          tabindex="0"
+          data-id="root"
+          rows="1"
+          placeholder="Send a message"
+          class="h-full m-0 w-full outline-none overflow-auto resize-none bg-transparent max-h-[200px]"></textarea>
+      </div>
+      <div class="flex self-end">
+        <button
+          type="submit"
+          class="btn bg-white self-end border-2 border-black text-black hover:bg-black hover:border-black hover:text-white">
+          Send
+        </button>
+      </div>
+    </form>
+  </div>
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
-
-import { ref } from 'vue';
-
+import { type Ref, ref, onMounted } from 'vue'
 import { useChannelStore } from '@/stores/ChannelStore.js'
-
-// ******************** //
-// VARIABLE DEFINITIONS //
-// ******************** //
 
 const channelStore = useChannelStore()
 const input = ref('')
+const myTextarea: Ref<HTMLElement | null> = ref(null)
 
-// ********************* //
-// FUNCTIONS DEFINITIONS //
-// ********************* //
+onMounted(() => {
+  autoResize()
+})
 
-function sendMessage() {
+async function sendMessage(): Promise<void> {
   if (input.value.trim() !== '') {
-    channelStore.sendMessage(input.value);
-    input.value = '';
+    await channelStore.sendMessage(input.value)
+    input.value = ''
   }
 }
 
+function autoResize(): void {
+  if (myTextarea.value) {
+    ;(myTextarea.value as HTMLTextAreaElement).style.height = 'auto'
+    ;(myTextarea.value as HTMLTextAreaElement).style.height = `${
+      (myTextarea.value as HTMLTextAreaElement).scrollHeight
+    }px`
+  }
+}
 </script>
