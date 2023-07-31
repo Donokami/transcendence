@@ -20,4 +20,6 @@ export interface Game {
   }>
   remainingTime: number
   fps: number
+  started: boolean
+  ended: boolean
 }

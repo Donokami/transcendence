@@ -12,8 +12,19 @@
       -
       {{ Math.round(game.remainingTime) }}
     </p> -->
-    <div class="w-[720px] h-[480px]">
-      <TresCanvas clear-color="#7dd3fc" shadows @mousemove="MovePaddle">
+    <div class="w-[720px] h-[480px] relative">
+      <div
+        class="absolute z-10 flex items-center w-full h-full bg-black bg-opacity-30"
+        v-if="gameState.ended">
+        <span class="m-auto text-5xl font-semibold text-white">
+          {{ winnerMessage }}
+        </span>
+      </div>
+      <TresCanvas
+        clear-color="#7dd3fc"
+        shadows
+        @mousemove="MovePaddle"
+        class="absolute">
         <TresScene>
           <TresAmbientLight
             color="#ffffff"
@@ -31,11 +42,6 @@
             :aspect="1"
             :near="0.1"
             :far="1000" />
-          <!-- <TresPerspectiveCamera :position="[
-            10,
-            40,
-            5
-          ]" :fov="45" :aspect="1" :near="0.1" :far="1000" /> -->
           <TresGroup>
             <TresMesh>
               <TresBoxGeometry
@@ -53,11 +59,6 @@
               <TresMeshToonMaterial color="#fff" />
             </TresMesh>
           </TresGroup>
-          <!-- <TresMesh :position="[
-            paddlePos(gameState.posX),
-            gameMetrics.fieldHeight,
-            gameMetrics.fieldDepth * 0.5 + gameMetrics.paddleDepth * 0.5
-          ]" ref="paddle1Ref"> -->
           <TresMesh ref="paddle1Ref">
             <TresBoxGeometry
               :args="[
@@ -80,10 +81,6 @@
             <TresSphereGeometry :args="[gameMetrics.ballRadius]" />
             <TresMeshToonMaterial color="yellow" />
           </TresMesh>
-          <!-- <TresMesh ref="testBallRef">
-            <TresSphereGeometry :args="[gameMetrics.ballRadius]" />
-            <TresMeshToonMaterial color="blue" />
-          </TresMesh> -->
           <Suspense>
             <Text3D
               :size="3"
@@ -126,6 +123,21 @@ const isSpectator = computed(() => {
     loggedUser?.id !== gameState.value.players[0].userId &&
     loggedUser?.id !== gameState.value.players[1].userId
   )
+})
+
+const winnerMessage = computed(() => {
+  if (gameState.value.players[0].score > gameState.value.players[1].score) {
+    return loggedUser?.id === gameState.value.players[0].userId
+      ? 'You win!'
+      : 'You lose'
+  } else if (
+    gameState.value.players[0].score < gameState.value.players[1].score
+  ) {
+    return loggedUser?.id === gameState.value.players[1].userId
+      ? 'You win!'
+      : 'You lose'
+  }
+  return 'Draw'
 })
 
 function cameraPos(): Vector3 {

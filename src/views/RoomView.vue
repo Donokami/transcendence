@@ -8,10 +8,7 @@
           :disabled="loggedUser?.id !== room?.owner?.id">
           Start game
         </button>
-        <game-canvas
-          :room="room"
-          :game="game"
-          v-if="room.status === 'ingame'" />
+        <game-canvas :room="room" :game="game" v-if="game.started" />
       </template>
     </div>
   </div>
