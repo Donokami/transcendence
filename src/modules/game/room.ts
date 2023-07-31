@@ -109,6 +109,9 @@ export class Room implements RoomObject {
       if (this.status === RoomStatus.FULL) {
         this.status = RoomStatus.OPEN
       }
+      if (this.status === RoomStatus.INGAME) {
+        this.gameState.userSurrended(user.id)
+      }
     } else {
       this.observers = this.observers.filter((u) => u !== user)
     }

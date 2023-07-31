@@ -193,8 +193,8 @@ export class PhysicsEngine {
     }
 
     if (this.isPastPaddle1(ball)) {
-      this.gameState.players[0].score += 1
-      this.logger.log(`player 1 score: ${this.gameState.players[0].score}`)
+      this.gameState.players[1].score += 1
+      this.logger.log(`player 2 score: ${this.gameState.players[0].score}`)
       this.resetBall(ball)
       setTimeout(() => {
         ball.stopped = false
@@ -202,8 +202,8 @@ export class PhysicsEngine {
     }
 
     if (this.isPastPaddle2(ball)) {
-      this.gameState.players[1].score += 1
-      this.logger.log(`player 2 score: ${this.gameState.players[1].score}`)
+      this.gameState.players[0].score += 1
+      this.logger.log(`player 1 score: ${this.gameState.players[1].score}`)
       this.resetBall(ball)
       // After 2s, the ballRef will start moving again.
       setTimeout(() => {

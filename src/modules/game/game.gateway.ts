@@ -28,7 +28,7 @@ export class GameGateway {
   constructor(
     @Inject(forwardRef(() => GameService))
     private gameService: GameService
-  ) { }
+  ) {}
 
   private readonly logger = new Logger(GameService.name)
 
@@ -73,15 +73,18 @@ export class GameGateway {
   }
 
   @SubscribeMessage('game:start')
-  async handleStart(@MessageBody() roomId: string): Promise<void> {
+  async handleStart(
+    @MessageBody() roomId: string,
+    @ConnectedSocket() client: IUserSocket
+  ): Promise<void> {
     const room = this.gameService.findOne(roomId)
 
+    if (!room) throw new RoomNotFound()
     // todo: check if the room is full and not started
 
-    // if (room.get().owner.id !== client.request.user.id) {
-    //   client.emit('error', 'You are not the owner of this room')
-    //   return
-    // }
+    if (room.get().owner.id !== client.request.user.id) {
+      return
+    }
 
     room.startGame()
   }
@@ -95,8 +98,12 @@ export class GameGateway {
 
     if (!room) throw new RoomNotFound()
     if (data.posX < 0 || data.posX > 1) return
+    // todo: check if user is in the room
 
-    this.gameService.updatePos(data.posX, client.request.user.id, data.roomId)
-    // room.gameState.movePaddle(data.posX)
+    await this.gameService.updatePos(
+      data.posX,
+      client.request.user.id,
+      data.roomId
+    )
   }
 }

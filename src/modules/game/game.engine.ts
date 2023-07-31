@@ -75,9 +75,9 @@ export class Game {
 
   private async gameLoop() {
     const startTime = (this.gameState.startTime = Date.now())
-    const endTime = (this.gameState.endTime = startTime + this.metrics.timeout)
+    this.gameState.endTime = startTime + this.metrics.timeout
 
-    while (Date.now() < endTime) {
+    while (Date.now() < this.gameState.endTime) {
       const deltaStart = Date.now()
 
       this.physicsEngine.calculateFrame(this.gameState)
@@ -94,24 +94,6 @@ export class Game {
   }
 
   private async broadcastUpdate() {
-    // this.gameGateway.server
-    //   .to(this.roomState.id)
-    //   .emit('game:ball', { ...this.gameState.ball.position })
-    // this.gameGateway.server
-    //   .to(this.roomState.id)
-    //   .emit('game:remainingTime', (this.gameState.endTime - Date.now()) / 1000)
-    // this.gameGateway.server
-    //   .to(this.roomState.id)
-    //   .emit(`game:player1`, [
-    //     { ...this.gameState.players[0].paddle.position },
-    //     this.gameState.players[0].score
-    //   ])
-    // this.gameGateway.server
-    //   .to(this.roomState.id)
-    //   .emit(`game:player2`, [
-    //     { ...this.gameState.players[1].paddle.position },
-    //     this.gameState.players[1].score
-    //   ])
     this.gameGateway.server.to(this.roomState.id).emit(`game:state`, {
       ballPos: this.gameState.ball.position,
       players: [
@@ -130,6 +112,15 @@ export class Game {
     })
   }
 
+  public userSurrended(userId: string) {
+    // Remove all points from the user who surrended
+    const playerIndex = this.gameState.players.findIndex(
+      (player) => player.userId === userId
+    )
+    this.gameState.players[playerIndex].score = 0
+    this.gameState.endTime = Date.now() + (1000 / this.metrics.tps) * 1.5
+  }
+
   public startGame() {
     this.gameLoop()
     this.logger.log('start of game!')
@@ -137,6 +128,8 @@ export class Game {
 
   public endGame() {
     this.gameState.endTime = Date.now()
+    this.gameGateway.server.to(this.roomState.id).emit(`game:end`)
+    // todo: to test, it may be broken
     this.roomState.update({ ...this.roomState, status: RoomStatus.OPEN })
     this.logger.log('end of game!')
   }

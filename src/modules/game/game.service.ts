@@ -1,9 +1,4 @@
-import {
-  Inject,
-  Injectable,
-  Logger,
-  forwardRef
-} from '@nestjs/common'
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common'
 
 import { UsersService } from '@/modules/users/users.service'
 
@@ -17,7 +12,8 @@ import { paginate } from '@/core/utils/pagination'
 import {
   UserNotFound,
   RoomAlreadyExists,
-  RoomNotFound
+  RoomNotFound,
+  UserNotInRoom
 } from '@/core/exceptions'
 
 @Injectable()
@@ -28,7 +24,7 @@ export class GameService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => GameGateway))
     private readonly gameGateway: GameGateway
-  ) { }
+  ) {}
 
   private readonly logger = new Logger(GameService.name)
 
@@ -201,6 +197,7 @@ export class GameService {
 
     if (!room) throw new RoomNotFound()
     if (!user) throw new UserNotFound()
+    if (!room.players.find((p) => p.id === user.id)) throw new UserNotInRoom()
 
     room.gameState.updatePaddlePosition(posX, user.id)
   }
