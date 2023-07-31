@@ -5,6 +5,7 @@
       <h2 class="mb-8 font-bold text-2xl text-black">Profile</h2>
       <!-- STATS CARD -->
       <profile-stats-card></profile-stats-card>
+
       <!-- CHANGE USERNAME -->
       <div class="p-4">
         <!-- BUTTON -->
@@ -16,10 +17,13 @@
           CHANGE USERNAME
         </label>
         <!-- MODAL -->
-        <change-username-modal
+        <profile-change-username-modal
           v-if="showUsernameModal"
-          @close-modal="handleCloseUsernameModal"></change-username-modal>
+          @close-modal="
+            handleCloseUsernameModal
+          "></profile-change-username-modal>
       </div>
+
       <!-- 2FA  -->
       <div class="p-4">
         <!-- TOGGLER-->
@@ -58,7 +62,7 @@
 
 import { ref } from 'vue'
 
-import ChangeUsernameModal from '@/components/ChangeUsernameModal.vue'
+import ProfileChangeUsernameModal from '@/components/ProfileChangeUsernameModal.vue'
 import ProfileStatsCard from '@/components/ProfileStatsCard.vue'
 import StatsRankingTable from '@/components/StatsRankingTable.vue'
 import StatsMatchHistoryTable from '@/components/StatsMatchHistoryTable.vue'
