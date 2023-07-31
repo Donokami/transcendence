@@ -1,7 +1,8 @@
-import { defineStore } from 'pinia'
+import { defineStore, getActivePinia, type Pinia, type Store } from 'pinia'
 
 import type { User, Friendship, Paginated } from '@/types'
 import fetcher from '@/utils/fetcher'
+import { useChannelStore } from './ChannelStore'
 
 interface UserData {
   username?: string
@@ -160,7 +161,7 @@ export const useUserStore = defineStore('users', {
         const user = await this.fetchUser()
         this.loggedUser = user
         this.twoFactorEnabled = user.isTwoFactorEnabled
-      } catch (error) { }
+      } catch (error) {}
     },
 
     // ******** //
@@ -223,6 +224,10 @@ export const useUserStore = defineStore('users', {
     async signOut(): Promise<void> {
       const response = await fetcher.post('/auth/signout')
       this.loggedUser = null
+
+      const channelStore = useChannelStore()
+      channelStore.$reset()
+
       return response
     },
 

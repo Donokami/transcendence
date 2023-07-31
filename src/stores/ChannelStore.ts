@@ -4,7 +4,7 @@ import { useUserStore } from './UserStore'
 
 import fetcher, { useFetcher, type FetcherResponse } from '@/utils/fetcher'
 
-import type { Channel, Message } from '@/types'
+import type { Channel, Message, User } from '@/types'
 import type { Ref } from 'vue'
 
 export const useChannelStore = defineStore('channels', {
@@ -20,6 +20,9 @@ export const useChannelStore = defineStore('channels', {
     // *************** //
 
     async createDmChannel(ownerId: string, receiverId: string): Promise<void> {
+      const { loggedUser } = useUserStore()
+      if (loggedUser == null) return
+
       const channelParam = {
         isDm: true,
         ownerId,
@@ -30,10 +33,9 @@ export const useChannelStore = defineStore('channels', {
         `/channels/create/dm`,
         channelParam
       )
+      this.setChannelInfos(loggedUser, response)
 
-      await this.asyncFetchChannels()
-
-      this.channelsList?.data?.push(response) // fix: bug when creating a dm channel, the name is not set
+      this.channelsList?.data?.push(response)
 
       console.log('New DM channel created ! ID : ', response.id)
       console.log(
@@ -67,7 +69,7 @@ export const useChannelStore = defineStore('channels', {
         channelParam
       )
 
-      await this.asyncFetchChannels()
+      response.messages = []
 
       this.channelsList?.data?.push(response)
 
@@ -91,20 +93,8 @@ export const useChannelStore = defineStore('channels', {
       )
 
       response.forEach((channel: Channel) => {
-        channel.messages = []
-
-        if (channel.isDm) {
-          const receiverUser = channel.members.find(
-            (user) => user.id !== loggedUser.id
-          )
-
-          if (receiverUser != null) {
-            channel.name = receiverUser.username
-            channel.image = receiverUser.profilePicture
-          }
-
-          return channel
-        }
+        this.setChannelInfos(loggedUser, channel)
+        return channel
       })
 
       return response
@@ -112,28 +102,30 @@ export const useChannelStore = defineStore('channels', {
 
     fetchChannels() {
       const { loggedUser } = useUserStore()
-      if (loggedUser == null) return []
-
+      if (loggedUser == null) return
       this.channelsList = useFetcher({
         queryFn: fetcher.get(`/user/${loggedUser.id}/channels`),
         onSuccess: (data: Channel[]) => {
           data.forEach((channel: Channel) => {
-            channel.messages = []
-            if (channel.isDm) {
-              const receiverUser = channel.members.find(
-                (user) => user.id !== loggedUser.id
-              )
-
-              if (receiverUser != null) {
-                channel.name = receiverUser.username
-                channel.image = receiverUser.profilePicture
-              }
-
-              return channel
-            }
+            this.setChannelInfos(loggedUser, channel)
+            return channel
           })
         }
       })
+    },
+
+    setChannelInfos(loggedUser: User, channel: Channel): void {
+      channel.messages = []
+
+      if (channel.isDm) {
+        const receiverUser = channel.members.find(
+          (user) => user.id !== loggedUser.id
+        )
+        if (receiverUser != null) {
+          channel.name = receiverUser.username
+          channel.image = receiverUser.profilePicture
+        }
+      }
     },
 
     // ****** //
@@ -218,17 +210,21 @@ export const useChannelStore = defineStore('channels', {
       }
     },
 
-    addMessage(message: Message, channelId?: string): void {
-      console.log('message : ', message)
+    async addMessage(message: Message, channelId?: string): Promise<void> {
+      const { loggedUser } = useUserStore()
+      if (loggedUser == null) return
+
       const channel = this.getChannel(channelId)
       if (channel != null) {
         // fix: this line make a bug when the channel messages are not loaded
         channel.messages.push(message)
       } else {
-        // fix: when a new dm is created, the channel is not in the channelsList
-        // create a function to fetch a channel by id
+        const newChannel: Channel = await fetcher.get(`/channels/${channelId}`)
+        if (newChannel !== null) {
+          this.setChannelInfos(loggedUser, newChannel)
+          this.channelsList?.data?.push(newChannel as Channel)
+        }
       }
-      console.log('channel : ', channel)
     }
   }
 })

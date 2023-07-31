@@ -103,12 +103,8 @@ chatSocket.on('error', (error) => {
 })
 
 chatSocket.on('message', async (message: Message) => {
-  // selectedChannel.value?.messages.push(message)
   channelStore.addMessage(message, message.channel.id)
   if (chatbox.value != null) {
-    // && (chatbox.value.scrollHeight - 200 < chatbox.value.scrollTop)
-    console.log('height : ', chatbox.value.scrollHeight)
-    console.log('top : ', chatbox.value.scrollTop)
     scrollToBottom()
   }
 })
