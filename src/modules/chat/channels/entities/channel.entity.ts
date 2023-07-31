@@ -60,7 +60,7 @@ export class Channel {
   @Column({ default: false })
   passwordRequired: boolean
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   password: string
 
   // ***************************** //

@@ -19,6 +19,8 @@ import { CreateChannelDto } from './dtos/create-channel.dto'
 import { MessageDto } from './dtos/message.dto'
 
 import { ChatGateway } from '../chat.gateway'
+import { DefaultEventsMap } from 'socket.io/dist/typed-events'
+import { Socket } from 'socket.io'
 
 @Injectable()
 export class ChannelsService {
@@ -30,7 +32,7 @@ export class ChannelsService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway
-  ) { }
+  ) {}
 
   // ****** //
   // LOGGER //
@@ -61,7 +63,22 @@ export class ChannelsService {
       members: members
     })
 
-    return await this.channelsRepository.save(newDmChannel)
+    const dmChannel = await this.channelsRepository.save(newDmChannel)
+
+    dmChannel.members.forEach((member) => {
+      const socketId = this.chatGateway.connectedUsers.get(member.id)
+      if (socketId) {
+        const socket = (
+          this.chatGateway.server.sockets as unknown as Map<
+            string,
+            Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
+          >
+        ).get(socketId)
+        if (socket) socket.join(dmChannel.id)
+      }
+    })
+
+    return dmChannel
   }
 
   // ****************** //
@@ -79,10 +96,6 @@ export class ChannelsService {
       createChannelDto.membersIds
     )
 
-    members.forEach((member) => {
-      member.profilePicture = ''
-    })
-
     const newGroupChannel = this.channelsRepository.create({
       isDm: false,
       name: createChannelDto.name,
@@ -92,7 +105,22 @@ export class ChannelsService {
       password: createChannelDto.password
     })
 
-    return await this.channelsRepository.save(newGroupChannel)
+    const groupChannel = await this.channelsRepository.save(newGroupChannel)
+
+    groupChannel.members.forEach((member) => {
+      const socketId = this.chatGateway.connectedUsers.get(member.id)
+      if (socketId) {
+        const socket = (
+          this.chatGateway.server.sockets as unknown as Map<
+            string,
+            Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
+          >
+        ).get(socketId)
+        if (socket) socket.join(groupChannel.id)
+      }
+    })
+
+    return groupChannel
   }
 
   // ******* //
@@ -100,7 +128,10 @@ export class ChannelsService {
   // ******* //
 
   async findOne(id: string) {
-    const channel = await this.channelsRepository.findOneBy({ id })
+    const channel = await this.channelsRepository.findOne({
+      where: { id },
+      relations: ['members', 'owner']
+    })
 
     if (!channel) {
       throw new NotFoundException(`There is no channel under id ${id}`)
@@ -138,10 +169,10 @@ export class ChannelsService {
           .from('channel', 'channel')
           .leftJoin('channel.members', 'members')
           .where('members.id = :userId', { userId })
-          .getQuery();
-        return 'channel.id IN ' + subQuery;
+          .getQuery()
+        return 'channel.id IN ' + subQuery
       })
-      .getMany();
+      .getMany()
 
     this.logger.verbose(`DMs list of : ${userId} successfully retrieved.`)
 
@@ -173,9 +204,6 @@ export class ChannelsService {
     this.logger.verbose(
       `Messages list of : ${channelId} successfully retrieved.`
     )
-
-    console.log('messages : ', messages)
-
     return messages
   }
 

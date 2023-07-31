@@ -20,7 +20,7 @@ import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 @Controller('channels')
 @UseFilters(new GlobalExceptionFilter())
 export class ChannelsController {
-  constructor(private readonly channelsService: ChannelsService) { }
+  constructor(private readonly channelsService: ChannelsService) {}
 
   // ****** //
   // LOGGER //
@@ -45,6 +45,19 @@ export class ChannelsController {
     })
 
     return message
+  }
+
+  // *********** //
+  // getChannel //
+  // *********** //
+
+  @Get('/:id')
+  @UseGuards(AuthGuard)
+  // todo: add MemberGuard
+  async getChannel(@Param('id') id: string) {
+    const channel = await this.channelsService.findOne(id)
+
+    return channel
   }
 
   // *********** //
@@ -79,7 +92,7 @@ export class ChannelsController {
   // createGroupChannel //
   // ****************** //
 
-  @Post('/create/group-channel')
+  @Post('/create/group')
   @UseGuards(AuthGuard)
   async createGroupChannel(@Body() body: CreateChannelDto) {
     try {

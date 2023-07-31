@@ -425,6 +425,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server
 
+  connectedUsers: Map<string, string> = new Map()
+
   // ************ //
   // CONSTRUCTORS //
   // ************ //
@@ -433,7 +435,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChannelsService))
     private readonly channelService: ChannelsService
-  ) { }
+  ) {}
 
   // ****** //
   // LOGGER //
@@ -449,12 +451,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // handleConnection //
   // **************** //
 
-  async handleConnection(@ConnectedSocket() client: IUserSocket): Promise<void> {
+  async handleConnection(
+    @ConnectedSocket() client: IUserSocket
+  ): Promise<void> {
     const requestingUser = client.request.user
 
     const user = await this.userService.findOneByIdWithChannels(
       requestingUser.id
     )
+
+    this.connectedUsers.set(user.id, client.id)
 
     user.channels.forEach((channel) => {
       client.join(channel.id)
@@ -467,12 +473,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // handleDisconnect //
   // **************** //
 
-  async handleDisconnect(@ConnectedSocket() client: IUserSocket): Promise<void> {
+  async handleDisconnect(
+    @ConnectedSocket() client: IUserSocket
+  ): Promise<void> {
     const requestingUser = client.request.user
 
     const user = await this.userService.findOneByIdWithChannels(
       requestingUser.id
     )
+
+    this.connectedUsers.delete(user.id)
 
     if (user && user.channels) {
       user.channels.forEach((channel) => {
