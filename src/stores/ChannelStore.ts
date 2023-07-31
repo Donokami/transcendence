@@ -19,7 +19,7 @@ export const useChannelStore = defineStore('channels', {
     // createDmChannel //
     // *************** //
 
-    async createDmChannel(ownerId: string, receiverId: string) {
+    async createDmChannel(ownerId: string, receiverId: string): Promise<void> {
       const channelParam = {
         isDm: true,
         ownerId,
@@ -52,7 +52,7 @@ export const useChannelStore = defineStore('channels', {
       receiversId: string[],
       passwordRequired: boolean,
       password: string | null
-    ) {
+    ): Promise<void> {
       const channelParam = {
         isDm: false,
         name: channelName,
@@ -63,7 +63,7 @@ export const useChannelStore = defineStore('channels', {
       }
 
       const response: Channel = await fetcher.post(
-        `/channels/create/group-channel`,
+        `/channels/create/group`,
         channelParam
       )
 
@@ -140,18 +140,18 @@ export const useChannelStore = defineStore('channels', {
     // getDms //
     // ****** //
 
-    getDms() {
+    getDms(): Channel[] {
       const channels = this.channelsList?.data?.filter(
         (channel) => channel.isDm
       )
       return channels ?? []
     },
 
-    // **************** //
-    // getGroupChannels //
-    // **************** //
+    // ********* //
+    // getGroups //
+    // ********* //
 
-    getGroupChannels() {
+    getGroups(): Channel[] {
       const channels = this.channelsList?.data?.filter(
         (channel) => !channel.isDm
       )
@@ -162,7 +162,7 @@ export const useChannelStore = defineStore('channels', {
     // fetchChannelMessages //
     // ******************** //
 
-    async fetchChannelMessages(channelId: string) {
+    async fetchChannelMessages(channelId: string): Promise<void> {
       try {
         const messages = await fetcher.get(`/channels/${channelId}/messages`)
         const channel = this.getChannel()
@@ -193,7 +193,7 @@ export const useChannelStore = defineStore('channels', {
     // getChannelMessages //
     // ****************** //
 
-    getChannelMessages(channelId?: string) {
+    getChannelMessages(channelId?: string): Message[] | undefined {
       const channel = this.getChannel(channelId)
       if (channel != null) {
         return channel.messages
@@ -204,7 +204,7 @@ export const useChannelStore = defineStore('channels', {
     // sendMessage //
     // *********** //
 
-    async sendMessage(message: string) {
+    async sendMessage(message: string): Promise<void> {
       const { loggedUser } = useUserStore()
       if (loggedUser == null || this.selectedChannel == null) return
       try {
@@ -218,7 +218,7 @@ export const useChannelStore = defineStore('channels', {
       }
     },
 
-    addMessage(message: Message, channelId?: string) {
+    addMessage(message: Message, channelId?: string): void {
       console.log('message : ', message)
       const channel = this.getChannel(channelId)
       if (channel != null) {

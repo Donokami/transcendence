@@ -14,17 +14,17 @@
           </div>
           <!-- TITLE-->
           <div class="py-4 justify-start">
-            <h3 class="font-bold text-lg">Select channel parameters:</h3>
+            <h3 class="font-bold text-lg">Define group parameters :</h3>
           </div>
-          <!-- CHANNEL SETTINGS -->
+          <!-- GROUP SETTINGS -->
           <div>
-            <!-- CHANNEL NAME -->
+            <!-- GROUP NAME -->
             <div class="form-control py-4">
-              <span class="text-base text-black">Channel Name</span>
+              <span class="text-base text-black">Group Name</span>
               <input
                 v-model="channelName"
                 class="neobrutalist-input py-2"
-                placeholder="Enter a channel name" />
+                placeholder="Enter a group name" />
               <div v-if="channelNameError" class="text-red-500">
                 {{ channelNameError }}
               </div>
@@ -32,13 +32,13 @@
             <!-- FRIENDS LIST -->
             <div class="form-control py-4">
               <span class="text-base text-black"
-                >Select a friend to add to the channel :</span
+                >Select a friend to add to the group :</span
               >
               <div
                 class="collapse collapse-arrow border-2 mt-2 border-black rounded-none">
                 <input type="checkbox" />
                 <div class="collapse-title text-base">Friends list</div>
-                <!-- AVAILABLE FRIENDS TO ADD TO THE CHANNEL -->
+                <!-- AVAILABLE FRIENDS TO ADD TO THE GROUP -->
                 <div class="collapse-content text-base">
                   <ul
                     v-if="filteredFriendList.length > 0"
@@ -53,9 +53,9 @@
                       </a>
                     </li>
                   </ul>
-                  <!-- NO FRIENDS TO ADD TO THE CHANNEL -->
+                  <!-- NO FRIENDS TO ADD TO THE GROUP -->
                   <div v-if="filteredFriendList.length === 0" class="py-4">
-                    <p>You have no more friend to add to the channel</p>
+                    <p>You have no more friend to add to the group</p>
                   </div>
                 </div>
               </div>
@@ -90,19 +90,19 @@
                 v-model="password"
                 v-if="passwordRequired === true"
                 class="neobrutalist-input py-4"
-                placeholder="Choose a password for your channel" />
+                placeholder="Choose a password for your group" />
               <div v-if="passwordError" class="text-red-500">
                 {{ passwordError }}
               </div>
             </div>
           </div>
-          <!-- CREATE CHANNEL BUTTON -->
+          <!-- CREATE GROUP BUTTON -->
           <div class="modal-action">
             <button
               class="btn bg-white border-2 border-black my-4 mb-2 text-black hover:bg-black hover:border-black hover:text-white"
               type="submit"
               @click="closeModal">
-              CREATE CHANNEL
+              CREATE GROUP
             </button>
           </div>
         </Form>
@@ -123,8 +123,6 @@ import { onBeforeRouteUpdate } from 'vue-router'
 
 import { useChannelStore } from '@/stores/ChannelStore'
 import { useUserStore } from '@/stores/UserStore.js'
-import type { Channel } from '@/types'
-import type { User } from '@/types'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -192,37 +190,30 @@ function closeModal(): void {
 // createGroupChannel //
 // ****************** //
 
-const createGroupChannel = async (): Promise<Channel | null> => {
+const createGroupChannel = async (): Promise<void> => {
   if (loggedUser.value == null || !usersToAdd.value) {
-    return null
+    return
   }
 
   if (passwordRequired.value && !password.value) {
-    console.error(
-      `[ChatGroupChannelsModal] - Password is required but not provided!`
-    )
-    return null
+    console.error(`[ChatGroupsModal] - Password is required but not provided!`)
+    return
   }
 
   try {
     usersToAdd.value
-    const groupChannel = await channelStore.createGroupChannel(
+    await channelStore.createGroupChannel(
       channelName.value,
       loggedUser.value.id,
       idUsersToAdd.value,
       passwordRequired.value,
       password.value
     )
-    console.log(
-      `[ChatGroupChannelsModal] - Group channel created successfully !`
-    )
-    return groupChannel
+    console.log(`[ChatGroupsModal] - Group created successfully !`)
+    return
   } catch (error) {
-    console.error(
-      `[ChatGroupChannelsModal] - Failed to create group channel ! Error: `,
-      error
-    )
-    return null
+    console.error(`[ChatGroupsModal] - Failed to create group ! Error: `, error)
+    return
   }
 }
 
@@ -230,17 +221,17 @@ const createGroupChannel = async (): Promise<Channel | null> => {
 // pushUserToAdd //
 // ************* //
 
-const pushUserToAdd = (username: string, id: string) => {
+const pushUserToAdd = (username: string, id: string): void => {
   if (!usersToAdd.value.includes(username)) usersToAdd.value.push(username)
   if (!idUsersToAdd.value.includes(id)) idUsersToAdd.value.push(id)
-  else console.log(`[ChatGroupChannelsModal] - User already in channel !`)
+  else console.log(`[ChatGroupsModal] - User already in group !`)
 }
 
 // ********************** //
 // setPasswordRequirement //
 // ********************** //
 
-const setPasswordRequirement = () => {
+const setPasswordRequirement = (): void => {
   if (passwordRequired.value) passwordRequired.value = false
   else passwordRequired.value = true
   passwordError.value = null
@@ -250,15 +241,15 @@ const setPasswordRequirement = () => {
 // submitForm //
 // ********** //
 
-const submitForm = async (values: Record<string, any>) => {
+const submitForm = async (values: Record<string, any>): Promise<void> => {
   if (!channelName.value.length) {
-    channelNameError.value = 'You need to name the channel before creating it.'
+    channelNameError.value = 'You need to name the group before creating it.'
     return
   }
 
   if (usersToAdd.value.length === 0) {
     friendListError.value =
-      'You need to add friends to the channel before creating it.'
+      'You need to add friends to the group before creating it.'
     return
   }
 

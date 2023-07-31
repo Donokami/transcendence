@@ -1,13 +1,13 @@
 <template>
   <div>
-    <input type="checkbox" id="my-modal-3" class="modal-toggle" />
+    <input type="checkbox" id="my-modal-1" class="modal-toggle" />
     <div class="modal">
       <div class="modal-box rounded-none">
         <!-- CLOSING CROSS -->
         <div class="flex items-center justify-end">
           <button
             class="btn bg-white border-black border-2 text-black hover:bg-black hover:border-black hover:text-white"
-            @click="closeModal()">
+            @click="closeCreateModal()">
             X
           </button>
         </div>
@@ -28,7 +28,7 @@
                 <a
                   class="flex p-1 rounded-none modal-action justify-start"
                   @click="createDmChannel(friend)">
-                  <button class="block" @click="closeModal">
+                  <button class="block" @click="closeCreateModal">
                     {{ friend.username }}
                   </button>
                 </a>
@@ -59,7 +59,7 @@ import { onBeforeRouteUpdate } from 'vue-router'
 
 import { useChannelStore } from '@/stores/ChannelStore'
 import { useUserStore } from '@/stores/UserStore.js'
-import type { Channel, User } from '@/types'
+import type { User } from '@/types'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -97,32 +97,29 @@ const filteredFriendList = computed(() => {
 // createDmChannel //
 // *************** //
 
-const createDmChannel = async (friend: User): Promise<Channel | null> => {
+const createDmChannel = async (friend: User): Promise<void> => {
   if (loggedUser.value == null || !friend) {
-    return null
+    return
   }
   try {
-    const dmChannel = await channelStore.createDmChannel(
-      loggedUser.value.id,
-      friend.id
-    )
+    await channelStore.createDmChannel(loggedUser.value.id, friend.id)
     console.log(`[ChatMessagesModal] - DM channel created successfully !`)
-    return dmChannel
+    return
   } catch (error) {
     console.error(
       `[ChatMessagesModal] - Failed to create DM channel ! Error: `,
       error
     )
-    return null
+    return
   }
 }
 
-// ********** //
-// closeModal //
-// ********** //
+// **************** //
+// closeCreateModal //
+// **************** //
 
-function closeModal(): void {
-  const modalElement = document.getElementById('my-modal-3') as HTMLInputElement
+function closeCreateModal(): void {
+  const modalElement = document.getElementById('my-modal-1') as HTMLInputElement
   if (modalElement) {
     modalElement.checked = !modalElement.checked
     emit('update:showModal', modalElement.checked)
@@ -146,7 +143,7 @@ onBeforeRouteUpdate(async (to, from) => {
 })
 
 watch(showModal, (newValue) => {
-  const modalElement = document.getElementById('my-modal-3') as HTMLInputElement
+  const modalElement = document.getElementById('my-modal-1') as HTMLInputElement
   if (modalElement) {
     modalElement.checked = newValue
   }

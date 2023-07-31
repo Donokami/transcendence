@@ -9,9 +9,9 @@
     >
     <a
       class="tab tab-bordered text-2xl font-bold mb-8"
-      :class="{ 'tab-active': listState === 'channels' }"
-      @click="emit('list-state-changed', 'channels')"
-      >Channels</a
+      :class="{ 'tab-active': listState === 'groups' }"
+      @click="emit('list-state-changed', 'groups')"
+      >Groups</a
     >
   </div>
   <div>
@@ -20,21 +20,40 @@
       for="my-modal-3"
       class="btn bg-white border-2 border-black mb-8 text-black hover:bg-black hover:border-black hover:text-white"
       type="button"
-      @click="toggleModal">
-      {{ listState === 'dms' ? 'Send a new dm' : 'Create a new channel' }}
+      @click="
+        activateModal(
+          listState === 'dms' ? 'create-dm-modal' : 'create-group-modal'
+        )
+      ">
+      {{ listState === 'dms' ? 'Send a new dm' : 'Create a new group' }}
+    </button>
+    <!-- JOIN CHANNEL BUTTON -->
+    <button
+      v-if="listState === 'groups'"
+      for="my-modal-3"
+      class="btn bg-white border-2 border-black mb-8 text-black hover:bg-black hover:border-black hover:text-white"
+      type="button"
+      @click="activateModal('join-group-modal')">
+      Join a group
     </button>
     <!-- DM MODAL -->
-    <chat-direct-messages-modal
-      v-if="listState === 'dms'"
+    <chat-create-direct-message-modal
+      v-if="listState === 'dms' && activeModal === 'create-dm-modal'"
       :showModal="showModal"
       @update:showModal="showModal = $event">
-    </chat-direct-messages-modal>
-    <!-- GROUP CHANNEL MODAL -->
-    <chat-group-channels-modal
-      v-else-if="listState === 'channels'"
+    </chat-create-direct-message-modal>
+    <!-- GROUP MODAL -->
+    <chat-create-group-modal
+      v-else-if="listState === 'groups' && activeModal === 'create-group-modal'"
       :showModal="showModal"
       @update:showModal="showModal = $event">
-    </chat-group-channels-modal>
+    </chat-create-group-modal>
+    <!-- JOIN GROUP MODAL -->
+    <chat-join-group-modal
+      v-else-if="listState === 'groups' && activeModal === 'join-group-modal'"
+      :showModal="showModal"
+      @update:showModal="showModal = $event">
+    </chat-join-group-modal>
     <!-- LOADER FOR CHANNEL LIST -->
     <div v-if="channelStore.channelsList?.loading === true">
       <div class="flex justify-center items-center h-fit">
@@ -79,15 +98,24 @@
 </template>
 
 <script setup lang="ts">
+// ******* //
+// IMPORTS //
+// ******* //
+
 import { storeToRefs } from 'pinia'
 import { onBeforeMount, ref } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 
-import ChatDirectMessagesModal from '@/components/ChatDirectMessagesModal.vue'
-import ChatGroupChannelsModal from '@/components/ChatGroupChannelsModal.vue'
+import ChatCreateDirectMessageModal from '@/components/ChatCreateDirectMessageModal.vue'
+import ChatCreateGroupModal from '@/components/ChatCreateGroupModal.vue'
+import ChatJoinGroupModal from '@/components/ChatJoinGroupModal.vue'
 import { useChannelStore } from '@/stores/ChannelStore.js'
 import { useUserStore } from '@/stores/UserStore.js'
 import type { Channel } from '@/types'
+
+// ******************** //
+// VARIABLE DEFINITIONS //
+// ******************** //
 
 const props = defineProps({
   listState: String
@@ -95,29 +123,45 @@ const props = defineProps({
 
 const channelStore = useChannelStore()
 const emit = defineEmits(['list-state-changed'])
+
 const showModal = ref(false)
+const activeModal = ref('')
 const userStore = useUserStore()
 
 const { loggedUser } = storeToRefs(userStore)
 const channels = ref<Channel[]>([])
 
-function toggleModal(): void {
-  showModal.value = !showModal.value
-  console.log(`[ChatMessages] - showModal : `, showModal.value)
+// ******************** //
+// FUNCTION DEFINITIONS //
+// ******************** //
+
+// ************* //
+// activateModal //
+// ************* //
+
+function activateModal(modalName: string): void {
+  activeModal.value = modalName
+  setTimeout(() => {
+    showModal.value = !showModal.value
+  }, 0)
 }
+
+// *********** //
+// getChannels //
+// *********** //
 
 const getChannels = (): Channel[] => {
   return props.listState === 'dms'
     ? channelStore.getDms()
-    : channelStore.getGroupChannels()
+    : channelStore.getGroups()
 }
+
+// ********************* //
+// VueJs LIFECYCLE HOOKS //
+// ********************* //
 
 onBeforeMount(() => {
   channels.value = getChannels()
-  console.log(
-    `[ChatMessages] - selectedChannel : `,
-    channelStore.selectedChannel
-  )
 })
 
 onBeforeRouteUpdate((to, from) => {
