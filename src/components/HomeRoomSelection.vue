@@ -1,22 +1,21 @@
 <template>
-  <div class="border-black border-2 my-1 p-5">
+  <div class="p-5 my-1 border-2 border-black">
     <div class="flex items-center justify-between mb-2">
       <!-- TITLE -->
       <h2 class="text-2xl font-bold text-black">Watch a game</h2>
       <!-- RELOAD ROOMS BUTTON -->
-      <button @click="refetch()" class="neobrutalist-box p-2">Reload</button>
+      <button @click="fetchRooms()" class="p-2 neobrutalist-box">Reload</button>
     </div>
     <div class="flex flex-wrap gap-2">
-      <div v-if="isError" class="text-red-500">{{ error }}</div>
-      <div v-if="isLoading">Loading...</div>
-      <div v-else-if="rooms.length > 0" v-for="room in rooms.data" :key="room">
+      <div v-if="rooms === null">Loading...</div>
+      <div v-else-if="rooms.length > 0" v-for="room in rooms" :key="room">
         <router-link
           :to="`/room/${room.id}`"
           class="flex flex-col neobrutalist-box m-2.5 px-2 py-2">
           <span>{{ room.name }}</span>
 
           <span class="text-xs text-gray-400">
-            {{ room.players.length }} / {{ room.maxPlayers }}
+            {{ room.players.length }} / 2
           </span>
         </router-link>
       </div>
@@ -28,39 +27,24 @@
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
-
-import { useQuery } from '@tanstack/vue-query'
+import fetcher from '@/utils/fetcher'
+import { onMounted, ref, type Ref } from 'vue'
 
 // ******************** //
 // FUNCTION DEFINITIONS //
 // ******************** //
 
-async function getRooms() {
-  const res = await fetch('http://localhost:3000/api/games', {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    credentials: 'include'
+const rooms: Ref<null | any> = ref(null)
+
+function fetchRooms(): void {
+  void fetcher.get('/games').then((res) => {
+    rooms.value = res
   })
-  if (!res.ok) {
-    throw new Error(res.statusText)
-  }
-  return await res.json()
 }
-const {
-  isLoading,
-  isError,
-  data: rooms,
-  error,
-  refetch
-} = useQuery({
-  queryKey: ['rooms'],
-  queryFn: getRooms
+
+onMounted(() => {
+  fetchRooms()
 })
 
-console.log(rooms, isLoading, isError, error)
+console.log(rooms)
 </script>

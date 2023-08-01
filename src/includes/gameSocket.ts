@@ -2,6 +2,10 @@ import { Socket, io } from 'socket.io-client'
 import type { Room, Game } from '@/types'
 import { reactive } from 'vue'
 import { Vector3 } from 'three'
+import { useToast } from 'vue-toastification'
+import router from '@/router'
+
+const toast = useToast()
 
 export const socket: Socket = io('http://localhost:3001/game', {
   withCredentials: true,
@@ -13,12 +17,9 @@ export const room: Room = reactive({
   id: '',
   name: '',
   players: [],
-  observers: [],
-  invited: [],
   owner: null,
   isPrivate: false,
-  status: '',
-  maxPlayers: 0
+  status: ''
 })
 
 export const game: Game = reactive({
@@ -68,9 +69,21 @@ socket.on('disconnect', async () => {
   console.log('disconnected from the /game socket')
 })
 
-socket.on('error', (error) => {
-  console.error('error on the /game socket', error)
-})
+socket.on(
+  'error',
+  async ({
+    code,
+    type,
+    message
+  }: {
+    code: number
+    type: string
+    message: string
+  }) => {
+    toast.error(message)
+    await router.push({ name: 'home' })
+  }
+)
 
 socket.on('room:update', (data: Room) => {
   console.log(data)

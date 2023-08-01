@@ -3,7 +3,7 @@
     <h1 class="text-xl font-bold">{{ room.name }}</h1>
 
     <ul>
-      <li>{{ room.players.length }} / {{ room.maxPlayers }}</li>
+      <li>{{ room.players.length }} / 2</li>
       <li>
         <span>Status: </span>
         {{ room.status }}
@@ -13,7 +13,11 @@
           <label class="block mb-1 font-medium" for="private">
             Private game
           </label>
-          <input type="checkbox" name="private" @click="togglePrivacy" class="ml-4 rounded-none toggle"
+          <input
+            type="checkbox"
+            name="private"
+            @click="togglePrivacy"
+            class="ml-4 rounded-none toggle"
             :disabled="loggedUser?.id !== room.owner.id" />
         </div>
       </li>
