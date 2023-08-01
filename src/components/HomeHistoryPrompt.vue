@@ -1,10 +1,10 @@
 <template>
   <div class="border-black border-2 mt-1 p-5">
     <!-- TITLE -->
-    <h2 class="mb-8 font-bold text-2xl text-black">History</h2>
+    <h2 class="mb-8 font-bold text-xl sm:text-2xl text-black">History</h2>
     <p>
       <!-- TEXT -->
-      <span>{{ consoleText }}</span>
+      <span class="text-sm sm:text-base">{{ consoleText }}</span>
       <!-- PROMPT -->
       <span class="align-middle inline-block w-2 h-4 bg-black"></span>
     </p>

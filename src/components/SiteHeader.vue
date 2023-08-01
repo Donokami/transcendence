@@ -1,7 +1,7 @@
 <template>
   <div class="mx-auto w-full">
     <div
-      class="navbar max-w-screen-xl mx-auto p-0 items-stretch bg-base-100 text-black z-40">
+      class="navbar max-w-screen-xl mx-auto p-0 items-stretch bg-base-100 text-black z-40 px-1">
       <div
         class="navbar-start border-2 border-black border-r-0 flex-grow md:hidden">
         <div class="dropdown flex">
@@ -30,7 +30,7 @@
         </div>
       </div>
       <div
-        class="navbar-start border-black border-2 border-t-2 flex-grow hidden md:flex">
+        class="navbar-start border-black border-y-2 border-l-2 flex-grow hidden md:flex">
         <ul class="menu menu-horizontal p-0 h-full">
           <li>
             <router-link
@@ -58,7 +58,7 @@
           </li>
         </ul>
       </div>
-      <div class="navbar-center border-y-2 border-r-2 border-black">
+      <div class="navbar-center border-y-2 border-x-2 border-black">
         <a class="p-2 font-bold text-xl">__TRANSCENDENCE__</a>
       </div>
       <div class="navbar-end items-stretch border-y-2 border-black flex-grow">

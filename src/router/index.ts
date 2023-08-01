@@ -10,7 +10,6 @@ import NotFoundView from '../views/NotFoundView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import StatsView from '../views/StatsView.vue'
 import RoomView from '../views/RoomView.vue'
-import CreateRoomView from '../views/CreateRoomView.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -47,11 +46,6 @@ const routes: RouteRecordRaw[] = [
     component: ProfileView,
     path: '/profile/:id',
     name: 'profile'
-  },
-  {
-    component: CreateRoomView,
-    path: '/room/create',
-    name: 'create-room'
   },
   {
     component: RoomView,

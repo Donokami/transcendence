@@ -7,7 +7,7 @@
       <profile-stats-card></profile-stats-card>
 
       <!-- CHANGE USERNAME -->
-      <div class="p-4">
+      <div class="my-4">
         <!-- BUTTON -->
         <label
           for="my-modal-4"
@@ -25,7 +25,7 @@
       </div>
 
       <!-- 2FA  -->
-      <div class="p-4">
+      <div class="mt-4">
         <!-- TOGGLER-->
         <span class="text-xl stat-value">{{ authMessage }}</span>
         <span class="px-6 align-middle">

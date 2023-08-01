@@ -74,6 +74,7 @@ class Fetcher {
     body: any = {},
     config: RequestInit = {}
   ): Promise<any> {
+    console.log(body)
     const res = await fetch(this.baseURL + url, {
       method: 'PATCH',
       credentials: 'include',
@@ -83,6 +84,9 @@ class Fetcher {
       body: JSON.stringify(body),
       ...config
     })
+
+    console.log(`[Fetcher] - patch : `, res)
+
     if (!res.ok) {
       const error = await res.json()
       throw new HttpError(error.message, res.status)

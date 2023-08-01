@@ -44,7 +44,6 @@ const alertMsg = ref('Your account is being created...')
 const alertColor = ref('bg-blue-500')
 const inSubmission = ref(false)
 const showAlert = ref(false)
-
 const toast = useToast()
 
 const userStore = useUserStore();

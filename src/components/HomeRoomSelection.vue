@@ -1,12 +1,14 @@
 <template>
   <div class="p-5 my-1 border-2 border-black">
-    <div class="flex items-center justify-between mb-2">
+    <div class="flex items-center justify-between">
       <!-- TITLE -->
-      <h2 class="text-2xl font-bold text-black">Watch a game</h2>
+      <h2 class="text-xl sm:text-2xl font-bold text-black">Watch a game</h2>
       <!-- RELOAD ROOMS BUTTON -->
-      <button @click="fetchRooms()" class="p-2 neobrutalist-box">Reload</button>
+      <button @click="fetchRooms()" class="p-2 neobrutalist-box">
+        <span class="text-base sm:text-lg">Reload</span>
+      </button>
     </div>
-    <div class="flex flex-wrap gap-2">
+    <div class="flex flex-wrap gap-2 mt-8">
       <div v-if="rooms === null">Loading...</div>
       <div v-else-if="rooms.length > 0" v-for="room in rooms" :key="room">
         <router-link

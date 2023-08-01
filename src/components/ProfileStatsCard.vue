@@ -1,7 +1,7 @@
 <template>
-  <div class="rounded-none stats">
+  <div class="sm:-ml-4 rounded-none stats stats-vertical lg:stats-horizontal">
     <!-- USER STATUS AND PROFILE PICTURE -->
-    <div class="border-r-2 border-black stat">
+    <div class="sm:border-r-2 border-black -ml-6 stat sm:-ml-2">
       <div class="stat-figure text-secondary">
         <div class="avatar online">
           <input
@@ -29,7 +29,7 @@
       </div>
     </div>
     <!-- USER RANK -->
-    <div class="border-none stat">
+    <div class="sm:border-none stat !border-t-2 !border-black -ml-6 sm:-ml-0">
       <div class="stat-figure text-primary">
         <iconify-icon
           class="w-10 h-10"
@@ -42,7 +42,7 @@
       </div>
     </div>
     <!-- USER WIN RATE -->
-    <div class="stat border-black !border-l-2">
+    <div class="stat border-black -ml-6 sm:-ml-0 !border-t-2 sm:!border-t-0 sm:!border-l-2">
       <div class="stat-figure text-primary">
         <iconify-icon
           class="w-10 h-10"
@@ -56,7 +56,7 @@
     </div>
     <!-- USER FRIENDS & FRIEND REQUESTS -->
     <div
-      class="stat border-black !border-l-2"
+      class="stat border-black -ml-6 sm:-ml-0 sm:!border-l-2"
       v-if="loggedUser && observedUser && observedUser.id !== loggedUser.id">
       <!-- SEND REQUEST -->
       <div
@@ -126,9 +126,9 @@
     </div>
     <!-- FRIEND REQUEST NOTIFICATION -->
     <div
-      class="stat border-black !border-l-2"
+      class="stat border-black -ml-6 sm:-ml-0 !border-t-2 sm:!border-t-0 sm:!border-l-2 "
       v-if="loggedUser && observedUser && observedUser.id === loggedUser.id">
-      <div class="stat-figure text-primary" v-if="nFriendRequests > 0">
+      <div class="stat-figure text-primary " v-if="nFriendRequests > 0">
         <div class="indicator">
           <label
             for="my-modal-3"

@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4" v-if="room.name">
+  <div class="p-4 bg-red-300" v-if="room.name">
     <h1 class="text-xl font-bold">{{ room.name }}</h1>
 
     <ul>
