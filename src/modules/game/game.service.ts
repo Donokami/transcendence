@@ -1,19 +1,24 @@
-import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common'
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  forwardRef
+} from '@nestjs/common'
 
 import { UsersService } from '@/modules/users/users.service'
 
-import { type CreateGameDto } from './dtos/create-game-dto'
 import { type UpdateGameDto } from './dtos/update-game-dto'
 import { GameGateway } from './game.gateway'
 
 import { Room, type RoomObject } from './room'
-import { PaginateQuery, Paginated } from 'nestjs-paginate'
-import { paginate } from '@/core/utils/pagination'
 import {
   UserNotFound,
   RoomAlreadyExists,
   RoomNotFound,
-  UserNotInRoom
+  UserNotInRoom,
+  UserAlreadyInARoom,
+  RoomNameCannotBeEmpty
 } from '@/core/exceptions'
 
 @Injectable()
@@ -32,39 +37,38 @@ export class GameService {
     return this.rooms.find((room) => room.get().id === id)
   }
 
-  findAll(query: PaginateQuery): Promise<Paginated<RoomObject>> {
-    return paginate(
-      query,
-      this.rooms.map((room) => room.get())
-    )
+  findAll(): RoomObject[] {
+    // return paginate(
+    //   query,
+    //   this.rooms.map((room) => room.get())
+    // )
+    return this.rooms.map((room) => room.get())
   }
 
   // todo: create a function to retrieve all rooms that are not full and another public
 
-  public async create(createGameDto: CreateGameDto): Promise<RoomObject> {
-    const user = await this.userService.findOneById(
-      createGameDto.owner as unknown as string
-    )
+  public async create(ownerId: string): Promise<RoomObject> {
+    const owner = await this.userService.findOneById(ownerId)
 
-    if (!user) {
-      this.logger.warn(`User ${createGameDto.owner} not found`)
+    if (!owner) {
       throw new UserNotFound()
     }
 
-    if (
-      this.rooms.find(
-        (g) =>
-          g.get().name === (createGameDto.name || user.username + "'s room")
-      )
-    ) {
+    const roomName = owner.username + "'s room"
+
+    if (this.rooms.find((g) => g.get().name === roomName)) {
       throw new RoomAlreadyExists()
+    }
+
+    if (this.rooms.find((r) => r.players.find((p) => p.id === owner.id))) {
+      throw new UserAlreadyInARoom()
     }
 
     const room = new Room(
       {
-        name: createGameDto.name,
-        owner: user,
-        isPrivate: createGameDto.isPrivate
+        name: roomName,
+        owner: owner,
+        isPrivate: false
       },
       this.gameGateway
     )
@@ -82,6 +86,14 @@ export class GameService {
     }
 
     const updatedGame: RoomObject = { ...room.get(), ...updateGameDto }
+
+    if (updatedGame.name === '') {
+      throw new RoomNameCannotBeEmpty()
+    }
+
+    if (updatedGame.isPrivate === null || updatedGame.isPrivate === undefined) {
+      throw new BadRequestException('invalid isPrivate parameter')
+    }
 
     room.update(updatedGame)
 
@@ -104,7 +116,11 @@ export class GameService {
     return room.get()
   }
 
-  public async join(id: string, userId: string): Promise<RoomObject> {
+  public async join(
+    id: string,
+    userId: string,
+    socketId: string
+  ): Promise<RoomObject> {
     const room = this.findOne(id)
     const user = await this.userService.findOneById(userId)
 
@@ -117,7 +133,11 @@ export class GameService {
       throw new UserNotFound()
     }
 
-    room.join(user)
+    if (this.rooms.find((r) => r.players.find((p) => p.id === user.id))) {
+      throw new UserAlreadyInARoom()
+    }
+
+    room.join(user, socketId)
 
     this.logger.verbose(`Joining user ${userId} to room ${id}`)
 
@@ -127,16 +147,12 @@ export class GameService {
   }
 
   // todo: rewrite theses functions
-  public async kick(id: string, userId: string): Promise<RoomObject> {
-    const room = this.leave(id, userId)
+  public async kick(id: string, userId: string): Promise<void> {
+    this.leave(id, userId)
 
     this.logger.verbose(`Kicking user ${userId} from room ${id}`)
 
-    this.gameGateway.server.to(id).emit('room:kick', {
-      userId
-    })
-
-    return room
+    return
   }
 
   public async leaveAll(userId: string) {
@@ -146,8 +162,8 @@ export class GameService {
     })
   }
 
-  // todo: crappy code, to clean up and secure
-  public async leave(id: string, userId: string): Promise<RoomObject> {
+  // todo: maybe not that crappy but not sure about that
+  public async leave(id: string, userId: string): Promise<void> {
     const room = this.findOne(id)
     const user = await this.userService.findOneById(userId)
 
@@ -176,15 +192,24 @@ export class GameService {
           id: room.id
         })
 
-        return room.get()
+        return
       }, 5000)
     }
 
     this.gameGateway.server.to(room.id).emit('room:update', room.get())
 
     this.logger.verbose(`Removing user ${userId} from room ${id}`)
+  }
 
-    return room.get()
+  public async socketLeave(socketId: string): Promise<void> {
+    const connectedRooms = this.rooms.filter(
+      (r) => r.connectedSockets.get(socketId) !== undefined
+    )
+    if (connectedRooms.length === 0) return
+    connectedRooms.forEach((room) => {
+      this.leave(room.id, room.connectedSockets.get(socketId))
+      room.connectedSockets.delete(socketId)
+    })
   }
 
   public async updatePos(

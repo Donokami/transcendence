@@ -9,22 +9,7 @@ export class UpdateGameDto {
   name?: string
 
   @ApiProperty()
-  @IsString()
-  @IsOptional()
-  owner?: User // todo: change to string
-
-  @ApiProperty()
   @IsBoolean()
   @IsOptional()
   isPrivate?: boolean
-
-  @ApiProperty()
-  @IsNumber()
-  @IsOptional()
-  users?: User[] // todo: change to string[]
-
-  @ApiProperty()
-  @IsNumber()
-  @IsOptional()
-  maxMembers?: number
 }

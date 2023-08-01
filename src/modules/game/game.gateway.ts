@@ -14,7 +14,11 @@ import { IUserSocket } from '@/core/types/socket'
 
 import { GameService } from './game.service'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
-import { RoomNotFound } from '@/core/exceptions/game'
+import {
+  GameAlreadyStarted,
+  RoomNotFound,
+  UserNotOwner
+} from '@/core/exceptions/game'
 
 @WebSocketGateway({
   namespace: '/game',
@@ -39,9 +43,8 @@ export class GameGateway {
   handleDisconnect(client: IUserSocket) {
     // const roomId = client.handshake.query.roomId as string
     // this.gameService.leave(roomId, client.request.user.id).catch((err) => {})
-    this.gameService.leaveAll(client.request.user.id)
+    this.gameService.socketLeave(client.id)
     this.logger.verbose(`Client ${client.id} disconnected`)
-    client.emit('disconnection', 'Successfully disconnected from game server')
   }
 
   @SubscribeMessage('room:join')
@@ -55,7 +58,7 @@ export class GameGateway {
       throw new RoomNotFound()
     }
 
-    await this.gameService.join(roomId, client.request.user.id)
+    await this.gameService.join(roomId, client.request.user.id, client.id)
 
     client.join(roomId)
 
@@ -80,10 +83,10 @@ export class GameGateway {
     const room = this.gameService.findOne(roomId)
 
     if (!room) throw new RoomNotFound()
-    // todo: check if the room is full and not started
+    if (room.get().status === 'ingame') throw new GameAlreadyStarted()
 
     if (room.get().owner.id !== client.request.user.id) {
-      return
+      throw new UserNotOwner()
     }
 
     room.startGame()

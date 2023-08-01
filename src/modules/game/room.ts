@@ -1,11 +1,9 @@
-import { MAX_PLAYERS } from '@/core/constants'
 import { Logger } from '@nestjs/common'
 import { randomUUID } from 'crypto'
 import { User } from '../users/user.entity'
 import { GameGateway } from './game.gateway'
 import { Game } from './game.engine'
 import {
-  RoomNeedsAnOwner,
   UserAlreadyInRoom,
   UserAlreadyInvited,
   UserNotInvited
@@ -27,12 +25,9 @@ export interface RoomObject {
   id: string
   name: string
   players: User[]
-  observers: User[]
-  invited: User[]
   owner: User
   isPrivate: boolean
   status: RoomStatus
-  maxPlayers: number
   gameState?: Game
 }
 
@@ -40,23 +35,17 @@ export class Room implements RoomObject {
   id = ''
   name = ''
   players = []
-  observers = []
-  invited = []
   owner = null
   isPrivate = false
   status = RoomStatus.OPEN
-  maxPlayers = MAX_PLAYERS
   gameState = null
+  public connectedSockets: Map<string, string> = new Map()
 
   private readonly logger = new Logger(Room.name)
   constructor(
     { name, owner, isPrivate }: RoomOpts,
     private readonly gameGateway: GameGateway
   ) {
-    if (!owner) {
-      throw new RoomNeedsAnOwner()
-    }
-
     this.id = randomUUID()
 
     this.logger.log(`Creating room ${this.id}`)
@@ -73,33 +62,21 @@ export class Room implements RoomObject {
       id: this.id,
       name: this.name,
       players: this.players,
-      observers: this.observers,
-      invited: this.invited,
       owner: this.owner,
       isPrivate: this.isPrivate,
-      status: this.status,
-      maxPlayers: this.maxPlayers
+      status: this.status
     }
   }
 
-  public join(user: User) {
-    if (this.players.find((u) => u.id === user.id)) {
-      throw new UserNotInvited()
-    }
-
-    if (this.isPrivate && !this.invited.find((u) => u.id === user.id)) {
-      throw new UserNotInvited()
-    }
-
-    if (this.players.length < MAX_PLAYERS && this.status === RoomStatus.OPEN) {
+  public join(user: User, socketId: string) {
+    if (this.players.length < 2 && this.status === RoomStatus.OPEN) {
       this.players.push(user)
 
-      if (this.players.length === MAX_PLAYERS) {
+      if (this.players.length === 2) {
         this.status = RoomStatus.FULL
       }
-    } else {
-      this.observers.push(user)
     }
+    this.connectedSockets.set(socketId, user.id)
   }
 
   public leave(user: User) {
@@ -112,22 +89,7 @@ export class Room implements RoomObject {
       if (this.status === RoomStatus.INGAME) {
         this.gameState.userSurrended(user.id)
       }
-    } else {
-      this.observers = this.observers.filter((u) => u !== user)
     }
-  }
-
-  public invite(user: User) {
-    if (this.invited.find((u) => u.id === user.id)) {
-      throw new UserAlreadyInvited()
-    }
-
-    if (this.players.find((u) => u.id === user.id)) {
-      // todo: to test
-      throw new UserAlreadyInRoom()
-    }
-
-    this.invited.push(user)
   }
 
   public update(updatedRoom: RoomObject) {
@@ -144,9 +106,5 @@ export class Room implements RoomObject {
 
     this.gameState = new Game(this, this.gameGateway)
     this.gameState.startGame()
-  }
-
-  public isFull() {
-    return this.players.length === MAX_PLAYERS
   }
 }

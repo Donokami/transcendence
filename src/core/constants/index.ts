@@ -1,2 +1,1 @@
-export * from './database.errors';
-export const MAX_PLAYERS = 2;
+export * from './database.errors'

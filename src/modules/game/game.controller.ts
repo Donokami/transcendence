@@ -1,7 +1,6 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
   Patch,
@@ -17,9 +16,7 @@ import { IRequestWithUser } from '@/core/types/request-with-user'
 import { AuthGuard } from '@/core/guards/auth.guard'
 import { OwnershipGuard } from './guards/ownership.guard'
 
-import { CreateGameDto } from './dtos/create-game-dto'
 import { UpdateGameDto } from './dtos/update-game-dto'
-import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate'
 import { RoomObject } from './room'
 import { ApiOperation } from '@nestjs/swagger'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
@@ -57,8 +54,8 @@ export class GameController {
     description: 'Get all games',
     tags: ['game']
   })
-  findAll(@Paginate() query: PaginateQuery): Promise<Paginated<RoomObject>> {
-    return this.gameService.findAll(query)
+  findAll() {
+    return this.gameService.findAll().filter((room) => !room.isPrivate)
   }
 
   @Post()
@@ -69,12 +66,8 @@ export class GameController {
     description: 'Create a game',
     tags: ['game']
   })
-  create(
-    @Req() req: IRequestWithUser,
-    @Body() createGameDto: CreateGameDto
-  ): Promise<RoomObject> {
-    createGameDto.owner = req.session.userId
-    return this.gameService.create(createGameDto)
+  create(@Req() req: IRequestWithUser): Promise<RoomObject> {
+    return this.gameService.create(req.session.userId)
   }
 
   @Patch(':id')
@@ -92,16 +85,16 @@ export class GameController {
     // this.gameGateway.server.to(room.id).emit('room:remove', room.get())
   }
 
-  @Delete(':id')
-  @UseGuards(AuthGuard)
-  @UseGuards(OwnershipGuard)
-  @ApiOperation({
-    summary: 'Delete a game with given id',
-    operationId: 'remove',
-    description: 'Delete a game with given id',
-    tags: ['game']
-  })
-  async remove(@Param('id') id: string) {
-    return await this.gameService.delete(id)
-  }
+  //   @Delete(':id')
+  //   @UseGuards(AuthGuard)
+  //   @UseGuards(OwnershipGuard)
+  //   @ApiOperation({
+  //     summary: 'Delete a game with given id',
+  //     operationId: 'remove',
+  //     description: 'Delete a game with given id',
+  //     tags: ['game']
+  //   })
+  //   async remove(@Param('id') id: string) {
+  //     return await this.gameService.delete(id)
+  //   }
 }
