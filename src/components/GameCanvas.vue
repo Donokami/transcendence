@@ -62,7 +62,7 @@
           <TresMesh ref="paddle1Ref">
             <TresBoxGeometry
               :args="[
-                gameMetrics.paddleRatio * gameMetrics.fieldWidth,
+                room.paddleRatio * gameMetrics.fieldWidth,
                 gameMetrics.paddleHeight,
                 gameMetrics.paddleDepth
               ]" />
@@ -71,7 +71,7 @@
           <TresMesh ref="paddle2Ref">
             <TresBoxGeometry
               :args="[
-                gameMetrics.paddleRatio * gameMetrics.fieldWidth,
+                room.paddleRatio * gameMetrics.fieldWidth,
                 gameMetrics.paddleHeight,
                 gameMetrics.paddleDepth
               ]" />
@@ -173,7 +173,6 @@ const gameMetrics: Metrics = {
   fieldWidth: 30,
   fieldHeight: 1,
   fieldDepth: 60,
-  paddleRatio: 0.3,
   paddleHeight: 1,
   paddleDepth: 1,
   ballRadius: 0.8,

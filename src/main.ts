@@ -1,14 +1,18 @@
+import { HttpError } from './utils/fetcher'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { Icon } from '@iconify/vue'
-import Toast, { type PluginOptions, POSITION } from 'vue-toastification'
+import Toast, {
+  type PluginOptions,
+  POSITION,
+  useToast
+} from 'vue-toastification'
 import 'vue-toastification/dist/index.css' // todo: remove this import if using custom css file
 
 import App from './App.vue'
 import router from './router'
 import VeeValidatePlugin from './includes/validation.js'
 import Tres from '@tresjs/core'
-import { VueQueryPlugin } from '@tanstack/vue-query'
 
 import './assets/base.css'
 
@@ -19,7 +23,6 @@ app.use(createPinia())
 app.use(router)
 app.use(VeeValidatePlugin)
 app.use(Tres)
-app.use(VueQueryPlugin)
 
 app.component('iconify-icon', Icon)
 
@@ -28,5 +31,13 @@ const options: PluginOptions = {
 }
 
 app.use(Toast, options)
+
+app.config.errorHandler = (err, vm, info) => {
+  if (err instanceof HttpError) {
+    useToast().error(err.message)
+  } else {
+    throw err
+  }
+}
 
 app.mount('#app')

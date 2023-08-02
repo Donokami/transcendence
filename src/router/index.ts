@@ -3,7 +3,6 @@ import type { RouteRecordRaw } from 'vue-router'
 import { useUserStore } from '../stores/UserStore'
 import AuthView from '../views/AuthView.vue'
 import ChatView from '../views/ChatView.vue'
-import GameView from '../views/GameView.vue'
 import HomeView from '../views/HomeView.vue'
 import MfaView from '../views/MfaView.vue'
 import NotFoundView from '../views/NotFoundView.vue'
@@ -31,11 +30,6 @@ const routes: RouteRecordRaw[] = [
     component: ChatView,
     path: '/chat:catchAll(.*)',
     name: 'chat'
-  },
-  {
-    component: GameView,
-    path: '/game',
-    name: 'game'
   },
   {
     component: StatsView,

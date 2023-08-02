@@ -4,7 +4,6 @@ export interface Metrics {
   fieldWidth: number
   fieldHeight: number
   fieldDepth: number
-  paddleRatio: number
   paddleHeight: number
   paddleDepth: number
   ballRadius: number

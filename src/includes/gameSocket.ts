@@ -19,6 +19,9 @@ export const room: Room = reactive({
   players: [],
   owner: null,
   isPrivate: false,
+  paddleRatio: 0.3,
+  ballSpeed: 1,
+  gameDuration: 1.5,
   status: ''
 })
 
@@ -86,7 +89,6 @@ socket.on(
 )
 
 socket.on('room:update', (data: Room) => {
-  console.log(data)
   Object.assign(room, data)
 })
 

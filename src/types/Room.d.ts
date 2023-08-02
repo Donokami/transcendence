@@ -12,5 +12,8 @@ export interface Room {
   players: User[]
   owner: User
   isPrivate: boolean
+  paddleRatio: number
+  gameDuration: number
+  ballSpeed: number
   status: RoomStatus
 }
