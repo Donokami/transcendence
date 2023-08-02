@@ -3,11 +3,6 @@ import { randomUUID } from 'crypto'
 import { User } from '../users/user.entity'
 import { GameGateway } from './game.gateway'
 import { Game } from './game.engine'
-import {
-  UserAlreadyInRoom,
-  UserAlreadyInvited,
-  UserNotInvited
-} from '@/core/exceptions'
 
 export enum RoomStatus {
   OPEN = 'open',
@@ -27,8 +22,11 @@ export interface RoomObject {
   players: User[]
   owner: User
   isPrivate: boolean
+  paddleRatio: number
+  gameDuration: number
+  ballSpeed: number
   status: RoomStatus
-  gameState?: Game
+  gameState?: Game | null
 }
 
 export class Room implements RoomObject {
@@ -37,8 +35,11 @@ export class Room implements RoomObject {
   players = []
   owner = null
   isPrivate = false
+  paddleRatio = 0.3
+  ballSpeed = 1
+  gameDuration = 1.5
   status = RoomStatus.OPEN
-  gameState = null
+  gameState: Game | null = null
   public connectedSockets: Map<string, string> = new Map()
 
   private readonly logger = new Logger(Room.name)
@@ -64,6 +65,9 @@ export class Room implements RoomObject {
       players: this.players,
       owner: this.owner,
       isPrivate: this.isPrivate,
+      paddleRatio: this.paddleRatio,
+      ballSpeed: this.ballSpeed,
+      gameDuration: this.gameDuration,
       status: this.status
     }
   }
@@ -100,11 +104,17 @@ export class Room implements RoomObject {
   }
 
   public startGame() {
-    console.log('Starting game')
+    this.logger.log('Starting game')
 
     this.update({ ...this, status: RoomStatus.INGAME })
 
-    this.gameState = new Game(this, this.gameGateway)
+    this.gameState = new Game(
+      this,
+      this.gameGateway,
+      this.paddleRatio,
+      this.gameDuration,
+      this.ballSpeed
+    )
     this.gameState.startGame()
   }
 }

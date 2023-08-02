@@ -18,7 +18,8 @@ import {
   RoomNotFound,
   UserNotInRoom,
   UserAlreadyInARoom,
-  RoomNameCannotBeEmpty
+  RoomNameCannotBeEmpty,
+  GameNotStarted
 } from '@/core/exceptions'
 
 @Injectable()
@@ -92,7 +93,10 @@ export class GameService {
     return room.get()
   }
 
-  update(id: string, updateGameDto: UpdateGameDto): RoomObject {
+  public async update(
+    id: string,
+    updateGameDto: UpdateGameDto
+  ): Promise<RoomObject> {
     const room = this.findOne(id)
 
     if (!room) {
@@ -237,6 +241,7 @@ export class GameService {
     if (!room) throw new RoomNotFound()
     if (!user) throw new UserNotFound()
     if (!room.players.find((p) => p.id === user.id)) throw new UserNotInRoom()
+    if (!room.gameState) throw new GameNotStarted()
 
     room.gameState.updatePaddlePosition(posX, user.id)
   }

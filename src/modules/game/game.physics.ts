@@ -1,5 +1,5 @@
 import { Server } from 'socket.io'
-import { Object3D, Vector3 } from 'three'
+import { Object3D } from 'three'
 import { type gameState } from './game.engine'
 import { Logger } from '@nestjs/common'
 
@@ -22,7 +22,8 @@ export type Metrics = {
   paddleHeight: number
   paddleDepth: number
   ballRadius: number
-  timeout: number
+  ballSpeed: number
+  gameDuration: number
   tps: number
 }
 
@@ -79,7 +80,7 @@ export class PhysicsEngine {
     ball.velocity = {
       x: 0,
       y: 0,
-      z: direction
+      z: direction * this.metrics.ballSpeed
     }
     ball.stopped = false
   }

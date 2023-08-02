@@ -14,7 +14,8 @@ const metrics: Metrics = {
   paddleHeight: 1,
   paddleDepth: 1,
   ballRadius: 0.8,
-  timeout: 30000,
+  ballSpeed: 1,
+  gameDuration: 30000,
   tps: 20
 }
 
@@ -39,8 +40,17 @@ export class Game {
 
   constructor(
     private readonly roomState: Room,
-    private readonly gameGateway: GameGateway
+    private readonly gameGateway: GameGateway,
+    private readonly paddleRatio: number,
+    private readonly gameDuration: number,
+    private readonly ballSpeed: number
   ) {
+    this.metrics.paddleRatio = this.paddleRatio
+    this.metrics.gameDuration = this.gameDuration * 60000
+    this.metrics.ballSpeed = this.ballSpeed
+
+    this.logger.log(this.metrics)
+
     const additionalPlayer =
       this.roomState.players.length > 1
         ? [
@@ -75,7 +85,7 @@ export class Game {
 
   private async gameLoop() {
     const startTime = (this.gameState.startTime = Date.now())
-    this.gameState.endTime = startTime + this.metrics.timeout
+    this.gameState.endTime = startTime + this.metrics.gameDuration
 
     while (Date.now() < this.gameState.endTime) {
       const deltaStart = Date.now()
@@ -144,13 +154,13 @@ export class Game {
     paddle.position.lerpVectors(
       new Vector3(
         -this.metrics.fieldWidth / 2 +
-          (this.metrics.paddleRatio * this.metrics.fieldWidth) / 2,
+          (this.paddleRatio * this.metrics.fieldWidth) / 2,
         paddle.position.y,
         paddle.position.z
       ),
       new Vector3(
         this.metrics.fieldWidth / 2 -
-          (this.metrics.paddleRatio * this.metrics.fieldWidth) / 2,
+          (this.paddleRatio * this.metrics.fieldWidth) / 2,
         paddle.position.y,
         paddle.position.z
       ),

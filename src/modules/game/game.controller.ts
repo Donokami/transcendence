@@ -25,7 +25,7 @@ import { RoomNotFound } from '@/core/exceptions/game'
 @Controller('games')
 @UseFilters(new GlobalExceptionFilter())
 export class GameController {
-  constructor(private readonly gameService: GameService) { }
+  constructor(private readonly gameService: GameService) {}
 
   @Get(':id')
   @UseGuards(AuthGuard)
@@ -66,7 +66,7 @@ export class GameController {
     description: 'Join the matchmaking queue',
     tags: ['game']
   })
-  joinQueue(@Req() req: IRequestWithUser,): Promise<RoomObject> {
+  joinQueue(@Req() req: IRequestWithUser): Promise<RoomObject> {
     return this.gameService.joinQueue(req.session.userId)
   }
 
@@ -92,9 +92,7 @@ export class GameController {
     tags: ['game']
   })
   async update(@Param('id') id: string, @Body() updateGameDto: UpdateGameDto) {
-    this.gameService.update(id, updateGameDto)
-
-    // this.gameGateway.server.to(room.id).emit('room:remove', room.get())
+    return this.gameService.update(id, updateGameDto)
   }
 
   //   @Delete(':id')

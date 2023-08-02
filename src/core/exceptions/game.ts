@@ -32,12 +32,6 @@ export class UserAlreadyInARoom extends HttpException {
   }
 }
 
-export class UserAlreadyInvited extends HttpException {
-  constructor() {
-    super('User already invited', HttpStatus.BAD_REQUEST)
-  }
-}
-
 export class RoomIsFull extends HttpException {
   constructor() {
     super('This room is full', HttpStatus.BAD_REQUEST)
@@ -47,12 +41,6 @@ export class RoomIsFull extends HttpException {
 export class RoomIsPrivate extends HttpException {
   constructor() {
     super('This room is private', HttpStatus.BAD_REQUEST)
-  }
-}
-
-export class UserNotInvited extends HttpException {
-  constructor() {
-    super('User not invited', HttpStatus.BAD_REQUEST)
   }
 }
 
@@ -71,5 +59,11 @@ export class UserNotOwner extends HttpException {
 export class GameAlreadyStarted extends HttpException {
   constructor() {
     super('The game already started', HttpStatus.FORBIDDEN)
+  }
+}
+
+export class GameNotStarted extends HttpException {
+  constructor() {
+    super("The game hasn't started. Wait before playing", HttpStatus.FORBIDDEN)
   }
 }
