@@ -17,13 +17,13 @@
         <h2 class="text-2xl font-bold text-black">
           {{ channelStore.getChannel(selectedChannel)?.name }}
         </h2>
-        <router-link
+        <button
           v-if="channelStore.getChannel(selectedChannel)?.isDm === true"
-          to="/room/create"
+          @click="createGame"
           class="neobrutalist-box max-w-sm flex px-2">
           <iconify-icon icon="tabler:plus" class="mr-2"></iconify-icon>
           <span>Invite to a game</span>
-        </router-link>
+        </button>
         <chat-drawer v-else></chat-drawer>
       </div>
       <!-- CHAT BOX -->
@@ -53,7 +53,7 @@ import {
 } from 'vue-router'
 
 import { storeToRefs } from 'pinia'
-import InfiniteLoading from 'v3-infinite-loading'
+// import InfiniteLoading from 'v3-infinite-loading'
 
 import { chatSocket } from '@/includes/chatSocket'
 
@@ -64,7 +64,8 @@ import ChatBox from '@/components/ChatBox.vue'
 import ChatDrawer from '@/components/ChatDrawer.vue'
 import ChatInput from '@/components/ChatInput.vue'
 
-import type { Message } from '@/types'
+import type { Message, Room } from '@/types'
+import { useFetcher, fetcher } from '@/utils/fetcher'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -75,7 +76,6 @@ const chatbox = ref<HTMLElement | null>(null)
 const listState = ref('dms')
 const router = useRouter()
 const route = useRoute()
-const fetchingMessages = ref(false)
 
 const { selectedChannel, channelsList } = storeToRefs(channelStore)
 
@@ -86,6 +86,18 @@ const { selectedChannel, channelsList } = storeToRefs(channelStore)
 function scrollToBottom(): void {
   if (chatbox.value != null)
     chatbox.value.scrollTop = chatbox.value.scrollHeight
+}
+
+function createGame(): void {
+  useFetcher({
+    queryFn: fetcher.post('/games'),
+    onSuccess: async (data: Room) => {
+      await router.push(`/room/${data.id}`)
+      await channelStore.sendMessage(
+        `${import.meta.env.VITE_APP_URL + '/room/' + data.id}`
+      )
+    }
+  })
 }
 
 // ****** //

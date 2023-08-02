@@ -25,7 +25,12 @@
 </template>
 
 <script setup lang="ts">
-import { type Ref, nextTick, onMounted, ref } from 'vue'
+// ******* //
+// IMPORTS //
+// ******* //
+
+import { nextTick, onMounted, ref, type Ref } from 'vue'
+
 import { useChannelStore } from '@/stores/ChannelStore.js'
 
 const channelStore = useChannelStore()

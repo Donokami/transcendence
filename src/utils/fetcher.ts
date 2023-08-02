@@ -106,7 +106,7 @@ export function useFetcher<T>({
   onSuccess
 }: {
   queryFn: Promise<any>
-  onSuccess?: (data: T) => void
+  onSuccess?: (data: T) => any
 }): FetcherResponse<T> {
   const data = ref<T | null>(null)
   const error = ref<HttpError | null>(null)

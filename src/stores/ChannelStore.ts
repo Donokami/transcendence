@@ -7,6 +7,24 @@ import fetcher, { useFetcher, type FetcherResponse } from '@/utils/fetcher'
 import type { Channel, Message, User } from '@/types'
 import type { Ref } from 'vue'
 
+function parseUrl(message: Message): {
+  roomId: string
+  url: URL
+} | null {
+  try {
+    const url = new URL(message.messageBody)
+
+    if (url.pathname.search('room/') > 0 && url.origin === import.meta.env.VITE_APP_URL) {
+      const roomId = url.pathname.split('/')[2]
+      if (!roomId) return null
+      return { roomId, url }
+    }
+    return null
+  } catch {
+    return null
+  }
+}
+
 export const useChannelStore = defineStore('channels', {
   state: () => {
     return {
@@ -20,9 +38,6 @@ export const useChannelStore = defineStore('channels', {
     // *************** //
 
     async createDmChannel(ownerId: string, receiverId: string): Promise<void> {
-      const { loggedUser } = useUserStore()
-      if (loggedUser == null) return
-
       const channelParam = {
         isDm: true,
         ownerId,
@@ -30,7 +45,7 @@ export const useChannelStore = defineStore('channels', {
       }
 
       const response: Channel = await fetcher.post(
-        `/channels/create/dm`,
+        `/channels/create`,
         channelParam
       )
       this.setChannelInfos(loggedUser, response)
@@ -65,7 +80,7 @@ export const useChannelStore = defineStore('channels', {
       }
 
       const response: Channel = await fetcher.post(
-        `/channels/create/group`,
+        `/channels/create`,
         channelParam
       )
 
@@ -150,6 +165,24 @@ export const useChannelStore = defineStore('channels', {
       return channels ?? []
     },
 
+    bindRoomToInvite(message: Message) {
+      const newMessage = message
+      try {
+        const urlRoom = parseUrl(message)
+        if (urlRoom !== null) {
+
+          console.log('url : ', urlRoom);
+
+          newMessage.room = useFetcher({
+            queryFn: fetcher.get(`/games/${urlRoom.roomId}`),
+          })
+        }
+      } catch (_) {
+        newMessage.room = null
+      }
+      return newMessage
+    },
+
     // ******************** //
     // fetchChannelMessages //
     // ******************** //
@@ -161,7 +194,14 @@ export const useChannelStore = defineStore('channels', {
         console.log('[Message Fetch] channel : ', channel)
         console.log('[Message Fetch] messages : ', messages)
 
-        if (channel != null) channel.messages = messages
+        const messageFetch = messages.map((message: Message) => {
+          return this.bindRoomToInvite(message)
+        })
+
+        console.log('[Message Fetch] messages after parsing : ', messageFetch);
+
+
+        if (channel != null) channel.messages = messageFetch
       } catch (error) {
         console.error(error)
       }
@@ -217,12 +257,12 @@ export const useChannelStore = defineStore('channels', {
       const channel = this.getChannel(channelId)
       if (channel != null) {
         // fix: this line make a bug when the channel messages are not loaded
-        channel.messages.push(message)
+        channel.messages.push(this.bindRoomToInvite(message))
       } else {
         const newChannel: Channel = await fetcher.get(`/channels/${channelId}`)
         if (newChannel !== null) {
           this.setChannelInfos(loggedUser, newChannel)
-          this.channelsList?.data?.push(newChannel as Channel)
+          this.channelsList?.data?.push(newChannel)
         }
       }
     }

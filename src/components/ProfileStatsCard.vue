@@ -3,7 +3,7 @@
     <!-- USER STATUS AND PROFILE PICTURE -->
     <div class="sm:border-r-2 border-black -ml-6 stat sm:-ml-2">
       <div class="stat-figure text-secondary">
-        <div class="avatar online">
+        <div class="avatar" :class="statusBadge()">
           <input
             type="file"
             ref="fileInput"
@@ -25,7 +25,9 @@
       </div>
       <div class="stat-title text-md">Status:</div>
       <div v-if="observedUser" class="stat-desc" :class="statusColor">
-        {{ observedUser.status }}
+        {{
+          observedUser.id === loggedUser?.id ? 'online' : observedUser.status
+        }}
       </div>
     </div>
     <!-- USER RANK -->
@@ -174,6 +176,7 @@ import ProfileFriendRequestModal from '@/components/ProfileFriendRequestModal.vu
 import { useToast } from 'vue-toastification'
 
 import type { User } from '@/types'
+import { appSocket } from '../includes/appSocket'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -217,10 +220,14 @@ const pictureSrc = computed(() => {
 })
 
 const statusColor = computed(() => {
-  if (observedUser.value !== null && observedUser.value.status === 'online')
+  if (observedUser.value === null || loggedUser.value === null)
+    return 'text-gray-500'
+  if (
+    observedUser.value.status === 'online' ||
+    observedUser.value.id === loggedUser.value.id
+  )
     return 'text-[#62D49A]'
-  if (observedUser.value !== null && observedUser.value.status === 'offline')
-    return 'text-red-500'
+  if (observedUser.value.status === 'offline') return 'text-red-500'
   return 'text-gray-500'
 })
 
@@ -395,6 +402,41 @@ const unblockUser = async (): Promise<void> => {
     toast.error('Failed to unblock user !')
   }
 }
+
+const statusBadge = (): string => {
+  console.log(`[ProfileStatsCard] - statusBadge : `, observedUser.value)
+
+  if (observedUser.value === null || loggedUser.value === null) return 'offline'
+  if (observedUser.value.id === loggedUser.value.id) return 'online'
+  switch (observedUser.value.status) {
+    case 'online':
+      return 'online'
+    case 'away':
+      return 'away'
+    case 'ingame':
+      return 'ingame'
+    default:
+      return 'offline'
+  }
+}
+
+appSocket.on('user:connect', (userId) => {
+  if (observedUser.value === null) return
+
+  if (userId === observedUser.value.id) {
+    observedUser.value.status = 'online'
+  }
+  console.log(`[ProfileStatsCard] - user:connect : `, observedUser.value)
+})
+
+appSocket.on('user:disconnect', (userId) => {
+  if (observedUser.value === null) return
+
+  if (userId === observedUser.value.id) {
+    observedUser.value.status = 'offline'
+  }
+  console.log(`[ProfileStatsCard] - user:disconnect : `, observedUser.value)
+})
 
 // ********************* //
 // VueJs LIFECYCLE HOOKS //
