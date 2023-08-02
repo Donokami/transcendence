@@ -1,5 +1,5 @@
 <template>
-  <div class="border-black border-2 mt-1 p-5">
+  <div class="border-black border-2 mt-2 sm:mt-4 mx-2 sm:mx-4 px-4 py-7 sm:p-11">
     <!-- TITLE -->
     <h2 class="mb-8 font-bold text-xl sm:text-2xl text-black">History</h2>
     <p>

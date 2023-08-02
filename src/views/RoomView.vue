@@ -7,10 +7,10 @@
     <div class="w-full mx-auto text-black">
         <template v-if="room">
 
-          <div class="flex flex-col min-h-[calc(100vh-156px)]" v-if="room.name"> 
+          <div class="flex flex-col min-h-[calc(100vh-164px)] sm:min-h-[calc(100vh-130px)]" v-if="room.name"> 
 
               <!-- SETTING MOBILE BUTTON -->
-              <div v-if="room.status !== 'ingame'" class="my-1 w-full sm:hidden">
+              <div v-if="room.status !== 'ingame'" class="mx-2 mt-2 sm:hidden">
                 <label for="my-drawer-4" class="py-2 w-full border-2 border-black hover:border-black hover:border-2 font-semibold flex justify-center gap-2 cursor-pointer btn lowercase">
                   <span class="capitalize">Room settings</span>
                   <iconify-icon
@@ -20,10 +20,10 @@
                 </label>
               </div>
 
-            <div class="w-full flex flex-grow my-1 border-2 border-black">
+            <div class="flex flex-grow border-2 m-2 sm:m-4 border-black">
 
               <!-- ROOM SUMMARY -->
-              <div v-if="room.status !== 'ingame'" class="flex flex-col flex-auto p-4"> 
+              <div v-if="room.status !== 'ingame'" class="flex flex-col flex-auto p-8"> 
                 <h1 class="text-xl sm:text-2xl font-semibold mx-auto">{{ room.name }}</h1>
                 <div class="w-full flex h-full"> 
 
@@ -76,7 +76,7 @@
               </div>
 
               <!-- SIDEBAR -->
-              <div v-if="room.status !== 'ingame'" class="p-4 border-l-2 border-black hidden sm:block">
+              <div v-if="room.status !== 'ingame'" class="p-8 border-l-2 border-black hidden sm:block">
 
                 <div class="font-semibold text-xl">
                   <h1>Room settings</h1>
@@ -140,7 +140,7 @@
     <!-- DRAWER -->
     <div class="drawer-side">
       <label for="my-drawer-4" class="drawer-overlay"></label>      
-      <div class="menu p-4 w-80 h-full bg-base-200 text-base-content">
+      <div class="menu p-8 w-80 h-full bg-base-200 text-base-content">
 
         <div class="font-semibold text-xl flex justify-between">
           <h1>Room settings</h1>

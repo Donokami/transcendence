@@ -1,15 +1,15 @@
 <template>
-  <div class="neobrutalist-box w-[30rem] px-6 py-6">
-    <h2 class="text-2xl font-bold mb-8 text-black">Sign In</h2>
+  <div class="neobrutalist-box sm:w-[30rem] p-7 sm:p-11">
+    <h2 class="text-xl sm:text-2xl font-bold mb-8 text-black">Sign In</h2>
     <Form ref="formRef" :validation-schema="signInSchema" @submit="submitForm">
       <div class="mb-6">
-        <label class="block font-medium mb-1" for="username">Username</label>
+        <label class="block font-medium mb-1 text-lg sm:text-xl" for="username">Username</label>
         <Field class="neobrutalist-input w-full text-black" name="username" type="username"
           placeholder="Enter your username" />
         <ErrorMessage class="font-normal text-base text-red-600" name="username" />
       </div>
       <div class="mb-6">
-        <label class="block font-medium mb-1" for="password">Password</label>
+        <label class="block font-medium mb-1 text-lg sm:text-xl" for="password">Password</label>
         <Field class="neobrutalist-input w-full text-black" name="password" type="password"
           placeholder="Enter your password" autocomplete />
         <ErrorMessage class="font-normal text-base text-red-600" name="password" />
@@ -17,7 +17,7 @@
       <div class="text-white text-center font-bold p-4 rounded mb-4" v-if="showAlert" :class="alertColor">
         {{ alertMsg }}
       </div>
-      <div class="flex items-center justify-between mt-8">
+      <div class="flex items-center justify-between mt-8 gap-2">
         <button class="btn border-zinc-900 bg-zinc-900 text-white" type="submit" :disabled="inSubmission">
           Sign in
         </button>

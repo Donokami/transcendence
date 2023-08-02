@@ -1,5 +1,5 @@
 <template>
-  <div class="p-5 my-1 border-2 border-black">
+  <div class="px-4 py-7 sm:p-11 my-2 mx-2 sm:m-4 border-2 border-black">
     <div class="flex items-center justify-between">
       <!-- TITLE -->
       <h2 class="text-xl sm:text-2xl font-bold text-black">Watch a game</h2>

@@ -1,6 +1,6 @@
 <template>
   <div class="w-full mx-auto text-black">
-    <div class="flex flex-col mt-1 p-5 border-2 border-black text-justify">
+    <div class="flex flex-col mt-2 sm:mt-4 mx-2 sm:mx-4 px-4 py-7 sm:p-11 border-2 border-black text-justify">
       <!-- TITLE -->
       <h2 class="mb-8 font-bold text-2xl text-black">Profile</h2>
       <!-- STATS CARD -->
@@ -43,7 +43,7 @@
     </div>
     <!-- STATS -->
     <div
-      class="relative items-center p-5 my-1 text-justify border-2 border-black">
+      class="relative items-center px-4 py-7 sm:p-11 my-2 sm:my-4 mx-2 sm:mx-4 text-justify border-2 border-black">
       <h2 class="mb-8 text-2xl font-bold text-black">Stats</h2>
       <stats-ranking-table
         @table-state-changed="tableState = $event"

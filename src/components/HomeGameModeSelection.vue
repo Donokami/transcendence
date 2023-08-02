@@ -1,5 +1,5 @@
 <template>
-  <div class="border-black border-2 mt-1 p-5">
+  <div class="border-black border-2 mt-2 sm:mt-4 sm:mx-4 mx-2 px-4 py-7 sm:p-11">
     <div class="flex items-center justify-between mb-2">
       <!-- TITLE -->
       <h2 class="text-xl sm:text-2xl font-bold text-black">Play Game</h2>

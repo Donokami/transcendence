@@ -1,9 +1,9 @@
 <template>
-  <div class="neobrutalist-box w-[30rem] px-6 py-6">
-    <h2 class="text-2xl font-bold mb-8 text-black">Register</h2>
+  <div class="neobrutalist-box sm:w-[30rem] p-7 sm:p-11">
+    <h2 class="text-xl sm:text-2xl font-bold mb-8 text-black">Register</h2>
     <Form ref="formRef" :validation-schema="registerSchema" @submit="submitForm">
       <div class="mb-6">
-        <label class="block font-medium mb-1" for="username"> Username </label>
+        <label class="block font-medium mb-1 text-lg sm:text-xl" for="username"> Username </label>
         <Field
           class="neobrutalist-input w-full text-black"
           id="username"
@@ -14,7 +14,7 @@
         <ErrorMessage class="font-normal text-base text-red-600" name="username" />
       </div>
       <div class="mb-6">
-        <label class="block font-medium mb-1" for="password">Password</label>
+        <label class="block font-medium mb-1 text-lg sm:text-xl" for="password">Password</label>
         <Field
           class="neobrutalist-input w-full text-black"
           name="password"
@@ -25,7 +25,7 @@
         <ErrorMessage class="font-normal text-base text-red-600" name="password" />
       </div>
       <div class="mb-6">
-        <label class="block font-medium mb-1" for="confirmPassword">Confirm Password</label>
+        <label class="block font-medium mb-1 text-lg sm:text-xl" for="confirmPassword">Confirm Password</label>
         <Field
           class="neobrutalist-input w-full text-black"
           id="confirmPassword"
@@ -43,7 +43,7 @@
       >
         {{ alertMsg }}
       </div>
-      <div class="flex items-center justify-between mt-8">
+      <div class="flex items-center gap-2 justify-between mt-8">
         <button class="btn bg-zinc-900 text-white" type="submit" :disabled="inSubmission">
           Create account
         </button>

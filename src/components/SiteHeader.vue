@@ -1,28 +1,28 @@
 <template>
-  <div class="mx-auto w-full">
+  <div class="mx-auto w-full border-black border-y-2">
     <div
-      class="navbar max-w-screen-xl mx-auto p-0 items-stretch bg-base-100 text-black z-40 px-1">
+      class="navbar mx-auto p-0 items-stretch bg-base-100 text-black z-40">
       <div
-        class="navbar-start border-2 border-black border-r-0 flex-grow md:hidden">
-        <div class="dropdown flex">
-          <label tabindex="0" class="p-[14px] hover:bg-gray-300">
-            <iconify-icon icon="ri:menu-2-line" class="h-5 w-5"></iconify-icon>
+        class="navbar-start flex-grow md:hidden">
+        <div class="dropdown flex h-full w-full items-center">
+          <label tabindex="0" class="hover:bg-gray-300 flex h-full items-center justify-center w-14 cursor-pointer">
+            <iconify-icon icon="ri:menu-2-line" class="h-6 w-6"></iconify-icon>
           </label>
           <ul
             tabindex="0"
-            class="menu menu-compact dropdown-content shadow bg-base-100">
+            class="menu menu-compact dropdown-content mt-20 shadow bg-base-100">
             <li>
-              <router-link to="/" class="border-black rounded-none"
+              <router-link to="/" class="rounded-none"
                 >Home</router-link
               >
             </li>
             <li>
-              <router-link to="/chat" class="border-black rounded-none"
+              <router-link to="/chat" class="rounded-none"
                 >Chat</router-link
               >
             </li>
             <li>
-              <router-link to="/stats" class="border-black rounded-none"
+              <router-link to="/stats" class="rounded-none"
                 >Stats</router-link
               >
             </li>
@@ -30,12 +30,12 @@
         </div>
       </div>
       <div
-        class="navbar-start border-black border-y-2 border-l-2 flex-grow hidden md:flex">
+        class="navbar-start flex-grow hidden md:flex">
         <ul class="menu menu-horizontal p-0 h-full">
           <li>
             <router-link
               to="/"
-              class="flex border-black border-r-2 h-full rounded-none"
+              class="flex h-full rounded-none"
               active-class="active-link"
               >Home</router-link
             >
@@ -43,7 +43,7 @@
           <li>
             <router-link
               to="/chat"
-              class="flex border-black border-r-2 h-full rounded-none"
+              class="flex h-full rounded-none"
               active-class="active-link"
               >Chat</router-link
             >
@@ -51,17 +51,17 @@
           <li>
             <router-link
               to="/stats"
-              class="flex border-black border-r-2 h-full rounded-none"
+              class="flex h-full rounded-none"
               active-class="active-link"
               >Stats</router-link
             >
           </li>
         </ul>
       </div>
-      <div class="navbar-center border-y-2 border-x-2 border-black">
+      <div class="navbar-center border-x-2 border-black">
         <a class="p-2 font-bold text-xl">__TRANSCENDENCE__</a>
       </div>
-      <div class="navbar-end items-stretch border-y-2 border-black flex-grow">
+      <div class="navbar-end items-stretch  flex-grow">
         <div class="dropdown flex items-center border-x-2 border-black">
           <label
             tabindex="0"
@@ -86,7 +86,7 @@
           <ul
             v-if="userStore.loggedUser"
             tabindex="0"
-            class="menu menu-compact dropdown-content shadow bg-base-100 -ml-[75px] mt-1">
+            class="menu menu-compact dropdown-content shadow bg-base-100 -ml-4 mt-8">
             <li>
               <router-link
                 :to="{

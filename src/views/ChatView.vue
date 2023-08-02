@@ -1,8 +1,8 @@
 <template>
-  <div class="flex w-full max-h-[calc(100vh-156px)] my-1 mx-auto text-black">
+  <div class="flex w-full max-h-[calc(100vh-135px)] my-1 mx-auto text-black">
     <!-- SIDEBAR -->
     <div
-      class="flex flex-col min-w-min min-h-[calc(100vh-156px)] p-5 border-2 border-black text-justify w-1/4 overflow-y-auto">
+      class="flex flex-col min-w-min min-h-[calc(100vh-135px)] p-5 border-2 border-black text-justify w-1/4 overflow-y-auto">
       <chat-sidebar
         :list-state="listState"
         @list-state-changed="listState = $event"></chat-sidebar>

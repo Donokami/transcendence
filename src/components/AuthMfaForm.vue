@@ -1,9 +1,9 @@
 <template>
-  <div class="neobrutalist-box w-[30rem] px-6 py-6">
-    <h2 class="text-2xl font-bold mb-8 text-black">Welcome back</h2>
+  <div class="neobrutalist-box sm:w-[30rem] px-4 py-7 sm:p-11">
+    <h2 class="text-xl sm:text-2xl font-bold mb-8 text-black">Welcome back</h2>
     <Form ref="formRef" :validation-schema="mfaSchema" @submit="submitForm">
       <div class="mb-6">
-        <label class="block font-medium mb-1 text-md" for="token">6 digits code</label>
+        <label class="block font-medium mb-1 text-md text-lg sm:text-xl" for="token">6 digits code</label>
         <Field
           class="neobrutalist-input w-full text-black"
           name="token"
@@ -22,7 +22,7 @@
       </div>
       <div class="mt-8">
         <button
-          class="btn border-zinc-900 bg-zinc-900 text-white"
+          class="btn border-zinc-900 bg-zinc-900 text-white sm:w-fit w-full"
           type="submit"
           :disabled="inSubmission"
         >
