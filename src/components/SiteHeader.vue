@@ -1,36 +1,29 @@
 <template>
   <div class="mx-auto w-full border-black border-y-2">
-    <div
-      class="navbar mx-auto p-0 items-stretch bg-base-100 text-black z-40">
-      <div
-        class="navbar-start flex-grow md:hidden">
+    <div class="navbar mx-auto p-0 items-stretch bg-base-100 text-black z-40">
+      <div class="navbar-start flex-grow md:hidden">
         <div class="dropdown flex h-full w-full items-center">
-          <label tabindex="0" class="hover:bg-gray-300 flex h-full items-center justify-center w-14 cursor-pointer">
+          <label
+            tabindex="0"
+            class="hover:bg-gray-300 flex h-full items-center justify-center w-14 cursor-pointer">
             <iconify-icon icon="ri:menu-2-line" class="h-6 w-6"></iconify-icon>
           </label>
           <ul
             tabindex="0"
-            class="menu menu-compact dropdown-content mt-20 shadow bg-base-100">
+            class="menu menu-compact dropdown-content shadow bg-base-100 z-40">
             <li>
-              <router-link to="/" class="rounded-none"
-                >Home</router-link
-              >
+              <router-link to="/" class="rounded-none">Home</router-link>
             </li>
             <li>
-              <router-link to="/chat" class="rounded-none"
-                >Chat</router-link
-              >
+              <router-link to="/chat" class="rounded-none">Chat</router-link>
             </li>
             <li>
-              <router-link to="/stats" class="rounded-none"
-                >Stats</router-link
-              >
+              <router-link to="/stats" class="rounded-none">Stats</router-link>
             </li>
           </ul>
         </div>
       </div>
-      <div
-        class="navbar-start flex-grow hidden md:flex">
+      <div class="navbar-start flex-grow hidden md:flex">
         <ul class="menu menu-horizontal p-0 h-full">
           <li>
             <router-link
@@ -61,7 +54,7 @@
       <div class="navbar-center border-x-2 border-black">
         <a class="p-2 font-bold text-xl">__TRANSCENDENCE__</a>
       </div>
-      <div class="navbar-end items-stretch  flex-grow">
+      <div class="navbar-end items-stretch flex-grow">
         <div class="dropdown flex items-center border-x-2 border-black">
           <label
             tabindex="0"

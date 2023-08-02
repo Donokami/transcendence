@@ -1,5 +1,5 @@
 <template>
-  <div class="text-black z-50">
+  <div class="z-50 text-black">
     <div class="drawer drawer-end">
       <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
       <!-- DRAWER BUTTON  -->
@@ -11,42 +11,57 @@
       <!-- DRAWER CONTENT -->
       <div class="drawer-side">
         <label for="my-drawer-4" class="drawer-overlay"></label>
-        <ul class="menu p-4 w-80 h-full bg-base-200 text-base-content">
-          <!-- Sidebar content here -->
-          <li><a>Sidebar Item 1</a></li>
-          <li><a>Sidebar Item 2</a></li>
-        </ul>
-        <!-- CHANNEL MEMBERS LIST -->
-        <div class="collapse collapse-arrow border-2 border-black rounded-none">
-          <input type="checkbox" />
-          <div class="collapse-title text-base">Handle channel members</div>
-          <div class="collapse-content text-base">
-            <ul class="menu bg-base-100 w-full">
+        <ul class="menu h-full p-4 w-120 bg-base-200">
+          <li>
+            <!-- <div
+              class="collapse collapse-arrow p-0 m-0 border-2 border-black rounded-none hover:bg-base-200"> -->
+            <!-- <input class="p-0 m-0" type="checkbox" /> -->
+            <!-- <div class="collapse-title text-sm">Handle channel members</div>
+              <div class="collapse-content flex m-0 p-0 text-sm"> -->
+            <ul
+              v-if="filteredChannelMembersList.length > 0"
+              class="menu m-0 justify-items-start w-full">
               <li v-for="member in channelMembers" :key="member.id">
-                <a class="flex p-1 rounded-none">
-                  <span class="px-2 block text-lg"
+                <a class="flex p-1 rounded-none hover:bg-base-200">
+                  <span class="px-2 block text-sm"
                     >{{ member.username }} :
                   </span>
                   <button
+                    v-if="isOwner"
+                    class="px-2 border-2 border-black hover:bg-black hover:text-white"
+                    @click="giveAdminRights(member.id)">
+                    Give admin rights
+                  </button>
+                  <button
+                    v-if="isAdmin"
                     class="px-2 border-2 border-black hover:bg-black hover:text-white"
                     @click="kickMember(member.id)">
-                    Accept
+                    Kick
                   </button>
                   <button
+                    v-if="isAdmin"
                     class="px-2 border-2 border-black hover:bg-black hover:text-white"
                     @click="banMember(member.id)">
-                    Reject
+                    Ban
                   </button>
                   <button
+                    v-if="isAdmin"
                     class="px-2 border-2 border-black hover:bg-black hover:text-white"
                     @click="muteMember(member.id)">
-                    Block User
+                    Mute
                   </button>
                 </a>
               </li>
             </ul>
-          </div>
-        </div>
+            <!-- ALONE IN CHANNEL -->
+            <div v-else class="px-4">
+              <p>You are alone in this channel.</p>
+            </div>
+            <!-- </div> -->
+            <!-- </div> -->
+          </li>
+        </ul>
+        <!-- CHANNEL MEMBERS LIST -->
       </div>
     </div>
   </div>
@@ -57,7 +72,7 @@
 // IMPORTS //
 // ******* //
 
-import { onBeforeMount, ref, watch } from 'vue'
+import { computed, onBeforeMount, ref, watch } from 'vue'
 import { useToast } from 'vue-toastification'
 
 import { storeToRefs } from 'pinia'
@@ -79,9 +94,69 @@ const toast = useToast()
 const { loggedUser } = storeToRefs(userStore)
 const { selectedChannel } = storeToRefs(channelStore)
 
+const filteredChannelMembersList = computed(() => {
+  return channelMembers.value.filter(
+    (member) => loggedUser.value && member.id !== loggedUser.value.id
+  )
+})
+
+const isAdmin = computed(() => {
+  if (selectedChannel.value === null) {
+    return
+  }
+
+  channel.value = channelStore.getChannel(selectedChannel.value)
+  if (!channel.value) {
+    return
+  }
+
+  if (Array.isArray(channel.value.admins)) {
+    return channel.value.admins.some(
+      (admin) => admin.id === loggedUser.value.id
+    )
+  }
+  return false
+})
+
+const isOwner = computed(() => {
+  if (selectedChannel.value === null) {
+    return
+  }
+  channel.value = channelStore.getChannel(selectedChannel.value)
+  if (!channel.value) {
+    return
+  }
+
+  if (
+    loggedUser.value !== null &&
+    channel.value.owner.id === loggedUser.value.id
+  ) {
+    return true
+  }
+
+  return false
+})
+
 // ******************** //
 // FUNCTION DEFINITIONS //
 // ******************** //
+
+// ********* //
+// banMember //
+// ********* //
+
+const banMember = async (userId: string): Promise<void> => {
+  try {
+    if (selectedChannel.value === null) {
+      return
+    }
+    await channelStore.banMember(userId, selectedChannel.value)
+    toast.success('User has been banned successfully !')
+    await getChannelMembers()
+  } catch (error) {
+    toast.error('Failed to ban user !')
+  }
+}
 
 // ***************** //
 // getChannelMembers //
@@ -101,36 +176,54 @@ async function getChannelMembers(): Promise<User[]> {
   return channelMembers.value
 }
 
-// ************* //
-// acceptRequest //
-// ************* //
+// *************** //
+// giveAdminRights //
+// *************** //
 
-const acceptRequest = async (requestId: string): Promise<void> => {
+const giveAdminRights = async (userId: string): Promise<void> => {
   try {
-    await userStore.acceptFriendRequest(requestId)
-    console.log(
-      `[ProfileFriendRequestListModal] - Friend request accepted successfully`
-    )
-    toast.success('Friend request accepted !')
-    await getFriendRequests()
-    emit('closeModal')
+    if (selectedChannel.value === null) {
+      return
+    }
+    await channelStore.giveAdminRights(userId, selectedChannel.value)
+    toast.success('User is now admin of the channel!')
+    await getChannelMembers()
   } catch (error) {
-    toast.error('Failed to accept friend request !')
+    toast.error('Failed to give the user admin rights !')
   }
 }
 
-// ************* //
-// rejectRequest //
-// ************* //
+// ********** //
+// kickMember //
+// ********** //
 
-const rejectRequest = async (requestId: string): Promise<void> => {
+const kickMember = async (userId: string): Promise<void> => {
   try {
-    await userStore.rejectFriendRequest(requestId)
-    toast.success('Friend request rejected !')
-    await getFriendRequests()
-    emit('closeModal')
+    if (selectedChannel.value === null) {
+      return
+    }
+    await channelStore.kickMember(userId, selectedChannel.value)
+    toast.success('User has been kicked successfully !')
+    await getChannelMembers()
   } catch (error) {
-    toast.error('Failed to reject friend request !')
+    toast.error('Failed to kick user !')
+  }
+}
+
+// ********** //
+// muteMember //
+// ********** //
+
+const muteMember = async (userId: string): Promise<void> => {
+  try {
+    if (selectedChannel.value === null) {
+      return
+    }
+    await channelStore.muteMember(userId, selectedChannel.value)
+    toast.success('User has been muted successfully !')
+    await getChannelMembers()
+  } catch (error) {
+    toast.error('Failed to mute user !')
   }
 }
 

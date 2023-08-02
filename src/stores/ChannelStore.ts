@@ -14,7 +14,10 @@ function parseUrl(message: Message): {
   try {
     const url = new URL(message.messageBody)
 
-    if (url.pathname.search('room/') > 0 && url.origin === import.meta.env.VITE_APP_URL) {
+    if (
+      url.pathname.search('room/') > 0 &&
+      url.origin === import.meta.env.VITE_APP_URL
+    ) {
       const roomId = url.pathname.split('/')[2]
       if (!roomId) return null
       return { roomId, url }
@@ -33,6 +36,78 @@ export const useChannelStore = defineStore('channels', {
     }
   },
   actions: {
+    // ********** //
+    // addMessage //
+    // ********** //
+
+    async addMessage(message: Message, channelId?: string): Promise<void> {
+      const { loggedUser } = useUserStore()
+      if (loggedUser == null) return
+
+      const channel = this.getChannel(channelId)
+      if (channel != null) {
+        // fix: this line make a bug when the channel messages are not loaded
+        channel.messages.push(this.bindRoomToInvite(message))
+      } else {
+        const newChannel: Channel = await fetcher.get(`/channels/${channelId}`)
+        if (newChannel !== null) {
+          this.setChannelInfos(loggedUser, newChannel)
+          this.channelsList?.data?.push(newChannel as Channel)
+        }
+      }
+    },
+
+    // ****************** //
+    // asyncFetchChannels //
+    // ****************** //
+
+    async asyncFetchChannels(): Promise<Channel[]> {
+      const { loggedUser } = useUserStore()
+      if (loggedUser == null) return []
+
+      const response: Channel[] = await fetcher.get(
+        `/user/${loggedUser.id}/channels`
+      )
+
+      response.forEach((channel: Channel) => {
+        this.setChannelInfos(loggedUser, channel)
+        return channel
+      })
+
+      return response
+    },
+
+    // ********* //
+    // banMember //
+    // ********* //
+
+    async banMember(userId: string, channelId: string): Promise<void> {
+      try {
+        await fetcher.put(`/channels/${channelId}/ban`, { userId })
+        console.log(`User with ID : ${userId} successfully banned from channel`)
+      } catch (error) {
+        console.error(error)
+        alert(`Failed to ban user with ID : ${userId}`)
+      }
+    },
+
+    bindRoomToInvite(message: Message) {
+      const newMessage = message
+      try {
+        const urlRoom = parseUrl(message)
+        if (urlRoom !== null) {
+          console.log('url : ', urlRoom)
+
+          newMessage.room = useFetcher({
+            queryFn: fetcher.get(`/games/${urlRoom.roomId}`)
+          })
+        }
+      } catch (_) {
+        newMessage.room = null
+      }
+      return newMessage
+    },
+
     // *************** //
     // createDmChannel //
     // *************** //
@@ -99,22 +174,6 @@ export const useChannelStore = defineStore('channels', {
     // fetchChannels //
     // ************* //
 
-    async asyncFetchChannels(): Promise<Channel[]> {
-      const { loggedUser } = useUserStore()
-      if (loggedUser == null) return []
-
-      const response: Channel[] = await fetcher.get(
-        `/user/${loggedUser.id}/channels`
-      )
-
-      response.forEach((channel: Channel) => {
-        this.setChannelInfos(loggedUser, channel)
-        return channel
-      })
-
-      return response
-    },
-
     fetchChannels() {
       const { loggedUser } = useUserStore()
       if (loggedUser == null) return
@@ -127,60 +186,6 @@ export const useChannelStore = defineStore('channels', {
           })
         }
       })
-    },
-
-    setChannelInfos(loggedUser: User, channel: Channel): void {
-      channel.messages = []
-
-      if (channel.isDm) {
-        const receiverUser = channel.members.find(
-          (user) => user.id !== loggedUser.id
-        )
-        if (receiverUser != null) {
-          channel.name = receiverUser.username
-          channel.image = receiverUser.profilePicture
-        }
-      }
-    },
-
-    // ****** //
-    // getDms //
-    // ****** //
-
-    getDms(): Channel[] {
-      const channels = this.channelsList?.data?.filter(
-        (channel) => channel.isDm
-      )
-      return channels ?? []
-    },
-
-    // ********* //
-    // getGroups //
-    // ********* //
-
-    getGroups(): Channel[] {
-      const channels = this.channelsList?.data?.filter(
-        (channel) => !channel.isDm
-      )
-      return channels ?? []
-    },
-
-    bindRoomToInvite(message: Message) {
-      const newMessage = message
-      try {
-        const urlRoom = parseUrl(message)
-        if (urlRoom !== null) {
-
-          console.log('url : ', urlRoom);
-
-          newMessage.room = useFetcher({
-            queryFn: fetcher.get(`/games/${urlRoom.roomId}`),
-          })
-        }
-      } catch (_) {
-        newMessage.room = null
-      }
-      return newMessage
     },
 
     // ******************** //
@@ -198,13 +203,21 @@ export const useChannelStore = defineStore('channels', {
           return this.bindRoomToInvite(message)
         })
 
-        console.log('[Message Fetch] messages after parsing : ', messageFetch);
-
+        console.log('[Message Fetch] messages after parsing : ', messageFetch)
 
         if (channel != null) channel.messages = messageFetch
       } catch (error) {
         console.error(error)
       }
+    },
+
+    // ****************** //
+    // fetchExistingGroup //
+    // ****************** //
+
+    async fetchExistingGroup(channelName: string): Promise<Channel | null> {
+      const response = await fetcher.get(`/channels/group/${channelName}`)
+      return response
     },
 
     // ********** //
@@ -232,6 +245,109 @@ export const useChannelStore = defineStore('channels', {
       }
     },
 
+    // ****** //
+    // getDms //
+    // ****** //
+
+    getDms(): Channel[] {
+      const channels = this.channelsList?.data?.filter(
+        (channel) => channel.isDm
+      )
+      return channels ?? []
+    },
+
+    // ********* //
+    // getGroups //
+    // ********* //
+
+    getGroups(): Channel[] {
+      const channels = this.channelsList?.data?.filter(
+        (channel) => !channel.isDm
+      )
+      return channels ?? []
+    },
+
+    // *************** //
+    // giveAdminRights //
+    // *************** //
+
+    async giveAdminRights(userId: string, channelId: string): Promise<void> {
+      try {
+        await fetcher.put(`/channels/${channelId}/admins`, { userId })
+        console.log(`User with ID : ${userId} successfully promoted to admin`)
+      } catch (error) {
+        console.error(error)
+        alert(`Failed to promote user with ID : ${userId} as admin`)
+      }
+    },
+
+    // ********* //
+    // joinGroup //
+    // ********* //
+
+    async joinGroup(channelName: string, password?: string): Promise<void> {
+      try {
+        const response = await fetcher.post(`/channels/group/join`, {
+          channelName,
+          password
+        })
+        if (response.status === 200) {
+          // todo: handle join --> update the local state if necessary
+        } else {
+          // todo: Handle any errors --> throw an error or return a specific value to be handled by the caller
+        }
+      } catch (error) {
+        console.error(`Failed to join ${channelName} channel`, error)
+        throw error
+      }
+    },
+
+    // ********** //
+    // kickMember //
+    // ********** //
+
+    async kickMember(userId: string, channelId: string): Promise<void> {
+      try {
+        await fetcher.put(`/channels/${channelId}/kick`, { userId })
+        console.log(`User with ID : ${userId} successfully kicked from channel`)
+      } catch (error) {
+        console.error(error)
+        alert(`Failed to kick user with ID : ${userId}`)
+      }
+    },
+
+    // ********** //
+    // muteMember //
+    // ********** //
+
+    async muteMember(userId: string, channelId: string): Promise<void> {
+      try {
+        await fetcher.put(`/channels/${channelId}/mute`, { userId })
+        console.log(`User with ID : ${userId} successfully muted`)
+      } catch (error) {
+        console.error(error)
+        alert(`Failed to mute user with ID : ${userId}`)
+      }
+    },
+
+    // *************** //
+    // setChannelInfos //
+    // *************** //
+
+    setChannelInfos(loggedUser: User, channel: Channel): void {
+      channel.messages = []
+
+      if (channel.isDm) {
+        const receiverUser = channel.members.find(
+          (user) => user.id !== loggedUser.id
+        )
+        if (receiverUser != null) {
+          channel.name = receiverUser.username
+          channel.image = receiverUser.profilePicture
+        }
+      }
+    },
+
     // *********** //
     // sendMessage //
     // *********** //
@@ -247,23 +363,6 @@ export const useChannelStore = defineStore('channels', {
         })
       } catch (error) {
         console.error(error)
-      }
-    },
-
-    async addMessage(message: Message, channelId?: string): Promise<void> {
-      const { loggedUser } = useUserStore()
-      if (loggedUser == null) return
-
-      const channel = this.getChannel(channelId)
-      if (channel != null) {
-        // fix: this line make a bug when the channel messages are not loaded
-        channel.messages.push(this.bindRoomToInvite(message))
-      } else {
-        const newChannel: Channel = await fetcher.get(`/channels/${channelId}`)
-        if (newChannel !== null) {
-          this.setChannelInfos(loggedUser, newChannel)
-          this.channelsList?.data?.push(newChannel)
-        }
       }
     }
   }

@@ -15,7 +15,10 @@ export interface Channel {
 
   owner: User
   members: User[]
+  admins: User[]
   bannedMembers: User[]
+  kickedMembers: User[]
+  mutedMembers: User[]
 
   // **************************** //
   // PRIVACY RELATED INFORMATIONS //

@@ -21,8 +21,8 @@
         <div class="collapse-content text-base">
           <ul class="menu bg-base-100 w-full">
             <li v-for="request in friendRequests" :key="request.id">
-              <a class="flex p-1 rounded-none">
-                <span class="px-2 block text-lg"
+              <a class="flex p-1 rounded-none hover:bg-base-100">
+                <span class="px-2 block text-base"
                   >{{ request.sender.username }} :
                 </span>
                 <button
