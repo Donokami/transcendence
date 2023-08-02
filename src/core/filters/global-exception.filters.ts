@@ -14,6 +14,12 @@ import { CannotCreateEntityIdMapError } from 'typeorm/error/CannotCreateEntityId
 import { GlobalResponseError } from '../utils/global.response.error'
 import { CONSTRAINS } from '../constants'
 
+interface IError {
+  statusCode: number
+  error: string
+  message: string[]
+}
+
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
   catch(exception: Error, host: ArgumentsHost) {
@@ -35,9 +41,18 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     let status = HttpStatus.INTERNAL_SERVER_ERROR
 
     if (exception instanceof HttpException) {
-      status = (exception as HttpException).getStatus()
-      message = (exception as HttpException).message
-      code = (exception as HttpException).constructor.name
+      const httpException: HttpException = exception as HttpException
+
+      status = httpException.getStatus()
+      if (
+        typeof httpException.getResponse() === 'string' ||
+        !Array.isArray((httpException.getResponse() as IError).message)
+      ) {
+        message = (httpException.getResponse() as IError).message as unknown as string || httpException.getResponse() as string
+      } else {
+        message = (httpException.getResponse() as IError).message.join(', ')
+      }
+      code = httpException.constructor.name
     }
 
     switch (exception.constructor) {

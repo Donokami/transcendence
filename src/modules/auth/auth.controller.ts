@@ -6,7 +6,8 @@ import {
   Session,
   UseGuards,
   Req,
-  UseFilters
+  UseFilters,
+  HttpException
 } from '@nestjs/common'
 
 import { AuthGuard } from '@nestjs/passport'
@@ -24,7 +25,7 @@ import { User } from '../users/user.entity'
 @Controller('auth')
 @UseFilters(new GlobalExceptionFilter())
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Get('42/signIn')
   @UseGuards(AuthGuard('42'))
@@ -56,7 +57,7 @@ export class AuthController {
     }
   }
 
-  @Get('/authStatus')
+  @Get('/status')
   @ApiOperation({
     summary: 'Get auth status',
     operationId: 'authStatus',
@@ -83,9 +84,9 @@ export class AuthController {
   async createUser(
     @Body() body: RegisterUserDto,
     @Session() session: any
-  ): Promise<User> {
-    const { password, username } = body
-    const user = await this.authService.register(username, password)
+  ) {
+    const { password: bPassword, username: bUsername } = body
+    const { password, twoFactorSecret, ...user } = await this.authService.register(bUsername, bPassword)
     session.userId = user.id
     return user
   }
@@ -100,8 +101,8 @@ export class AuthController {
   async signIn(
     @Body() body: SignInUserDto,
     @Session() session: any
-  ): Promise<User> {
-    const user = await this.authService.signIn(body.username, body.password)
+  ) {
+    const { password, twoFactorSecret, ...user } = await this.authService.signIn(body.username, body.password)
 
     if (user.isTwoFactorEnabled) {
       session.twoFactorUserId = user.id

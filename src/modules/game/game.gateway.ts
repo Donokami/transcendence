@@ -32,9 +32,9 @@ export class GameGateway {
   constructor(
     @Inject(forwardRef(() => GameService))
     private gameService: GameService
-  ) {}
+  ) { }
 
-  private readonly logger = new Logger(GameService.name)
+  private readonly logger = new Logger(GameGateway.name)
 
   async handleConnection(client: Socket) {
     this.logger.verbose(`Client ${client.id} connected to /game socket`)

@@ -29,7 +29,7 @@ export class GameService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => GameGateway))
     private readonly gameGateway: GameGateway
-  ) {}
+  ) { }
 
   private readonly logger = new Logger(GameService.name)
 
@@ -45,7 +45,21 @@ export class GameService {
     return this.rooms.map((room) => room.get())
   }
 
-  // todo: create a function to retrieve all rooms that are not full and another public
+  findPublic(): RoomObject[] {
+    return this.rooms
+      .filter((room) => !room.get().isPrivate && room.players.length !== 2)
+      .map((room) => room.get())
+  }
+
+  async joinQueue(userId: string): Promise<RoomObject> {
+    const rooms = this.findPublic()
+
+    if (!rooms.length) {
+      return this.create(userId)
+    }
+
+    return rooms[0]
+  }
 
   public async create(ownerId: string): Promise<RoomObject> {
     const owner = await this.userService.findOneById(ownerId)

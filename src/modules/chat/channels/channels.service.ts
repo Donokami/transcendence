@@ -38,7 +38,7 @@ export class ChannelsService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway
-  ) {}
+  ) { }
 
   // ****** //
   // LOGGER //
@@ -164,7 +164,7 @@ export class ChannelsService {
   // createDmChannel //
   // *************** //
 
-  async createDmChannel(createChannelDto: CreateChannelDto): Promise<Channel> {
+  async createChannel(createChannelDto: CreateChannelDto): Promise<Channel> {
     const owner: User = await this.userService.findOneById(
       createChannelDto.ownerId
     )
@@ -186,9 +186,12 @@ export class ChannelsService {
     }
 
     const newDmChannel = this.channelsRepository.create({
-      isDm: true,
+      isDm: createChannelDto.isDm,
       owner: owner,
-      members: members
+      members: members,
+      name: createChannelDto.isDm ? null : createChannelDto.name,
+      passwordRequired: createChannelDto.isDm ? false : createChannelDto.passwordRequired,
+      password: createChannelDto.isDm ? null : createChannelDto.password
     })
 
     const dmChannel = await this.channelsRepository.save(newDmChannel)

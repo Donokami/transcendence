@@ -32,7 +32,7 @@ export class UsersService {
     @InjectRepository(Friendship)
     private readonly friendshipRepository: Repository<Friendship>,
     private readonly configService: ConfigService
-  ) {}
+  ) { }
 
   // ****** //
   // LOGGER //
@@ -130,6 +130,7 @@ export class UsersService {
       select: [
         'id',
         'username',
+        'status',
         'profilePicture',
         'rank',
         'gamesPlayed',
@@ -228,6 +229,7 @@ export class UsersService {
       select: [
         'id',
         'username',
+        'status',
         'profilePicture',
         'rank',
         'gamesPlayed',

@@ -20,6 +20,7 @@ import { AppController } from './app.controller'
 import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 import { ConfigService } from '@nestjs/config'
+import { AppGateway } from './app.gateway'
 
 const configService = new ConfigService()
 
@@ -58,7 +59,8 @@ export const session: RequestHandler = require('cookie-session')({
         whitelist: true,
         forbidUnknownValues: true
       })
-    }
+    },
+    AppGateway
   ]
 })
 export class AppModule {

@@ -25,7 +25,7 @@ import { RoomNotFound } from '@/core/exceptions/game'
 @Controller('games')
 @UseFilters(new GlobalExceptionFilter())
 export class GameController {
-  constructor(private readonly gameService: GameService) {}
+  constructor(private readonly gameService: GameService) { }
 
   @Get(':id')
   @UseGuards(AuthGuard)
@@ -56,6 +56,18 @@ export class GameController {
   })
   findAll() {
     return this.gameService.findAll().filter((room) => !room.isPrivate)
+  }
+
+  @Get('/matchmaking')
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Join the matchmaking queue',
+    operationId: 'joinQueue',
+    description: 'Join the matchmaking queue',
+    tags: ['game']
+  })
+  joinQueue(@Req() req: IRequestWithUser,): Promise<RoomObject> {
+    return this.gameService.joinQueue(req.session.userId)
   }
 
   @Post()

@@ -17,6 +17,13 @@ import { Friendship } from '@/modules/social/entities/friendship.entity'
 import { type Message } from '@/modules/chat/channels/entities/message.entity'
 import { ApiProperty } from '@nestjs/swagger'
 
+export enum UserStatus {
+  ONLINE = 'online',
+  OFFLINE = 'offline',
+  AWAY = 'away',
+  INGAME = 'ingame'
+}
+
 // ****** //
 // LOGGER //
 // ****** //
@@ -48,10 +55,10 @@ export class User {
   @ApiProperty()
   profilePicture: string
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   twoFactorSecret: string
 
-  @Column({ default: false })
+  @Column({ default: false, select: false })
   isTwoFactorEnabled: boolean
 
   // ****************** //

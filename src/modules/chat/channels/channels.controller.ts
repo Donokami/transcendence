@@ -28,7 +28,7 @@ import { OwnershipGuard } from './guards/ownership.guard'
 @Controller('channels')
 @UseFilters(new GlobalExceptionFilter())
 export class ChannelsController {
-  constructor(private readonly channelsService: ChannelsService) {}
+  constructor(private readonly channelsService: ChannelsService) { }
 
   // ****** //
   // LOGGER //
@@ -70,11 +70,11 @@ export class ChannelsController {
   // createDmChannel //
   // *************** //
 
-  @Post('/create/dm')
+  @Post('/create')
   @UseGuards(AuthGuard)
   async createDmChannel(@Body() body: CreateChannelDto) {
     try {
-      const dmChannel = await this.channelsService.createDmChannel(body)
+      const dmChannel = await this.channelsService.createChannel(body)
       return dmChannel
     } catch (error) {
       throw error

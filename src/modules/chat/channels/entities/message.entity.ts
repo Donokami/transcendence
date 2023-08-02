@@ -5,7 +5,6 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
-  CreateDateColumn
 } from 'typeorm'
 
 import { Logger } from '@nestjs/common'
