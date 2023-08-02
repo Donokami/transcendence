@@ -83,8 +83,20 @@ export class User {
   channels: Array<Channel>
 
   @JoinTable()
+  @ManyToMany(() => Channel, (channel: Channel) => channel.admins)
+  administratedChannels: Channel[]
+
+  @JoinTable()
   @ManyToMany(() => Channel, (channel: Channel) => channel.bannedMembers)
   bannedChannels: Channel[]
+
+  @JoinTable()
+  @ManyToMany(() => Channel, (channel: Channel) => channel.kickedMembers)
+  kickedChannels: Channel[]
+
+  @JoinTable()
+  @ManyToMany(() => Channel, (channel: Channel) => channel.mutedMembers)
+  mutedChannels: Channel[]
 
   @OneToMany(() => Channel, (channel: Channel) => channel.messages)
   messages: Message[]

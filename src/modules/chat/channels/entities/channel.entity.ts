@@ -50,8 +50,17 @@ export class Channel {
   @ManyToMany(() => User, (user: User) => user.channels)
   members: Array<User>
 
+  @ManyToMany(() => User, (user: User) => user.administratedChannels)
+  admins: User[]
+
   @ManyToMany(() => User, (user: User) => user.bannedChannels)
   bannedMembers: User[]
+
+  @ManyToMany(() => User, (user: User) => user.kickedChannels)
+  kickedMembers: User[]
+
+  @ManyToMany(() => User, (user: User) => user.mutedChannels)
+  mutedMembers: User[]
 
   // **************************** //
   // PRIVACY RELATED INFORMATIONS //

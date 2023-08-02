@@ -12,7 +12,7 @@ import { Logger } from '@nestjs/common'
 
 import { User } from '@/modules/users/user.entity'
 
-import { Channel } from './channel.entity'
+import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 
 const logger = new Logger('message')
 
