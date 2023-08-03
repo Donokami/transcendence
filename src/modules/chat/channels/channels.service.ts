@@ -1,17 +1,21 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-  UnauthorizedException,
-  forwardRef
-} from '@nestjs/common'
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common'
 
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
-import { UserNotFound } from '@/core/exceptions/user'
+import {
+  ChannelNotFound,
+  ChannelMembersNotFound,
+  MissingChannelId,
+  MissingUserId,
+  UserAlreadyAdmin,
+  UserAlreadyBanned,
+  UserAlreadyInChannel,
+  UserNotFound,
+  UserNotInChannel,
+  InvalidGroupPassword
+} from '@/core/exceptions'
+
 import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { Message } from '@/modules/chat/channels/entities/message.entity'
 import { User } from '@/modules/users/user.entity'
@@ -21,10 +25,8 @@ import { CreateChannelDto } from './dtos/create-channel.dto'
 import { MessageDto } from './dtos/message.dto'
 
 import { ChatGateway } from '../chat.gateway'
-import { DefaultEventsMap } from 'socket.io/dist/typed-events'
-import { Socket } from 'socket.io'
 import { JoinGroupDto } from './dtos/join-group.dto'
-import { GetGroupByNameDto } from './dtos/get-group-by-name.dto'
+import { parseMuteTime } from '@/core/utils/parseMuteTime'
 
 @Injectable()
 export class ChannelsService {
@@ -38,7 +40,7 @@ export class ChannelsService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway
-  ) { }
+  ) {}
 
   // ****** //
   // LOGGER //
@@ -55,12 +57,48 @@ export class ChannelsService {
   // ******** //
 
   async addAdmin(channelId: string, userId: string): Promise<Channel> {
-    const channel = await this.checkExistingChannel(channelId)
-    const user = await this.checkExistingUser(userId)
+    const channel: Channel = await this.checkExistingChannel(channelId)
 
-    channel.admins = this.addUserToList(user, channel.admins)
+    const user: User = await this.checkExistingUser(userId)
 
-    return this.saveAndEmit(channel, 'set-admin', { userId, channelId })
+    channel.admins = this.addUserToList('admins', user, channel.admins)
+
+    const updatePayload = { userId, channelId }
+
+    const updatedChannel: Channel = await this.updateChannel(
+      'set-admin',
+      channel,
+      updatePayload
+    )
+
+    return updatedChannel
+  }
+
+  // ************* //
+  // addUserToList //
+  // ************* //
+
+  private addUserToList(
+    listName: string,
+    user: User,
+    userList: User[]
+  ): User[] {
+    if (userList.find((item) => item.id === user.id)) {
+      switch (listName) {
+        case 'admins':
+          throw new UserAlreadyAdmin()
+        case 'bannedMembers':
+          throw new UserAlreadyBanned()
+        case 'members':
+          throw new UserAlreadyInChannel()
+        default:
+          throw new Error('addUserToList Failed')
+      }
+    }
+
+    userList.push(user)
+
+    return userList
   }
 
   // ********* //
@@ -68,56 +106,27 @@ export class ChannelsService {
   // ********* //
 
   async banMember(channelId: string, userId: string): Promise<Channel> {
-    const channel = await this.checkExistingChannel(channelId)
-    const user = await this.checkExistingUser(userId)
+    const channel: Channel = await this.checkExistingChannel(channelId)
 
-    channel.bannedMembers = this.addUserToList(user, channel.bannedMembers)
+    const user: User = await this.checkExistingUser(userId)
 
-    return this.saveAndEmit(channel, 'ban-user', { userId, channelId })
-  }
+    channel.members = this.removeUserFromList('members', user, channel.members)
 
-  // ********** //
-  // muteMember //
-  // ********** //
+    channel.bannedMembers = this.addUserToList(
+      'bannedMembers',
+      user,
+      channel.bannedMembers
+    )
 
-  async muteMember(channelId: string, userId: string): Promise<Channel> {
-    const channel = await this.checkExistingChannel(channelId)
-    const user = await this.checkExistingUser(userId)
+    const updatePayload = { userId, channelId }
 
-    channel.mutedMembers = this.addUserToList(user, channel.mutedMembers)
+    const updatedChannel = this.updateChannel(
+      'ban-user',
+      channel,
+      updatePayload
+    )
 
-    return this.saveAndEmit(channel, 'mute-user', { userId, channelId })
-  }
-
-  // ********** //
-  // kickMember //
-  // ********** //
-
-  async kickMember(channelId: string, userId: string): Promise<Channel> {
-    const channel = await this.checkExistingChannel(channelId)
-    const user = await this.checkExistingUser(userId)
-
-    channel.kickedMembers = this.addUserToList(user, channel.kickedMembers)
-
-    channel.members = this.removeUserFromList(user, channel.members)
-
-    return this.saveAndEmit(channel, 'kick-user', { userId, channelId })
-  }
-
-  // ************* //
-  // addUserToList //
-  // ************* //
-
-  private addUserToList(user: User, userList: User[]): User[] {
-    if (userList.includes(user)) {
-      // todo: how to handle this ? error or just return the list ?
-      return userList
-    }
-
-    if (!userList.find((item) => item.id === user.id)) {
-      userList.push(user)
-    }
-    return userList
+    return updatedChannel
   }
 
   // ******************** //
@@ -126,16 +135,16 @@ export class ChannelsService {
 
   async checkExistingChannel(channelId: string): Promise<Channel> {
     if (!channelId) {
-      this.logger.warn(`ID of the channel is required.`)
-      throw new BadRequestException('ID of the channel is required.')
+      this.logger.warn(`Channel ID is required but missing`)
+      throw new MissingChannelId()
     }
 
-    const channel = await this.channelsRepository.findOneBy({ id: channelId })
+    const channel: Channel = await this.channelsRepository.findOneBy({
+      id: channelId
+    })
     if (!channel) {
-      this.logger.warn(`Channel with ID : ${channelId} not found in database.`)
-      throw new NotFoundException(
-        `Channel with ID : ${channelId} not found in database.`
-      )
+      this.logger.warn(`Channel with ID : ${channelId} not found`)
+      throw new ChannelNotFound()
     }
 
     return channel
@@ -147,150 +156,67 @@ export class ChannelsService {
 
   async checkExistingUser(userId: string): Promise<User> {
     if (!userId) {
-      this.logger.warn(`ID of the user is required.`)
-      throw new BadRequestException('ID of the user is required.')
+      this.logger.warn(`User ID is required but missing`)
+      throw new MissingUserId()
     }
-    const user = await this.userService.findOneById(userId)
+
+    const user: User = await this.userService.findOneById(userId)
     if (!user) {
-      this.logger.warn(`User with ID : ${userId} not found in database.`)
-      throw new NotFoundException(
-        `User with ID : ${userId} not found in database.`
-      )
+      this.logger.warn(`User with ID : ${userId} not found`)
+      throw new UserNotFound()
     }
+
     return user
   }
 
-  // *************** //
-  // createDmChannel //
-  // *************** //
+  // ************* //
+  // createChannel //
+  // ************* //
 
   async createChannel(createChannelDto: CreateChannelDto): Promise<Channel> {
-    const owner: User = await this.userService.findOneById(
-      createChannelDto.ownerId
-    )
-    if (!owner) {
-      this.logger.warn(
-        `User with ID : ${createChannelDto.ownerId} not found in database.`
-      )
-      throw new NotFoundException(
-        `User with ID : ${createChannelDto.ownerId} not found in database.`
-      )
-    }
+    const owner: User = await this.checkExistingUser(createChannelDto.ownerId)
 
     const members: User[] = await this.userService.findByIds(
       createChannelDto.membersIds
     )
-    if (!members || members.length === 0) {
-      this.logger.warn('No members found for the given IDs.')
-      throw new NotFoundException('No members found for the given IDs.')
-    }
+    if (!members || members.length === 0) throw new ChannelMembersNotFound()
 
-    const newDmChannel = this.channelsRepository.create({
+    const newChannel: Channel = this.channelsRepository.create({
       isDm: createChannelDto.isDm,
       owner: owner,
       members: members,
       name: createChannelDto.isDm ? null : createChannelDto.name,
-      passwordRequired: createChannelDto.isDm ? false : createChannelDto.passwordRequired,
+      passwordRequired: createChannelDto.isDm
+        ? false
+        : createChannelDto.passwordRequired,
       password: createChannelDto.isDm ? null : createChannelDto.password
     })
 
-    const dmChannel = await this.channelsRepository.save(newDmChannel)
+    const channel: Channel = await this.channelsRepository.save(newChannel)
 
-    dmChannel.members.forEach((member) => {
-      const socketId = this.chatGateway.connectedUsers.get(member.id)
-      if (socketId) {
-        const socket = (
-          this.chatGateway.server.sockets as unknown as Map<
-            string,
-            Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
-          >
-        ).get(socketId)
-        if (socket) socket.join(dmChannel.id)
-      }
+    channel.members.forEach((member) => {
+      const socket = this.chatGateway.getUserSocket(member.id)
+      if (socket) socket.join(channel.id)
     })
 
-    return dmChannel
+    this.chatGateway.server.to(channel.id).emit('chat:channel-created', channel)
+
+    return channel
   }
 
-  // ****************** //
-  // createGroupChannel //
-  // ****************** //
+  // *********** //
+  // findOneById //
+  // *********** //
 
-  async createGroupChannel(
-    createChannelDto: CreateChannelDto
-  ): Promise<Channel> {
-    const owner: User = await this.userService.findOneById(
-      createChannelDto.ownerId
-    )
-    if (!owner) {
-      this.logger.warn(
-        `User with ID : ${createChannelDto.ownerId} not found in database.`
-      )
-      throw new NotFoundException(
-        `User with ID : ${createChannelDto.ownerId} not found in database.`
-      )
-    }
-
-    const members: User[] = await this.userService.findByIds(
-      createChannelDto.membersIds
-    )
-    if (!members || members.length === 0) {
-      this.logger.warn('No members found for the given IDs.')
-      throw new NotFoundException('No members found for the given IDs.')
-    }
-
-    const newGroupChannel = this.channelsRepository.create({
-      isDm: false,
-      name: createChannelDto.name,
-      owner: owner,
-      members: members,
-      admins: [owner],
-      passwordRequired: createChannelDto.passwordRequired,
-      password: createChannelDto.password
-    })
-
-    const groupChannel = await this.channelsRepository.save(newGroupChannel)
-
-    groupChannel.members.forEach((member) => {
-      const socketId = this.chatGateway.connectedUsers.get(member.id)
-      if (socketId) {
-        const socket = (
-          this.chatGateway.server.sockets as unknown as Map<
-            string,
-            Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
-          >
-        ).get(socketId)
-        if (socket) socket.join(groupChannel.id)
-      }
-    })
-
-    return groupChannel
-  }
-
-  // ******* //
-  // findOne //
-  // ******* //
-
-  async findOne(id: string) {
-    if (!id) {
-      this.logger.warn(`ID of the channel is required.`)
-      throw new BadRequestException('ID of the channel is required.')
-    }
-
-    const channel = await this.channelsRepository.findOne({
+  async findOneById(id: string): Promise<Channel> {
+    const channel: Channel = await this.channelsRepository.findOne({
       where: { id },
-      relations: [
-        'admins',
-        'bannedMembers',
-        'kickedMembers',
-        'members',
-        'mutedMembers',
-        'owner'
-      ]
+      relations: ['owner', 'members', 'admins', 'bannedMembers', 'mutedMembers']
     })
 
     if (!channel) {
-      throw new NotFoundException(`There is no channel under id ${id}`)
+      this.logger.warn(`Channel with ID : ${id} not found in database`)
+      return null
     }
 
     return channel
@@ -300,80 +226,29 @@ export class ChannelsService {
   // findOneByName //
   // ************* //
 
-  async findOneByName(name: string) {
-    const channel = await this.channelsRepository.findOne({
+  async findOneByName(name: string): Promise<Channel> {
+    const channel: Channel = await this.channelsRepository.findOne({
       where: { name },
       select: ['id', 'name', 'passwordRequired'],
-      relations: [
-        'admins',
-        'bannedMembers',
-        'kickedMembers',
-        'members',
-        'owner'
-      ]
+      relations: ['owner', 'members', 'admins', 'bannedMembers', 'mutedMembers']
     })
 
-    if (!channel) return null
+    if (!channel) {
+      this.logger.warn(`Channel with name : ${name} not found in database`)
+      return null
+    }
 
     return channel
   }
 
-  // ********* //
-  // joinGroup //
-  // ********* //
-
-  async joinGroup(joinGroupDto: JoinGroupDto, newMemberId: string) {
-    const { channelName, password } = joinGroupDto
-
-    const newMember = await this.usersRepository.findOne({
-      where: { id: newMemberId }
-    })
-    if (!newMember) {
-      this.logger.warn(`User with ID : ${newMemberId} not found in database.`)
-      throw new UserNotFound()
-    }
-
-    const channel = await this.channelsRepository.findOne({
-      where: { name: channelName },
-      relations: ['members', 'bannedMembers']
-    })
-    if (!channel)
-      throw new NotFoundException(
-        `Channel with name : ${channelName} does not exist`
-      )
-
-    if (channel.passwordRequired && channel.password !== password) {
-      throw new UnauthorizedException('Invalid password')
-    }
-
-    if (!channel.members.find((member) => member.id === newMember.id)) {
-      throw new BadRequestException('User is already a member of this channel')
-    }
-
-    channel.members.push(newMember)
-
-    await this.channelsRepository.save(channel)
-
-    const socketId = this.chatGateway.connectedUsers.get(newMember.id)
-    if (socketId) {
-      const socket = (
-        this.chatGateway.server.sockets as unknown as Map<
-          string,
-          Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>
-        >
-      ).get(socketId)
-      if (socket) socket.join(channel.id)
-    }
-  }
-
-  // ********* //
-  // getDmList //
-  // ********* //
+  // *********** //
+  // getChannels //
+  // *********** //
 
   async getChannels(userId: string): Promise<Channel[]> {
-    const user = await this.checkExistingUser(userId)
+    const user: User = await this.checkExistingUser(userId)
 
-    const channels = await this.channelsRepository
+    const channels: Channel[] = await this.channelsRepository
       .createQueryBuilder('channel')
       .leftJoinAndSelect('channel.members', 'members')
       .leftJoinAndSelect('channel.owner', 'owner')
@@ -399,17 +274,108 @@ export class ChannelsService {
   // *********** //
 
   async getMessages(channelId: string): Promise<Message[]> {
-    const channel = await this.checkExistingChannel(channelId)
+    const channel: Channel = await this.checkExistingChannel(channelId)
 
-    const messages = await this.messagesRepository.find({
+    const messages: Message[] = await this.messagesRepository.find({
       where: { channel: { id: channel.id } },
       relations: ['user']
     })
 
     this.logger.verbose(
-      `Messages list of : ${channelId} successfully retrieved.`
+      `Messages of channel with ID : ${channelId} successfully retrieved.`
     )
+
     return messages
+  }
+
+  // **************** //
+  // getMutedChannels //
+  // **************** //
+
+  async getMutedChannels(userId: string): Promise<Channel[]> {
+    const user: User = await this.checkExistingUser(userId)
+
+    const channels: Channel[] = await this.channelsRepository
+      .createQueryBuilder('channel')
+      .leftJoinAndSelect('channel.mutedMembers', 'mutedMembers')
+      .where((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('channel.id')
+          .from('channel', 'channel')
+          .leftJoin('channel.mutedMembers', 'mutedMembers')
+          .where('mutedMembers.id = :userId', { userId: user.id })
+          .getQuery()
+        return 'channel.id IN ' + subQuery
+      })
+      .getMany()
+
+    this.logger.verbose(`Muted channels of : ${userId} successfully retrieved.`)
+
+    return channels
+  }
+
+  // ********* //
+  // joinGroup //
+  // ********* //
+
+  async joinGroup(joinGroupDto: JoinGroupDto, newMemberId: string) {
+    const { channelName, password } = joinGroupDto
+
+    const newMember: User = await this.checkExistingUser(newMemberId)
+
+    const channel: Channel = await this.findOneByName(channelName)
+    if (!channel) {
+      throw new ChannelNotFound()
+    }
+
+    if (channel.passwordRequired && password !== channel.password) {
+      throw new InvalidGroupPassword()
+    }
+
+    channel.members = this.addUserToList('members', newMember, channel.members)
+
+    await this.channelsRepository.save(channel)
+
+    const socket = this.chatGateway.getUserSocket(newMember.id)
+    if (socket) socket.join(channel.id)
+  }
+
+  // ********** //
+  // kickMember //
+  // ********** //
+
+  async kickMember(channelId: string, userId: string): Promise<Channel> {
+    const channel: Channel = await this.checkExistingChannel(channelId)
+
+    const user: User = await this.checkExistingUser(userId)
+
+    channel.members = this.removeUserFromList('members', user, channel.members)
+
+    const updatePayload = { userId, channelId }
+
+    const updatedChannel = this.updateChannel(
+      'kick-user',
+      channel,
+      updatePayload
+    )
+
+    return updatedChannel
+  }
+
+  // ********** //
+  // muteMember //
+  // ********** //
+
+  async muteMember(channelId: string, userId: string): Promise<void> {
+    const channel: Channel = await this.checkExistingChannel(channelId)
+
+    const user: User = await this.checkExistingUser(userId)
+
+    // todo: add a string param to replace '1w'
+    const muteEndDate = parseMuteTime('1w')
+
+    channel.addMuteMember(user, muteEndDate)
   }
 
   // *********** //
@@ -419,12 +385,9 @@ export class ChannelsService {
   async postMessage(messageDto: MessageDto): Promise<Message> {
     const { messageBody, channelId, userId, date } = messageDto
 
-    // todo: check errors
-    // const channel = await this.findOne(channelId)
-    // const user = await this.userService.findOneById(userId)
+    const channel: Channel = await this.checkExistingChannel(channelId)
 
-    const channel = await this.checkExistingChannel(channelId)
-    const user = await this.checkExistingUser(userId)
+    const user: User = await this.checkExistingUser(userId)
 
     const newMessage = this.messagesRepository.create({
       messageBody,
@@ -435,7 +398,7 @@ export class ChannelsService {
 
     const message = await this.messagesRepository.save(newMessage)
 
-    this.chatGateway.server.to(channel.id).emit('message', message)
+    this.chatGateway.server.to(channel.id).emit('chat:message', message)
 
     return message
   }
@@ -445,49 +408,11 @@ export class ChannelsService {
   // *********** //
 
   async removeAdmin(channelId: string, userId: string): Promise<Channel> {
-    const channel = await this.checkExistingChannel(channelId)
-    const user = await this.checkExistingUser(userId)
+    const channel: Channel = await this.checkExistingChannel(channelId)
 
-    channel.admins = this.removeUserFromList(user, channel.admins)
+    const user: User = await this.checkExistingUser(userId)
 
-    return this.channelsRepository.save(channel)
-  }
-
-  // *********** //
-  // unBanMember //
-  // *********** //
-
-  async unBanMember(channelId: string, userId: string): Promise<Channel> {
-    const channel = await this.checkExistingChannel(channelId)
-    const user = await this.checkExistingUser(userId)
-
-    channel.bannedMembers = this.removeUserFromList(user, channel.bannedMembers)
-
-    return this.channelsRepository.save(channel)
-  }
-
-  // ************ //
-  // unMuteMember //
-  // ************ //
-
-  async unMuteMember(channelId: string, userId: string): Promise<Channel> {
-    const channel = await this.checkExistingChannel(channelId)
-    const user = await this.checkExistingUser(userId)
-
-    channel.mutedMembers = this.removeUserFromList(user, channel.mutedMembers)
-
-    return this.channelsRepository.save(channel)
-  }
-
-  // ************ //
-  // unKickMember //
-  // ************ //
-
-  async unKickMember(channelId: string, userId: string): Promise<Channel> {
-    const channel = await this.checkExistingChannel(channelId)
-    const user = await this.checkExistingUser(userId)
-
-    channel.kickedMembers = this.removeUserFromList(user, channel.kickedMembers)
+    channel.admins = this.removeUserFromList('admins', user, channel.admins)
 
     return this.channelsRepository.save(channel)
   }
@@ -496,10 +421,22 @@ export class ChannelsService {
   // removeUserFromList //
   // ****************** //
 
-  private removeUserFromList(user: User, userList: User[]): User[] {
-    if (!userList.includes(user)) {
-      // todo: how to handle this ? error or just return the list ?
-      return userList
+  private removeUserFromList(
+    listName: string,
+    user: User,
+    userList: User[]
+  ): User[] {
+    if (!userList.find((item) => item.id === user.id)) {
+      switch (listName) {
+        case 'admins':
+          throw new UserAlreadyAdmin()
+        case 'bannedMembers':
+          throw new UserAlreadyBanned()
+        case 'members':
+          throw new UserNotInChannel()
+        default:
+          throw new Error('removeUserToList Failed')
+      }
     }
 
     const index = userList.findIndex((item) => item.id === user.id)
@@ -511,17 +448,49 @@ export class ChannelsService {
   }
 
   // *********** //
-  // saveAndEmit //
+  // unBanMember //
   // *********** //
 
-  private async saveAndEmit(
-    updatedChannel: Channel,
+  async unBanMember(channelId: string, userId: string): Promise<Channel> {
+    const channel: Channel = await this.checkExistingChannel(channelId)
+
+    const user: User = await this.checkExistingUser(userId)
+
+    channel.bannedMembers = this.removeUserFromList(
+      'bannedMember',
+      user,
+      channel.bannedMembers
+    )
+
+    return this.channelsRepository.save(channel)
+  }
+
+  // ************ //
+  // unMuteMember //
+  // ************ //
+
+  async unMuteMember(channelId: string, userId: string): Promise<Channel> {
+    const channel: Channel = await this.checkExistingChannel(channelId)
+
+    const user: User = await this.checkExistingUser(userId)
+
+    channel.removeMuteMember(user)
+
+    return this.channelsRepository.save(channel)
+  }
+
+  // ************* //
+  // updateChannel //
+  // ************* //
+
+  private async updateChannel(
     event: string,
+    channelToUpdate: Channel,
     payload: any
   ): Promise<Channel> {
-    const savedChannel = await this.channelsRepository.save(updatedChannel)
+    const savedChannel = await this.channelsRepository.save(channelToUpdate)
 
-    this.chatGateway.server.to(updatedChannel.id).emit(event, payload)
+    this.chatGateway.server.to(savedChannel.id).emit(event, payload)
 
     return savedChannel
   }

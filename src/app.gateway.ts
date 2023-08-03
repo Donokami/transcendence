@@ -2,10 +2,7 @@ import { Logger, UseFilters } from '@nestjs/common'
 
 import { Server } from 'socket.io'
 
-import {
-  WebSocketGateway,
-  WebSocketServer
-} from '@nestjs/websockets'
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets'
 
 import { IUserSocket } from '@/core/types/socket'
 
@@ -27,9 +24,7 @@ export class AppGateway {
     userId: string
   }> = []
 
-  constructor(
-    private userService: UsersService,
-  ) { }
+  constructor(private userService: UsersService) {}
 
   private readonly logger = new Logger(AppGateway.name)
 
@@ -48,13 +43,18 @@ export class AppGateway {
   }
 
   handleDisconnect(client: IUserSocket) {
-    const sockIndex = this.connectedSockets.findIndex((sock) => sock.clientId === client.id)
-    console.log(sockIndex);
+    const sockIndex = this.connectedSockets.findIndex(
+      (sock) => sock.clientId === client.id
+    )
 
     this.connectedSockets.splice(sockIndex, 1)
-    console.log(this.connectedSockets)
 
-    if (this.connectedSockets.filter((sock) => sock.userId === client.request.user.id).length > 0) return
+    if (
+      this.connectedSockets.filter(
+        (sock) => sock.userId === client.request.user.id
+      ).length > 0
+    )
+      return
     this.userService.update(client.request.user.id, {
       status: UserStatus.OFFLINE
     })

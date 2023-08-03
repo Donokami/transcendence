@@ -20,25 +20,21 @@ export class OwnershipGuard implements CanActivate {
   canActivate(
     context: ExecutionContext
   ): boolean | Promise<boolean> | Observable<boolean> {
-    return new Promise(async (resolve) => {
-      try {
-        const req = context.switchToHttp().getRequest<IRequestWithUser>()
-        const roomId = req.params.id
+    const req = context.switchToHttp().getRequest<IRequestWithUser>()
+    const roomId = req.params.id
 
-        const room = await this.gameService.findOne(roomId)
+    const room = this.gameService.findOne(roomId)
 
-        if (!room) {
-          this.logger.warn(`Room ${roomId} not found`)
-          resolve(false)
-        }
+    if (!room) {
+      this.logger.warn(`Room ${roomId} not found`)
+      return false
+    }
 
-        if (room.owner.id === req.session.userId) {
-          this.logger.verbose(`User ${req.session.userId} owns room ${roomId}`)
-          resolve(true)
-        }
+    if (room.owner.id === req.session.userId) {
+      this.logger.verbose(`User ${req.session.userId} owns room ${roomId}`)
+      return true
+    }
 
-        resolve(false)
-      } catch (e) {}
-    })
+    return false
   }
 }

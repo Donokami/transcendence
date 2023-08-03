@@ -98,10 +98,6 @@ export class User {
   bannedChannels: Channel[]
 
   @JoinTable()
-  @ManyToMany(() => Channel, (channel: Channel) => channel.kickedMembers)
-  kickedChannels: Channel[]
-
-  @JoinTable()
   @ManyToMany(() => Channel, (channel: Channel) => channel.mutedMembers)
   mutedChannels: Channel[]
 

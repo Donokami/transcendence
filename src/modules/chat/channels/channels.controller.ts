@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -18,17 +19,16 @@ import { AuthGuard } from '@/core/guards/auth.guard'
 import { ChannelsService } from './channels.service'
 
 import { CreateChannelDto } from './dtos/create-channel.dto'
-import { GetGroupByNameDto } from './dtos/get-group-by-name.dto'
 import { JoinGroupDto } from './dtos/join-group.dto'
 import { MessageDto } from './dtos/message.dto'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { Channel } from '@/modules/chat/channels/entities/channel.entity'
-import { OwnershipGuard } from './guards/ownership.guard'
+import { ApiOperation } from '@nestjs/swagger'
 
 @Controller('channels')
 @UseFilters(new GlobalExceptionFilter())
 export class ChannelsController {
-  constructor(private readonly channelsService: ChannelsService) { }
+  constructor(private readonly channelsService: ChannelsService) {}
 
   // ****** //
   // LOGGER //
@@ -40,71 +40,90 @@ export class ChannelsController {
   // addAdmin //
   // ********* //
 
+  // todo: add other guards as necessary
   @Put('/:channelId/admins')
+  @ApiOperation({
+    summary: 'Add a user to the admins list of a group',
+    operationId: 'addAdmin',
+    description: 'Add a user to the admins list of a group',
+    tags: ['chat']
+  })
   @UseGuards(AuthGuard)
-  // todo : add other guards as necessary
+  // @UseGuards(ChatMemberGuard)
   // @UseGuards(ChatOwnershipGuard)
   async addAdmin(
     @Param('channelId') channelId: string,
     @Body('userId') userId: string
   ): Promise<Channel> {
-    return this.channelsService.addAdmin(channelId, userId)
+    return await this.channelsService.addAdmin(channelId, userId)
   }
 
   // ********* //
   // banMember //
   // ********* //
 
+  // todo: add other guards as necessary
   @Put('/:channelId/ban')
+  @ApiOperation({
+    summary: 'Ban a member from a group',
+    operationId: 'banMember',
+    description: 'Ban a member from a group',
+    tags: ['chat']
+  })
   @UseGuards(AuthGuard)
-  // todo : add other guards as necessary
+  // @UseGuards(ChatMemberGuard)
   // @UseGuards(ChatAdminGuard)
   async banMember(
     @Param('channelId') channelId: string,
     @Body('userId') userId: string
   ): Promise<Channel> {
-    return this.channelsService.banMember(channelId, userId)
+    const channel = this.channelsService.banMember(channelId, userId)
+    // if (!channel)
+    //   throw new BadRequestException(
+    //     `Failed to ban user with ID : ${userId} from channel with ID: ${channelId}`
+    //   )
+    return channel
   }
 
-  // *************** //
-  // createDmChannel //
-  // *************** //
+  // ************* //
+  // createChannel //
+  // ************* //
 
+  // todo: check error handling
   @Post('/create')
+  @ApiOperation({
+    summary: 'Create a new channel',
+    operationId: 'createChannel',
+    description: 'Create a new channel',
+    tags: ['chat']
+  })
   @UseGuards(AuthGuard)
-  async createDmChannel(@Body() body: CreateChannelDto) {
-    try {
-      const dmChannel = await this.channelsService.createChannel(body)
-      return dmChannel
-    } catch (error) {
-      throw error
-    }
-  }
-
-  // ****************** //
-  // createGroupChannel //
-  // ****************** //
-
-  @Post('/create/group')
-  @UseGuards(AuthGuard)
-  async createGroupChannel(@Body() body: CreateChannelDto) {
-    try {
-      const groupChannel = await this.channelsService.createGroupChannel(body)
-      return groupChannel
-    } catch (error) {
-      throw error
-    }
+  async createChannel(@Body() body: CreateChannelDto): Promise<Channel> {
+    const channel = await this.channelsService.createChannel(body)
+    if (!channel)
+      throw new NotFoundException(`Failed to create ${body.name} channel `)
+    return channel
   }
 
   // *********** //
   // getChannel //
   // *********** //
 
+  // todo: add other guards as necessary
   @Get('/:id')
+  @ApiOperation({
+    summary: 'Get a channel (via channel id)',
+    operationId: 'getChannel',
+    description: 'Get a channel (via channel id)',
+    tags: ['chat']
+  })
   @UseGuards(AuthGuard)
-  // todo: add MemberGuard
-  async getChannel(@Param('id') id: string) {
-    const channel = await this.channelsService.findOne(id)
+  // @UseGuards(ChatMemberGuard) , may cause problems
+  async getChannel(@Param('id') id: string): Promise<Channel> {
+    const channel = await this.channelsService.findOneById(id)
+    if (!channel) {
+      throw new NotFoundException(`Channel with name ${id} not found`)
+    }
     return channel
   }
 
@@ -113,8 +132,14 @@ export class ChannelsController {
   // ************** //
 
   @Get('/group/:name')
+  @ApiOperation({
+    summary: 'Get a group (via channel name)',
+    operationId: 'getGroupByName',
+    description: 'Get a group (via channel name)',
+    tags: ['chat']
+  })
   @UseGuards(AuthGuard)
-  async getGroupByName(@Param('name') name: string) {
+  async getGroupByName(@Param('name') name: string): Promise<Channel> {
     const channel = await this.channelsService.findOneByName(name)
     if (!channel)
       throw new NotFoundException(`Group with name ${name} not found`)
@@ -125,11 +150,23 @@ export class ChannelsController {
   // getMessages //
   // *********** //
 
+  // todo: add other guards as necessary
   @Get('/:id/messages')
+  @ApiOperation({
+    summary: 'Get all the messages sent in a channel (via channel id)',
+    operationId: 'getMessages',
+    description: 'Get all the messages sent in a channel (via channel id)',
+    tags: ['chat']
+  })
   @UseGuards(AuthGuard)
-  // todo: add MemberGuard
+  // @UseGuards(ChatMemberGuard)
   async getMessages(@Param('id') id: string) {
     const messages = await this.channelsService.getMessages(id)
+    if (messages === null) {
+      throw new NotFoundException(
+        `Failed to get messages from channel with ID : ${id}`
+      )
+    }
 
     return messages
   }
@@ -139,6 +176,12 @@ export class ChannelsController {
   // ********* //
 
   @Post('/group/join')
+  @ApiOperation({
+    summary: 'Join a group',
+    operationId: 'joinGroup',
+    description: 'Join a group',
+    tags: ['chat']
+  })
   @UseGuards(AuthGuard)
   async joinGroup(@Body() joinGroupDto: JoinGroupDto, @Session() session: any) {
     const newMemberId = session.id
@@ -149,9 +192,17 @@ export class ChannelsController {
   // kickMember //
   // ********** //
 
-  @Put('/:channelId/kick')
-  @UseGuards(AuthGuard)
   // todo : add other guards as necessary
+  @Put('/:channelId/kick')
+  @ApiOperation({
+    summary: 'Kick a member from a group',
+    operationId: 'kickMember',
+    description: 'Kick a member from a group',
+    tags: ['chat']
+  })
+  @UseGuards(AuthGuard)
+  // @UseGuards(ChatMemberGuard)
+  // @UseGuards(ChatAdminGuard)
   async kickMember(
     @Param('channelId') channelId: string,
     @Body('userId') userId: string
@@ -163,23 +214,38 @@ export class ChannelsController {
   // muteMember //
   // ********** //
 
+  // todo: add other guards as necessary
   @Put('/:channelId/mute')
+  @ApiOperation({
+    summary: 'Mute a group member',
+    operationId: 'muteMember',
+    description: 'Mute a group member',
+    tags: ['chat']
+  })
   @UseGuards(AuthGuard)
-  // todo : add other guards as necessary
+  // @UseGuards(ChatMemberGuard)
+  // @UseGuards(ChatAdminGuard)
   async muteMember(
     @Param('channelId') channelId: string,
     @Body('userId') userId: string
-  ): Promise<Channel> {
-    return this.channelsService.muteMember(channelId, userId)
+  ): Promise<void> {
+    return await this.channelsService.muteMember(channelId, userId)
   }
 
   // ************ //
   // postMessages //
   // ************ //
 
+  // todo: add other guards as necessary
   @Post('/:id/messages')
+  @ApiOperation({
+    summary: 'Post messages sent in a channel, in the database',
+    operationId: 'postMessages',
+    description: 'Post messages sent in a channel, in the database',
+    tags: ['chat']
+  })
   @UseGuards(AuthGuard)
-  // todo: add MemberGuard
+  // @UseGuards(ChatMemberGuard)
   async postMessages(@Param('id') id: string, @Body() body: MessageDto) {
     const { userId, messageBody, date } = body
     const message = await this.channelsService.postMessage({
@@ -196,9 +262,17 @@ export class ChannelsController {
   // removeAdmin //
   // *********** //
 
+  // todo: add other guards as necessary
   @Delete('/:channelId/admins/:userId')
   @UseGuards(AuthGuard)
-  // todo: add other guards as necessary
+  @ApiOperation({
+    summary: 'Remove a user from the admins list of a group',
+    operationId: 'removeAdmin',
+    description: 'Remove a user from the admins list of a group',
+    tags: ['chat']
+  })
+  // @UseGuards(ChatMemberGuard)
+  // @UseGuards(ChatOwnershipGuard)
   async removeAdmin(
     @Param('channelId') channelId: string,
     @Param('userId') userId: string
@@ -210,9 +284,17 @@ export class ChannelsController {
   // unBanMember //
   // *********** //
 
-  @Delete('/:channelId/bannedMembers/:userId')
-  @UseGuards(AuthGuard)
   // todo: add other guards as necessary
+  @Delete('/:channelId/bannedMembers/:userId')
+  @ApiOperation({
+    summary: 'Un-ban a user from a group',
+    operationId: 'unBanMember',
+    description: 'Un-ban a user from a group',
+    tags: ['chat']
+  })
+  @UseGuards(AuthGuard)
+  // @UseGuards(ChatMemberGuard)
+  // @UseGuards(ChatAdminGuard)
   async unBanMember(
     @Param('channelId') channelId: string,
     @Param('userId') userId: string
@@ -224,9 +306,17 @@ export class ChannelsController {
   // unMuteMember //
   // ************ //
 
-  @Delete('/:channelId/mutedMembers/:userId')
-  @UseGuards(AuthGuard)
   // todo: add other guards as necessary
+  @Delete('/:channelId/mutedMembers/:userId')
+  @ApiOperation({
+    summary: 'Un-mute a group member',
+    operationId: 'unMuteMember',
+    description: 'Un-mute a group member',
+    tags: ['chat']
+  })
+  @UseGuards(AuthGuard)
+  // @UseGuards(ChatMemberGuard)
+  // @UseGuards(ChatAdminGuard)
   async unMuteMember(
     @Param('channelId') channelId: string,
     @Param('userId') userId: string

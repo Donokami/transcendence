@@ -14,6 +14,7 @@ import { User } from '@/modules/users/user.entity'
 
 import { Message } from './message.entity'
 import { Logger } from '@nestjs/common'
+import { MutedUser } from './muted-user.entity'
 
 // ****** //
 // LOGGER //
@@ -56,11 +57,8 @@ export class Channel {
   @ManyToMany(() => User, (user: User) => user.bannedChannels)
   bannedMembers: User[]
 
-  @ManyToMany(() => User, (user: User) => user.kickedChannels)
-  kickedMembers: User[]
-
-  @ManyToMany(() => User, (user: User) => user.mutedChannels)
-  mutedMembers: User[]
+  @OneToMany(() => MutedUser, (mutedUser: MutedUser) => mutedUser.channel)
+  mutedMembers: MutedUser[]
 
   // **************************** //
   // PRIVACY RELATED INFORMATIONS //
@@ -87,5 +85,24 @@ export class Channel {
   @AfterRemove()
   logRemove() {
     logger.verbose(`Channel with id ${this.id} removed`)
+  }
+
+  addMuteMember(user: User, muteEndDate: Date) {
+    if (!this.mutedMembers) this.mutedMembers = []
+
+    const mutedMember = new MutedUser()
+
+    mutedMember.channel = this
+    mutedMember.user = user
+    mutedMember.muteEndDate = muteEndDate
+
+    this.mutedMembers.push(mutedMember)
+    //todo: save if not done automatically
+  }
+
+  removeMuteMember(user: User) {
+    if (!this.mutedMembers) return
+    this.mutedMembers = this.mutedMembers.filter((mute) => mute.user !== user)
+    //todo: save if not done automatically
   }
 }
