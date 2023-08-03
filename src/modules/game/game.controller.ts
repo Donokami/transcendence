@@ -6,6 +6,7 @@ import {
   Patch,
   Post,
   Req,
+  Session,
   UseFilters,
   UseGuards
 } from '@nestjs/common'
@@ -54,8 +55,10 @@ export class GameController {
     description: 'Get all games',
     tags: ['game']
   })
-  findAll() {
-    return this.gameService.findAll().filter((room) => !room.isPrivate)
+  findAll(@Session() session: any) {
+    return this.gameService
+      .findAll()
+      .filter((room) => !room.isPrivate || room.owner.id === session.userId)
   }
 
   @Get('/matchmaking')
@@ -66,8 +69,8 @@ export class GameController {
     description: 'Join the matchmaking queue',
     tags: ['game']
   })
-  joinQueue(@Req() req: IRequestWithUser): Promise<RoomObject> {
-    return this.gameService.joinQueue(req.session.userId)
+  joinQueue(@Session() session: any): Promise<RoomObject> {
+    return this.gameService.joinQueue(session.userId)
   }
 
   @Post()
