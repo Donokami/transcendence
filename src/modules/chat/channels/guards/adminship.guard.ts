@@ -8,8 +8,8 @@ import {
 import { ChannelsService } from '@/modules/chat/channels/channels.service'
 
 @Injectable()
-export class OwnershipGuard implements CanActivate {
-  private readonly logger = new Logger(OwnershipGuard.name)
+export class AdminshipGuard implements CanActivate {
+  private readonly logger = new Logger(AdminshipGuard.name)
 
   constructor(private readonly channelService: ChannelsService) {}
 
@@ -25,9 +25,9 @@ export class OwnershipGuard implements CanActivate {
       return false
     }
 
-    if (userId !== channel.owner.id) {
+    if (!channel.admins.find((admin) => userId === admin.id)) {
       this.logger.warn(
-        `User with ID : ${userId} is not the owner of channel with ID : ${channelId}`
+        `User with ID : ${userId} is not an admin of channel with ID : ${channelId}`
       )
       return false
     }
