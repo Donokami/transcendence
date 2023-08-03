@@ -24,11 +24,9 @@
         <!-- <TresDirectionalLight color="#ffaaaa" :position="[0, 5, 3]" :intensity="0.5" /> -->
         <TresPerspectiveCamera
           ref="cameraRef"
-          :rotation-y="
-            loggedUser?.id === gameState.players[1].userId ? 1 * Math.PI : 0
-          "
-          :position="[0, 1, 0]"
-          :fov="25"
+          :rotation-y="cameraRotation"
+          :position="[0, 5, 0]"
+          :fov="isSpectator ? 80 : 25"
           :aspect="1"
           :near="0.1"
           :far="1000" />
@@ -73,14 +71,15 @@
         </TresMesh>
         <Suspense>
           <Text3D
-            :size="3"
-            :height="1"
+            :size="8"
+            :height="0.01"
             :position="[
-              0,
-              (gameMetrics.fieldHeight + gameMetrics.paddleHeight) * 4,
-              -gameMetrics.fieldDepth * 0.5
+              -gameMetrics.fieldWidth * 0.5 - 1,
+              gameMetrics.fieldHeight + 3.3,
+              0
             ]"
             :text="scoreText"
+            :rotation-y="Math.PI * 0.5"
             center
             need-updates
             font="https://raw.githubusercontent.com/Tresjs/assets/main/fonts/FiraCodeRegular.json">
@@ -116,22 +115,26 @@ const isSpectator = computed(() => {
 
 const winnerMessage = computed(() => {
   if (gameState.value.players[0].score > gameState.value.players[1].score) {
-    return loggedUser?.id === gameState.value.players[0].userId
-      ? 'You win!'
-      : 'You lose'
+    const username: string = room.value?.players[0]?.username || 'bot'
+    return `${username} wins!`
   } else if (
     gameState.value.players[0].score < gameState.value.players[1].score
   ) {
-    return loggedUser?.id === gameState.value.players[1].userId
-      ? 'You win!'
-      : 'You lose'
+    const username: string = room.value?.players[1]?.username || 'bot'
+    return `${username} wins!`
   }
   return 'Draw'
 })
 
-function cameraPos(): Vector3 {
+const cameraRotation = computed(() => {
+  if (isSpectator.value) return 0.5 * Math.PI
+  if (loggedUser?.id === gameState.value.players[1].userId) return 1 * Math.PI
+  return 0
+})
+
+function cameraPosition(): Vector3 {
   if (isSpectator.value) {
-    return new Vector3(0, 1, 0)
+    return new Vector3(gameMetrics.fieldWidth, 10, 0)
   } else if (loggedUser?.id === gameState.value.players[1].userId) {
     return new Vector3(
       gameState.value.players[1].paddlePos.x,
@@ -177,6 +180,7 @@ const paddle2Ref: ShallowRef<Object3D | null> = shallowRef(null)
 const { onLoop } = useRenderLoop()
 
 const MovePaddle = (e: MouseEvent): void => {
+  if (isSpectator.value) return
   socket.emit('game:move', {
     roomId: room.value.id,
     posX: e.offsetX / gameMetrics.canvasWidth
@@ -218,7 +222,7 @@ function renderPong(
   ball.position.lerp(gameState.value.ballPos, animationTime)
   paddle1.position.lerp(gameState.value.players[0].paddlePos, animationTime)
   paddle2.position.lerp(gameState.value.players[1].paddlePos, animationTime)
-  camera.position.lerp(cameraPos(), animationTime)
+  camera.position.lerp(cameraPosition(), animationTime)
   scoreText.value = `${gameState.value.players[0].score} - ${gameState.value.players[1].score}`
 }
 </script>
