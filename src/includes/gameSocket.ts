@@ -22,7 +22,7 @@ export const room: Room = reactive({
   paddleRatio: 0.3,
   ballSpeed: 1,
   gameDuration: 1.5,
-  status: ''
+  status: 'open'
 })
 
 export const game: Game = reactive({
@@ -69,6 +69,7 @@ socket.on('connect', () => {
 })
 
 socket.on('disconnect', async () => {
+  resetGame()
   console.log('disconnected from the /game socket')
 })
 

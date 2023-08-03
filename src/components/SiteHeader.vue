@@ -1,16 +1,16 @@
 <template>
-  <div class="mx-auto w-full border-black border-y-2">
-    <div class="navbar mx-auto p-0 items-stretch bg-base-100 text-black z-40">
-      <div class="navbar-start flex-grow md:hidden">
-        <div class="dropdown flex h-full w-full items-center">
+  <div class="w-full mx-auto border-black border-y-2">
+    <div class="z-40 items-stretch p-0 mx-auto text-black navbar bg-base-100">
+      <div class="flex-grow navbar-start md:hidden">
+        <div class="flex items-center w-full h-full dropdown">
           <label
             tabindex="0"
-            class="hover:bg-gray-300 flex h-full items-center justify-center w-14 cursor-pointer">
-            <iconify-icon icon="ri:menu-2-line" class="h-6 w-6"></iconify-icon>
+            class="flex items-center justify-center h-full cursor-pointer hover:bg-gray-300 w-14">
+            <iconify-icon icon="ri:menu-2-line" class="w-6 h-6"></iconify-icon>
           </label>
           <ul
             tabindex="0"
-            class="menu menu-compact dropdown-content shadow bg-base-100 z-40">
+            class="z-40 shadow menu menu-compact dropdown-content bg-base-100">
             <li>
               <router-link to="/" class="rounded-none">Home</router-link>
             </li>
@@ -23,8 +23,8 @@
           </ul>
         </div>
       </div>
-      <div class="navbar-start flex-grow hidden md:flex">
-        <ul class="menu menu-horizontal p-0 h-full">
+      <div class="flex-grow hidden navbar-start md:flex">
+        <ul class="h-full p-0 menu menu-horizontal">
           <li>
             <router-link
               to="/"
@@ -51,15 +51,17 @@
           </li>
         </ul>
       </div>
-      <div class="navbar-center border-x-2 border-black">
-        <a class="p-2 font-bold text-xl">__TRANSCENDENCE__</a>
+      <div class="text-white bg-black border-black navbar-center border-x-2">
+        <router-link to="/" class="p-2 px-6 text-xl font-bold">
+          __TRANSCENDENCE__
+        </router-link>
       </div>
-      <div class="navbar-end items-stretch flex-grow">
-        <div class="dropdown flex items-center border-x-2 border-black">
+      <div class="items-stretch flex-grow navbar-end">
+        <div class="flex items-center border-black dropdown border-x-2">
           <label
             tabindex="0"
             class="flex items-center h-full cursor-pointer hover:bg-gray-300">
-            <div class="flex justify-center items-center">
+            <div class="flex items-center justify-center">
               <div class="flex items-center justify-center w-20">
                 <img
                   v-if="
@@ -68,18 +70,18 @@
                     pictureSrc
                   "
                   :src="pictureSrc"
-                  class="object-cover h-12 w-12 rounded-full" />
+                  class="object-cover w-12 h-12 rounded-full" />
                 <iconify-icon
                   v-else
                   icon="ri:account-circle-line"
-                  class="h-12 w-12"></iconify-icon>
+                  class="w-12 h-12"></iconify-icon>
               </div>
             </div>
           </label>
           <ul
             v-if="userStore.loggedUser"
             tabindex="0"
-            class="menu menu-compact dropdown-content shadow bg-base-100 -ml-4 mt-8">
+            class="mt-8 -ml-4 shadow menu menu-compact dropdown-content bg-base-100">
             <li>
               <router-link
                 :to="{

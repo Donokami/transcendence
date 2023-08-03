@@ -1,66 +1,104 @@
 <template>
-  <div class="p-4 bg-red-300" v-if="room.name">
-    <h1 class="text-xl font-bold">{{ room.name }}</h1>
-
-    <ul>
-      <li>{{ room.players.length }} / 2</li>
-      <li>
-        <span>Status: </span>
-        {{ room.status }}
-      </li>
-      <li>
-        <div class="flex flex-row items-center">
-          <label class="block mb-1 font-medium" for="private">
-            Private game
-          </label>
-          <input
-            type="checkbox"
-            name="private"
-            @click="togglePrivacy"
-            class="ml-4 rounded-none toggle"
-            :disabled="loggedUser?.id !== room.owner.id" />
+  <div v-if="!game.started" class="flex flex-col flex-auto p-8">
+    <div class="flex flex-col w-40 mx-auto my-auto sm:w-56">
+      <div
+        class="flex items-center justify-between w-full mx-auto text-xl sm:text-2xl">
+        <!-- Player 1 -->
+        <div class="relative font-semibold rounded-full">
+          <template v-if="room.players[0]">
+            <div
+              class="absolute w-20 text-center truncate -translate-x-1/2 -top-3/4 left-1/2 sm:w-28">
+              <span class="text-base font-semibold">
+                {{ room.players[0].username }}
+              </span>
+            </div>
+            <img
+              v-if="room.players[0].profilePicture"
+              :src="room.players[0].profilePicture"
+              class="object-cover w-10 h-10 rounded-full sm:h-12 sm:w-12" />
+            <iconify-icon
+              v-else
+              icon="ri:account-circle-line"
+              class="w-10 h-10 sm:h-12 sm:w-12">
+            </iconify-icon>
+          </template>
+          <iconify-icon
+            v-else
+            icon="ri:question-line"
+            class="w-10 h-10 sm:h-12 sm:w-12 opacity-60">
+          </iconify-icon>
         </div>
-      </li>
-      <li>
-        <span>Owner: </span>
-        {{ room.owner.username }}
-      </li>
-      <span>Players</span>
-      <li v-for="player in room.players" :key="player.id">
-        {{ player.username }}
-      </li>
-    </ul>
+
+        <span class="font-semibold">VS</span>
+
+        <!-- Player 2 -->
+        <div class="relative font-semibold rounded-full">
+          <template v-if="room.players[1]">
+            <div
+              class="absolute w-20 text-center truncate -translate-x-1/2 -top-3/4 left-1/2 sm:w-28">
+              <span class="text-base font-semibold">
+                {{ room.players[1].username }}
+              </span>
+            </div>
+            <img
+              v-if="room.players[1].profilePicture"
+              :src="room.players[1].profilePicture"
+              class="object-cover w-10 h-10 rounded-full sm:h-12 sm:w-12" />
+            <iconify-icon
+              v-else
+              icon="ri:account-circle-line"
+              class="w-10 h-10 sm:h-12 sm:w-12">
+            </iconify-icon>
+          </template>
+          <iconify-icon
+            v-else
+            icon="ri:question-line"
+            class="w-10 h-10 sm:h-12 sm:w-12 opacity-60">
+          </iconify-icon>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-auto">
+      <button
+        class="block px-4 py-2 mx-auto text-xl bg-blue-500 neobrutalist-box"
+        @click="startGame"
+        :disabled="loggedUser?.id !== room?.owner?.id">
+        Start game
+      </button>
+    </div>
   </div>
-  <!-- <div v-if="isError">
-        <div>Error: {{ error }}</div>
-        <button>Retry</button>
-      </div> -->
 </template>
 
 <script setup lang="ts">
-import { useUserStore } from '@/stores/UserStore'
 import { ref } from 'vue'
-import type { Room } from '@/types'
+import type { Game, Room } from '@/types'
+import { socket } from '@/includes/gameSocket'
+import { useUserStore } from '@/stores/UserStore'
 
 const props = defineProps<{
   room: Room
+  game: Game
 }>()
 
 const room = ref(props.room)
+const game = ref(props.game)
 
 const { loggedUser } = useUserStore()
 
-const togglePrivacy = async (): Promise<void> => {
-  await fetch(`http://localhost:3000/api/games/${room.value.id}`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      isPrivate: !room.value.isPrivate
-    }),
-    credentials: 'include'
-  })
+function startGame(): void {
+  socket.emit('game:start', room.value.id)
 }
-// const kick = async() => {}
+
+// const pictureSrc = computed(() => {
+//   const profilePicture = userStore.loggedUser?.profilePicture
+//   if (!profilePicture) return null
+
+//   return profilePicture
+//   // if (profilePicture.includes('cdn.intra.42')) {
+//   //   return profilePicture
+//   // } else {
+//   //   return `http://localhost:3000/${profilePicture}`
+//   // }
+// })
 </script>

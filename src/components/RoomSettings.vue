@@ -10,6 +10,7 @@
         class="join-item btn"
         type="radio"
         :value="false"
+        :disabled="!isOwner"
         name="privacy"
         aria-label="Public"
         v-model="room.isPrivate" />
@@ -17,6 +18,7 @@
         class="join-item btn"
         type="radio"
         :value="true"
+        :disabled="!isOwner"
         name="privacy"
         aria-label="Private"
         v-model="room.isPrivate" />
@@ -31,6 +33,7 @@
         type="radio"
         name="time"
         :value="1.5"
+        :disabled="!isOwner"
         aria-label="01:30"
         v-model="room.gameDuration" />
       <input
@@ -38,6 +41,7 @@
         type="radio"
         name="time"
         :value="3"
+        :disabled="!isOwner"
         aria-label="03:00"
         v-model="room.gameDuration" />
       <input
@@ -45,6 +49,7 @@
         type="radio"
         name="time"
         :value="6"
+        :disabled="!isOwner"
         aria-label="06:00"
         v-model="room.gameDuration" />
     </div>
@@ -58,6 +63,7 @@
         type="radio"
         name="speed"
         :value="0.8"
+        :disabled="!isOwner"
         aria-label="0.8x"
         v-model="room.ballSpeed" />
       <input
@@ -65,6 +71,7 @@
         type="radio"
         name="speed"
         :value="1"
+        :disabled="!isOwner"
         aria-label="1x"
         v-model="room.ballSpeed" />
       <input
@@ -72,6 +79,7 @@
         type="radio"
         name="speed"
         :value="1.2"
+        :disabled="!isOwner"
         aria-label="1.2x"
         v-model="room.ballSpeed" />
     </div>
@@ -85,6 +93,7 @@
         type="radio"
         name="paddle"
         :value="0.1"
+        :disabled="!isOwner"
         aria-label="Small"
         v-model="room.paddleRatio" />
       <input
@@ -92,6 +101,7 @@
         type="radio"
         name="paddle"
         :value="0.2"
+        :disabled="!isOwner"
         aria-label="Medium"
         v-model="room.paddleRatio" />
       <input
@@ -99,6 +109,7 @@
         type="radio"
         name="paddle"
         :value="0.3"
+        :disabled="!isOwner"
         aria-label="Large"
         v-model="room.paddleRatio" />
     </div>
@@ -107,8 +118,11 @@
 
 <script setup lang="ts">
 import { room } from '@/includes/gameSocket'
+import { useUserStore } from '@/stores/UserStore'
 import fetcher from '@/utils/fetcher'
-import { watch, computed } from 'vue'
+import { watch, computed, type ComputedRef } from 'vue'
+
+const { loggedUser } = useUserStore()
 
 // We need to use computed here because of a bug in Vue 3
 // See https://github.com/vuejs/vue/issues/2164#issuecomment-432872718
@@ -121,7 +135,12 @@ const roomUpdate = computed(() => {
   }
 })
 
+const isOwner: ComputedRef<boolean> = computed(() => {
+  return loggedUser?.id === room.owner?.id
+})
+
 watch(roomUpdate, async () => {
+  if (!isOwner.value) return
   await fetcher.patch(`/games/${room.id}`, {
     isPrivate: roomUpdate.value.isPrivate,
     paddleRatio: roomUpdate.value.paddleRatio,

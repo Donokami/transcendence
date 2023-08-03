@@ -1,109 +1,98 @@
 <template>
-  <div class="">
-    <!-- <p class="">
-      {{ scoring }} ({{ Math.round(1 / gameState.fps) }} fps) -
-      {{
-        Math.round(ballRef?.position.z) +
-        ' - ' +
-        Math.round(ballRef?.position.y * 100) / 100 +
-        ' - ' +
-        Math.round(ballRef?.position.x * 100) / 100
-      }}
-      -
-      {{ Math.round(game.remainingTime) }}
-    </p> -->
-    <div class="w-[720px] h-[480px] relative">
-      <div
-        class="absolute z-10 flex items-center w-full h-full bg-black bg-opacity-30"
-        v-if="gameState.ended">
-        <span class="m-auto text-5xl font-semibold text-white">
-          {{ winnerMessage }}
-        </span>
-      </div>
-      <TresCanvas
-        clear-color="#7dd3fc"
-        shadows
-        @mousemove="MovePaddle"
-        class="absolute">
-        <TresScene>
-          <TresAmbientLight
-            color="#ffffff"
-            :position="[0, 3, 0]"
-            :intensity="1" />
-          <TresDirectionalLight color="#ffffff" :intensity="2" />
-          <!-- <TresDirectionalLight color="#ffaaaa" :position="[0, 5, 3]" :intensity="0.5" /> -->
-          <TresPerspectiveCamera
-            ref="cameraRef"
-            :rotation-y="
-              loggedUser?.id === gameState.players[1].userId ? 1 * Math.PI : 0
-            "
-            :position="[0, 1, 0]"
-            :fov="25"
-            :aspect="1"
-            :near="0.1"
-            :far="1000" />
-          <TresGroup>
-            <TresMesh>
-              <TresBoxGeometry
-                :args="[
-                  gameMetrics.fieldWidth,
-                  gameMetrics.fieldHeight,
-                  gameMetrics.fieldDepth
-                ]" />
-              <TresMeshToonMaterial color="#f80" />
-            </TresMesh>
-            <TresMesh
-              :rotate-x="-Math.PI * 0.5"
-              :position-y="gameMetrics.fieldHeight * 0.5 + 0.01">
-              <TresPlaneGeometry :args="[gameMetrics.fieldWidth, 1]" />
-              <TresMeshToonMaterial color="#fff" />
-            </TresMesh>
-          </TresGroup>
-          <TresMesh ref="paddle1Ref">
+  <div class="w-[720px] h-[480px] relative mx-auto border-black border-2">
+    <div class="absolute z-10 flex items-center w-full m-auto text-white">
+      <span class="m-auto">{{ Math.round(gameState.remainingTime) }}</span>
+    </div>
+    <div
+      class="absolute z-10 flex items-center w-full h-full bg-black bg-opacity-30"
+      v-if="gameState.ended">
+      <span class="m-auto text-5xl font-semibold text-white">
+        {{ winnerMessage }}
+      </span>
+    </div>
+    <TresCanvas
+      clear-color="#7dd3fc"
+      shadows
+      @mousemove="MovePaddle"
+      class="absolute">
+      <TresScene>
+        <TresAmbientLight
+          color="#ffffff"
+          :position="[0, 3, 0]"
+          :intensity="1" />
+        <TresDirectionalLight color="#ffffff" :intensity="2" />
+        <!-- <TresDirectionalLight color="#ffaaaa" :position="[0, 5, 3]" :intensity="0.5" /> -->
+        <TresPerspectiveCamera
+          ref="cameraRef"
+          :rotation-y="
+            loggedUser?.id === gameState.players[1].userId ? 1 * Math.PI : 0
+          "
+          :position="[0, 1, 0]"
+          :fov="25"
+          :aspect="1"
+          :near="0.1"
+          :far="1000" />
+        <TresGroup>
+          <TresMesh>
             <TresBoxGeometry
               :args="[
-                room.paddleRatio * gameMetrics.fieldWidth,
-                gameMetrics.paddleHeight,
-                gameMetrics.paddleDepth
+                gameMetrics.fieldWidth,
+                gameMetrics.fieldHeight,
+                gameMetrics.fieldDepth
               ]" />
+            <TresMeshToonMaterial color="#f80" />
+          </TresMesh>
+          <TresMesh
+            :rotate-x="-Math.PI * 0.5"
+            :position-y="gameMetrics.fieldHeight * 0.5 + 0.01">
+            <TresPlaneGeometry :args="[gameMetrics.fieldWidth, 1]" />
             <TresMeshToonMaterial color="#fff" />
           </TresMesh>
-          <TresMesh ref="paddle2Ref">
-            <TresBoxGeometry
-              :args="[
-                room.paddleRatio * gameMetrics.fieldWidth,
-                gameMetrics.paddleHeight,
-                gameMetrics.paddleDepth
-              ]" />
+        </TresGroup>
+        <TresMesh ref="paddle1Ref">
+          <TresBoxGeometry
+            :args="[
+              room.paddleRatio * gameMetrics.fieldWidth,
+              gameMetrics.paddleHeight,
+              gameMetrics.paddleDepth
+            ]" />
+          <TresMeshToonMaterial color="#fff" />
+        </TresMesh>
+        <TresMesh ref="paddle2Ref">
+          <TresBoxGeometry
+            :args="[
+              room.paddleRatio * gameMetrics.fieldWidth,
+              gameMetrics.paddleHeight,
+              gameMetrics.paddleDepth
+            ]" />
+          <TresMeshToonMaterial color="#fff" />
+        </TresMesh>
+        <TresMesh ref="ballRef">
+          <TresSphereGeometry :args="[gameMetrics.ballRadius]" />
+          <TresMeshToonMaterial color="yellow" />
+        </TresMesh>
+        <Suspense>
+          <Text3D
+            :size="3"
+            :height="1"
+            :position="[
+              0,
+              (gameMetrics.fieldHeight + gameMetrics.paddleHeight) * 4,
+              -gameMetrics.fieldDepth * 0.5
+            ]"
+            :text="scoreText"
+            center
+            need-updates
+            font="https://raw.githubusercontent.com/Tresjs/assets/main/fonts/FiraCodeRegular.json">
             <TresMeshToonMaterial color="#fff" />
-          </TresMesh>
-          <TresMesh ref="ballRef">
-            <TresSphereGeometry :args="[gameMetrics.ballRadius]" />
-            <TresMeshToonMaterial color="yellow" />
-          </TresMesh>
-          <Suspense>
-            <Text3D
-              :size="3"
-              :height="1"
-              :position="[
-                0,
-                (gameMetrics.fieldHeight + gameMetrics.paddleHeight) * 4,
-                -gameMetrics.fieldDepth * 0.5
-              ]"
-              :text="scoreText"
-              center
-              need-updates
-              font="https://raw.githubusercontent.com/Tresjs/assets/main/fonts/FiraCodeRegular.json">
-              <TresMeshToonMaterial color="#fff" />
-            </Text3D>
-          </Suspense>
-          <!-- <Suspense>
+          </Text3D>
+        </Suspense>
+        <!-- <Suspense>
             <Environment ref="envRef" :files="'game/environment.hdr'" />
           </Suspense> -->
-        </TresScene>
-        <!-- <OrbitControls v-if="isSpectator" /> -->
-      </TresCanvas>
-    </div>
+      </TresScene>
+      <!-- <OrbitControls v-if="isSpectator" /> -->
+    </TresCanvas>
   </div>
 </template>
 
