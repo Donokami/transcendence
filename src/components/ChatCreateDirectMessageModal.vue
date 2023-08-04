@@ -2,31 +2,32 @@
   <div>
     <input type="checkbox" id="my-modal-1" class="modal-toggle" />
     <div class="modal">
-      <div class="modal-box rounded-none">
-        <!-- CLOSING CROSS -->
-        <div class="flex items-center justify-end">
-          <button
-            class="btn bg-white border-black border-2 text-black hover:bg-black hover:border-black hover:text-white"
-            @click="closeCreateModal()">
-            X
+      <div class="modal-box rounded-none border-2 border-black">
+
+        <!-- TITLE -->
+
+        <div class="text-xl flex justify-between">
+          <h1>New message</h1>
+          <button @click="closeCreateModal()" for="my-drawer-4" class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
+            <iconify-icon
+              icon="material-symbols:close"
+              class="h-6 w-6 absolute">
+            </iconify-icon>
           </button>
         </div>
-        <!-- TITLE -->
-        <div class="py-4 justify-start">
-          <h3 class="font-bold text-lg">Who do you want to a send a DM to ?</h3>
-        </div>
+
         <!-- FRIENDS LIST -->
-        <div class="collapse collapse-arrow border-2 border-black rounded-none">
+        <div class="collapse collapse-arrow border-2 border-black rounded-none mt-6">
           <input type="checkbox" />
           <div class="collapse-title text-base">Select a friend</div>
           <!-- AVAILABLE FRIENDS TO SEND DM TO -->
-          <div class="collapse-content text-base">
+          <div class="collapse-content text-base p-0">
             <ul
               v-if="filteredFriendList.length > 0"
-              class="menu bg-base-100 w-full">
+              class="menu w-full p-0">
               <li v-for="friend in filteredFriendList" :key="friend.username">
                 <a
-                  class="flex p-1 rounded-none modal-action justify-start"
+                  class="flex rounded-none"
                   @click="createDmChannel(friend)">
                   <button class="block" @click="closeCreateModal">
                     {{ friend.username }}
@@ -35,8 +36,8 @@
               </li>
             </ul>
             <!-- NO FRIEND TO SEND DM TO -->
-            <div v-else class="py-4">
-              <p>
+            <div v-else class="">
+              <p class="">
                 You have no friend or you have already send a DM to all your
                 friends
               </p>
@@ -104,13 +105,13 @@ const createDmChannel = async (friend: User): Promise<void> => {
   try {
     await channelStore.createDmChannel(loggedUser.value.id, friend.id)
     console.log(`[ChatMessagesModal] - DM channel created successfully !`)
-    return
+    
   } catch (error) {
     console.error(
       `[ChatMessagesModal] - Failed to create DM channel ! Error: `,
       error
     )
-    return
+    
   }
 }
 

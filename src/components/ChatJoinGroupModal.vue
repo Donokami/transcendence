@@ -2,22 +2,25 @@
   <div>
     <input type="checkbox" id="my-modal-3" class="modal-toggle" />
     <div class="modal">
-      <div class="modal-box rounded-none">
-        <!-- CLOSING CROSS -->
-        <div class="flex items-center justify-end">
-          <button
-            class="btn bg-white border-black border-2 text-black hover:bg-black hover:border-black hover:text-white"
-            @click="closeModal()">
-            X
+      <div class="modal-box rounded-none border-2 border-black">
+        
+
+        <!-- TITLE -->
+        <div class="text-xl flex justify-between">
+          <h1>Join a group</h1>
+          <button @click="closeModal()" class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
+            <iconify-icon
+              icon="material-symbols:close"
+              class="h-6 w-6 absolute">
+            </iconify-icon>
           </button>
         </div>
+
+
+
+
+
         <Form ref="formRef" @submit="submitForm">
-          <!-- TITLE-->
-          <div class="py-4 justify-start">
-            <h3 class="font-bold text-lg">
-              Enter the name of the group you want to join :
-            </h3>
-          </div>
           <!-- GROUP SETTINGS -->
           <div>
             <!-- GROUP NAME -->
@@ -139,12 +142,12 @@ const joinGroup = async (
   channel: Channel,
   password?: string
 ): Promise<void> => {
-  if (passwordRequired.value === true && password) {
+  if (passwordRequired.value && password) {
     await channelStore.joinGroup(channel.name, password)
   } else {
     await channelStore.joinGroup(channel.name)
   }
-  return
+  
 }
 
 // ********** //

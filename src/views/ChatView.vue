@@ -1,40 +1,61 @@
 <template>
-  <div class="flex w-full max-h-[calc(100vh-135px)] my-1 mx-auto text-black">
-    <!-- SIDEBAR -->
-    <div
-      class="flex flex-col min-w-min min-h-[calc(100vh-135px)] p-5 border-2 border-black text-justify w-1/4 overflow-y-auto">
-      <chat-sidebar
-        :list-state="listState"
-        @list-state-changed="listState = $event"></chat-sidebar>
-    </div>
-    <!-- DISCUSSION -->
-    <div
-      class="flex flex-col justify-between text-justify w-3/4"
-      v-if="selectedChannel && channelsList?.loading === false">
-      <!-- TITLE -->
-      <div
-        class="flex border-2 border-black items-center justify-between ml-1 p-5">
-        <h2 class="text-2xl font-bold text-black">
-          {{ channelStore.getChannel(selectedChannel)?.name }}
-        </h2>
-        <button
-          v-if="channelStore.getChannel(selectedChannel)?.isDm === true"
-          @click="createGame"
-          class="neobrutalist-box max-w-sm flex px-2">
-          <iconify-icon icon="tabler:plus" class="mr-2"></iconify-icon>
-          <span>Invite to a game</span>
-        </button>
-        <chat-drawer v-else></chat-drawer>
+  <div class="mx-auto w-full max-w-5xl">
+    <div class="flex max-h-[calc(100vh-164px)] text-black m-4">
+      <!-- SIDEBAR -->
+      <div class="border-2 border-black min-h-[calc(100vh-164px)] w-60 sm:w-96 flex flex-col">
+        <chat-sidebar
+          :list-state="listState"
+          @list-state-changed="listState = $event">
+        </chat-sidebar>
       </div>
-      <!-- CHAT BOX -->
+
+      <!-- DISCUSSION -->
       <div
-        ref="chatbox"
-        class="border-black border-2 ml-1 mt-1 p-5 h-full overflow-auto">
-        <chat-box @scroll-to-bottom="scrollToBottom"></chat-box>
+        class="flex flex-col justify-between text-justify ml-4 w-full"
+        v-if="selectedChannel && channelsList?.loading === false">
+        <!-- TITLE -->
+        <div
+          class="flex gap-2 border-x-2 border-t-2 border-black items-center justify-between p-5">
+
+          <div class="flex gap-2 items-center">
+            <div v-if="channelStore.getChannel(selectedChannel)?.isDm === true">
+              <img
+                v-if="channelStore.getChannel(selectedChannel)?.image"
+                :src="`http://localhost:3000/${channelStore.getChannel(selectedChannel).image}`"
+                class="object-cover rounded-full h-11 w-11" />
+              <iconify-icon
+                v-else
+                icon="ri:account-circle-line"
+                class="h-11 w-11">
+              </iconify-icon>
+            </div>
+          
+            <h2 class="text-xl font-bold text-black capitalize">
+              {{ channelStore.getChannel(selectedChannel)?.name }}
+            </h2>
+          </div>
+
+          <button
+            v-if="channelStore.getChannel(selectedChannel)?.isDm === true"
+            @click="createGame"
+            class="btn  bg-white border-2 shrink border-black text-black hover:bg-black hover:border-black hover:text-white">
+            <iconify-icon icon="material-symbols:mail-outline" class="hidden sm:block w-7 h-7 "></iconify-icon>
+            <span>Send game invite</span>
+          </button>
+          <chat-drawer v-else></chat-drawer>
+        </div>
+        <!-- CHAT BOX -->
+        <div
+          ref="chatbox"
+          class="border-black border-2 p-5 h-full overflow-auto">
+          <chat-box @scroll-to-bottom="scrollToBottom"></chat-box>
+        </div>
+        <!-- MESSAGE INPUT -->
+        <chat-input></chat-input>
       </div>
-      <!-- MESSAGE INPUT -->
-      <chat-input></chat-input>
+
     </div>
+
   </div>
 </template>
 

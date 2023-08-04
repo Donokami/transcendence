@@ -1,5 +1,5 @@
 <template>
-  <div class="border-black border-2 mt-1 ml-1 p-5">
+  <div class="border-black border-x-2 border-b-2 p-5">
     <form @submit.prevent="sendMessage" class="flex justify-between gap-2">
       <div class="w-full">
         <textarea
@@ -7,11 +7,12 @@
           id="prompt-textarea"
           ref="myTextarea"
           @input="autoResize"
+          @keydown.enter.prevent="sendMessage"
           tabindex="0"
           data-id="root"
           rows="1"
-          placeholder="Send a message"
-          class="h-full m-0 w-full outline-none overflow-auto resize-none bg-transparent max-h-[200px]"></textarea>
+          placeholder="Type your message here"
+          class="h-full m-0 w-full outline-none overflow-auto resize-none bg-transparent max-h-[100px]"></textarea>
       </div>
       <div class="flex self-end">
         <button

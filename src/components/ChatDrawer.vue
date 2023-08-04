@@ -1,12 +1,15 @@
 <template>
-  <div class="z-50 text-black">
+  <div class="text-black">
     <div class="drawer drawer-end">
       <input id="my-drawer-4" type="checkbox" class="drawer-toggle" />
       <!-- DRAWER BUTTON  -->
       <div class="drawer-content">
-        <div class="neobrutalist-box p-2">
-          <label for="my-drawer-4" class="drawer-button">Handle channel</label>
-        </div>
+        <label 
+          for="my-drawer-4"
+          class="btn drawer-button bg-white border-2 shrink border-black text-black hover:bg-black hover:border-black hover:text-white">
+          <iconify-icon icon="material-symbols:settings-outline-rounded" class="hidden sm:block w-7 h-7 "></iconify-icon>
+          <span>Handle channel</span>
+        </label>
       </div>
       <!-- DRAWER CONTENT -->
       <div class="drawer-side">

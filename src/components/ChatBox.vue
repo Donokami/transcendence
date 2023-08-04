@@ -1,58 +1,40 @@
 <template>
   <div v-if="loggedUser && channel" class="overflow-auto">
+
     <div
-      class="flex flex-col max-w-sm w-fit mb-2 p-2 text-justify border-black border-2"
+      class="flex flex-col max-w-sm w-fit mb-3 p-2 text-justify border-black border-2"
       :class="messageClass(message)"
       v-for="message in channel.messages"
       :key="message.id">
       <div v-if="message.room && message.room.loading === false">
+
+
         <div class="text-sm" :class="textClass(message)">
-          <h1 class="text-lg mb-2">
-            {{
-              message.room.data ? message.room.data.name : 'Invite link expired'
-            }}
+          <h1 v-if="!message.room.data">
+            Invite link expired
           </h1>
-          <div v-if="!message.room.error">
-            <p>{{ message.user.username }} invited you to play a game</p>
-            <div class="avatar-group -space-x-6">
-              <div v-for="i in 2" :key="i">
-                <div
-                  v-if="message.room.data.players[i - 1] !== undefined"
-                  class="avatar border-0">
-                  <div class="w-12">
-                    <img
-                      v-if="message.room.data.players[i - 1].profilePicture"
-                      :src="
-                        apiUrl + message.room.data.players[i - 1].profilePicture
-                      " />
-                    <iconify-icon
-                      v-else
-                      icon="ri:account-circle-line"
-                      class="h-12 w-12"></iconify-icon>
-                  </div>
-                </div>
-                <div v-else class="avatar placeholder border-0">
-                  <div class="w-12 bg-neutral-focus text-neutral-content">
-                    <div
-                      class="bg-white/10 w-full h-full rounded-full animate-pulse"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <div v-if="!message.room.error" class="">
+            <p><span class="capitalize">{{ message.user.username }}</span> invited you to play!</p>
             <button
-              class="neobrutalist-box p-2 float-right"
+              class="btn border-2 bg-white border-black text-black hover:bg-black hover:border-white hover:text-white mt-2 block w-full"
               :class="{ invert: message.user.id === loggedUser.value?.id }">
-              <router-link :to="`/room/${message.room.data.id}`">
-                Join
-              </router-link>
+              <router-link :to="`/room/${message.room.data.id}`" class="flex gap-2 w-fit mx-auto">
+                <iconify-icon icon="ri:ping-pong-line" class="hidden sm:block w-7 h-7 "></iconify-icon>
+                <div class=" my-auto">Join the game</div>
+              </router-link> 
             </button>
           </div>
         </div>
+
+
       </div>
       <p v-else class="text-sm break-words" :class="textClass(message)">
         {{ message.messageBody }}
       </p>
     </div>
+
+
+
   </div>
 </template>
 
@@ -92,7 +74,7 @@ const messageClass = computed(() => (message: Message) => {
   if (message.user.id === loggedUser.value?.id) {
     return 'bg-zinc-900 ml-auto'
   } else {
-    return 'min-w-min'
+    return 'max-w-sm'
   }
 })
 

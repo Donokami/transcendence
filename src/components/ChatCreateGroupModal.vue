@@ -2,84 +2,86 @@
   <div>
     <input type="checkbox" id="my-modal-3" class="modal-toggle" />
     <div class="modal">
-      <div class="modal-box rounded-none">
+      <div class="modal-box rounded-none border-2 border-black">
         <Form ref="formRef" @submit="submitForm">
-          <!-- CLOSING CROSS -->
-          <div class="flex items-center justify-end">
-            <button
-              class="btn bg-white border-black border-2 text-black hover:bg-black hover:border-black hover:text-white"
-              @click="closeModal()">
-              X
-            </button>
-          </div>
-          <!-- TITLE-->
-          <div class="py-4 justify-start">
-            <h3 class="font-bold text-lg">Define group parameters :</h3>
-          </div>
+        <!-- TITLE -->
+        <div class="text-xl flex justify-between">
+          <h1>Create a group</h1>
+          <button @click="closeModal()" class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
+            <iconify-icon
+              icon="material-symbols:close"
+              class="h-6 w-6 absolute">
+            </iconify-icon>
+          </button>
+        </div>
           <!-- GROUP SETTINGS -->
           <div>
             <!-- GROUP NAME -->
-            <div class="form-control py-4">
+            <div class="form-control mt-6">
               <span class="text-base text-black">Group Name</span>
               <input
                 v-model="channelName"
-                class="neobrutalist-input py-2"
+                class="neobrutalist-input py-2 text-sm"
                 placeholder="Enter a group name" />
               <div v-if="channelNameError" class="text-red-500">
                 {{ channelNameError }}
               </div>
             </div>
             <!-- FRIENDS LIST -->
-            <div class="form-control py-4">
+            <div class="form-control mt-6">
               <span class="text-base text-black"
-                >Select a friend to add to the group :</span
+                >Invite Friends</span
               >
               <div
                 class="collapse collapse-arrow border-2 mt-2 border-black rounded-none">
                 <input type="checkbox" />
                 <div class="collapse-title text-base">Friends list</div>
                 <!-- AVAILABLE FRIENDS TO ADD TO THE GROUP -->
-                <div class="collapse-content text-base">
+                <div class="collapse-content text-base p-0">
                   <ul
                     v-if="filteredFriendList.length > 0"
-                    class="menu bg-base-100 w-full">
+                    class="menu w-full p-0">
                     <li
                       v-for="friend in filteredFriendList"
                       :key="friend.username">
                       <a
-                        class="flex p-1 rounded-none"
+                        class="flex rounded-none"
                         @click="pushUserToAdd(friend.username, friend.id)">
                         {{ friend.username }}
                       </a>
                     </li>
                   </ul>
                   <!-- NO FRIENDS TO ADD TO THE GROUP -->
-                  <div v-if="filteredFriendList.length === 0" class="py-4">
+                  <div v-if="filteredFriendList.length === 0" class="px-4">
                     <p>You have no more friend to add to the group</p>
                   </div>
                 </div>
               </div>
             </div>
             <!-- USER TO ADD BADGES -->
-            <div>
-              <div v-for="username in usersToAdd" :key="username">
+            <div class="mt-2 flex gap-2 flex-wrap">
+              <div class="bg-red-300" v-for="username in usersToAdd" :key="username">
                 <div
-                  class="label cursor-pointer bg-black w-1/3 my-1"
+                  class="cursor-pointer bg-black flex justify-between gap-1 p-1 items-center w-fit"
                   @click="cancelUserToAdd(username)">
-                  <span
-                    class="badge bg-black text-white border-none rounded-none"
-                    >{{ username }}</span
-                  >
-                  <span class="text-white">x</span>
+                  <span class="text-white border-none rounded-none">
+                    {{ username }}
+                  </span>
+                  <iconify-icon
+                    icon="material-symbols:close"
+                    class="h-4 w-4 text-white mt-0.5">
+                  </iconify-icon>
                 </div>
+                
               </div>
             </div>
+
             <div v-if="friendListError" class="text-red-500">
               {{ friendListError }}
             </div>
             <!-- PASSWORD -->
-            <div class="form-control py-2">
-              <label class="label cursor-pointer">
+            <div class="form-control mt-6 ">
+              <label class="label cursor-pointer px-0">
                 <span class="text-base text-black">Password</span>
                 <input
                   type="checkbox"
@@ -89,7 +91,7 @@
               <input
                 v-model="password"
                 v-if="passwordRequired === true"
-                class="neobrutalist-input py-4"
+                class="neobrutalist-input py-2 text-sm"
                 placeholder="Choose a password for your group" />
               <div v-if="passwordError" class="text-red-500">
                 {{ passwordError }}
@@ -210,10 +212,10 @@ const createGroupChannel = async (): Promise<void> => {
       password.value
     )
     console.log(`[ChatGroupsModal] - Group created successfully !`)
-    return
+    
   } catch (error) {
     console.error(`[ChatGroupsModal] - Failed to create group ! Error: `, error)
-    return
+    
   }
 }
 
