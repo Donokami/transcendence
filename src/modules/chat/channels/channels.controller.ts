@@ -8,6 +8,7 @@ import {
   Param,
   Post,
   Put,
+  Req,
   Session,
   UseFilters,
   UseGuards
@@ -25,6 +26,9 @@ import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { AdminshipGuard } from '@/modules/chat/channels/guards/adminship.guard'
 import { MembershipGuard } from '@/modules/chat/channels/guards/membership.guard'
 import { OwnershipGuard } from '@/modules/chat/channels/guards/ownership.guard'
+import { CurrentChannel } from './decorators/current-channel.decorator'
+import { ISession } from '@/core/types'
+import { HandleChannelDto } from './dtos/handle-channel.dto'
 
 @Controller('channels')
 @UseFilters(new GlobalExceptionFilter())
@@ -52,10 +56,10 @@ export class ChannelsController {
   @UseGuards(MembershipGuard)
   @UseGuards(OwnershipGuard)
   async addAdmin(
-    @Param('channelId') channelId: string,
-    @Body('userId') userId: string
+    @Body('userId') userId: string,
+    @CurrentChannel() channel: Channel
   ): Promise<Channel> {
-    return await this.channelsService.addAdmin(channelId, userId)
+    return await this.channelsService.addAdmin(channel, userId)
   }
 
   // ********* //
@@ -73,22 +77,16 @@ export class ChannelsController {
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
   async banMember(
-    @Param('channelId') channelId: string,
+    @CurrentChannel() channel: Channel,
     @Body('userId') userId: string
   ): Promise<Channel> {
-    const channel = this.channelsService.banMember(channelId, userId)
-    // if (!channel)
-    //   throw new BadRequestException(
-    //     `Failed to ban user with ID : ${userId} from channel with ID: ${channelId}`
-    //   )
-    return channel
+    return await this.channelsService.banMember(channel, userId)
   }
 
   // ************* //
   // createChannel //
   // ************* //
 
-  // todo: check error handling
   @Post('/create')
   @ApiOperation({
     summary: 'Create a new channel',
@@ -97,8 +95,12 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
-  async createChannel(@Body() body: CreateChannelDto): Promise<Channel> {
-    const channel = await this.channelsService.createChannel(body)
+  async createChannel(
+    @Body() body: CreateChannelDto,
+    @Session() session: ISession
+  ): Promise<Channel> {
+    const ownerId = session.userId
+    const channel = await this.channelsService.createChannel(body, ownerId)
     if (!channel)
       throw new NotFoundException(`Failed to create ${body.name} channel `)
     return channel
@@ -108,7 +110,7 @@ export class ChannelsController {
   // getChannel //
   // *********** //
 
-  @Get('/:id')
+  @Get('/:channelId')
   @ApiOperation({
     summary: 'Get a channel (via channel id)',
     operationId: 'getChannel',
@@ -116,12 +118,8 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
-  @UseGuards(MembershipGuard) // todo: check if this is not causing any issues
-  async getChannel(@Param('id') id: string): Promise<Channel> {
-    const channel = await this.channelsService.findOneById(id)
-    if (!channel) {
-      throw new NotFoundException(`Channel with name ${id} not found`)
-    }
+  @UseGuards(MembershipGuard)
+  async getChannel(@CurrentChannel() channel: Channel) {
     return channel
   }
 
@@ -137,6 +135,7 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
+  @UseGuards(MembershipGuard)
   async getGroupByName(@Param('name') name: string): Promise<Channel> {
     const channel = await this.channelsService.findOneByName(name)
     if (!channel)
@@ -148,7 +147,7 @@ export class ChannelsController {
   // getMessages //
   // *********** //
 
-  @Get('/:id/messages')
+  @Get('/:channelId/messages')
   @ApiOperation({
     summary: 'Get all the messages sent in a channel (via channel id)',
     operationId: 'getMessages',
@@ -157,15 +156,8 @@ export class ChannelsController {
   })
   @UseGuards(AuthGuard)
   @UseGuards(MembershipGuard)
-  async getMessages(@Param('id') id: string) {
-    const messages = await this.channelsService.getMessages(id)
-    if (messages === null) {
-      throw new NotFoundException(
-        `Failed to get messages from channel with ID : ${id}`
-      )
-    }
-
-    return messages
+  async getMessages(@CurrentChannel() channel: Channel) {
+    return await this.channelsService.getMessages(channel)
   }
 
   // ********* //
@@ -180,8 +172,11 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
-  async joinGroup(@Body() joinGroupDto: JoinGroupDto, @Session() session: any) {
-    const newMemberId = session.id
+  async joinGroup(
+    @Body() joinGroupDto: JoinGroupDto,
+    @Session() session: ISession
+  ) {
+    const newMemberId = session.userId
     return await this.channelsService.joinGroup(joinGroupDto, newMemberId)
   }
 
@@ -189,7 +184,6 @@ export class ChannelsController {
   // kickMember //
   // ********** //
 
-  // todo : add other guards as necessary
   @Put('/:channelId/kick')
   @ApiOperation({
     summary: 'Kick a member from a group',
@@ -201,10 +195,11 @@ export class ChannelsController {
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
   async kickMember(
-    @Param('channelId') channelId: string,
-    @Body('userId') userId: string
+    @Session() session: ISession,
+    @CurrentChannel() channel: Channel,
+    @Body() body: HandleChannelDto
   ): Promise<Channel> {
-    return this.channelsService.kickMember(channelId, userId)
+    return this.channelsService.kickMember(session.userId, channel, body.userId)
   }
 
   // ********** //
@@ -222,17 +217,17 @@ export class ChannelsController {
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
   async muteMember(
-    @Param('channelId') channelId: string,
+    @CurrentChannel() channel: Channel,
     @Body('userId') userId: string
   ): Promise<void> {
-    return await this.channelsService.muteMember(channelId, userId)
+    return await this.channelsService.muteMember(channel, userId)
   }
 
   // ************ //
   // postMessages //
   // ************ //
 
-  @Post('/:id/messages')
+  @Post('/:channelId/messages')
   @ApiOperation({
     summary: 'Post messages sent in a channel, in the database',
     operationId: 'postMessages',
@@ -241,11 +236,14 @@ export class ChannelsController {
   })
   @UseGuards(AuthGuard)
   @UseGuards(MembershipGuard)
-  async postMessages(@Param('id') id: string, @Body() body: MessageDto) {
-    const { userId, messageBody, date } = body
-    const message = await this.channelsService.postMessage({
-      userId,
-      channelId: id,
+  async postMessages(
+    @CurrentChannel() channel: Channel,
+    @Session() session: ISession,
+    @Body() body: MessageDto
+  ) {
+    const { messageBody, date } = body
+    const message = await this.channelsService.postMessage(session.userId, {
+      channel,
       messageBody,
       date
     })
@@ -268,10 +266,10 @@ export class ChannelsController {
   @UseGuards(MembershipGuard)
   @UseGuards(OwnershipGuard)
   async removeAdmin(
-    @Param('channelId') channelId: string,
+    @CurrentChannel() channel: Channel,
     @Param('userId') userId: string
   ): Promise<Channel> {
-    return this.channelsService.removeAdmin(channelId, userId)
+    return this.channelsService.removeAdmin(channel, userId)
   }
 
   // *********** //
@@ -289,10 +287,10 @@ export class ChannelsController {
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
   async unBanMember(
-    @Param('channelId') channelId: string,
+    @CurrentChannel() channel: Channel,
     @Param('userId') userId: string
   ): Promise<Channel> {
-    return this.channelsService.unBanMember(channelId, userId)
+    return this.channelsService.unBanMember(channel, userId)
   }
 
   // ************ //
@@ -310,9 +308,9 @@ export class ChannelsController {
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
   async unMuteMember(
-    @Param('channelId') channelId: string,
+    @CurrentChannel() channel: Channel,
     @Param('userId') userId: string
   ): Promise<Channel> {
-    return this.channelsService.unMuteMember(channelId, userId)
+    return this.channelsService.unMuteMember(channel, userId)
   }
 }

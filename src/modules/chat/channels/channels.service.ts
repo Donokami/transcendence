@@ -13,20 +13,20 @@ import {
   UserAlreadyInChannel,
   UserNotFound,
   UserNotInChannel,
-  InvalidGroupPassword
+  InvalidGroupPassword,
+  CannotKickOwner,
+  CannotKickYourself,
+  CannotKickAdmin
 } from '@/core/exceptions'
-
+import { parseMuteTime } from '@/core/utils/parseMuteTime'
+import { ChatGateway } from '@/modules/chat/chat.gateway'
+import { CreateChannelDto } from '@/modules/chat/channels/dtos/create-channel.dto'
+import { JoinGroupDto } from '@/modules/chat/channels/dtos/join-group.dto'
+import { MessageDto } from '@/modules/chat/channels/dtos/message.dto'
 import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { Message } from '@/modules/chat/channels/entities/message.entity'
 import { User } from '@/modules/users/user.entity'
 import { UsersService } from '@/modules/users/users.service'
-
-import { CreateChannelDto } from './dtos/create-channel.dto'
-import { MessageDto } from './dtos/message.dto'
-
-import { ChatGateway } from '../chat.gateway'
-import { JoinGroupDto } from './dtos/join-group.dto'
-import { parseMuteTime } from '@/core/utils/parseMuteTime'
 
 @Injectable()
 export class ChannelsService {
@@ -56,14 +56,12 @@ export class ChannelsService {
   // addAdmin //
   // ******** //
 
-  async addAdmin(channelId: string, userId: string): Promise<Channel> {
-    const channel: Channel = await this.checkExistingChannel(channelId)
-
+  async addAdmin(channel: Channel, userId: string): Promise<Channel> {
     const user: User = await this.checkExistingUser(userId)
 
     channel.admins = this.addUserToList('admins', user, channel.admins)
 
-    const updatePayload = { userId, channelId }
+    const updatePayload = { userId, channelId: channel.id }
 
     const updatedChannel: Channel = await this.updateChannel(
       'set-admin',
@@ -78,6 +76,7 @@ export class ChannelsService {
   // addUserToList //
   // ************* //
 
+  // todo (Lucas): check what is better between push and concat
   private addUserToList(
     listName: string,
     user: User,
@@ -96,18 +95,17 @@ export class ChannelsService {
       }
     }
 
-    userList.push(user)
+    // userList.push(user)
 
-    return userList
+    // return userList
+    return userList.concat(user)
   }
 
   // ********* //
   // banMember //
   // ********* //
 
-  async banMember(channelId: string, userId: string): Promise<Channel> {
-    const channel: Channel = await this.checkExistingChannel(channelId)
-
+  async banMember(channel: Channel, userId: string): Promise<Channel> {
     const user: User = await this.checkExistingUser(userId)
 
     channel.members = this.removeUserFromList('members', user, channel.members)
@@ -118,7 +116,7 @@ export class ChannelsService {
       channel.bannedMembers
     )
 
-    const updatePayload = { userId, channelId }
+    const updatePayload = { userId, channelId: channel.id }
 
     const updatedChannel = this.updateChannel(
       'ban-user',
@@ -127,27 +125,6 @@ export class ChannelsService {
     )
 
     return updatedChannel
-  }
-
-  // ******************** //
-  // checkExistingChannel //
-  // ******************** //
-
-  async checkExistingChannel(channelId: string): Promise<Channel> {
-    if (!channelId) {
-      this.logger.warn(`Channel ID is required but missing`)
-      throw new MissingChannelId()
-    }
-
-    const channel: Channel = await this.channelsRepository.findOneBy({
-      id: channelId
-    })
-    if (!channel) {
-      this.logger.warn(`Channel with ID : ${channelId} not found`)
-      throw new ChannelNotFound()
-    }
-
-    return channel
   }
 
   // ***************** //
@@ -173,13 +150,16 @@ export class ChannelsService {
   // createChannel //
   // ************* //
 
-  async createChannel(createChannelDto: CreateChannelDto): Promise<Channel> {
-    const owner: User = await this.checkExistingUser(createChannelDto.ownerId)
+  async createChannel(
+    createChannelDto: CreateChannelDto,
+    ownerId: string
+  ): Promise<Channel> {
+    const owner: User = await this.checkExistingUser(ownerId)
 
     const members: User[] = await this.userService.findByIds(
       createChannelDto.membersIds
     )
-    if (!members || members.length === 0) throw new ChannelMembersNotFound()
+    if (!members || members.length < 2) throw new ChannelMembersNotFound()
 
     const newChannel: Channel = this.channelsRepository.create({
       isDm: createChannelDto.isDm,
@@ -188,7 +168,7 @@ export class ChannelsService {
       name: createChannelDto.isDm ? null : createChannelDto.name,
       passwordRequired: createChannelDto.isDm
         ? false
-        : createChannelDto.passwordRequired,
+        : !!createChannelDto.password,
       password: createChannelDto.isDm ? null : createChannelDto.password
     })
 
@@ -228,8 +208,8 @@ export class ChannelsService {
 
   async findOneByName(name: string): Promise<Channel> {
     const channel: Channel = await this.channelsRepository.findOne({
-      where: { name },
-      select: ['id', 'name', 'passwordRequired'],
+      where: { name, isDm: false },
+      select: ['id', 'name', 'passwordRequired', 'password'],
       relations: ['owner', 'members', 'admins', 'bannedMembers', 'mutedMembers']
     })
 
@@ -273,16 +253,14 @@ export class ChannelsService {
   // getMessages //
   // *********** //
 
-  async getMessages(channelId: string): Promise<Message[]> {
-    const channel: Channel = await this.checkExistingChannel(channelId)
-
+  async getMessages(channel: Channel): Promise<Message[]> {
     const messages: Message[] = await this.messagesRepository.find({
       where: { channel: { id: channel.id } },
       relations: ['user']
     })
 
     this.logger.verbose(
-      `Messages of channel with ID : ${channelId} successfully retrieved.`
+      `Messages of channel with ID : ${channel.id} successfully retrieved.`
     )
 
     return messages
@@ -329,7 +307,12 @@ export class ChannelsService {
       throw new ChannelNotFound()
     }
 
-    if (channel.passwordRequired && password !== channel.password) {
+    console.log(channel.passwordRequired, password, channel.password)
+
+    if (
+      (channel.passwordRequired && !password) ||
+      password !== channel.password
+    ) {
       throw new InvalidGroupPassword()
     }
 
@@ -339,20 +322,36 @@ export class ChannelsService {
 
     const socket = this.chatGateway.getUserSocket(newMember.id)
     if (socket) socket.join(channel.id)
+    return { success: true }
   }
 
   // ********** //
   // kickMember //
   // ********** //
 
-  async kickMember(channelId: string, userId: string): Promise<Channel> {
-    const channel: Channel = await this.checkExistingChannel(channelId)
-
+  async kickMember(
+    requestUserId: string,
+    channel: Channel,
+    userId: string
+  ): Promise<Channel> {
     const user: User = await this.checkExistingUser(userId)
+
+    // todo (Lucas): create a permission handler function
+    if (userId === channel.owner.id) {
+      throw new CannotKickOwner()
+    }
+
+    if (requestUserId === userId) {
+      throw new CannotKickYourself()
+    }
+
+    if (requestUserId !== channel.owner.id && channel.isAdmin(user)) {
+      throw new CannotKickAdmin()
+    }
 
     channel.members = this.removeUserFromList('members', user, channel.members)
 
-    const updatePayload = { userId, channelId }
+    const updatePayload = { userId, channelId: channel.id }
 
     const updatedChannel = this.updateChannel(
       'kick-user',
@@ -367,9 +366,7 @@ export class ChannelsService {
   // muteMember //
   // ********** //
 
-  async muteMember(channelId: string, userId: string): Promise<void> {
-    const channel: Channel = await this.checkExistingChannel(channelId)
-
+  async muteMember(channel: Channel, userId: string): Promise<void> {
     const user: User = await this.checkExistingUser(userId)
 
     // todo: add a string param to replace '1w'
@@ -382,10 +379,8 @@ export class ChannelsService {
   // postMessage //
   // *********** //
 
-  async postMessage(messageDto: MessageDto): Promise<Message> {
-    const { messageBody, channelId, userId, date } = messageDto
-
-    const channel: Channel = await this.checkExistingChannel(channelId)
+  async postMessage(userId: string, messageDto: MessageDto): Promise<Message> {
+    const { messageBody, channel, date } = messageDto
 
     const user: User = await this.checkExistingUser(userId)
 
@@ -407,9 +402,7 @@ export class ChannelsService {
   // removeAdmin //
   // *********** //
 
-  async removeAdmin(channelId: string, userId: string): Promise<Channel> {
-    const channel: Channel = await this.checkExistingChannel(channelId)
-
+  async removeAdmin(channel: Channel, userId: string): Promise<Channel> {
     const user: User = await this.checkExistingUser(userId)
 
     channel.admins = this.removeUserFromList('admins', user, channel.admins)
@@ -439,21 +432,14 @@ export class ChannelsService {
       }
     }
 
-    const index = userList.findIndex((item) => item.id === user.id)
-    if (index !== -1) {
-      userList.splice(index, 1)
-    }
-
-    return userList
+    return userList.filter((item) => item.id !== user.id)
   }
 
   // *********** //
   // unBanMember //
   // *********** //
 
-  async unBanMember(channelId: string, userId: string): Promise<Channel> {
-    const channel: Channel = await this.checkExistingChannel(channelId)
-
+  async unBanMember(channel: Channel, userId: string): Promise<Channel> {
     const user: User = await this.checkExistingUser(userId)
 
     channel.bannedMembers = this.removeUserFromList(
@@ -469,9 +455,7 @@ export class ChannelsService {
   // unMuteMember //
   // ************ //
 
-  async unMuteMember(channelId: string, userId: string): Promise<Channel> {
-    const channel: Channel = await this.checkExistingChannel(channelId)
-
+  async unMuteMember(channel: Channel, userId: string): Promise<Channel> {
     const user: User = await this.checkExistingUser(userId)
 
     channel.removeMuteMember(user)

@@ -8,18 +8,34 @@ import {
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
-import { User } from '@/modules/users/user.entity'
-
-import { Friendship, FriendshipStatus } from './entities/friendship.entity'
-import { UserNotFound } from '@/core/exceptions'
 import {
-  FriendRequestNotFound,
+  OnlyBlockerCanUnblock,
+  FriendshipAlreadyAccepted,
+  FriendshipAlreadyBlocked,
+  FriendshipAlreadyPending,
+  FriendshipBlocked,
+  FriendshipNotBlocked,
+  FriendshipNotFound,
+  MissingBlockerId,
+  MissingLoggedUserId,
+  MissingObservedUserId,
+  MissingReceiverId,
+  MissingSenderId,
+  MissingToBlockId,
+  MissingToUnblockId,
+  MissingUnblockerId,
+  MissingUserId,
   OnlyReceiverCanAcceptFriendRequest,
-  FriendRequestAlreadyBlocked,
+  OnlyReceiverCanRejectFriendRequest,
   SameIdsError,
-  FriendRequestNotBlocked,
-  BlockerCannotUnblock
-} from '@/core/exceptions/social'
+  UserNotFound
+} from '@/core/exceptions'
+
+import {
+  Friendship,
+  FriendshipStatus
+} from '@/modules/social/entities/friendship.entity'
+import { User } from '@/modules/users/user.entity'
 
 @Injectable()
 export class SocialService {
@@ -44,21 +60,69 @@ export class SocialService {
   // FUNCTION DEFINITIONS //
   // ******************** //
 
+  // NEW (refactor)
+  async checkExistingUser(userId: string): Promise<number> {
+    const userCount: number = await this.usersRepository.count({
+      where: { id: userId }
+    })
+    if (userCount < 1) {
+      this.logger.warn(`User with ID : ${userId} not found in database.`)
+      throw new UserNotFound()
+    }
+
+    return userCount
+  }
+
+  // NEW (refactor)
+  async getExistingUser(userId: string): Promise<User> {
+    const user: User = await this.usersRepository.findOne({
+      where: { id: userId }
+    })
+    if (!user) {
+      this.logger.warn(`User with ID : ${userId} not found in database.`)
+      throw new UserNotFound()
+    }
+    return user
+  }
+
+  // NEW (refactor)
+  async getFriendship(
+    senderId: string,
+    receiverId: string
+  ): Promise<Friendship> {
+    const friendship: Friendship = await this.friendshipRepository.findOne({
+      where: [
+        {
+          sender: { id: senderId },
+          receiver: { id: receiverId }
+        },
+        {
+          sender: { id: receiverId },
+          receiver: { id: senderId }
+        }
+      ]
+    })
+
+    return friendship
+  }
+
   // ******************* //
   // acceptFriendRequest //
   // ******************* //
 
+  // todo (Lucas): check what is best between findOne and count (implies not saving the sender and receiver at then end)
   async acceptFriendRequest(
     receiverId: string,
     senderId: string
   ): Promise<Friendship> {
-    if (!receiverId || !senderId) {
-      this.logger.warn(
-        `A sender and a receiver must be provided to accept a friend request.`
-      )
-      throw new BadRequestException(
-        'A sender and a receiver must be provided to accept a friend request.'
-      )
+    if (!receiverId) {
+      this.logger.warn(`Receiver ID must be provided to accept a request.`)
+      throw new MissingReceiverId()
+    }
+
+    if (!senderId) {
+      this.logger.warn(`Sender ID must be provided to accept a request.`)
+      throw new MissingSenderId()
     }
 
     if (senderId === receiverId) {
@@ -66,36 +130,40 @@ export class SocialService {
       throw new SameIdsError()
     }
 
-    const sender = await this.usersRepository.findOne({
-      where: { id: senderId }
-    })
-    if (!sender) {
-      this.logger.warn(`Sender with ID : ${senderId} not found in database.`)
-      throw new UserNotFound()
-    }
+    this.checkExistingUser(senderId)
+    this.checkExistingUser(receiverId)
 
-    const receiver = await this.usersRepository.findOne({
-      where: { id: receiverId }
-    })
-    if (!receiver) {
-      this.logger.warn(
-        `Receiver with ID : ${receiverId} not found in database.`
-      )
-      throw new UserNotFound()
-    }
+    // const sender: User = await this.usersRepository.findOne({
+    //   where: { id: senderId }
+    // })
+    // if (!sender) {
+    //   this.logger.warn(`Sender with ID : ${senderId} not found in database.`)
+    //   throw new UserNotFound()
+    // }
 
-    const friendshipRequest = await this.friendshipRepository.findOne({
-      where: {
-        sender: { id: senderId },
-        receiver: { id: receiverId },
-        status: FriendshipStatus.PENDING
-      }
-    })
+    // const receiver: User = await this.usersRepository.findOne({
+    //   where: { id: receiverId }
+    // })
+    // if (!receiver) {
+    //   this.logger.warn(
+    //     `Receiver with ID : ${receiverId} not found in database.`
+    //   )
+    //   throw new UserNotFound()
+    // }
+
+    const friendshipRequest: Friendship =
+      await this.friendshipRepository.findOne({
+        where: {
+          sender: { id: senderId },
+          receiver: { id: receiverId },
+          status: FriendshipStatus.PENDING
+        }
+      })
     if (!friendshipRequest) {
       this.logger.warn(
         `Pending friend request sent by : ${senderId} to : ${receiverId} not found.`
       )
-      throw new FriendRequestNotFound()
+      throw new FriendshipNotFound()
     }
 
     if (friendshipRequest.receiver.id !== receiverId) {
@@ -110,8 +178,8 @@ export class SocialService {
       `Friend request sent by : ${senderId} to : ${receiverId} accepted.`
     )
 
-    await this.usersRepository.save(receiver)
-    await this.usersRepository.save(sender)
+    // await this.usersRepository.save(receiver)
+    // await this.usersRepository.save(sender)
     await this.friendshipRepository.save(friendshipRequest)
 
     return friendshipRequest
@@ -121,14 +189,18 @@ export class SocialService {
   // blockUser //
   // ********* //
 
+  // todo (Lucas): check what is best between findOne and count (implies not saving the sender and receiver at then end)
   async blockUser(blockerId: string, toBlockId: string): Promise<Friendship> {
-    if (!blockerId || !toBlockId) {
+    if (!blockerId) {
+      this.logger.warn(`Blocker ID must be provided to block a friendship`)
+      throw new MissingBlockerId()
+    }
+
+    if (!toBlockId) {
       this.logger.warn(
-        `IDs of the blocker and user to block are both required.`
+        `User to block ID must be provided to block a friendship`
       )
-      throw new BadRequestException(
-        'IDs of the blocker and user to block are both required.'
-      )
+      throw new MissingToBlockId()
     }
 
     if (blockerId === toBlockId) {
@@ -136,52 +208,40 @@ export class SocialService {
       throw new SameIdsError()
     }
 
-    const blocker = await this.usersRepository.findOne({
-      where: { id: blockerId }
-    })
-    if (!blocker) {
-      this.logger.warn(`Blocker with ID : ${blockerId} not found in database.`)
-      throw new UserNotFound()
-    }
+    const blocker: User = await this.getExistingUser(blockerId)
+    const toBlock: User = await this.getExistingUser(toBlockId)
 
-    const toBlock = await this.usersRepository.findOne({
-      where: { id: toBlockId }
-    })
-    if (!toBlock) {
-      this.logger.warn(
-        `User to block with ID : ${toBlockId} not found in database.`
-      )
-      throw new UserNotFound()
-    }
+    const existingFriendship: Friendship = await this.getFriendship(
+      blockerId,
+      toBlockId
+    )
 
-    const existingFriendship = await this.friendshipRepository.findOne({
-      where: [
-        {
-          sender: { id: blockerId },
-          receiver: { id: toBlockId }
-        },
-        {
-          sender: { id: toBlockId },
-          receiver: { id: blockerId }
-        }
-      ]
-    })
+    // const existingFriendship = await this.friendshipRepository.findOne({
+    //   where: [
+    //     {
+    //       sender: { id: blockerId },
+    //       receiver: { id: toBlockId }
+    //     },
+    //     {
+    //       sender: { id: toBlockId },
+    //       receiver: { id: blockerId }
+    //     }
+    //   ]
+    // })
     if (existingFriendship) {
       if (existingFriendship.status === FriendshipStatus.BLOCKED) {
         this.logger.warn(`Friendship status is already blocked.`)
-        throw new FriendRequestAlreadyBlocked()
+        throw new FriendshipAlreadyBlocked()
       }
 
       existingFriendship.status = FriendshipStatus.BLOCKED
       this.logger.verbose(`Friendship status is now blocked.`)
 
       existingFriendship.blockerId = blockerId
-      this.logger.verbose(
-        `The blocker id : ${blockerId} is set in the database.`
-      )
+      this.logger.verbose(`Blocker ID : ${blockerId} set in database.`)
 
-      await this.usersRepository.save(blocker)
-      await this.usersRepository.save(toBlock)
+      // await this.usersRepository.save(blocker)
+      // await this.usersRepository.save(toBlock)
       await this.friendshipRepository.save(existingFriendship)
 
       this.logger.verbose(
@@ -216,11 +276,13 @@ export class SocialService {
     loggedUserId: string,
     observedUserId: string
   ): Promise<string> {
-    if (!loggedUserId || !observedUserId) {
-      this.logger.warn(`IDs of the logged and observed user are both required.`)
-      throw new BadRequestException(
-        'IDs of the logged and observed user are both required.'
-      )
+    if (!loggedUserId) {
+      this.logger.warn(`Logged user ID is missing.`)
+      throw new MissingLoggedUserId()
+    }
+    if (!observedUserId) {
+      this.logger.warn(`Observed user ID is missing.`)
+      throw new MissingObservedUserId()
     }
 
     const loggedUser = await this.usersRepository.findOne({
@@ -256,10 +318,6 @@ export class SocialService {
       return friendship.blockerId
     }
 
-    this.logger.verbose(
-      `The friendship between ${loggedUserId} and ${observedUserId} is not blocked or does not exist. `
-    )
-
     return null
   }
 
@@ -269,8 +327,8 @@ export class SocialService {
 
   async getFriendList(userId: string): Promise<User[]> {
     if (!userId) {
-      this.logger.warn(`ID of the user is required.`)
-      throw new BadRequestException('ID of the user is required.')
+      this.logger.warn(`User ID is missing.`)
+      throw new MissingUserId()
     }
 
     const user = await this.usersRepository.findOne({
@@ -313,8 +371,8 @@ export class SocialService {
 
   async getFriendRequests(userId: string): Promise<Friendship[]> {
     if (!userId) {
-      this.logger.warn(`ID of the user is required.`)
-      throw new BadRequestException('ID of the user is required.')
+      this.logger.warn(`User ID is missing.`)
+      throw new MissingUserId()
     }
 
     const user = await this.usersRepository.findOne({
@@ -347,13 +405,14 @@ export class SocialService {
     receiverId: string,
     senderId: string
   ): Promise<Friendship> {
-    if (!receiverId || !senderId) {
-      this.logger.warn(
-        `A sender and a receiver must be provided to reject a friend request`
-      )
-      throw new BadRequestException(
-        'A sender and a receiver must be provided to reject a friend request'
-      )
+    if (!receiverId) {
+      this.logger.warn(`Receiver ID must be provided to reject a request.`)
+      throw new MissingReceiverId()
+    }
+
+    if (!senderId) {
+      this.logger.warn(`Sender ID must be provided to reject a request.`)
+      throw new MissingSenderId()
     }
 
     if (receiverId === senderId) {
@@ -372,16 +431,14 @@ export class SocialService {
       this.logger.warn(
         `Pending friend request sent by ${senderId} to ${receiverId} not found in database.`
       )
-      throw new FriendRequestNotFound()
+      throw new FriendshipNotFound()
     }
 
     if (friendshipRequest.receiver.id !== receiverId) {
       this.logger.warn(
         `Only the receiver : ${friendshipRequest.receiver.id} can reject this friend request`
       )
-      throw new UnauthorizedException(
-        `Only the receiver : ${friendshipRequest.receiver.id} can reject this friend request.`
-      )
+      throw new OnlyReceiverCanRejectFriendRequest()
     }
 
     friendshipRequest.status = FriendshipStatus.REJECTED
@@ -402,13 +459,14 @@ export class SocialService {
     senderId: string,
     receiverId: string
   ): Promise<Friendship> {
-    if (!senderId || !receiverId) {
-      this.logger.warn(
-        `A sender and a receiver must be provided to send a friend request.`
-      )
-      throw new BadRequestException(
-        'A sender and a receiver must be provided to send a friend request.'
-      )
+    if (!receiverId) {
+      this.logger.warn(`Receiver ID must be provided to reject a request.`)
+      throw new MissingReceiverId()
+    }
+
+    if (!senderId) {
+      this.logger.warn(`Sender ID must be provided to reject a request.`)
+      throw new MissingSenderId()
     }
 
     if (senderId === receiverId) {
@@ -423,9 +481,7 @@ export class SocialService {
     })
     if (!sender) {
       this.logger.warn(`Sender with ID : ${senderId} not found in database.`)
-      throw new NotFoundException(
-        `Sender with ID : ${senderId} not found in database.`
-      )
+      throw new UserNotFound()
     }
 
     const receiver = await this.usersRepository.findOne({
@@ -435,39 +491,33 @@ export class SocialService {
       this.logger.warn(
         `Receiver with ID : ${receiverId} not found in database.`
       )
-      throw new NotFoundException(
-        `Receiver with ID : ${receiverId} not found in database.`
-      )
+      throw new UserNotFound()
     }
 
-    const existingFriendship = await this.friendshipRepository.findOne({
-      where: [
-        {
-          sender: { id: sender.id },
-          receiver: { id: receiver.id }
-        },
-        {
-          sender: { id: receiver.id },
-          receiver: { id: sender.id }
-        }
-      ]
-    })
+    const existingFriendship = await this.getFriendship(senderId, receiverId)
+
+    // const existingFriendship = await this.friendshipRepository.findOne({
+    //   where: [
+    //     {
+    //       sender: { id: sender.id },
+    //       receiver: { id: receiver.id }
+    //     },
+    //     {
+    //       sender: { id: receiver.id },
+    //       receiver: { id: sender.id }
+    //     }
+    //   ]
+    // })
     if (existingFriendship) {
       if (existingFriendship.status === FriendshipStatus.PENDING) {
         this.logger.warn(`A pending friendship already exists in database.`)
-        throw new BadRequestException(
-          'A pending friendship already exists in database.'
-        )
+        throw new FriendshipAlreadyPending()
       } else if (existingFriendship.status === FriendshipStatus.ACCEPTED) {
         this.logger.warn(`An accepted friendship already exists in database`)
-        throw new BadRequestException(
-          'An accepted friendship already exists in database'
-        )
+        throw new FriendshipAlreadyAccepted()
       } else if (existingFriendship.status === FriendshipStatus.BLOCKED) {
         this.logger.warn(`A blocked friendship already exists in database`)
-        throw new BadRequestException(
-          'A blocked friendship already exists in database'
-        )
+        throw new FriendshipBlocked()
       } else if (existingFriendship.status === FriendshipStatus.REJECTED) {
         existingFriendship.status = FriendshipStatus.PENDING
         this.logger.verbose(`Friendship status is now pending.`)
@@ -504,18 +554,19 @@ export class SocialService {
     unblockerId: string,
     toUnblockId: string
   ): Promise<Friendship> {
-    if (!unblockerId || !toUnblockId) {
-      this.logger.warn(
-        `IDs of the unblocker and user to unblock are both required.`
-      )
-      throw new BadRequestException(
-        'IDs of the unblocker and user to unblock are both required.'
-      )
+    if (!unblockerId) {
+      this.logger.warn(`Unblocker ID is missing.`)
+      throw new MissingUnblockerId()
+    }
+
+    if (!toUnblockId) {
+      this.logger.warn(`User to unblock ID is missing.`)
+      throw new MissingToUnblockId()
     }
 
     if (unblockerId === toUnblockId) {
       this.logger.warn(`Users cannot unblock themselves`)
-      throw new BadRequestException('Users cannot unblock themselves')
+      throw new SameIdsError()
     }
 
     const unblocker = await this.usersRepository.findOne({
@@ -523,9 +574,7 @@ export class SocialService {
     })
     if (!unblocker) {
       this.logger.warn(`User with ID : ${unblockerId} not found in database.`)
-      throw new NotFoundException(
-        `User with ID : ${unblockerId} not found in database.`
-      )
+      throw new UserNotFound()
     }
 
     const toUnblock = await this.usersRepository.findOne({
@@ -533,7 +582,7 @@ export class SocialService {
     })
     if (!toUnblock) {
       this.logger.warn(`User with ID : ${toUnblockId} not found in database.`)
-      throw new NotFoundException(`User with ID ${toUnblockId} not found.`)
+      throw new UserNotFound()
     }
 
     const friendship = await this.friendshipRepository.findOne({
@@ -544,19 +593,19 @@ export class SocialService {
     })
     if (!friendship) {
       this.logger.warn(`Friendship to unblock not found in database.`)
-      throw new FriendRequestNotFound()
+      throw new FriendshipNotFound()
     }
 
     if (friendship.status !== FriendshipStatus.BLOCKED) {
       this.logger.warn(`The friendship is not blocked.`)
-      throw new FriendRequestNotBlocked()
+      throw new FriendshipNotBlocked()
     }
 
     if (unblockerId !== friendship.blockerId) {
       this.logger.warn(
         `Only the ${friendship.blockerId} can unblock the friendship.`
       )
-      throw new BlockerCannotUnblock()
+      throw new OnlyBlockerCanUnblock()
     }
 
     friendship.status = FriendshipStatus.ACCEPTED

@@ -7,6 +7,7 @@ import {
 import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { Friendship } from '@/modules/social/entities/friendship.entity'
 import { Message } from '@/modules/chat/channels/entities/message.entity'
+import { MutedUser } from '@/modules/chat/channels/entities/muted-user.entity'
 import { User } from '@/modules/users/user.entity'
 import { ConfigService } from '@nestjs/config'
 
@@ -23,21 +24,21 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
           username: process.env.DB_USER,
           password: process.env.DB_PASS,
           database: process.env.DB_NAME_DEVELOPMENT,
-          entities: [Channel, Friendship, Message, User],
+          entities: [Channel, Friendship, Message, User, MutedUser],
           synchronize: true
         }
       case 'development':
         return {
           type: 'sqlite',
           database: 'db.sqlite',
-          entities: [Channel, Friendship, Message, User],
+          entities: [Channel, Friendship, Message, User, MutedUser],
           synchronize: true
         }
       case 'test':
         return {
           type: 'sqlite',
           database: 'db.sqlite',
-          entities: [Channel, Friendship, Message, User],
+          entities: [Channel, Friendship, Message, User, MutedUser],
           synchronize: true,
           dropSchema: true
         }

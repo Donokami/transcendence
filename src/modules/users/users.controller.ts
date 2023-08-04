@@ -11,7 +11,8 @@ import {
   UseGuards,
   UploadedFile,
   UseInterceptors,
-  UseFilters
+  UseFilters,
+  Session
 } from '@nestjs/common'
 
 import { AuthGuard } from '@/core/guards/auth.guard'
@@ -37,6 +38,7 @@ import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { UserNotFound } from '@/core/exceptions'
 import { ChannelsService } from '@/modules/chat/channels/channels.service'
 import { Channel } from '@/modules/chat/channels/entities/channel.entity'
+import { ISession } from '@/core/types'
 
 @Controller('user')
 @UseFilters(new GlobalExceptionFilter())
@@ -168,6 +170,20 @@ export class UsersController {
     return user
   }
 
+  @Get('/me/channels')
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Get current user channels',
+    operationId: 'getUserChannels',
+    description: 'Get current user channels',
+    tags: ['users']
+  })
+  async getUserChannels(@Session() session: ISession): Promise<Channel[]> {
+    const channels = await this.channelsService.getChannels(session.userId)
+
+    return channels
+  }
+
   // ************ //
   // findUserById //
   // ************ //
@@ -210,14 +226,6 @@ export class UsersController {
       throw new UserNotFound()
     }
     return user
-  }
-
-  @Get('/:id/channels')
-  @UseGuards(AuthGuard)
-  async getUserChannels(@Param('id') id: string): Promise<Channel[]> {
-    const channels = await this.channelsService.getChannels(id)
-
-    return channels
   }
 
   // ********** //

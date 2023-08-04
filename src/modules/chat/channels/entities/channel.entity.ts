@@ -105,4 +105,8 @@ export class Channel {
     this.mutedMembers = this.mutedMembers.filter((mute) => mute.user !== user)
     //todo: save if not done automatically
   }
+
+  isAdmin(user: User) {
+    return this.admins.find((admin) => user.id === admin.id)
+  }
 }

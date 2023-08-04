@@ -15,6 +15,7 @@ import { ApiOperation } from '@nestjs/swagger'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { Friendship } from './entities/friendship.entity'
 import { User } from '@/modules/users/user.entity'
+import { ISession } from '@/core/types'
 
 @Controller('social')
 @UseFilters(new GlobalExceptionFilter())
@@ -38,7 +39,7 @@ export class SocialController {
   })
   async acceptFriendRequest(
     @Param('senderId') senderId: string,
-    @Session() session: any
+    @Session() session: ISession
   ): Promise<Friendship> {
     const receiverId = session.userId
 
@@ -58,7 +59,7 @@ export class SocialController {
   })
   async blockUser(
     @Param('userToBlockId') userToBlockId: string,
-    @Session() session: any
+    @Session() session: ISession
   ): Promise<Friendship> {
     const userId = session.userId
 
@@ -132,7 +133,7 @@ export class SocialController {
   })
   async rejectFriendRequest(
     @Param('senderId') senderId: string,
-    @Session() session: any
+    @Session() session: ISession
   ): Promise<Friendship> {
     const receiverId = session.userId
 
@@ -152,7 +153,7 @@ export class SocialController {
   })
   async sendFriendRequest(
     @Body() friendRequestDto: FriendRequestDto,
-    @Session() session: any
+    @Session() session: ISession
   ): Promise<Friendship> {
     const senderId = session.userId
 
@@ -175,7 +176,7 @@ export class SocialController {
   })
   async unblockUser(
     @Param('userToUnblockId') userToUnblockId: string,
-    @Session() session: any
+    @Session() session: ISession
   ): Promise<Friendship> {
     const userId = session.userId
 

@@ -1,4 +1,9 @@
-import { Module, forwardRef } from '@nestjs/common'
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  forwardRef
+} from '@nestjs/common'
 
 import { UsersModule } from '@/modules/users/users.module'
 
@@ -10,6 +15,7 @@ import { MutedUser } from '@/modules/chat/channels/entities/muted-user.entity'
 import { User } from '@/modules/users/user.entity'
 import { ChannelsService } from './channels/channels.service'
 import { ChannelsController } from './channels/channels.controller'
+import { ChannelsMiddleware } from './middleware/get-channel.middelware'
 
 @Module({
   imports: [
@@ -20,4 +26,8 @@ import { ChannelsController } from './channels/channels.controller'
   providers: [ChatGateway, ChannelsService],
   exports: [ChannelsService]
 })
-export class ChatModule {}
+export class ChatModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(ChannelsMiddleware).forRoutes(ChannelsController)
+  }
+}

@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common'
 
 import { ChannelsService } from '@/modules/chat/channels/channels.service'
+import { User } from '@/modules/users/user.entity'
 
 @Injectable()
 export class AdminshipGuard implements CanActivate {
@@ -17,17 +18,15 @@ export class AdminshipGuard implements CanActivate {
     const request = context.switchToHttp().getRequest()
 
     const userId = request.session.userId
-    const channelId = request.params.channelId
+    const { channel } = request
 
-    const channel = await this.channelService.findOneById(channelId)
-    if (!channel) {
-      this.logger.warn(`Channel with ID : ${channelId} not found`)
-      return false
+    if (userId === channel.owner.id) {
+      return true
     }
 
-    if (!channel.admins.find((admin) => userId === admin.id)) {
+    if (!channel.admins.find((admin: User) => userId === admin.id)) {
       this.logger.warn(
-        `User with ID : ${userId} is not an admin of channel with ID : ${channelId}`
+        `User with ID : ${userId} is not an admin of channel with ID : ${channel.id}`
       )
       return false
     }

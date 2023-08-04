@@ -67,8 +67,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             (member) => member.id === userId
           )
 
-          if (mutedMember.muteEndDate && mutedMember.muteEndDate < now)
-            await this.channelService.unMuteMember(userId, clientId)
+          if (mutedMember.muteEndDate && mutedMember.muteEndDate < now) {
+            await this.channelService.unMuteMember(channel, userId)
+          }
         })
       }
     }

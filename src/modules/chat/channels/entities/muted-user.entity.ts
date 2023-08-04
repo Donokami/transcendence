@@ -13,6 +13,6 @@ export class MutedUser {
   @ManyToOne(() => User, (user: User) => user.mutedChannels)
   user: User
 
-  @Column('timestamp')
+  @Column()
   muteEndDate: Date
 }

@@ -12,6 +12,24 @@ export class ChannelNotFound extends HttpException {
   }
 }
 
+export class CannotKickAdmin extends HttpException {
+  constructor() {
+    super('Only the group owner can kick an admin', HttpStatus.UNAUTHORIZED)
+  }
+}
+
+export class CannotKickOwner extends HttpException {
+  constructor() {
+    super('Group owner cannot be kicked', HttpStatus.UNAUTHORIZED)
+  }
+}
+
+export class CannotKickYourself extends HttpException {
+  constructor() {
+    super('Cannot kick yourself from a group', HttpStatus.BAD_REQUEST)
+  }
+}
+
 export class InvalidGroupPassword extends HttpException {
   constructor() {
     super('Invalid group password', HttpStatus.UNAUTHORIZED)
@@ -57,11 +75,5 @@ export class UserAlreadyInChannel extends HttpException {
 export class UserNotInChannel extends HttpException {
   constructor() {
     super('User not in channel', HttpStatus.BAD_REQUEST)
-  }
-}
-
-export class UserNotOwner extends HttpException {
-  constructor() {
-    super('You must own the group to perform this action', HttpStatus.FORBIDDEN)
   }
 }

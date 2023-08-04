@@ -1,11 +1,20 @@
-import { IsArray, IsBoolean, IsOptional, IsString } from 'class-validator'
+import {
+  ArrayMinSize,
+  ArrayNotEmpty,
+  IsArray,
+  IsUUID,
+  IsBoolean,
+  IsOptional,
+  IsString,
+  ValidateIf
+} from 'class-validator'
 
 import { ApiProperty } from '@nestjs/swagger'
 
 export class CreateChannelDto {
   @ApiProperty()
-  @IsOptional()
   @IsString()
+  @ValidateIf((o) => o.isDm === false)
   name?: string
 
   @ApiProperty()
@@ -13,21 +22,14 @@ export class CreateChannelDto {
   isDm: boolean
 
   @ApiProperty()
-  @IsString()
-  ownerId: string
-
-  @ApiProperty()
   @IsArray()
-  @IsString({ each: true })
+  @IsUUID('4', { each: true })
+  @ArrayNotEmpty()
+  @ArrayMinSize(2)
   membersIds: Array<string>
 
   @ApiProperty()
-  @IsOptional()
-  @IsBoolean()
-  passwordRequired?: boolean
-
-  @ApiProperty()
-  @IsOptional()
   @IsString()
+  @IsOptional()
   password?: string
 }

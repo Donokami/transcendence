@@ -21,11 +21,12 @@ import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { ApiOperation } from '@nestjs/swagger'
 
 import { User } from '../users/user.entity'
+import { IRequestWithUser, ISession } from '@/core/types'
 
 @Controller('auth')
 @UseFilters(new GlobalExceptionFilter())
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Get('42/signIn')
   @UseGuards(AuthGuard('42'))
@@ -47,7 +48,10 @@ export class AuthController {
     description: 'Callback URI for 42 auth',
     tags: ['auth']
   })
-  fortyTwoAuthCallback(@Req() request: any, @Session() session: any): void {
+  fortyTwoAuthCallback(
+    @Req() request: IRequestWithUser,
+    @Session() session: ISession
+  ): void {
     if (request.user && request.user.id) {
       if (request.user.isTwoFactorEnabled) {
         session.twoFactorUserId = request.user.id
@@ -64,7 +68,7 @@ export class AuthController {
     description: 'Get auth status',
     tags: ['auth']
   })
-  authStatus(@Session() session: any): { status: string } {
+  authStatus(@Session() session: ISession): { status: string } {
     if (session.userId) {
       return { status: 'authenticated' }
     } else if (session.twoFactorUserId) {
@@ -83,10 +87,11 @@ export class AuthController {
   })
   async createUser(
     @Body() body: RegisterUserDto,
-    @Session() session: any
+    @Session() session: ISession
   ) {
     const { password: bPassword, username: bUsername } = body
-    const { password, twoFactorSecret, ...user } = await this.authService.register(bUsername, bPassword)
+    const { password, twoFactorSecret, ...user } =
+      await this.authService.register(bUsername, bPassword)
     session.userId = user.id
     return user
   }
@@ -98,11 +103,9 @@ export class AuthController {
     description: 'Sign in with username and password',
     tags: ['auth']
   })
-  async signIn(
-    @Body() body: SignInUserDto,
-    @Session() session: any
-  ) {
-    const { password, twoFactorSecret, ...user } = await this.authService.signIn(body.username, body.password)
+  async signIn(@Body() body: SignInUserDto, @Session() session: ISession) {
+    const { password, twoFactorSecret, ...user } =
+      await this.authService.signIn(body.username, body.password)
 
     if (user.isTwoFactorEnabled) {
       session.twoFactorUserId = user.id
@@ -121,7 +124,7 @@ export class AuthController {
     tags: ['auth']
   })
   async enableTwoFactor(
-    @Session() session: any
+    @Session() session: ISession
   ): Promise<Record<string, string | boolean>> {
     const result = await this.authService.toggleTwoFactor(session.userId)
 
@@ -137,7 +140,7 @@ export class AuthController {
   })
   async verifyToken(
     @Body() body: VerifyTokenDto,
-    @Session() session: any
+    @Session() session: ISession
   ): Promise<User> {
     const token = body.token
     try {
@@ -162,7 +165,7 @@ export class AuthController {
     description: 'Sign out session',
     tags: ['auth']
   })
-  signOut(@Session() session: any): { status: string } {
+  signOut(@Session() session: ISession): { status: string } {
     session.userId = null
     session.twoFactorUserId = null
     return { status: 'ok' }

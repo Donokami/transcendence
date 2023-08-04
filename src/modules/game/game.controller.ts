@@ -12,8 +12,6 @@ import {
 } from '@nestjs/common'
 import { GameService } from './game.service'
 
-import { IRequestWithUser } from '@/core/types/request-with-user'
-
 import { AuthGuard } from '@/core/guards/auth.guard'
 import { OwnershipGuard } from './guards/ownership.guard'
 
@@ -22,6 +20,7 @@ import { RoomObject } from './room'
 import { ApiOperation } from '@nestjs/swagger'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { RoomNotFound } from '@/core/exceptions/game'
+import { ISession } from '@/core/types'
 
 @Controller('games')
 @UseFilters(new GlobalExceptionFilter())
@@ -55,7 +54,7 @@ export class GameController {
     description: 'Get all games',
     tags: ['game']
   })
-  findAll(@Session() session: any) {
+  findAll(@Session() session: ISession) {
     return this.gameService
       .findAll()
       .filter((room) => !room.isPrivate || room.owner.id === session.userId)
@@ -69,7 +68,7 @@ export class GameController {
     description: 'Join the matchmaking queue',
     tags: ['game']
   })
-  joinQueue(@Session() session: any): Promise<RoomObject> {
+  joinQueue(@Session() session: ISession): Promise<RoomObject> {
     return this.gameService.joinQueue(session.userId)
   }
 
@@ -81,8 +80,8 @@ export class GameController {
     description: 'Create a game',
     tags: ['game']
   })
-  create(@Req() req: IRequestWithUser): Promise<RoomObject> {
-    return this.gameService.create(req.session.userId)
+  create(@Session() session: ISession): Promise<RoomObject> {
+    return this.gameService.create(session.userId)
   }
 
   @Patch(':id')
