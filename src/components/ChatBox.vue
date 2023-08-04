@@ -61,12 +61,9 @@ const channelStore = useChannelStore()
 const emit = defineEmits(['scroll-to-bottom'])
 const userStore = useUserStore()
 
-const { channelsList } = storeToRefs(channelStore)
 const { loggedUser } = storeToRefs(userStore)
 const { selectedChannel } = storeToRefs(channelStore)
 const channel = ref<Channel>()
-
-console.log('channelsList :', channelsList.value)
 
 const apiUrl = import.meta.env.VUE_APP_API_URL
 

@@ -65,9 +65,7 @@ export const useChannelStore = defineStore('channels', {
       const { loggedUser } = useUserStore()
       if (loggedUser == null) return []
 
-      const response: Channel[] = await fetcher.get(
-        `/user/${loggedUser.id}/channels`
-      )
+      const response: Channel[] = await fetcher.get(`/user/me/channels`)
 
       response.forEach((channel: Channel) => {
         this.setChannelInfos(loggedUser, channel)
@@ -91,6 +89,10 @@ export const useChannelStore = defineStore('channels', {
       }
     },
 
+    // **************** //
+    // bindRoomToInvite //
+    // **************** //
+
     bindRoomToInvite(message: Message) {
       const newMessage = message
       try {
@@ -112,20 +114,19 @@ export const useChannelStore = defineStore('channels', {
     // createDmChannel //
     // *************** //
 
-    async createDmChannel(ownerId: string, receiverId: string): Promise<void> {
+    async createDmChannel(receiverId: string): Promise<void> {
+      const { loggedUser } = useUserStore()
+      if (loggedUser == null) return
+
       const channelParam = {
         isDm: true,
-        ownerId,
-        membersIds: [ownerId, receiverId]
+        membersIds: [loggedUser.id, receiverId]
       }
 
       const response: Channel = await fetcher.post(
         `/channels/create`,
         channelParam
       )
-      this.setChannelInfos(loggedUser, response)
-
-      this.channelsList?.data?.push(response)
 
       console.log('New DM channel created ! ID : ', response.id)
       console.log(
@@ -140,17 +141,16 @@ export const useChannelStore = defineStore('channels', {
 
     async createGroupChannel(
       channelName: string,
-      ownerId: string,
       receiversId: string[],
-      passwordRequired: boolean,
       password: string | null
     ): Promise<void> {
+      const { loggedUser } = useUserStore()
+      if (loggedUser == null) return
+
       const channelParam = {
         isDm: false,
         name: channelName,
-        ownerId,
-        membersIds: [ownerId, ...receiversId],
-        passwordRequired,
+        membersIds: [loggedUser.id, ...receiversId],
         password
       }
 
@@ -158,10 +158,6 @@ export const useChannelStore = defineStore('channels', {
         `/channels/create`,
         channelParam
       )
-
-      response.messages = []
-
-      this.channelsList?.data?.push(response)
 
       console.log('New group channel created ! ID : ', response.id)
       console.log(
@@ -177,8 +173,9 @@ export const useChannelStore = defineStore('channels', {
     fetchChannels() {
       const { loggedUser } = useUserStore()
       if (loggedUser == null) return
+
       this.channelsList = useFetcher({
-        queryFn: fetcher.get(`/user/${loggedUser.id}/channels`),
+        queryFn: fetcher.get(`/user/me/channels`),
         onSuccess: (data: Channel[]) => {
           data.forEach((channel: Channel) => {
             this.setChannelInfos(loggedUser, channel)
@@ -292,9 +289,9 @@ export const useChannelStore = defineStore('channels', {
           password
         })
         if (response.status === 200) {
-          // todo: handle join --> update the local state if necessary
+          // todo (Lucas): handle join --> update the local state if necessary
         } else {
-          // todo: Handle any errors --> throw an error or return a specific value to be handled by the caller
+          // todo (Lucas): Handle any errors --> throw an error or return a specific value to be handled by the caller
         }
       } catch (error) {
         console.error(`Failed to join ${channelName} channel`, error)

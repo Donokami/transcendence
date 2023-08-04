@@ -4,16 +4,18 @@
     <div class="modal">
       <div class="modal-box rounded-none border-2 border-black">
         <Form ref="formRef" @submit="submitForm">
-        <!-- TITLE -->
-        <div class="text-xl flex justify-between">
-          <h1>Create a group</h1>
-          <button @click="closeModal()" class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
-            <iconify-icon
-              icon="material-symbols:close"
-              class="h-6 w-6 absolute">
-            </iconify-icon>
-          </button>
-        </div>
+          <!-- TITLE -->
+          <div class="text-xl flex justify-between">
+            <h1>Create a group</h1>
+            <button
+              @click="closeModal()"
+              class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
+              <iconify-icon
+                icon="material-symbols:close"
+                class="h-6 w-6 absolute">
+              </iconify-icon>
+            </button>
+          </div>
           <!-- GROUP SETTINGS -->
           <div>
             <!-- GROUP NAME -->
@@ -29,9 +31,7 @@
             </div>
             <!-- FRIENDS LIST -->
             <div class="form-control mt-6">
-              <span class="text-base text-black"
-                >Invite Friends</span
-              >
+              <span class="text-base text-black">Invite Friends</span>
               <div
                 class="collapse collapse-arrow border-2 mt-2 border-black rounded-none">
                 <input type="checkbox" />
@@ -60,7 +60,10 @@
             </div>
             <!-- USER TO ADD BADGES -->
             <div class="mt-2 flex gap-2 flex-wrap">
-              <div class="bg-red-300" v-for="username in usersToAdd" :key="username">
+              <div
+                class="bg-red-300"
+                v-for="username in usersToAdd"
+                :key="username">
                 <div
                   class="cursor-pointer bg-black flex justify-between gap-1 p-1 items-center w-fit"
                   @click="cancelUserToAdd(username)">
@@ -72,7 +75,6 @@
                     class="h-4 w-4 text-white mt-0.5">
                   </iconify-icon>
                 </div>
-                
               </div>
             </div>
 
@@ -80,7 +82,7 @@
               {{ friendListError }}
             </div>
             <!-- PASSWORD -->
-            <div class="form-control mt-6 ">
+            <div class="form-control mt-6">
               <label class="label cursor-pointer px-0">
                 <span class="text-base text-black">Password</span>
                 <input
@@ -181,6 +183,7 @@ const cancelUserToAdd = (username: string) => {
 // ********** //
 
 function closeModal(): void {
+  if (passwordRequired.value && (!password.value || passwordError.value)) return
   const modalElement = document.getElementById('my-modal-3') as HTMLInputElement
   if (modalElement) {
     modalElement.checked = !modalElement.checked
@@ -198,7 +201,7 @@ const createGroupChannel = async (): Promise<void> => {
   }
 
   if (passwordRequired.value && !password.value) {
-    console.error(`[ChatGroupsModal] - Password is required but not provided!`)
+    console.error(`[ChatGroupModal] - Password is required but not provided!`)
     return
   }
 
@@ -206,16 +209,13 @@ const createGroupChannel = async (): Promise<void> => {
     usersToAdd.value
     await channelStore.createGroupChannel(
       channelName.value,
-      loggedUser.value.id,
       idUsersToAdd.value,
-      passwordRequired.value,
       password.value
     )
-    console.log(`[ChatGroupsModal] - Group created successfully !`)
-    
+    console.log(`[ChatGroupModal] - Group created successfully !`)
+    passwordError.value = null
   } catch (error) {
-    console.error(`[ChatGroupsModal] - Failed to create group ! Error: `, error)
-    
+    console.error(`[ChatGroupModal] - Failed to create group ! Error: `, error)
   }
 }
 
@@ -226,7 +226,7 @@ const createGroupChannel = async (): Promise<void> => {
 const pushUserToAdd = (username: string, id: string): void => {
   if (!usersToAdd.value.includes(username)) usersToAdd.value.push(username)
   if (!idUsersToAdd.value.includes(id)) idUsersToAdd.value.push(id)
-  else console.log(`[ChatGroupsModal] - User already in group !`)
+  else console.log(`[ChatGroupModal] - User already in group !`)
 }
 
 // ********************** //

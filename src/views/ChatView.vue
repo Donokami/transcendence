@@ -85,14 +85,16 @@ import ChatBox from '@/components/ChatBox.vue'
 import ChatDrawer from '@/components/ChatDrawer.vue'
 import ChatInput from '@/components/ChatInput.vue'
 
-import type { Message, Room } from '@/types'
+import type { Channel, Message, Room } from '@/types'
 import { useFetcher, fetcher } from '@/utils/fetcher'
+import { useUserStore } from '@/stores/UserStore'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
 // ******************** //
 
 const channelStore = useChannelStore()
+const { loggedUser } = useUserStore()
 const chatbox = ref<HTMLElement | null>(null)
 const listState = ref('dms')
 const router = useRouter()
@@ -135,7 +137,13 @@ chatSocket.on('error', (error) => {
   console.error('[ChatView] - Error : ', error)
 })
 
-chatSocket.on('message', async (message: Message) => {
+chatSocket.on('chat:channel-created', async (channel: Channel) => {
+  if (loggedUser === null) return
+  channelStore.setChannelInfos(loggedUser, channel)
+  channelStore.channelsList?.data?.push(channel)
+})
+
+chatSocket.on('chat:message', async (message: Message) => {
   channelStore.addMessage(message, message.channel.id)
   if (chatbox.value != null) {
     scrollToBottom()
@@ -160,20 +168,20 @@ onBeforeMount(async () => {
     channelsList.value === undefined ||
     channelsList.value?.data?.length === 0
   ) {
-    try {
-      channelStore.fetchChannels()
-      console.log('[ChatView] - Channels : ', channelsList.value)
-    } catch {
-      console.error('[ChatView] - Error while fetching channels.')
-    }
+    channelStore.fetchChannels()
+    console.log('[ChatView] - Channels : ', channelsList.value)
   }
-  chatSocket.on('connect', () => {
+
+  chatSocket.on('chat:connect', () => {
     console.log('[ChatView] - Connected to the chat.')
   })
+
   if (selectedChannel.value !== null) {
     await router.push(`/chat/${selectedChannel.value}`)
   }
+
   channelStore.selectedChannel = getChannelId(route)
+
   scrollToBottom()
 })
 

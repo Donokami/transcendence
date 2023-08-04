@@ -98,12 +98,13 @@ const filteredFriendList = computed(() => {
 // createDmChannel //
 // *************** //
 
+// todo (Lucas): close modal after creating DM channel
 const createDmChannel = async (friend: User): Promise<void> => {
   if (loggedUser.value == null || !friend) {
     return
   }
   try {
-    await channelStore.createDmChannel(loggedUser.value.id, friend.id)
+    await channelStore.createDmChannel(friend.id)
     console.log(`[ChatMessagesModal] - DM channel created successfully !`)
     
   } catch (error) {

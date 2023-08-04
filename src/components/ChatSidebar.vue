@@ -1,24 +1,28 @@
 <template>
-
   <!-- CHANNELS TABS -->
   <div class="flex gap-[2px] bg-black">
     <button
       class="btn shrink border-b-2 border-black border-t-0 border-x-0 hover:bg-base-300 hover:border-black hover:text-black w-full"
-      :class="[listState === 'dms' ? 'bg-black text-white hover:bg-black hover:!text-white' : 'bg-white text-black']"
-      @click="emit('list-state-changed', 'dms')"
-      >
+      :class="[
+        listState === 'dms'
+          ? 'bg-black text-white hover:bg-black hover:!text-white'
+          : 'bg-white text-black'
+      ]"
+      @click="emit('list-state-changed', 'dms')">
       DMs
     </button>
     <button
       class="btn shrink border-b-2 border-black border-t-0 border-x-0 hover:bg-base-300 hover:border-black hover:text-black w-full"
-      :class="[listState === 'groups' ? 'bg-black text-white hover:bg-black hover:!text-white' : 'bg-white text-black']"
-      @click="emit('list-state-changed', 'groups')"
-      >
+      :class="[
+        listState === 'groups'
+          ? 'bg-black text-white hover:bg-black hover:!text-white'
+          : 'bg-white text-black'
+      ]"
+      @click="emit('list-state-changed', 'groups')">
       Groups
-      </button>
+    </button>
   </div>
   <div class="flex-auto overflow-auto">
-
     <!-- LOADER FOR CHANNEL LIST -->
     <div v-if="channelStore.channelsList?.loading === true">
       <div class="flex justify-center items-center h-fit">
@@ -50,20 +54,14 @@
             </div>
           </div>
 
-
           <div class="py-4" v-else-if="channel.isDm === false">
             <div class="flex items-center mx-auto md:mx-0 pl-4 w-18">
               <span class="pl-4 capitalize text-base">{{ channel.name }}</span>
             </div>
           </div>
-
-
-
         </router-link>
       </li>
     </ul>
-    
-
   </div>
   <div>
     <!-- JOIN CHANNEL BUTTON -->
@@ -85,35 +83,35 @@
           listState === 'dms' ? 'create-dm-modal' : 'create-group-modal'
         )
       ">
-      <iconify-icon icon="ci:message-plus-alt" class="hidden sm:block w-7 h-7 "></iconify-icon>
-      <div class=" my-auto">{{ listState === 'dms' ? 'Send a new dm' : 'Create a new group' }}</div>
+      <iconify-icon
+        icon="ci:message-plus-alt"
+        class="hidden sm:block w-7 h-7"></iconify-icon>
+      <div class="my-auto">
+        {{ listState === 'dms' ? 'Send a new dm' : 'Create a new group' }}
+      </div>
     </button>
   </div>
 
+  <!-- DM MODAL -->
+  <chat-create-direct-message-modal
+    v-if="listState === 'dms' && activeModal === 'create-dm-modal'"
+    :showModal="showModal"
+    @update:showModal="showModal = $event">
+  </chat-create-direct-message-modal>
 
+  <!-- GROUP MODAL -->
+  <chat-create-group-modal
+    v-else-if="listState === 'groups' && activeModal === 'create-group-modal'"
+    :showModal="showModal"
+    @update:showModal="showModal = $event">
+  </chat-create-group-modal>
 
-    <!-- DM MODAL -->
-    <chat-create-direct-message-modal
-      v-if="listState === 'dms' && activeModal === 'create-dm-modal'"
-      :showModal="showModal"
-      @update:showModal="showModal = $event">
-    </chat-create-direct-message-modal>
-
-    <!-- GROUP MODAL -->
-    <chat-create-group-modal
-      v-else-if="listState === 'groups' && activeModal === 'create-group-modal'"
-      :showModal="showModal"
-      @update:showModal="showModal = $event">
-    </chat-create-group-modal>
-
-    <!-- JOIN GROUP MODAL -->
-    <chat-join-group-modal
-      v-else-if="listState === 'groups' && activeModal === 'join-group-modal'"
-      :showModal="showModal"
-      @update:showModal="showModal = $event">
-    </chat-join-group-modal>
-
-
+  <!-- JOIN GROUP MODAL -->
+  <chat-join-group-modal
+    v-else-if="listState === 'groups' && activeModal === 'join-group-modal'"
+    :showModal="showModal"
+    @update:showModal="showModal = $event">
+  </chat-join-group-modal>
 </template>
 
 <script setup lang="ts">
