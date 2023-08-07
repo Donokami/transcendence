@@ -541,6 +541,18 @@ export class ChannelsService {
     return this.channelsRepository.save(channel)
   }
 
+  // *********** //
+  // unMuteMember //
+  // *********** //
+
+  async unMuteMember(channel: Channel, userId: string): Promise<Channel> {
+    const user: User = await this.checkExistingUser(userId)
+
+    channel.removeMuteMember(user)
+
+    return this.channelsRepository.save(channel)
+  }
+
   // ************* //
   // updateChannel //
   // ************* //
