@@ -6,8 +6,10 @@ export interface Channel {
   // **************************** //
   id: string
   name: string
+  dmUser?: User
   isDm: boolean
   image: string
+  unreadMessages: number
 
   // **************************** //
   // MEMBERS RELATED INFORMATIONS //

@@ -2,7 +2,8 @@
   <div class="mx-auto w-full max-w-5xl">
     <div class="flex max-h-[calc(100vh-164px)] text-black m-4">
       <!-- SIDEBAR -->
-      <div class="border-2 border-black min-h-[calc(100vh-164px)] w-60 sm:w-96 flex flex-col">
+      <div
+        class="border-2 border-black min-h-[calc(100vh-164px)] w-60 sm:w-96 flex flex-col">
         <chat-sidebar
           :list-state="listState"
           @list-state-changed="listState = $event">
@@ -16,12 +17,13 @@
         <!-- TITLE -->
         <div
           class="flex gap-2 border-x-2 border-t-2 border-black items-center justify-between p-5">
-
           <div class="flex gap-2 items-center">
             <div v-if="channelStore.getChannel(selectedChannel)?.isDm === true">
               <img
                 v-if="channelStore.getChannel(selectedChannel)?.image"
-                :src="`http://localhost:3000/${channelStore.getChannel(selectedChannel).image}`"
+                :src="`http://localhost:3000/${
+                  channelStore.getChannel(selectedChannel).image
+                }`"
                 class="object-cover rounded-full h-11 w-11" />
               <iconify-icon
                 v-else
@@ -29,7 +31,7 @@
                 class="h-11 w-11">
               </iconify-icon>
             </div>
-          
+
             <h2 class="text-xl font-bold text-black capitalize">
               {{ channelStore.getChannel(selectedChannel)?.name }}
             </h2>
@@ -38,8 +40,10 @@
           <button
             v-if="channelStore.getChannel(selectedChannel)?.isDm === true"
             @click="createGame"
-            class="btn  bg-white border-2 shrink border-black text-black hover:bg-black hover:border-black hover:text-white">
-            <iconify-icon icon="material-symbols:mail-outline" class="hidden sm:block w-7 h-7 "></iconify-icon>
+            class="btn bg-white border-2 shrink border-black text-black hover:bg-black hover:border-black hover:text-white">
+            <iconify-icon
+              icon="material-symbols:mail-outline"
+              class="hidden sm:block w-7 h-7"></iconify-icon>
             <span>Send game invite</span>
           </button>
           <chat-drawer v-else></chat-drawer>
@@ -53,9 +57,7 @@
         <!-- MESSAGE INPUT -->
         <chat-input></chat-input>
       </div>
-
     </div>
-
   </div>
 </template>
 
@@ -144,7 +146,7 @@ chatSocket.on('chat:channel-created', async (channel: Channel) => {
 })
 
 chatSocket.on('chat:message', async (message: Message) => {
-  channelStore.addMessage(message, message.channel.id)
+  await channelStore.addMessage(message, message.channel.id)
   if (chatbox.value != null) {
     scrollToBottom()
   }
@@ -178,15 +180,27 @@ onBeforeMount(async () => {
 
   if (selectedChannel.value !== null) {
     await router.push(`/chat/${selectedChannel.value}`)
+  } else {
+    await router.push(`/chat`)
   }
 
   channelStore.selectedChannel = getChannelId(route)
+  const channel = channelStore.getChannel(
+    channelStore.selectedChannel as string
+  )
+  if (!channel) return
+  channel.unreadMessages = 0
 
   scrollToBottom()
 })
 
 onBeforeRouteUpdate((to, from) => {
   channelStore.selectedChannel = getChannelId(to)
+  const channel = channelStore.getChannel(
+    channelStore.selectedChannel as string
+  )
+  if (!channel) return
+  channel.unreadMessages = 0
 })
 
 onBeforeRouteLeave(async () => {

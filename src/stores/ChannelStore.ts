@@ -46,13 +46,26 @@ export const useChannelStore = defineStore('channels', {
 
       const channel = this.getChannel(channelId)
       if (channel != null) {
-        // fix: this line make a bug when the channel messages are not loaded
+        if (channel.messages.length === 0) {
+          await this.fetchChannelMessages(channel.id)
+          if (this.selectedChannel !== channel.id) {
+            channel.unreadMessages++
+          }
+          return
+        }
         channel.messages.push(this.bindRoomToInvite(message))
+        if (this.selectedChannel !== channel.id) {
+          channel.unreadMessages++
+        }
       } else {
-        const newChannel: Channel = await fetcher.get(`/channels/${channelId}`)
+        const newChannel: Channel = await fetcher.get(`/channels/${channelId as string}`)
         if (newChannel !== null) {
           this.setChannelInfos(loggedUser, newChannel)
-          this.channelsList?.data?.push(newChannel as Channel)
+          this.channelsList?.data?.push(newChannel)
+
+          if (this.selectedChannel !== newChannel.id) {
+            newChannel.unreadMessages++
+          }
         }
       }
     },
@@ -192,7 +205,7 @@ export const useChannelStore = defineStore('channels', {
     async fetchChannelMessages(channelId: string): Promise<void> {
       try {
         const messages = await fetcher.get(`/channels/${channelId}/messages`)
-        const channel = this.getChannel()
+        const channel = this.getChannel(channelId)
         console.log('[Message Fetch] channel : ', channel)
         console.log('[Message Fetch] messages : ', messages)
 
@@ -341,6 +354,8 @@ export const useChannelStore = defineStore('channels', {
         if (receiverUser != null) {
           channel.name = receiverUser.username
           channel.image = receiverUser.profilePicture
+          channel.dmUser = receiverUser
+          channel.unreadMessages = 0
         }
       }
     },

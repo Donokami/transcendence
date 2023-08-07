@@ -2,23 +2,10 @@
   <div class="sm:-ml-4 rounded-none stats stats-vertical lg:stats-horizontal">
     <!-- USER STATUS AND PROFILE PICTURE -->
     <div class="sm:border-r-2 border-black -ml-6 stat sm:-ml-2">
-      <div class="stat-figure text-secondary">
-        <div class="avatar" :class="statusBadge()">
-          <input
-            type="file"
-            ref="fileInput"
-            @change="onFileChange"
-            style="display: none" />
-          <div
-            class="w-16 rounded-full cursor-pointer"
-            @click="triggerFileInput">
-            <img v-if="pictureSrc" :src="pictureSrc" />
-            <iconify-icon
-              v-else
-              icon="ri:account-circle-line"
-              class="h-16 w-16 text-black"></iconify-icon>
-          </div>
-        </div>
+      <div class="w-16">
+        <user-avatar
+          :userProps="(observedUser as User)"
+          :uploadMode="loggedUser?.id === observedUser?.id"></user-avatar>
       </div>
       <div v-if="observedUser" class="stat-value text-black text-xl">
         {{ observedUser.username }}
@@ -44,7 +31,8 @@
       </div>
     </div>
     <!-- USER WIN RATE -->
-    <div class="stat border-black -ml-6 sm:-ml-0 !border-t-2 sm:!border-t-0 sm:!border-l-2">
+    <div
+      class="stat border-black -ml-6 sm:-ml-0 !border-t-2 sm:!border-t-0 sm:!border-l-2">
       <div class="stat-figure text-primary">
         <iconify-icon
           class="w-10 h-10"
@@ -128,9 +116,9 @@
     </div>
     <!-- FRIEND REQUEST NOTIFICATION -->
     <div
-      class="stat border-black -ml-6 sm:-ml-0 !border-t-2 sm:!border-t-0 sm:!border-l-2 "
+      class="stat border-black -ml-6 sm:-ml-0 !border-t-2 sm:!border-t-0 sm:!border-l-2"
       v-if="loggedUser && observedUser && observedUser.id === loggedUser.id">
-      <div class="stat-figure text-primary " v-if="nFriendRequests > 0">
+      <div class="stat-figure text-primary" v-if="nFriendRequests > 0">
         <div class="indicator">
           <label
             for="my-modal-3"
@@ -167,23 +155,22 @@
 // ******* //
 
 import { storeToRefs } from 'pinia'
-import { computed, onBeforeMount, ref, type Ref } from 'vue'
+import { computed, onBeforeMount, ref } from 'vue'
 import { onBeforeRouteUpdate, useRoute } from 'vue-router'
 
 import { useUserStore } from '@/stores/UserStore'
 import ProfileFriendRequestModal from '@/components/ProfileFriendRequestModal.vue'
+import UserAvatar from './UserAvatar.vue'
 
 import { useToast } from 'vue-toastification'
 
 import type { User } from '@/types'
-import { appSocket } from '../includes/appSocket'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
 // ******************** //
 const toast = useToast()
 
-const fileInput = ref(null) as Ref<HTMLElement | null>
 const iconBlockUser = ref('mdi:account-cancel-outline')
 const iconRequestNotification = ref('mdi:account-alert-outline')
 const iconSendRequest = ref('mdi:account-plus-outline')
@@ -196,28 +183,6 @@ const userStore = useUserStore()
 
 const { loggedUser } = storeToRefs(userStore)
 const { observedUser } = storeToRefs(userStore)
-
-const pictureSrc = computed(() => {
-  if (!loggedUser.value || !observedUser.value) {
-    return null
-  }
-  let profilePicture = ''
-  if (observedUser.value.id === loggedUser.value.id) {
-    profilePicture = loggedUser.value.profilePicture
-  } else if (observedUser.value.id !== loggedUser.value.id) {
-    profilePicture = observedUser.value.profilePicture
-  }
-
-  if (!profilePicture) {
-    return null
-  }
-
-  if (profilePicture.includes('cdn.intra.42')) {
-    return profilePicture
-  } else {
-    return 'http://localhost:3000/' + profilePicture
-  }
-})
 
 const statusColor = computed(() => {
   if (observedUser.value === null || loggedUser.value === null)
@@ -330,24 +295,6 @@ const closeFriendRequestModal = (): void => {
   location.reload()
 }
 
-// ************ //
-// onFileChange //
-// ************ //
-
-const onFileChange = async (event: Event): Promise<void> => {
-  const target = event.target as HTMLInputElement
-  if (target.files != null) {
-    const file = target.files[0]
-    try {
-      if (userStore.loggedUser == null) return
-      await userStore.uploadProfilePicture(userStore.loggedUser.id, file)
-      location.reload()
-    } catch (error) {
-      toast.error('Failed to upload profile picture !')
-    }
-  }
-}
-
 // ****************** //
 // searchInFriendList //
 // ****************** //
@@ -381,14 +328,6 @@ const sendFriendRequest = async (): Promise<void> => {
   }
 }
 
-// **************** //
-// triggerFileInput //
-// **************** //
-
-const triggerFileInput = (): void => {
-  fileInput.value?.click()
-}
-
 // *********** //
 // unblockUser //
 // *********** //
@@ -402,41 +341,6 @@ const unblockUser = async (): Promise<void> => {
     toast.error('Failed to unblock user !')
   }
 }
-
-const statusBadge = (): string => {
-  console.log(`[ProfileStatsCard] - statusBadge : `, observedUser.value)
-
-  if (observedUser.value === null || loggedUser.value === null) return 'offline'
-  if (observedUser.value.id === loggedUser.value.id) return 'online'
-  switch (observedUser.value.status) {
-    case 'online':
-      return 'online'
-    case 'away':
-      return 'away'
-    case 'ingame':
-      return 'ingame'
-    default:
-      return 'offline'
-  }
-}
-
-appSocket.on('user:connect', (userId) => {
-  if (observedUser.value === null) return
-
-  if (userId === observedUser.value.id) {
-    observedUser.value.status = 'online'
-  }
-  console.log(`[ProfileStatsCard] - user:connect : `, observedUser.value)
-})
-
-appSocket.on('user:disconnect', (userId) => {
-  if (observedUser.value === null) return
-
-  if (userId === observedUser.value.id) {
-    observedUser.value.status = 'offline'
-  }
-  console.log(`[ProfileStatsCard] - user:disconnect : `, observedUser.value)
-})
 
 // ********************* //
 // VueJs LIFECYCLE HOOKS //

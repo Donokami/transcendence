@@ -24,9 +24,16 @@
   </div>
   <div class="flex-auto overflow-auto">
     <!-- LOADER FOR CHANNEL LIST -->
-    <div v-if="channelStore.channelsList?.loading === true">
-      <div class="flex justify-center items-center h-fit">
-        <span class="loading loading-spinner loading-lg"></span>
+    <div
+      v-if="channelStore.channelsList?.loading === true"
+      class="h-full overflow-hidden">
+      <div v-for="i in 15" class="flex p-0 rounded-none" :key="i">
+        <div class="flex items-center mx-auto md:mx-0 pl-4 w-18 py-2">
+          <div
+            class="object-cover rounded-full h-11 w-11 bg-slate-200/20 animate-pulse mr-2"></div>
+          <span
+            class="hidden md:block pl-4 bg-slate-200/20 animate-pulse w-36 h-4 rounded-sm"></span>
+        </div>
       </div>
     </div>
 
@@ -37,20 +44,29 @@
       <li v-for="channel in getChannels()" :key="channel.id">
         <router-link
           class="flex p-0 rounded-none hover:bg-base-300"
-          :active-class="'!bg-[#000000] hover:!bg-[#000000]'"
+          :active-class="'!bg-[#000000] hover:!bg-[#000000] text-white'"
           :to="`/chat/${channel.id}`">
           <div class="py-2" v-if="channel.isDm === true">
             <div class="flex items-center mx-auto md:mx-0 pl-4 w-18">
-              <img
-                v-if="channel.image"
-                :src="`http://localhost:3000/${channel.image}`"
-                class="object-cover rounded-full h-11 w-11" />
-              <iconify-icon
-                v-else
-                icon="ri:account-circle-line"
-                class="h-11 w-11">
-              </iconify-icon>
+              <div class="h-11 w-11" v-if="channel.isDm">
+                <user-avatar
+                  :userProps="(channel.dmUser as User)"
+                  :uploadMode="false"></user-avatar>
+              </div>
+              <div v-else>
+                <img
+                  v-if="channel.image"
+                  :src="`http://localhost:3000/${channel.image}`"
+                  class="object-cover rounded-full h-11 w-11" />
+              </div>
               <span class="pl-4 capitalize text-base">{{ channel.name }}</span>
+              <span
+                class="badge badge-ghost float-right mx-2"
+                v-if="channel.unreadMessages > 0"
+                >{{
+                  channel.unreadMessages < 100 ? channel.unreadMessages : '99+'
+                }}</span
+              >
             </div>
           </div>
 
@@ -126,9 +142,10 @@ import { onBeforeRouteUpdate } from 'vue-router'
 import ChatCreateDirectMessageModal from '@/components/ChatCreateDirectMessageModal.vue'
 import ChatCreateGroupModal from '@/components/ChatCreateGroupModal.vue'
 import ChatJoinGroupModal from '@/components/ChatJoinGroupModal.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 import { useChannelStore } from '@/stores/ChannelStore.js'
 import { useUserStore } from '@/stores/UserStore.js'
-import type { Channel } from '@/types'
+import type { Channel, User } from '@/types'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
