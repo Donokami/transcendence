@@ -8,27 +8,27 @@ import {
   Param,
   Post,
   Put,
-  Req,
   Session,
   UseFilters,
   UseGuards
 } from '@nestjs/common'
-
 import { ApiOperation } from '@nestjs/swagger'
 
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { AuthGuard } from '@/core/guards/auth.guard'
+import { ISession } from '@/core/types'
 import { ChannelsService } from '@/modules/chat/channels/channels.service'
+import { OperationResult } from '@/modules/chat/channels/channels.service'
+import { CurrentChannel } from '@/modules/chat/channels/decorators/current-channel.decorator'
 import { CreateChannelDto } from '@/modules/chat/channels/dtos/create-channel.dto'
+import { ChangeGroupPasswordDto } from '@/modules/chat/channels/dtos/change-group-password.dto'
+import { HandleChannelDto } from '@/modules/chat/channels/dtos/handle-channel.dto'
 import { JoinGroupDto } from '@/modules/chat/channels/dtos/join-group.dto'
 import { MessageDto } from '@/modules/chat/channels/dtos/message.dto'
 import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { AdminshipGuard } from '@/modules/chat/channels/guards/adminship.guard'
 import { MembershipGuard } from '@/modules/chat/channels/guards/membership.guard'
 import { OwnershipGuard } from '@/modules/chat/channels/guards/ownership.guard'
-import { CurrentChannel } from './decorators/current-channel.decorator'
-import { ISession } from '@/core/types'
-import { HandleChannelDto } from './dtos/handle-channel.dto'
 
 @Controller('channels')
 @UseFilters(new GlobalExceptionFilter())
@@ -40,27 +40,6 @@ export class ChannelsController {
   // ****** //
 
   private logger = new Logger(ChannelsController.name)
-
-  // ******** //
-  // addAdmin //
-  // ********* //
-
-  @Put('/:channelId/admins')
-  @ApiOperation({
-    summary: 'Add a user to the admins list of a group',
-    operationId: 'addAdmin',
-    description: 'Add a user to the admins list of a group',
-    tags: ['chat']
-  })
-  @UseGuards(AuthGuard)
-  @UseGuards(MembershipGuard)
-  @UseGuards(OwnershipGuard)
-  async addAdmin(
-    @Body('userId') userId: string,
-    @CurrentChannel() channel: Channel
-  ): Promise<Channel> {
-    return await this.channelsService.addAdmin(channel, userId)
-  }
 
   // ********* //
   // banMember //
@@ -77,10 +56,40 @@ export class ChannelsController {
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
   async banMember(
-    @CurrentChannel() channel: Channel,
-    @Body('userId') userId: string
+    @Session() session: ISession,
+    @Body() body: HandleChannelDto,
+    @CurrentChannel() channel: Channel
   ): Promise<Channel> {
-    return await this.channelsService.banMember(channel, userId)
+    return await this.channelsService.banMember(
+      session.userId,
+      body.userId,
+      channel
+    )
+  }
+
+  // ************** //
+  // changePassword //
+  // ************** //
+
+  @Put('/:channelId/password/change')
+  @ApiOperation({
+    summary: 'Change the password of a group',
+    operationId: 'changePassword',
+    description: 'Change the password of a group',
+    tags: ['chat']
+  })
+  @UseGuards(AuthGuard)
+  @UseGuards(MembershipGuard)
+  @UseGuards(OwnershipGuard)
+  async changePassword(
+    @Body() body: ChangeGroupPasswordDto,
+    @CurrentChannel() channel: Channel
+  ): Promise<OperationResult> {
+    return await this.channelsService.changePassword(
+      body.userId,
+      body.newPassword,
+      channel
+    )
   }
 
   // ************* //
@@ -196,10 +205,10 @@ export class ChannelsController {
   @UseGuards(AdminshipGuard)
   async kickMember(
     @Session() session: ISession,
-    @CurrentChannel() channel: Channel,
-    @Body() body: HandleChannelDto
+    @Body() body: HandleChannelDto,
+    @CurrentChannel() channel: Channel
   ): Promise<Channel> {
-    return this.channelsService.kickMember(session.userId, channel, body.userId)
+    return this.channelsService.kickMember(session.userId, body.userId, channel)
   }
 
   // ********** //
@@ -217,10 +226,15 @@ export class ChannelsController {
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
   async muteMember(
-    @CurrentChannel() channel: Channel,
-    @Body('userId') userId: string
-  ): Promise<void> {
-    return await this.channelsService.muteMember(channel, userId)
+    @Session() session: ISession,
+    @Body() body: HandleChannelDto,
+    @CurrentChannel() channel: Channel
+  ): Promise<OperationResult> {
+    return await this.channelsService.muteMember(
+      session.userId,
+      body.userId,
+      channel
+    )
   }
 
   // ************ //
@@ -255,6 +269,7 @@ export class ChannelsController {
   // removeAdmin //
   // *********** //
 
+  // todo: remove if not required
   @Delete('/:channelId/admins/:userId')
   @UseGuards(AuthGuard)
   @ApiOperation({
@@ -272,10 +287,37 @@ export class ChannelsController {
     return this.channelsService.removeAdmin(channel, userId)
   }
 
+  // ******** //
+  // setAdmin //
+  // ********* //
+
+  @Put('/:channelId/admins')
+  @ApiOperation({
+    summary: 'Set a user as an admin of a group',
+    operationId: 'setAdmin',
+    description: 'Set a user as an admin of a group',
+    tags: ['chat']
+  })
+  @UseGuards(AuthGuard)
+  @UseGuards(MembershipGuard)
+  @UseGuards(OwnershipGuard)
+  async setAdmin(
+    @Session() session: ISession,
+    @Body() body: HandleChannelDto,
+    @CurrentChannel() channel: Channel
+  ): Promise<Channel> {
+    return await this.channelsService.setAdmin(
+      session.userId,
+      body.userId,
+      channel
+    )
+  }
+
   // *********** //
   // unBanMember //
   // *********** //
 
+  // todo: remove if not required
   @Delete('/:channelId/bannedMembers/:userId')
   @ApiOperation({
     summary: 'Un-ban a user from a group',
@@ -291,26 +333,5 @@ export class ChannelsController {
     @Param('userId') userId: string
   ): Promise<Channel> {
     return this.channelsService.unBanMember(channel, userId)
-  }
-
-  // ************ //
-  // unMuteMember //
-  // ************ //
-
-  @Delete('/:channelId/mutedMembers/:userId')
-  @ApiOperation({
-    summary: 'Un-mute a group member',
-    operationId: 'unMuteMember',
-    description: 'Un-mute a group member',
-    tags: ['chat']
-  })
-  @UseGuards(AuthGuard)
-  @UseGuards(MembershipGuard)
-  @UseGuards(AdminshipGuard)
-  async unMuteMember(
-    @CurrentChannel() channel: Channel,
-    @Param('userId') userId: string
-  ): Promise<Channel> {
-    return this.channelsService.unMuteMember(channel, userId)
   }
 }

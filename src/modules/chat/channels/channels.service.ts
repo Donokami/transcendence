@@ -4,19 +4,19 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
 import {
+  CannotActOnSelf,
+  CannotModifyPassword,
+  CannotKickBanMuteAdmin,
+  CannotSetAdmin,
   ChannelNotFound,
   ChannelMembersNotFound,
-  MissingChannelId,
+  InvalidGroupPassword,
   MissingUserId,
   UserAlreadyAdmin,
   UserAlreadyBanned,
   UserAlreadyInChannel,
   UserNotFound,
-  UserNotInChannel,
-  InvalidGroupPassword,
-  CannotKickOwner,
-  CannotKickYourself,
-  CannotKickAdmin
+  UserNotInChannel
 } from '@/core/exceptions'
 import { parseMuteTime } from '@/core/utils/parseMuteTime'
 import { ChatGateway } from '@/modules/chat/chat.gateway'
@@ -27,6 +27,10 @@ import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { Message } from '@/modules/chat/channels/entities/message.entity'
 import { User } from '@/modules/users/user.entity'
 import { UsersService } from '@/modules/users/users.service'
+
+export interface OperationResult {
+  success: boolean
+}
 
 @Injectable()
 export class ChannelsService {
@@ -52,31 +56,10 @@ export class ChannelsService {
   // FUNCTION DEFINITIONS //
   // ******************** //
 
-  // ******** //
-  // addAdmin //
-  // ******** //
-
-  async addAdmin(channel: Channel, userId: string): Promise<Channel> {
-    const user: User = await this.checkExistingUser(userId)
-
-    channel.admins = this.addUserToList('admins', user, channel.admins)
-
-    const updatePayload = { userId, channelId: channel.id }
-
-    const updatedChannel: Channel = await this.updateChannel(
-      'set-admin',
-      channel,
-      updatePayload
-    )
-
-    return updatedChannel
-  }
-
   // ************* //
   // addUserToList //
   // ************* //
 
-  // todo (Lucas): check what is better between push and concat
   private addUserToList(
     listName: string,
     user: User,
@@ -95,36 +78,64 @@ export class ChannelsService {
       }
     }
 
-    // userList.push(user)
+    userList.push(user)
 
-    // return userList
-    return userList.concat(user)
+    return userList
   }
 
   // ********* //
   // banMember //
   // ********* //
 
-  async banMember(channel: Channel, userId: string): Promise<Channel> {
-    const user: User = await this.checkExistingUser(userId)
+  async banMember(
+    banningUserId: string,
+    userToBanId: string,
+    channel: Channel
+  ): Promise<Channel> {
+    const userToBan: User = await this.checkExistingUser(userToBanId)
 
-    channel.members = this.removeUserFromList('members', user, channel.members)
+    await this.permissionChecker('ban', channel, banningUserId, userToBanId)
+
+    channel.members = this.removeUserFromList(
+      'members',
+      userToBan,
+      channel.members
+    )
 
     channel.bannedMembers = this.addUserToList(
       'bannedMembers',
-      user,
+      userToBan,
       channel.bannedMembers
     )
 
-    const updatePayload = { userId, channelId: channel.id }
+    const updatePayload = { userToBanId, channelId: channel.id }
 
-    const updatedChannel = this.updateChannel(
-      'ban-user',
-      channel,
-      updatePayload
-    )
+    const updatedChannel = this.updateChannel('ban', channel, updatePayload)
 
     return updatedChannel
+  }
+
+  // ************** //
+  // changePassword //
+  // ************** //
+
+  // todo: check what we want as group password policy
+  async changePassword(
+    userId: string,
+    newPassword: string,
+    channel: Channel
+  ): Promise<OperationResult> {
+    const user: User = await this.checkExistingUser(userId)
+
+    await this.permissionChecker('change-password', channel, userId)
+
+    channel.password = newPassword
+
+    const updatePayload = { user, channelId: channel.id }
+
+    await this.updateChannel('change-password', channel, updatePayload)
+
+    return { success: true }
   }
 
   // ***************** //
@@ -150,6 +161,7 @@ export class ChannelsService {
   // createChannel //
   // ************* //
 
+  // todo: check what we want as group password policy
   async createChannel(
     createChannelDto: CreateChannelDto,
     ownerId: string
@@ -297,7 +309,10 @@ export class ChannelsService {
   // joinGroup //
   // ********* //
 
-  async joinGroup(joinGroupDto: JoinGroupDto, newMemberId: string) {
+  async joinGroup(
+    joinGroupDto: JoinGroupDto,
+    newMemberId: string
+  ): Promise<OperationResult> {
     const { channelName, password } = joinGroupDto
 
     const newMember: User = await this.checkExistingUser(newMemberId)
@@ -330,34 +345,23 @@ export class ChannelsService {
   // ********** //
 
   async kickMember(
-    requestUserId: string,
-    channel: Channel,
-    userId: string
+    kickingUserId: string,
+    userToKickId: string,
+    channel: Channel
   ): Promise<Channel> {
-    const user: User = await this.checkExistingUser(userId)
+    const userToKick: User = await this.checkExistingUser(userToKickId)
 
-    // todo (Lucas): create a permission handler function
-    if (userId === channel.owner.id) {
-      throw new CannotKickOwner()
-    }
+    await this.permissionChecker('kick', channel, kickingUserId, userToKickId)
 
-    if (requestUserId === userId) {
-      throw new CannotKickYourself()
-    }
-
-    if (requestUserId !== channel.owner.id && channel.isAdmin(user)) {
-      throw new CannotKickAdmin()
-    }
-
-    channel.members = this.removeUserFromList('members', user, channel.members)
-
-    const updatePayload = { userId, channelId: channel.id }
-
-    const updatedChannel = this.updateChannel(
-      'kick-user',
-      channel,
-      updatePayload
+    channel.members = this.removeUserFromList(
+      'members',
+      userToKick,
+      channel.members
     )
+
+    const updatePayload = { userToKickId, channelId: channel.id }
+
+    const updatedChannel = this.updateChannel('kick', channel, updatePayload)
 
     return updatedChannel
   }
@@ -366,13 +370,66 @@ export class ChannelsService {
   // muteMember //
   // ********** //
 
-  async muteMember(channel: Channel, userId: string): Promise<void> {
-    const user: User = await this.checkExistingUser(userId)
+  async muteMember(
+    mutingUserId: string,
+    userToMuteId: string,
+    channel: Channel
+  ): Promise<OperationResult> {
+    const userToMute: User = await this.checkExistingUser(userToMuteId)
+
+    await this.permissionChecker('mute', channel, mutingUserId, userToMuteId)
 
     // todo: add a string param to replace '1w'
     const muteEndDate = parseMuteTime('1w')
 
-    channel.addMuteMember(user, muteEndDate)
+    channel.addMuteMember(userToMute, muteEndDate)
+
+    return { success: true }
+  }
+
+  // ***************** //
+  // permissionChecker //
+  // ***************** //
+
+  async permissionChecker(
+    action: string,
+    channel: Channel,
+    actingUserId: string,
+    targetUserId?: string
+  ): Promise<boolean> {
+    if (actingUserId === targetUserId) {
+      throw new CannotActOnSelf()
+    }
+
+    const targetIsAdmin: boolean = channel.admins.some(
+      (admin) => admin.id === targetUserId
+    )
+
+    switch (action) {
+      case 'set-admin':
+        if (actingUserId !== channel.owner.id) {
+          throw new CannotSetAdmin()
+        }
+        break
+      case 'kick':
+      case 'ban':
+      case 'mute':
+        if (targetIsAdmin === true && actingUserId !== channel.owner.id) {
+          throw new CannotKickBanMuteAdmin()
+        }
+        break
+      case 'change-password':
+      case 'set-password': // todo: function to implement if necessary
+      case 'remove-password': // todo: function to implement if necessary
+        if (actingUserId !== channel.owner.id) {
+          throw new CannotModifyPassword()
+        }
+        break
+      default:
+        throw new Error(`Invalid action: ${action}`)
+    }
+
+    return true
   }
 
   // *********** //
@@ -402,6 +459,7 @@ export class ChannelsService {
   // removeAdmin //
   // *********** //
 
+  // todo: remove if not required
   async removeAdmin(channel: Channel, userId: string): Promise<Channel> {
     const user: User = await this.checkExistingUser(userId)
 
@@ -435,10 +493,42 @@ export class ChannelsService {
     return userList.filter((item) => item.id !== user.id)
   }
 
+  // ******** //
+  // setAdmin //
+  // ******** //
+
+  async setAdmin(
+    promotingUserId: string,
+    userToPromoteId: string,
+    channel: Channel
+  ): Promise<Channel> {
+    const userToPromote: User = await this.checkExistingUser(userToPromoteId)
+
+    await this.permissionChecker(
+      'set-admin',
+      channel,
+      promotingUserId,
+      userToPromoteId
+    )
+
+    channel.admins = this.addUserToList('admins', userToPromote, channel.admins)
+
+    const updatePayload = { userToPromoteId, channelId: channel.id }
+
+    const updatedChannel: Channel = await this.updateChannel(
+      'set-admin',
+      channel,
+      updatePayload
+    )
+
+    return updatedChannel
+  }
+
   // *********** //
   // unBanMember //
   // *********** //
 
+  // todo: remove if not required
   async unBanMember(channel: Channel, userId: string): Promise<Channel> {
     const user: User = await this.checkExistingUser(userId)
 
@@ -447,18 +537,6 @@ export class ChannelsService {
       user,
       channel.bannedMembers
     )
-
-    return this.channelsRepository.save(channel)
-  }
-
-  // ************ //
-  // unMuteMember //
-  // ************ //
-
-  async unMuteMember(channel: Channel, userId: string): Promise<Channel> {
-    const user: User = await this.checkExistingUser(userId)
-
-    channel.removeMuteMember(user)
 
     return this.channelsRepository.save(channel)
   }
