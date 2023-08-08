@@ -1,5 +1,11 @@
 import { HttpException, HttpStatus } from '@nestjs/common'
 
+export class FriendRequestNotFound extends HttpException {
+  constructor() {
+    super('Friend request not found', HttpStatus.NOT_FOUND)
+  }
+}
+
 export class FriendshipAlreadyAccepted extends HttpException {
   constructor() {
     super('Friend request already accepted', HttpStatus.BAD_REQUEST)
@@ -48,39 +54,9 @@ export class MissingBlockerId extends HttpException {
   }
 }
 
-export class MissingLoggedUserId extends HttpException {
-  constructor() {
-    super('Logged user ID is missing', HttpStatus.BAD_REQUEST)
-  }
-}
-
 export class MissingObservedUserId extends HttpException {
   constructor() {
     super('Observed user ID is missing', HttpStatus.BAD_REQUEST)
-  }
-}
-
-export class MissingReceiverId extends HttpException {
-  constructor() {
-    super('Receiver ID is missing', HttpStatus.BAD_REQUEST)
-  }
-}
-
-export class MissingSenderId extends HttpException {
-  constructor() {
-    super('Sender ID is missing', HttpStatus.BAD_REQUEST)
-  }
-}
-
-export class MissingToBlockId extends HttpException {
-  constructor() {
-    super('User to block ID is missing', HttpStatus.BAD_REQUEST)
-  }
-}
-
-export class MissingToUnblockId extends HttpException {
-  constructor() {
-    super('User to unblock ID is missing', HttpStatus.BAD_REQUEST)
   }
 }
 
@@ -99,19 +75,10 @@ export class OnlyBlockerCanUnblock extends HttpException {
   }
 }
 
-export class OnlyReceiverCanAcceptFriendRequest extends HttpException {
+export class OnlyReceiverCanHandleFriendRequest extends HttpException {
   constructor() {
     super(
-      'Only the receiver can accept this friend request',
-      HttpStatus.UNAUTHORIZED
-    )
-  }
-}
-
-export class OnlyReceiverCanRejectFriendRequest extends HttpException {
-  constructor() {
-    super(
-      'Only the receiver can reject this friend request',
+      'Only the receiver can accept or reject a friend request',
       HttpStatus.UNAUTHORIZED
     )
   }

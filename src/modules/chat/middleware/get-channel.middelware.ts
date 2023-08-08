@@ -1,8 +1,7 @@
 import { Injectable, NestMiddleware, UseFilters } from '@nestjs/common'
-import { Request, Response, NextFunction } from 'express'
+import { Response, NextFunction } from 'express'
 import { ChannelsService } from '../channels/channels.service'
 import { ChannelNotFound } from '@/core/exceptions'
-import { Channel } from '../channels/entities/channel.entity'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { IRequestWithChannel } from '@/core/types'
 @Injectable()

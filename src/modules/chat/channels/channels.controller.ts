@@ -26,10 +26,12 @@ import { HandleChannelDto } from '@/modules/chat/channels/dtos/handle-channel.dt
 import { JoinGroupDto } from '@/modules/chat/channels/dtos/join-group.dto'
 import { MessageDto } from '@/modules/chat/channels/dtos/message.dto'
 import { Channel } from '@/modules/chat/channels/entities/channel.entity'
+import { Message } from '@/modules/chat/channels/entities/message.entity'
 import { AdminshipGuard } from '@/modules/chat/channels/guards/adminship.guard'
 import { MembershipGuard } from '@/modules/chat/channels/guards/membership.guard'
 import { OwnershipGuard } from '@/modules/chat/channels/guards/ownership.guard'
 
+// todo: change controller name "channels" to "chat"
 @Controller('channels')
 @UseFilters(new GlobalExceptionFilter())
 export class ChannelsController {
@@ -132,26 +134,6 @@ export class ChannelsController {
     return channel
   }
 
-  // ************** //
-  // getGroupByName //
-  // ************** //
-
-  @Get('/group/:name')
-  @ApiOperation({
-    summary: 'Get a group (via channel name)',
-    operationId: 'getGroupByName',
-    description: 'Get a group (via channel name)',
-    tags: ['chat']
-  })
-  @UseGuards(AuthGuard)
-  @UseGuards(MembershipGuard)
-  async getGroupByName(@Param('name') name: string): Promise<Channel> {
-    const channel = await this.channelsService.findOneByName(name)
-    if (!channel)
-      throw new NotFoundException(`Group with name ${name} not found`)
-    return channel
-  }
-
   // *********** //
   // getMessages //
   // *********** //
@@ -165,7 +147,7 @@ export class ChannelsController {
   })
   @UseGuards(AuthGuard)
   @UseGuards(MembershipGuard)
-  async getMessages(@CurrentChannel() channel: Channel) {
+  async getMessages(@CurrentChannel() channel: Channel): Promise<Message[]> {
     return await this.channelsService.getMessages(channel)
   }
 

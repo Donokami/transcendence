@@ -16,7 +16,8 @@ import {
   UserAlreadyBanned,
   UserAlreadyInChannel,
   UserNotFound,
-  UserNotInChannel
+  UserNotInChannel,
+  MissingGroupPassword
 } from '@/core/exceptions'
 import { parseMuteTime } from '@/core/utils/parseMuteTime'
 import { ChatGateway } from '@/modules/chat/chat.gateway'
@@ -221,8 +222,8 @@ export class ChannelsService {
   async findOneByName(name: string): Promise<Channel> {
     const channel: Channel = await this.channelsRepository.findOne({
       where: { name, isDm: false },
-      select: ['id', 'name', 'passwordRequired', 'password'],
-      relations: ['owner', 'members', 'admins', 'bannedMembers', 'mutedMembers']
+      select: ['id', 'members', 'name', 'password', 'passwordRequired'],
+      relations: ['members']
     })
 
     if (!channel) {
@@ -322,12 +323,11 @@ export class ChannelsService {
       throw new ChannelNotFound()
     }
 
-    console.log(channel.passwordRequired, password, channel.password)
+    if (channel.passwordRequired && !password) {
+      throw new MissingGroupPassword()
+    }
 
-    if (
-      (channel.passwordRequired && !password) ||
-      password !== channel.password
-    ) {
+    if (channel.passwordRequired && password !== channel.password) {
       throw new InvalidGroupPassword()
     }
 
@@ -337,6 +337,7 @@ export class ChannelsService {
 
     const socket = this.chatGateway.getUserSocket(newMember.id)
     if (socket) socket.join(channel.id)
+
     return { success: true }
   }
 

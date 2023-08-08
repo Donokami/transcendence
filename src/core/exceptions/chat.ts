@@ -60,6 +60,12 @@ export class MissingChannelId extends HttpException {
   }
 }
 
+export class MissingGroupPassword extends HttpException {
+  constructor() {
+    super('Group password is missing.', HttpStatus.UNAUTHORIZED)
+  }
+}
+
 export class UserAlreadyAdmin extends HttpException {
   constructor() {
     super('User is already a gorup admin.', HttpStatus.BAD_REQUEST)
