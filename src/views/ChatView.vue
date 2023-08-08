@@ -1,9 +1,9 @@
 <template>
-  <div class="mx-auto w-full max-w-5xl">
+  <div class="mx-auto w-full max-w-7xl">
     <div class="flex max-h-[calc(100vh-164px)] text-black m-4">
       <!-- SIDEBAR -->
       <div
-        class="border-2 border-black min-h-[calc(100vh-164px)] w-60 sm:w-96 flex flex-col">
+        class="border-2 border-black min-h-[calc(100vh-164px)] w-60 sm:w-[19rem] min-w-[14rem] sm:min-w-[19rem] max-w-[19rem] flex flex-col">
         <chat-sidebar
           :list-state="listState"
           @list-state-changed="listState = $event">
@@ -12,27 +12,42 @@
 
       <!-- DISCUSSION -->
       <div
-        class="flex flex-col justify-between text-justify ml-4 w-full"
+        class="flex flex-col justify-between text-justify mx-4 w-full overflow-auto"
         v-if="selectedChannel && channelsList?.loading === false">
         <!-- TITLE -->
         <div
           class="flex gap-2 border-x-2 border-t-2 border-black items-center justify-between p-5">
           <div class="flex gap-2 items-center">
-            <div v-if="channelStore.getChannel(selectedChannel)?.isDm === true">
-              <img
-                v-if="channelStore.getChannel(selectedChannel)?.image"
-                :src="`http://localhost:3000/${
-                  channelStore.getChannel(selectedChannel).image
-                }`"
-                class="object-cover rounded-full h-11 w-11" />
-              <iconify-icon
-                v-else
-                icon="ri:account-circle-line"
-                class="h-11 w-11">
-              </iconify-icon>
-            </div>
+            <router-link
+              :to="`/profile/${
+                channelStore.getChannel(selectedChannel)?.dmUser?.id
+              }`"
+              class="hidden md:block cursor-pointer"
+              v-if="channelStore.getChannel(selectedChannel)?.isDm === true">
+              <div
+                class="avatar w-11 h-11 flex"
+                :class="[
+                  channelStore.getChannel(selectedChannel)
+                    ?.receiverUserStatus === 'online'
+                    ? 'online'
+                    : 'offline'
+                ]">
+                <img
+                  v-if="channelStore.getChannel(selectedChannel)?.image"
+                  :src="`http://localhost:3000/${
+                    channelStore.getChannel(selectedChannel)?.image
+                  }`"
+                  class="object-cover rounded-full h-11 w-11" />
+                <iconify-icon
+                  v-else
+                  icon="ri:account-circle-line"
+                  class="h-11 w-11">
+                </iconify-icon>
+              </div>
+            </router-link>
 
-            <h2 class="text-xl font-bold text-black capitalize">
+            <h2
+              class="text-lg sm:text-xl font-bold text-black capitalize truncate w-24 sm:w-fit">
               {{ channelStore.getChannel(selectedChannel)?.name }}
             </h2>
           </div>
@@ -40,22 +55,30 @@
           <button
             v-if="channelStore.getChannel(selectedChannel)?.isDm === true"
             @click="createGame"
-            class="btn bg-white border-2 shrink border-black text-black hover:bg-black hover:border-black hover:text-white">
+            class="btn btn-sm sm:btn-md bg-white border-2 shrink border-black text-black hover:bg-black hover:border-black hover:text-white">
             <iconify-icon
               icon="material-symbols:mail-outline"
               class="hidden sm:block w-7 h-7"></iconify-icon>
-            <span>Send game invite</span>
+            <span class="hidden sm:block">Send game invite</span>
+            <span class="sm:hidden block">Invite</span>
           </button>
           <chat-drawer v-else></chat-drawer>
         </div>
         <!-- CHAT BOX -->
-        <div
-          ref="chatbox"
-          class="border-black border-2 p-5 h-full overflow-auto">
+        <div ref="chatbox" class="border-black border-2 h-full overflow-auto">
           <chat-box @scroll-to-bottom="scrollToBottom"></chat-box>
         </div>
         <!-- MESSAGE INPUT -->
         <chat-input></chat-input>
+        <!-- RIGHT SIDEBAR -->
+      </div>
+      <div
+        v-if="
+          selectedChannel &&
+          channelStore.getChannel(selectedChannel)?.isDm === false
+        "
+        class="border-2 border-black min-h-[calc(100vh-164px)] w-[11rem] max-w-[11rem] min-w-[11rem] flex-col lg:block hidden">
+        <chat-right-sidebar />
       </div>
     </div>
   </div>
@@ -83,6 +106,7 @@ import { chatSocket } from '@/includes/chatSocket'
 import { useChannelStore } from '@/stores/ChannelStore.js'
 
 import ChatSidebar from '@/components/ChatSidebar.vue'
+import ChatRightSidebar from '@/components/ChatRightSidebar.vue'
 import ChatBox from '@/components/ChatBox.vue'
 import ChatDrawer from '@/components/ChatDrawer.vue'
 import ChatInput from '@/components/ChatInput.vue'

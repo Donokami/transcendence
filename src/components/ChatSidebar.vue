@@ -43,11 +43,11 @@
       class="bg-base-100 w-full p-0">
       <li v-for="channel in getChannels()" :key="channel.id">
         <router-link
-          class="flex p-0 rounded-none hover:bg-base-300"
-          :active-class="'!bg-[#000000] hover:!bg-[#000000] text-white'"
+          class="flex p-0 rounded-none hover:bg-base-300 focus-border"
+          :active-class="'!bg-[#000000] hover:!bg-[#000000] focus-border-black'"
           :to="`/chat/${channel.id}`">
-          <div class="py-2" v-if="channel.isDm === true">
-            <div class="flex items-center mx-auto md:mx-0 pl-4 w-18">
+          <div class="py-3" v-if="channel.isDm === true">
+            <div class="flex items-center mx-auto px-2 sm:px-4 w-18">
               <div class="h-11 w-11" v-if="channel.isDm">
                 <user-avatar
                   :userProps="(channel.dmUser as User)"
@@ -59,7 +59,9 @@
                   :src="`http://localhost:3000/${channel.image}`"
                   class="object-cover rounded-full h-11 w-11" />
               </div>
-              <span class="pl-4 capitalize text-base">{{ channel.name }}</span>
+              <span class="pl-4 capitalize text-base truncate w-28 sm:w-48">{{
+                channel.name
+              }}</span>
               <span
                 class="badge badge-ghost float-right mx-2"
                 v-if="channel.unreadMessages > 0"
@@ -70,9 +72,36 @@
             </div>
           </div>
 
-          <div class="py-4" v-else-if="channel.isDm === false">
-            <div class="flex items-center mx-auto md:mx-0 pl-4 w-18">
-              <span class="pl-4 capitalize text-base">{{ channel.name }}</span>
+          <div class="py-3" v-else-if="channel.isDm === false">
+            <div class="flex items-center mx-auto px-2 sm:px-3 w-18">
+              <div
+                class="avatar-group -space-x-6"
+                :class="
+                  $route.path === `/chat/${channel.id}`
+                    ? 'black-border'
+                    : 'white-border'
+                "
+                v-if="channel.isDm === false">
+                <div
+                  class="avatar"
+                  v-for="user in (channel.members || []).slice(0, 2)"
+                  :key="user.id">
+                  <div class="w-10">
+                    <img
+                      v-if="user.profilePicture"
+                      :src="`http://localhost:3000/${user.profilePicture}`" />
+                    <iconify-icon
+                      v-else
+                      icon="ri:account-circle-line"
+                      class="h-10 w-10">
+                    </iconify-icon>
+                  </div>
+                </div>
+              </div>
+
+              <span class="pl-3 capitalize text-base truncate w-28 sm:w-48">{{
+                channel.name
+              }}</span>
             </div>
           </div>
         </router-link>
@@ -84,15 +113,19 @@
     <button
       v-if="listState === 'groups'"
       for="my-modal-3"
-      class="btn bg-white border-t-2 border-x-0 border-b-0 border-black text-black hover:bg-black hover:border-black hover:text-white w-full no-animation"
+      class="btn bg-white border-t-2 border-x-0 border-b-0 border-black text-black hover:bg-black hover:border-black hover:text-white w-full no-animation relative"
       type="button"
       @click="activateModal('join-group-modal')">
-      Join a group
+      <iconify-icon
+        icon="material-symbols:group-add-outline"
+        class="hidden sm:block absolute left-5 w-7 h-7">
+      </iconify-icon>
+      <div class="text-center w-full">Join a group</div>
     </button>
     <!-- CREATE CHANNELS BUTTON -->
     <button
       for="my-modal-3"
-      class="btn bg-white border-t-2 border-x-0 border-b-0 border-black text-black hover:bg-black hover:border-black hover:text-white w-full no-animation"
+      class="btn bg-white border-t-2 border-x-0 border-b-0 border-black text-black hover:bg-black hover:border-black hover:text-white w-full no-animation relative"
       type="button"
       @click="
         activateModal(
@@ -101,9 +134,9 @@
       ">
       <iconify-icon
         icon="ci:message-plus-alt"
-        class="hidden sm:block w-7 h-7"></iconify-icon>
+        class="hidden sm:block absolute left-5 w-7 h-7"></iconify-icon>
       <div class="my-auto">
-        {{ listState === 'dms' ? 'Send a new dm' : 'Create a new group' }}
+        {{ listState === 'dms' ? 'Send a new dm' : 'Start new group' }}
       </div>
     </button>
   </div>
@@ -202,3 +235,21 @@ onBeforeRouteUpdate((to, from) => {
   channels.value = getChannels()
 })
 </script>
+
+<style scoped>
+.black-border :where(.avatar) {
+  border-color: black;
+}
+
+.white-border :where(.avatar) {
+  border-color: white;
+}
+
+.focus-border:hover :where(.avatar) {
+  border-color: #e5e6e6;
+}
+
+.focus-border-black:hover :where(.avatar) {
+  border-color: black;
+}
+</style>

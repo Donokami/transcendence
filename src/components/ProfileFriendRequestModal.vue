@@ -1,29 +1,28 @@
 <template>
   <input type="checkbox" id="my-modal-3" class="modal-toggle" />
   <div class="modal">
-    <div class="modal-box rounded-none">
-      <!-- CLOSING CROSS -->
-      <div class="flex items-center justify-end">
+    <div class="modal-box rounded-none border-2 border-black">
+      <!-- TITLE -->
+      <div class="text-xl flex justify-between">
+        <h1>Friend request list</h1>
         <label
           for="my-modal-3"
-          class="btn bg-white border-black border-2 text-black hover:bg-black hover:border-black hover:text-white"
-          >X</label
-        >
-      </div>
-      <!-- TITLE -->
-      <div class="py-4">
-        <h3 class="font-bold text-lg">Friend request list</h3>
+          class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
+          <iconify-icon icon="material-symbols:close" class="h-6 w-6 absolute">
+          </iconify-icon>
+        </label>
       </div>
       <!-- FRIENDS REQUEST LIST -->
-      <div class="collapse collapse-arrow border-2 border-black rounded-none">
+      <div
+        class="collapse collapse-arrow border-2 border-black rounded-none mt-6">
         <input type="checkbox" />
         <div class="collapse-title text-base">Handle a request</div>
         <div class="collapse-content text-base">
-          <ul class="menu bg-base-100 w-full">
+          <ul class="menu bg-base-100 w-full p-0">
             <li v-for="request in friendRequests" :key="request.id">
-              <a class="flex p-1 rounded-none hover:bg-base-100">
-                <span class="px-2 block text-base"
-                  >{{ request.sender.username }} :
+              <div class="flex p-0 rounded-none hover:bg-base-100">
+                <span class="block text-base"
+                  >{{ request.sender.username }}
                 </span>
                 <button
                   class="px-2 border-2 border-black hover:bg-black hover:text-white"
@@ -38,9 +37,9 @@
                 <button
                   class="px-2 border-2 border-black hover:bg-black hover:text-white"
                   @click="blockUser(request.sender.id)">
-                  Block User
+                  Block
                 </button>
-              </a>
+              </div>
             </li>
           </ul>
         </div>

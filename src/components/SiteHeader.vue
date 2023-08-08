@@ -10,15 +10,19 @@
           </label>
           <ul
             tabindex="0"
-            class="z-40 shadow menu menu-compact dropdown-content bg-base-100">
-            <li>
-              <router-link to="/" class="rounded-none">Home</router-link>
+            class="z-40 mt-[12.25rem] ml-2 shadow menu menu-compact dropdown-content bg-base-100 w-fit p-0 border-2 border-black">
+            <li class="w-full">
+              <router-link to="/" class="rounded-none px-8">Home</router-link>
             </li>
-            <li>
-              <router-link to="/chat" class="rounded-none">Chat</router-link>
+            <li class="w-full">
+              <router-link to="/chat" class="rounded-none px-8"
+                >Chat</router-link
+              >
             </li>
-            <li>
-              <router-link to="/stats" class="rounded-none">Stats</router-link>
+            <li class="w-full">
+              <router-link to="/stats" class="rounded-none px-8"
+                >Stats</router-link
+              >
             </li>
           </ul>
         </div>
@@ -81,20 +85,19 @@
           <ul
             v-if="userStore.loggedUser"
             tabindex="0"
-            class="mt-8 -ml-4 shadow menu menu-compact dropdown-content bg-base-100">
-            <li>
+            class="mt-40 ml-[-2.8rem] shadow menu dropdown-content bg-base-100 border-2 border-black p-0 w-fit">
+            <li class="w-fit">
               <router-link
                 :to="{
                   name: 'profile',
                   params: { id: userStore.loggedUser.id }
                 }"
-                class="border-black rounded-none"
+                class="rounded-none px-8"
                 >Profile</router-link
               >
             </li>
-
-            <li>
-              <a class="border-black rounded-none" @click="logout">Logout</a>
+            <li class="w-fit">
+              <a class="rounded-none w-full px-8" @click="logout">Logout</a>
             </li>
           </ul>
         </div>
