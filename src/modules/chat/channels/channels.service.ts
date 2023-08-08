@@ -11,13 +11,14 @@ import {
   ChannelNotFound,
   ChannelMembersNotFound,
   InvalidGroupPassword,
+  MissingGroupPassword,
   MissingUserId,
   UserAlreadyAdmin,
   UserAlreadyBanned,
   UserAlreadyInChannel,
+  UserIsBanned,
   UserNotFound,
-  UserNotInChannel,
-  MissingGroupPassword
+  UserNotInChannel
 } from '@/core/exceptions'
 import { parseMuteTime } from '@/core/utils/parseMuteTime'
 import { ChatGateway } from '@/modules/chat/chat.gateway'
@@ -245,6 +246,7 @@ export class ChannelsService {
       .createQueryBuilder('channel')
       .leftJoinAndSelect('channel.members', 'members')
       .leftJoinAndSelect('channel.owner', 'owner')
+      .leftJoinAndSelect('channel.admins', 'admins')
       .where((qb) => {
         const subQuery = qb
           .subQuery()
@@ -322,6 +324,13 @@ export class ChannelsService {
     if (!channel) {
       throw new ChannelNotFound()
     }
+
+    if (
+      channel.bannedMembers.find(
+        (bannedMember) => bannedMember.id === newMember.id
+      )
+    )
+      throw new UserIsBanned()
 
     if (channel.passwordRequired && !password) {
       throw new MissingGroupPassword()

@@ -96,6 +96,12 @@ export class UserAlreadyInChannel extends HttpException {
   }
 }
 
+export class UserIsBanned extends HttpException {
+  constructor() {
+    super('User is banned.', HttpStatus.UNAUTHORIZED)
+  }
+}
+
 export class UserNotInChannel extends HttpException {
   constructor() {
     super('User not in channel.', HttpStatus.BAD_REQUEST)
