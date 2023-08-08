@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-auto overflow-y-scroll py-[2px]">
+  <div class="flex-auto overflow-auto w-fit">
     <!-- LOADER FOR CHANNEL LIST -->
     <div v-if="channelStore.channelsList?.loading === true">
       <div class="flex justify-center items-center h-fit">
@@ -7,12 +7,12 @@
       </div>
     </div>
 
-    <!-- CHANNELS LIST -->
+    <!-- USER LIST -->
     <ul
       v-else-if="loggedUser && channelStore.channelsList?.loading === false"
-      class="bg-base-100 w-full p-0">
+      class="bg-base-100 w-full">
       <li v-for="user in channel?.members" :key="user.id">
-        <div class="flex p-0 rounded-none hover:bg-base-300 cursor-pointer">
+        <div class="flex rounded-none hover:bg-base-300 cursor-pointer">
           <div class="py-3">
             <div class="flex items-center mx-auto px-4 w-18">
               <div

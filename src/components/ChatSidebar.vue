@@ -22,7 +22,7 @@
       Groups
     </button>
   </div>
-  <div class="flex-auto overflow-auto">
+  <div class="flex-auto overflow-auto py-[2px]">
     <!-- LOADER FOR CHANNEL LIST -->
     <div
       v-if="channelStore.channelsList?.loading === true"

@@ -77,7 +77,7 @@
           selectedChannel &&
           channelStore.getChannel(selectedChannel)?.isDm === false
         "
-        class="border-2 border-black min-h-[calc(100vh-164px)] w-[11rem] max-w-[11rem] min-w-[11rem] flex-col lg:block hidden">
+        class="border-2 border-black min-h-[calc(100vh-164px)] flex-col lg:block hidden">
         <chat-right-sidebar />
       </div>
     </div>
