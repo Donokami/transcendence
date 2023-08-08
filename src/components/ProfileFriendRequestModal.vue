@@ -89,7 +89,7 @@ const emit = defineEmits(['closeModal'])
 const getFriendRequests = async (): Promise<number> => {
   if (loggedUser.value === null) return 0
   try {
-    const response = await userStore.fetchFriendRequests(loggedUser.value.id)
+    const response = await userStore.fetchFriendRequests()
     friendRequests.value = response
     console.log(
       `[ProfileFriendRequestListModal] - Friend request fetched successfully`

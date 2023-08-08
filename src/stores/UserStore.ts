@@ -40,7 +40,8 @@ export const useUserStore = defineStore('users', {
 
     async acceptFriendRequest(senderId: string): Promise<Friendship> {
       const response: Friendship = await fetcher.put(
-        `/social/friendship/request/${senderId}/accept`
+        `/social/friendship/request/accept`,
+        { senderId }
       )
       return response
     },
@@ -49,10 +50,10 @@ export const useUserStore = defineStore('users', {
     // blockUser //
     // ********* //
 
-    async blockUser(userToBlockId: string): Promise<string> {
-      const response: string = await fetcher.put(
-        `/social/friendship/${userToBlockId}/block`
-      )
+    async blockUser(targetId: string): Promise<string> {
+      const response: string = await fetcher.put(`/social/friendship/block`, {
+        targetId
+      })
       return response
     },
 
@@ -80,22 +81,21 @@ export const useUserStore = defineStore('users', {
     // fetchBlockerId //
     // ************** //
 
-    async fetchBlockerId(
-      loggedUserId: string,
-      observedUserId: string
-    ): Promise<string> {
-      const response: string = await fetcher.get(
-        `/social/blocker-id/${loggedUserId}/${observedUserId}`
+    // todo: voir avec Arthur pour le retour
+    async fetchBlockerId(observedUserId: string): Promise<string> {
+      const response = await fetcher.get(
+        `/social/get/blocker-id/${observedUserId}`
       )
-      return response
+
+      return response.blockerId
     },
 
     // *************** //
     // fetchFriendList //
     // *************** //
 
-    async fetchFriendList(id: string): Promise<User[]> {
-      const response: User[] = await fetcher.get(`/social/${id}/friend-list`)
+    async fetchFriendList(): Promise<User[]> {
+      const response: User[] = await fetcher.get(`/social/get/friend-list`)
       return response
     },
 
@@ -103,9 +103,9 @@ export const useUserStore = defineStore('users', {
     // fetchFriendRequests //
     // ******************* //
 
-    async fetchFriendRequests(id: string): Promise<Friendship[]> {
+    async fetchFriendRequests(): Promise<Friendship[]> {
       const response: Friendship[] = await fetcher.get(
-        `/social/${id}/friend-requests`
+        `/social/get/friend-requests`
       )
       return response
     },
@@ -145,7 +145,7 @@ export const useUserStore = defineStore('users', {
       if (this.loggedUser == null) {
         return []
       }
-      const response = await this.fetchFriendList(this.loggedUser.id)
+      const response = await this.fetchFriendList()
       this.friendList = response
       console.log(`[UserStore] - friendList : `, this.friendList)
 
@@ -179,7 +179,8 @@ export const useUserStore = defineStore('users', {
 
     async rejectFriendRequest(senderId: string): Promise<Friendship> {
       const response: Friendship = await fetcher.put(
-        `/social/friendship/request/${senderId}/reject`
+        `/social/friendship/request/reject`,
+        { senderId }
       )
       return response
     },
@@ -235,9 +236,12 @@ export const useUserStore = defineStore('users', {
     // unblockUser //
     // *********** //
 
-    async unblockUser(userToUnblockId: string): Promise<Friendship> {
+    async unblockUser(targetId: string): Promise<Friendship> {
       const response: Friendship = await fetcher.put(
-        `/social/friendship/${userToUnblockId}/unblock`
+        `/social/friendship/unblock`,
+        {
+          targetId
+        }
       )
       return response
     },

@@ -221,11 +221,8 @@ const blockUser = async (): Promise<void> => {
 const checkBlockedStatus = async (): Promise<void> => {
   if (!loggedUser.value || !observedUser.value) return
   try {
-    const response = await userStore.fetchBlockerId(
-      loggedUser.value.id,
-      observedUser.value.id
-    )
-    console.log(`[ProfileStatsCard] - fetchBlockerId response : ${response}`)
+    const response = await userStore.fetchBlockerId(observedUser.value.id)
+    console.log(`[ProfileStatsCard] - fetchBlockerId : ${response}`)
     if (response === loggedUser.value.id) {
       observedUser.value.isBlockedBy = true
       console.log(
@@ -273,7 +270,7 @@ const fetchUser = async (id: string | undefined): Promise<void> => {
 const getFriendRequestsNumber = async (): Promise<number> => {
   if (loggedUser.value == null) return 0
   try {
-    const response = await userStore.fetchFriendRequests(loggedUser.value.id)
+    const response = await userStore.fetchFriendRequests()
     nFriendRequests.value = response.length
     console.log(
       `[ProfileStatsCard] - Number of friend requests : `,
