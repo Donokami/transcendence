@@ -13,7 +13,7 @@
       <img
         v-if="user.profilePicture"
         :src="`http://localhost:3000/${user.profilePicture}`"
-        class="object-cover rounded-full h-11 w-11" />
+        class="object-cover rounded-full h-11 w-11 mt-1" />
       <iconify-icon v-else icon="ri:account-circle-line" class="h-11 w-11">
       </iconify-icon>
     </label>
