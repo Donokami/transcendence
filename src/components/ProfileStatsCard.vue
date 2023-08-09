@@ -1,147 +1,193 @@
 <template>
-  <div class="sm:-ml-4 rounded-none stats stats-vertical lg:stats-horizontal">
-    <!-- USER STATUS AND PROFILE PICTURE -->
-    <div class="sm:border-r-2 border-black -ml-6 stat sm:-ml-2">
-      <div class="w-16 text-black">
-        <user-avatar
-          :userProps="(observedUser as User)"
-          :uploadMode="loggedUser?.id === observedUser?.id"></user-avatar>
+  <div class="lg:-ml-4 rounded-none stats stats-vertical lg:stats-horizontal">
+    <div class="lg:border-r-2 border-black -ml-6 stat lg:-ml-2 h-52">
+      <div class="flex items-top justify-between h-14">
+        <!-- USERNAME -->
+        <div v-if="observedUser" class="stat-value text-black text-xl">
+          {{ observedUser.username }}
+        </div>
+        <label
+          v-if="
+            observedUser && loggedUser && observedUser.id === loggedUser?.id
+          "
+          for="my-modal-4"
+          class="mb-2 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white"
+          type="button"
+          @click="showUsernameModal = true">
+          Change username
+        </label>
       </div>
-      <div v-if="observedUser" class="stat-value text-black text-xl">
-        {{ observedUser.username }}
-      </div>
-      <div class="stat-title text-md">Status:</div>
-      <div v-if="observedUser" class="stat-desc" :class="statusColor">
-        {{
-          observedUser.id === loggedUser?.id ? 'online' : observedUser.status
-        }}
+      <!-- USER AVATAR AND STATUS -->
+      <div class="flex-col h-24">
+        <div class="w-16 text-black">
+          <user-avatar
+            :userProps="(observedUser as User)"
+            :uploadMode="loggedUser?.id === observedUser?.id"></user-avatar>
+        </div>
+        <div class="flex items-baseline">
+          <div class="stat-title">Status:</div>
+          <div v-if="observedUser" class="" :class="statusColor">
+            {{
+              observedUser.id === loggedUser?.id
+                ? 'online'
+                : observedUser.status
+            }}
+          </div>
+        </div>
       </div>
     </div>
     <!-- USER RANK -->
-    <div class="sm:border-none stat !border-t-2 !border-black -ml-6 sm:-ml-0">
-      <div class="stat-figure text-primary">
+    <div class="lg:border-none stat !border-t-2 !border-black -ml-6 lg:-ml-0">
+      <div class="flex items-top justify-between h-14">
+        <div class="stat-value text-xl">Rank</div>
         <iconify-icon
           class="w-10 h-10"
           icon="icon-park-outline:ranking"
           style="color: #5d4df8"></iconify-icon>
       </div>
-      <div class="stat-value text-xl">Rank</div>
-      <div v-if="observedUser" class="stat-value text-primary">
-        {{ observedUser.rank ?? '-' }}
+      <div class="flex items-center h-24">
+        <div v-if="observedUser" class="stat-value text-primary">
+          {{ observedUser.rank ?? '-' }}
+        </div>
       </div>
     </div>
     <!-- USER WIN RATE -->
     <div
-      class="stat border-black -ml-6 sm:-ml-0 !border-t-2 sm:!border-t-0 sm:!border-l-2">
-      <div class="stat-figure text-primary">
+      class="stat border-black -ml-6 lg:-ml-0 !border-t-2 lg:!border-t-0 lg:!border-l-2">
+      <div class="flex items-top justify-between h-14">
+        <div class="stat-value text-xl">Win Rate</div>
         <iconify-icon
           class="w-10 h-10"
           icon="mdi:target-arrow"
           style="color: #5d4df8"></iconify-icon>
       </div>
-      <div class="stat-value text-xl">Win Rate</div>
-      <div v-if="observedUser" class="stat-value text-primary">
-        {{ observedUser.winRate }} %
+      <div class="flex items-center h-24">
+        <div v-if="observedUser" class="stat-value text-primary">
+          {{ observedUser.winRate }} %
+        </div>
       </div>
     </div>
-    <!-- USER FRIENDS & FRIEND REQUESTS -->
+    <!-- USER FRIENDS -->
     <div
-      class="stat border-black -ml-6 sm:-ml-0 sm:!border-l-2"
+      class="stat border-black -ml-6 lg:-ml-0 lg:!border-l-2"
       v-if="loggedUser && observedUser && observedUser.id !== loggedUser.id">
-      <!-- SEND REQUEST -->
-      <div
-        class="stat-figure text-primary tooltip tooltip-top"
-        v-if="
-          isFriend === false &&
-          loggedUser.isBlockedBy == null &&
-          observedUser.isBlockedBy == null
-        "
-        data-tip="Add friend">
-        <iconify-icon
-          class="w-10 h-10"
-          :icon="iconSendRequest"
-          style="color: #5d4df8"
-          @click="sendFriendRequest"
-          @mouseover="iconSendRequest = 'mdi:account-plus'"
-          @mouseout="
-            iconSendRequest = 'mdi:account-plus-outline'
-          "></iconify-icon>
+      <div class="text-xl stat-value h-14">Friends</div>
+      <div class="flex items-center justify-between h-24">
+        <!-- NUMBER OF FRIENDS -->
+        <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
+        <!-- SEND REQUEST -->
+        <div
+          class="stat-figure text-primary tooltip tooltip-top"
+          v-if="
+            isFriend === false &&
+            loggedUser.isBlockedBy == null &&
+            observedUser.isBlockedBy == null
+          "
+          data-tip="Add friend">
+          <iconify-icon
+            class="w-10 h-10"
+            :icon="iconSendRequest"
+            style="color: #5d4df8"
+            @click="sendFriendRequest"
+            @mouseover="iconSendRequest = 'mdi:account-plus'"
+            @mouseout="
+              iconSendRequest = 'mdi:account-plus-outline'
+            "></iconify-icon>
+        </div>
+        <!-- BLOCK USER -->
+        <div
+          class="stat-figure text-primary tooltip tooltip-top"
+          v-else-if="isFriend === true && loggedUser.isBlockedBy != true"
+          data-tip="Block user">
+          <iconify-icon
+            class="w-10 h-10"
+            :icon="iconBlockUser"
+            style="color: #5d4df8"
+            @click="blockUser"
+            @mouseover="iconBlockUser = 'mdi:account-cancel'"
+            @mouseout="
+              iconBlockUser = 'mdi:account-cancel-outline'
+            "></iconify-icon>
+        </div>
+        <!-- UNBLOCK USER -->
+        <div
+          class="stat-figure text-primary tooltip tooltip-top"
+          v-else-if="isFriend === false && observedUser.isBlockedBy == true"
+          data-tip="Unblock user">
+          <iconify-icon
+            class="w-10 h-10"
+            :icon="iconUnblockUser"
+            style="color: #5d4df8"
+            @click="unblockUser"
+            @mouseover="iconUnblockUser = 'mdi:account-cancel-outline'"
+            @mouseout="iconUnblockUser = 'mdi:account-cancel'"></iconify-icon>
+        </div>
+        <!-- BLOCK USER -->
+        <div
+          class="stat-figure text-primary tooltip tooltip-top"
+          v-else
+          data-tip="Block user">
+          <iconify-icon
+            class="w-10 h-10"
+            :icon="iconBlockUser"
+            style="color: #5d4df8"
+            @click="blockUser"
+            @mouseover="iconBlockUser = 'mdi:account-cancel'"
+            @mouseout="
+              iconBlockUser = 'mdi:account-cancel-outline'
+            "></iconify-icon>
+        </div>
       </div>
-      <!-- BLOCK USER -->
-      <div
-        class="stat-figure text-primary tooltip tooltip-top"
-        v-else-if="isFriend === true && loggedUser.isBlockedBy != true"
-        data-tip="Block user">
-        <iconify-icon
-          class="w-10 h-10"
-          :icon="iconBlockUser"
-          style="color: #5d4df8"
-          @click="blockUser"
-          @mouseover="iconBlockUser = 'mdi:account-cancel'"
-          @mouseout="
-            iconBlockUser = 'mdi:account-cancel-outline'
-          "></iconify-icon>
-      </div>
-      <!-- UNBLOCK USER -->
-      <div
-        class="stat-figure text-primary tooltip tooltip-top"
-        v-else-if="isFriend === false && observedUser.isBlockedBy == true"
-        data-tip="Unblock user">
-        <iconify-icon
-          class="w-10 h-10"
-          :icon="iconUnblockUser"
-          style="color: #5d4df8"
-          @click="unblockUser"
-          @mouseover="iconUnblockUser = 'mdi:account-cancel-outline'"
-          @mouseout="iconUnblockUser = 'mdi:account-cancel'"></iconify-icon>
-      </div>
-      <!-- BLOCK USER -->
-      <div
-        class="stat-figure text-primary tooltip tooltip-top"
-        v-else
-        data-tip="Block user">
-        <iconify-icon
-          class="w-10 h-10"
-          :icon="iconBlockUser"
-          style="color: #5d4df8"
-          @click="blockUser"
-          @mouseover="iconBlockUser = 'mdi:account-cancel'"
-          @mouseout="
-            iconBlockUser = 'mdi:account-cancel-outline'
-          "></iconify-icon>
-      </div>
-      <!-- NUMBER OF FRIENDS -->
-      <div class="text-xl stat-value">Friends</div>
-      <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
     </div>
     <!-- FRIEND REQUEST NOTIFICATION -->
     <div
-      class="stat border-black -ml-6 sm:-ml-0 !border-t-2 sm:!border-t-0 sm:!border-l-2"
+      class="stat border-black -ml-6 lg:-ml-0 !border-t-2 lg:!border-t-0 lg:!border-l-2"
       v-if="loggedUser && observedUser && observedUser.id === loggedUser.id">
-      <div class="stat-figure text-primary" v-if="nFriendRequests > 0">
-        <div class="indicator">
-          <label
-            for="my-modal-3"
-            type="button"
-            @click="showFriendRequestModal = true">
-            <span class="badge badge-secondary indicator-item text-white">{{
-              nFriendRequests
-            }}</span>
-            <iconify-icon
-              class="w-10 h-10"
-              :icon="iconRequestNotification"
-              style="color: 5d4df8"
-              @mouseover="iconRequestNotification = 'mdi:account-alert'"
-              @mouseout="
-                iconRequestNotification = 'mdi:account-alert-outline'
-              "></iconify-icon>
-          </label>
+      <div class="flex items-top justify-between h-14">
+        <div class="stat-value text-xl">Friends</div>
+        <label
+          for="my-modal-3"
+          class="mb-2 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white"
+          type="button"
+          @click="showFriendListModal = true">
+          See friend list
+        </label>
+      </div>
+      <div class="flex items-center justify-between h-24">
+        <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
+        <div class="stat-figure text-primary" v-if="nFriendRequests > 0">
+          <div class="indicator">
+            <label
+              for="my-modal-3"
+              type="button"
+              @click="showFriendRequestModal = true">
+              <span class="badge badge-secondary indicator-item text-white">{{
+                nFriendRequests
+              }}</span>
+              <iconify-icon
+                class="w-10 h-10"
+                :icon="iconRequestNotification"
+                style="color: 5d4df8"
+                @mouseover="iconRequestNotification = 'mdi:account-alert'"
+                @mouseout="
+                  iconRequestNotification = 'mdi:account-alert-outline'
+                "></iconify-icon>
+            </label>
+          </div>
         </div>
       </div>
-      <div class="stat-value text-xl">Friends</div>
-      <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
     </div>
   </div>
+
+  <!-- CHANGE USERNAME MODAL -->
+  <profile-change-username-modal
+    v-if="showUsernameModal"
+    @close-modal="handleCloseUsernameModal"></profile-change-username-modal>
+
+  <!-- FRIEND LIST MODAL -->
+  <profile-friend-list-modal
+    v-if="showFriendListModal"
+    @close-modal="closeFriendListModal"></profile-friend-list-modal>
 
   <!-- FRIEND REQUEST MODAL -->
   <profile-friend-request-modal
@@ -160,6 +206,8 @@ import { useToast } from 'vue-toastification'
 
 import { storeToRefs } from 'pinia'
 
+import ProfileChangeUsernameModal from '@/components/ProfileChangeUsernameModal.vue'
+import ProfileFriendListModal from '@/components/ProfileFriendListModal.vue'
 import ProfileFriendRequestModal from '@/components/ProfileFriendRequestModal.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import { appSocket } from '@/includes/appSocket'
@@ -178,11 +226,12 @@ const iconUnblockUser = ref('mdi:account-cancel')
 const isFriend = ref(false)
 const nFriendRequests = ref(0)
 const route = useRoute()
+const showFriendListModal = ref(false)
 const showFriendRequestModal = ref(false)
+const showUsernameModal = ref(false)
 const userStore = useUserStore()
 
-const { loggedUser } = storeToRefs(userStore)
-const { observedUser } = storeToRefs(userStore)
+const { loggedUser, observedUser } = storeToRefs(userStore)
 
 const statusColor = computed(() => {
   if (observedUser.value === null || loggedUser.value === null)
@@ -288,6 +337,14 @@ const getFriendRequestsNumber = async (): Promise<number> => {
   }
 }
 
+// ******************** //
+// closeFriendListModal //
+// ******************** //
+
+const closeFriendListModal = (): void => {
+  showFriendListModal.value = false
+}
+
 // *********************** //
 // closeFriendRequestModal //
 // *********************** //
@@ -299,7 +356,15 @@ const closeFriendRequestModal = (event: string): void => {
     nFriendRequests.value -= 1
     observedUser.value.nFriends += 1
   }
-  // location.reload()
+}
+
+// ************************ //
+// handleCloseUsernameModal //
+// ************************ //
+
+const handleCloseUsernameModal = (): void => {
+  showUsernameModal.value = false
+  location.reload()
 }
 
 // ****************** //
