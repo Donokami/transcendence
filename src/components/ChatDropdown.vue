@@ -10,12 +10,12 @@
       tabindex="0"
       class="rounded-full cursor-pointer"
       @click="toggleDropdown">
-      <img
-        v-if="user.profilePicture"
-        :src="`http://localhost:3000/${user.profilePicture}`"
-        class="object-cover rounded-full h-11 w-11 mt-1" />
-      <iconify-icon v-else icon="ri:account-circle-line" class="h-11 w-11">
-      </iconify-icon>
+      <div class="h-11 w-11 mt-1">
+        <user-avatar
+          :userProps="(user as User)"
+          :uploadMode="false"
+          :status-mode="false"></user-avatar>
+      </div>
     </label>
     <ul
       tabindex="0"
@@ -83,19 +83,12 @@
 </template>
 
 <script setup lang="ts">
-import {
-  ref,
-  watch,
-  defineProps,
-  PropType,
-  computed,
-  onMounted,
-  onUnmounted
-} from 'vue'
+import { ref, watch, PropType, computed, onMounted, onUnmounted } from 'vue'
 import { useChannelStore } from '@/stores/ChannelStore.js'
 import type { User, Channel } from '@/types'
 import { useUserStore } from '@/stores/UserStore.js'
 import { storeToRefs } from 'pinia'
+import UserAvatar from './UserAvatar.vue'
 
 const props = defineProps({
   user: {

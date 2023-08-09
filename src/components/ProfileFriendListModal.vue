@@ -26,8 +26,7 @@
             <span class="pl-4 text-base truncate w-28 sm:w-48">
               {{ friend.username }} is {{ friend.status }}
             </span>
-            <span class="pl-4 capitalize text-base truncate w-28 sm:w-48">
-            </span>
+            <span class="pl-4 text-base truncate w-28 sm:w-48"> </span>
           </div>
         </li>
       </ul>

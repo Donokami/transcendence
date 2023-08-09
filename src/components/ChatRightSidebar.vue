@@ -15,20 +15,12 @@
         <div class="flex rounded-none hover:bg-base-300 cursor-pointer">
           <div class="py-3">
             <div class="flex items-center mx-auto px-4 w-18">
-              <div
-                class="avatar w-8 h-8"
-                :class="[user.status === 'online' ? 'online' : 'offline']">
-                <img
-                  v-if="user.profilePicture"
-                  :src="`http://localhost:3000/${user.profilePicture}`"
-                  class="object-cover rounded-full h-8 w-8" />
-                <iconify-icon
-                  v-else
-                  icon="ri:account-circle-line"
-                  class="h-full w-full">
-                </iconify-icon>
+              <div class="w-10 h-10">
+                <user-avatar
+                  :userProps="(user as User)"
+                  :uploadMode="false"></user-avatar>
               </div>
-              <span class="pl-3 capitalize truncate w-28 text-sm">{{
+              <span class="pl-3 truncate w-28 text-sm">{{
                 user.username
               }}</span>
             </div>
@@ -48,9 +40,11 @@ import { storeToRefs } from 'pinia'
 import { onBeforeMount, ref } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 
+import UserAvatar from './UserAvatar.vue'
+
 import { useChannelStore } from '@/stores/ChannelStore.js'
 import { useUserStore } from '@/stores/UserStore.js'
-import type { Channel } from '@/types'
+import type { Channel, User } from '@/types'
 
 // ******************** //
 // VARIABLE DEFINITIONS //

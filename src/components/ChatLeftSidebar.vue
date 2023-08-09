@@ -59,7 +59,7 @@
                   :src="`http://localhost:3000/${channel.image}`"
                   class="object-cover rounded-full h-11 w-11" />
               </div>
-              <span class="pl-4 capitalize text-base truncate w-28 sm:w-48">{{
+              <span class="pl-4 text-base truncate w-28 sm:w-48">{{
                 channel.name
               }}</span>
               <span
@@ -83,23 +83,18 @@
                 "
                 v-if="channel.isDm === false">
                 <div
-                  class="avatar"
                   v-for="user in (channel.members || []).slice(0, 2)"
                   :key="user.id">
-                  <div class="w-10">
-                    <img
-                      v-if="user.profilePicture"
-                      :src="`http://localhost:3000/${user.profilePicture}`" />
-                    <iconify-icon
-                      v-else
-                      icon="ri:account-circle-line"
-                      class="h-10 w-10">
-                    </iconify-icon>
+                  <div class="w-11 h-11">
+                    <user-avatar
+                      :userProps="(user as User)"
+                      :uploadMode="false"
+                      :status-mode="false"></user-avatar>
                   </div>
                 </div>
               </div>
 
-              <span class="pl-3 capitalize text-base truncate w-28 sm:w-48">{{
+              <span class="pl-3 text-base truncate w-28 sm:w-48">{{
                 channel.name
               }}</span>
             </div>

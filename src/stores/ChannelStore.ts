@@ -58,7 +58,9 @@ export const useChannelStore = defineStore('channels', {
           channel.unreadMessages++
         }
       } else {
-        const newChannel: Channel = await fetcher.get(`/channels/${channelId as string}`)
+        const newChannel: Channel = await fetcher.get(
+          `/channels/${channelId as string}`
+        )
         if (newChannel !== null) {
           this.setChannelInfos(loggedUser, newChannel)
           this.channelsList?.data?.push(newChannel)
@@ -221,15 +223,6 @@ export const useChannelStore = defineStore('channels', {
       }
     },
 
-    // ****************** //
-    // fetchExistingGroup //
-    // ****************** //
-
-    async fetchExistingGroup(channelName: string): Promise<Channel | null> {
-      const response = await fetcher.get(`/channels/group/${channelName}`)
-      return response
-    },
-
     // ********** //
     // getChannel //
     // ********** //
@@ -301,11 +294,8 @@ export const useChannelStore = defineStore('channels', {
           channelName,
           password
         })
-        if (response.status === 200) {
-          // todo (Lucas): handle join --> update the local state if necessary
-        } else {
-          // todo (Lucas): Handle any errors --> throw an error or return a specific value to be handled by the caller
-        }
+
+        console.log(response)
       } catch (error) {
         console.error(`Failed to join ${channelName} channel`, error)
         throw error

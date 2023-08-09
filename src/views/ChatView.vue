@@ -4,10 +4,10 @@
       <!-- SIDEBAR -->
       <div
         class="border-2 border-black min-h-[calc(100vh-164px)] w-60 sm:w-[19rem] min-w-[14rem] sm:min-w-[19rem] max-w-[19rem] flex flex-col">
-        <chat-sidebar
+        <chat-left-sidebar
           :list-state="listState"
           @list-state-changed="listState = $event">
-        </chat-sidebar>
+        </chat-left-sidebar>
       </div>
 
       <!-- DISCUSSION -->
@@ -24,25 +24,20 @@
               }`"
               class="hidden md:block cursor-pointer"
               v-if="channelStore.getChannel(selectedChannel)?.isDm === true">
-              <div
-                class="avatar w-11 h-11 flex"
-                :class="[
-                  channelStore.getChannel(selectedChannel)
-                    ?.receiverUserStatus === 'online'
-                    ? 'online'
-                    : 'offline'
-                ]">
+              <div class="flex">
+                <div
+                  v-if="channelStore.getChannel(selectedChannel)?.isDm"
+                  class="w-11 h-11">
+                  <user-avatar
+                    :userProps="(channelStore.getChannel(selectedChannel)?.dmUser as User)"
+                    :uploadMode="false"></user-avatar>
+                </div>
                 <img
-                  v-if="channelStore.getChannel(selectedChannel)?.image"
+                  v-else
                   :src="`http://localhost:3000/${
                     channelStore.getChannel(selectedChannel)?.image
                   }`"
                   class="object-cover rounded-full h-11 w-11" />
-                <iconify-icon
-                  v-else
-                  icon="ri:account-circle-line"
-                  class="h-11 w-11">
-                </iconify-icon>
               </div>
             </router-link>
 
@@ -62,7 +57,6 @@
             <span class="hidden sm:block">Send game invite</span>
             <span class="sm:hidden block">Invite</span>
           </button>
-          <chat-drawer v-else></chat-drawer>
         </div>
         <!-- CHAT BOX -->
         <div ref="chatbox" class="border-black border-2 h-full overflow-auto">
@@ -105,13 +99,13 @@ import { chatSocket } from '@/includes/chatSocket'
 
 import { useChannelStore } from '@/stores/ChannelStore.js'
 
-import ChatSidebar from '@/components/ChatSidebar.vue'
+import ChatLeftSidebar from '@/components/ChatLeftSidebar.vue'
 import ChatRightSidebar from '@/components/ChatRightSidebar.vue'
 import ChatBox from '@/components/ChatBox.vue'
-import ChatDrawer from '@/components/ChatDrawer.vue'
 import ChatInput from '@/components/ChatInput.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 
-import type { Channel, Message, Room } from '@/types'
+import type { Channel, Message, Room, User } from '@/types'
 import { useFetcher, fetcher } from '@/utils/fetcher'
 import { useUserStore } from '@/stores/UserStore'
 
@@ -202,6 +196,7 @@ onBeforeMount(async () => {
     console.log('[ChatView] - Connected to the chat.')
   })
 
+  // fix: on reload router.push -> /chat bug
   if (selectedChannel.value !== null) {
     await router.push(`/chat/${selectedChannel.value}`)
   } else {

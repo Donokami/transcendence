@@ -16,7 +16,7 @@
         <iconify-icon
           v-else
           icon="ri:account-circle-line"
-          class="w-full h-full"></iconify-icon>
+          class="w-full h-full object-fill"></iconify-icon>
       </div>
     </div>
   </div>
@@ -43,6 +43,10 @@ const props = defineProps({
   uploadMode: {
     type: Boolean as PropType<boolean>,
     required: true
+  },
+  statusMode: {
+    type: Boolean as PropType<boolean>,
+    default: true
   }
 })
 
@@ -90,6 +94,8 @@ const pictureSrc = computed(() => {
 
 const statusBadge = (): string => {
   console.log(`[ProfileStatsCard] - statusBadge : `, user.value)
+
+  if (props.statusMode === false) return ''
 
   if (user.value === null || loggedUser.value === null) return 'offline'
   if (user.value.id === loggedUser.value.id) return 'online'

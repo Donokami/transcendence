@@ -66,11 +66,11 @@ import { storeToRefs } from 'pinia'
 import { Form, Field } from 'vee-validate'
 import { onBeforeMount, ref, toRefs, watch } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
+import { useToast } from 'vue-toastification'
 
 import { useChannelStore } from '@/stores/ChannelStore'
 import { useUserStore } from '@/stores/UserStore.js'
-import type { Channel } from '@/types/Channel'
-import { useToast } from 'vue-toastification'
+import { ApiError } from '@/utils/fetcher'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -95,26 +95,6 @@ const { showModal } = toRefs(props)
 // FUNCTION DEFINITIONS //
 // ******************** //
 
-// ****************** //
-// checkExistingGroup //
-// ****************** //
-
-const checkExistingGroup = async (
-  channelName: string
-): Promise<Channel | null> => {
-  try {
-    const channel = await channelStore.fetchExistingGroup(channelName)
-    return channel
-  } catch (error: any) {
-    if (error.status === 404) {
-      toast.error(error.message)
-    } else {
-      toast.error('Somethin went wrong')
-    }
-    return null
-  }
-}
-
 // ********** //
 // closeModal //
 // ********** //
@@ -130,21 +110,6 @@ function closeModal(): void {
   passwordError.value = null
 }
 
-// ********* //
-// joinGroup //
-// ********* //
-
-const joinGroup = async (
-  channel: Channel,
-  password?: string
-): Promise<void> => {
-  if (passwordRequired.value && password) {
-    await channelStore.joinGroup(channel.name, password)
-  } else {
-    await channelStore.joinGroup(channel.name)
-  }
-}
-
 // ********** //
 // submitForm //
 // ********** //
@@ -157,25 +122,31 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
     return
   }
 
-  const channel = await checkExistingGroup(channelName)
-  if (!channel) {
-    return
-  }
-
-  if (channel.passwordRequired) {
-    if (!password) {
+  try {
+    if (passwordRequired.value === true && !password) {
       passwordError.value = 'A password is required for this channel.'
       return
-    } else if (password.length < 8 || password.length > 100) {
+    } else if (
+      passwordRequired.value === true &&
+      (password.length < 8 || password.length > 100)
+    ) {
       passwordError.value = 'The password must be between 8 and 100 characters.'
       return
-    } else {
-      await joinGroup(channel, password)
-      passwordError.value = null
-      passwordRequired.value = false
     }
-  } else {
-    await joinGroup(channel)
+
+    await channelStore.joinGroup(channelName, password)
+    passwordError.value = null
+    passwordRequired.value = false
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'MissingGroupPassword') {
+        passwordRequired.value = true
+      } else if (err.code === 'InvalidGroupPassword') {
+        passwordError.value = 'Invalid password'
+      }
+    }
+    console.error(err)
+    return
   }
 
   channelNameError.value = null

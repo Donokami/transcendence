@@ -27,7 +27,7 @@
               <h1 v-if="!message.room.data">Invite link expired</h1>
               <div v-if="!message.room.error" class="">
                 <p>
-                  <span class="capitalize">{{ message.user.username }}</span>
+                  <span>{{ message.user.username }}</span>
                   invited you to play!
                 </p>
                 <button

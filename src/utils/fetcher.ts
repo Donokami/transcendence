@@ -1,5 +1,29 @@
 import { ref, type Ref, type UnwrapRef } from 'vue'
 
+export class ApiError extends Error {
+  statusCode: number
+  code: string
+  timestamp: Date
+  path: string
+  method: string
+
+  constructor(
+    message: string,
+    statusCode: number,
+    code: string,
+    timestamp: Date,
+    path: string,
+    method: string
+  ) {
+    super(message)
+    this.statusCode = statusCode
+    this.code = code
+    this.timestamp = timestamp
+    this.path = path
+    this.method = method
+  }
+}
+
 export class HttpError extends Error {
   status: number
 
@@ -20,7 +44,17 @@ class Fetcher {
     })
     if (!res.ok) {
       const error = await res.json()
-      throw new HttpError(error.message, res.status)
+      if (!error.code) {
+        throw new Error('Fetch error')
+      }
+      throw new ApiError(
+        error.message,
+        res.status,
+        error.code,
+        error.timestamp,
+        error.path,
+        error.method
+      )
     }
     return await res.json()
   }
@@ -41,7 +75,17 @@ class Fetcher {
     })
     if (!res.ok) {
       const error = await res.json()
-      throw new HttpError(error.message, res.status)
+      if (!error.code) {
+        throw new HttpError(error.message, res.status)
+      }
+      throw new ApiError(
+        error.message,
+        res.status,
+        error.code,
+        error.timestamp,
+        error.path,
+        error.method
+      )
     }
     console.log(`[Fetcher] - post : `, res)
     return await res.json()
@@ -64,7 +108,17 @@ class Fetcher {
 
     if (!res.ok) {
       const error = await res.json()
-      throw new HttpError(error.message, res.status)
+      if (!error.code) {
+        throw new HttpError(error.message, res.status)
+      }
+      throw new ApiError(
+        error.message,
+        res.status,
+        error.code,
+        error.timestamp,
+        error.path,
+        error.method
+      )
     }
     return await res.json()
   }
@@ -89,7 +143,17 @@ class Fetcher {
 
     if (!res.ok) {
       const error = await res.json()
-      throw new HttpError(error.message, res.status)
+      if (!error.code) {
+        throw new HttpError(error.message, res.status)
+      }
+      throw new ApiError(
+        error.message,
+        res.status,
+        error.code,
+        error.timestamp,
+        error.path,
+        error.method
+      )
     }
     return await res.json()
   }
@@ -97,7 +161,7 @@ class Fetcher {
 
 export interface FetcherResponse<T> {
   data: Ref<UnwrapRef<T | null>>
-  error: Ref<UnwrapRef<HttpError | null>>
+  error: Ref<UnwrapRef<ApiError | HttpError | null>>
   loading: Ref<UnwrapRef<boolean>>
 }
 
@@ -109,7 +173,7 @@ export function useFetcher<T>({
   onSuccess?: (data: T) => any
 }): FetcherResponse<T> {
   const data = ref<T | null>(null)
-  const error = ref<HttpError | null>(null)
+  const error = ref<ApiError | HttpError | null>(null)
   const loading = ref(true)
 
   queryFn
@@ -121,8 +185,8 @@ export function useFetcher<T>({
       }
     })
     .catch((err) => {
-      if (err instanceof HttpError) {
-        error.value = err as unknown as HttpError
+      if (err instanceof ApiError) {
+        error.value = err as unknown as ApiError
       } else {
         error.value = new HttpError(err.message, 500)
       }
