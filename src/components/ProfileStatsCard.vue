@@ -2,7 +2,7 @@
   <div class="sm:-ml-4 rounded-none stats stats-vertical lg:stats-horizontal">
     <!-- USER STATUS AND PROFILE PICTURE -->
     <div class="sm:border-r-2 border-black -ml-6 stat sm:-ml-2">
-      <div class="w-16">
+      <div class="w-16 text-black">
         <user-avatar
           :userProps="(observedUser as User)"
           :uploadMode="loggedUser?.id === observedUser?.id"></user-avatar>
@@ -154,16 +154,16 @@
 // IMPORTS //
 // ******* //
 
-import { storeToRefs } from 'pinia'
 import { computed, onBeforeMount, ref } from 'vue'
 import { onBeforeRouteUpdate, useRoute } from 'vue-router'
-
-import { useUserStore } from '@/stores/UserStore'
-import ProfileFriendRequestModal from '@/components/ProfileFriendRequestModal.vue'
-import UserAvatar from './UserAvatar.vue'
-
 import { useToast } from 'vue-toastification'
 
+import { storeToRefs } from 'pinia'
+
+import ProfileFriendRequestModal from '@/components/ProfileFriendRequestModal.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
+import { appSocket } from '@/includes/appSocket'
+import { useUserStore } from '@/stores/UserStore'
 import type { User } from '@/types'
 
 // ******************** //
@@ -208,6 +208,11 @@ const blockUser = async (): Promise<void> => {
   if (observedUser.value === null) return
   try {
     await userStore.blockUser(observedUser.value.id)
+    await checkBlockedStatus()
+    isFriend.value = false
+    if (observedUser.value.nFriends > 0) {
+      observedUser.value.nFriends -= 1
+    }
     toast.success('User blocked !')
   } catch (error) {
     console.log(`[ProfileStatsCard] - Failed to block user! Error : `, error)
@@ -287,9 +292,14 @@ const getFriendRequestsNumber = async (): Promise<number> => {
 // closeFriendRequestModal //
 // *********************** //
 
-const closeFriendRequestModal = (): void => {
+const closeFriendRequestModal = (event: string): void => {
   showFriendRequestModal.value = false
-  location.reload()
+
+  if (observedUser.value && event === 'accept') {
+    nFriendRequests.value -= 1
+    observedUser.value.nFriends += 1
+  }
+  // location.reload()
 }
 
 // ****************** //
@@ -333,11 +343,29 @@ const unblockUser = async (): Promise<void> => {
   if (observedUser.value === null) return
   try {
     await userStore.unblockUser(observedUser.value.id)
+    await checkBlockedStatus()
+    // todo: check if the blocker and userToUnblock are already friend or not
+    isFriend.value = true
+    observedUser.value.nFriends += 1
     toast.success('User unblocked !')
   } catch (error) {
     toast.error('Failed to unblock user !')
   }
 }
+
+appSocket.on('social:new', () => {
+  nFriendRequests.value += 1
+})
+
+appSocket.on('social:accept', (user: User) => {
+  console.log('friend request accepted', user)
+  console.log('observedUser', observedUser.value?.id)
+  if (observedUser.value?.id === user.id) {
+    observedUser.value.nFriends += 1
+    isFriend.value = true
+    console.log('isFriend', isFriend.value)
+  }
+})
 
 // ********************* //
 // VueJs LIFECYCLE HOOKS //

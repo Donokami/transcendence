@@ -112,7 +112,7 @@ const acceptRequest = async (requestId: string): Promise<void> => {
     )
     toast.success('Friend request accepted !')
     await getFriendRequests()
-    emit('closeModal')
+    emit('closeModal', 'accept')
   } catch (error) {
     toast.error('Failed to accept friend request !')
   }

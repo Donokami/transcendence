@@ -81,7 +81,6 @@ export const useUserStore = defineStore('users', {
     // fetchBlockerId //
     // ************** //
 
-    // todo: voir avec Arthur pour le retour
     async fetchBlockerId(observedUserId: string): Promise<string> {
       const response = await fetcher.get(
         `/social/get/blocker-id/${observedUserId}`
@@ -260,7 +259,7 @@ export const useUserStore = defineStore('users', {
     // ************* //
 
     async getAuthStatus(): Promise<StatusData> {
-      const response: StatusData = await fetcher.get('/auth/authStatus')
+      const response: StatusData = await fetcher.get('/auth/status')
       return response
     },
 

@@ -10,20 +10,24 @@
 </template>
 
 <script setup lang="ts">
-import AppFooter from './components/AppFooter.vue'
-import { useRoute } from 'vue-router'
-import AuthHeader from './components/AuthHeader.vue'
-import SiteHeader from './components/SiteHeader.vue'
-import { useUserStore } from './stores/UserStore'
 import { watch } from 'vue'
+import { useRoute } from 'vue-router'
+
 import { storeToRefs } from 'pinia'
-import { appSocket } from './includes/appSocket'
+
+import AppFooter from '@/components/AppFooter.vue'
+import AuthHeader from '@/components/AuthHeader.vue'
+import SiteHeader from '@/components/SiteHeader.vue'
+import { appSocket } from '@/includes/appSocket'
+import { useUserStore } from '@/stores/UserStore'
+import type { User } from '@/types'
+
 
 const route = useRoute()
 
 const userStore = useUserStore()
 
-const { loggedUser } = storeToRefs(userStore)
+const { loggedUser, friendList } = storeToRefs(userStore)
 
 watch(loggedUser, (user) => {
   if (!user && appSocket.connected) {
@@ -35,6 +39,16 @@ watch(loggedUser, (user) => {
 
   appSocket.on('connect', () => {
     console.log('connected to app socket')
+  })
+
+  appSocket.on('social:block', (data: { blockerId: string }) => {
+    friendList.value = friendList.value.filter(
+      (friend: User) => data.blockerId === friend.id
+    )
+  })
+
+  appSocket.on('social:accept', (user: User) => {
+    friendList.value.push(user)
   })
 })
 </script>

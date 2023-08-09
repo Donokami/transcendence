@@ -1,5 +1,5 @@
 <template>
-  <div class="stat-figure text-secondary w-full h-full text-inherit">
+  <div class="stat-figure w-full aspect-square">
     <div class="avatar w-full h-full" :class="statusBadge()">
       <input
         v-if="props.uploadMode"
@@ -7,7 +7,7 @@
         ref="fileInput"
         @change="onFileChange"
         style="display: none" />
-      <div class="w-full h-full rounded-full">
+      <div class="w-full h-full aspect-square rounded-full">
         <div
           class="absolute w-full h-full object-cover rounded-full cursor-pointer"
           v-if="props.uploadMode"
