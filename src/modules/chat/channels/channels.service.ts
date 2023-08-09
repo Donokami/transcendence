@@ -90,27 +90,27 @@ export class ChannelsService {
   // ********* //
 
   async banMember(
-    banningUserId: string,
-    userToBanId: string,
+    userId: string,
+    memberToBanId: string,
     channel: Channel
   ): Promise<Channel> {
-    const userToBan: User = await this.checkExistingUser(userToBanId)
+    const memberToBan: User = await this.checkExistingUser(memberToBanId)
 
-    await this.permissionChecker('ban', channel, banningUserId, userToBanId)
+    await this.permissionChecker('ban', channel, userId, memberToBanId)
 
     channel.members = this.removeUserFromList(
       'members',
-      userToBan,
+      memberToBan,
       channel.members
     )
 
     channel.bannedMembers = this.addUserToList(
       'bannedMembers',
-      userToBan,
+      memberToBan,
       channel.bannedMembers
     )
 
-    const updatePayload = { userToBanId, channelId: channel.id }
+    const updatePayload = { memberToBanId, channelId: channel.id }
 
     const updatedChannel = this.updateChannel('ban', channel, updatePayload)
 
@@ -224,7 +224,7 @@ export class ChannelsService {
     const channel: Channel = await this.channelsRepository.findOne({
       where: { name, isDm: false },
       select: ['id', 'members', 'name', 'password', 'passwordRequired'],
-      relations: ['members']
+      relations: ['members', 'bannedMembers']
     })
 
     if (!channel) {
@@ -313,8 +313,8 @@ export class ChannelsService {
   // ********* //
 
   async joinGroup(
-    joinGroupDto: JoinGroupDto,
-    newMemberId: string
+    newMemberId: string,
+    joinGroupDto: JoinGroupDto
   ): Promise<OperationResult> {
     const { channelName, password } = joinGroupDto
 
@@ -372,6 +372,26 @@ export class ChannelsService {
     const updatePayload = { userToKickId, channelId: channel.id }
 
     const updatedChannel = this.updateChannel('kick', channel, updatePayload)
+
+    return updatedChannel
+  }
+
+  // ********** //
+  // leaveGroup //
+  // ********** //
+
+  async leaveGroup(userId: string, channel: Channel): Promise<Channel> {
+    const leavingMember: User = await this.checkExistingUser(userId)
+
+    channel.members = this.removeUserFromList(
+      'members',
+      leavingMember,
+      channel.members
+    )
+
+    const updatePayload = { userId, channelId: channel.id }
+
+    const updatedChannel = this.updateChannel('leave', channel, updatePayload)
 
     return updatedChannel
   }
@@ -446,9 +466,12 @@ export class ChannelsService {
   // postMessage //
   // *********** //
 
-  async postMessage(userId: string, messageDto: MessageDto): Promise<Message> {
-    const { messageBody, channel, date } = messageDto
-
+  async postMessage(
+    userId: string,
+    messageBody: string,
+    date: any,
+    channel: Channel
+  ): Promise<Message> {
     const user: User = await this.checkExistingUser(userId)
 
     const newMessage = this.messagesRepository.create({

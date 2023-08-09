@@ -81,7 +81,6 @@ export class SocialController {
   // getBlockerId //
   // ************ //
 
-  // todo: voir avec Arthur pour le type de retour et pour enlever observedUserId de la route (impossible de passer par le body ?)
   @Get('/get/blocker-id/:observedUserId')
   @ApiOperation({
     summary: 'Get blocker id',

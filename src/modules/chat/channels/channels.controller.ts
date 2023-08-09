@@ -62,11 +62,9 @@ export class ChannelsController {
     @Body() body: HandleChannelDto,
     @CurrentChannel() channel: Channel
   ): Promise<Channel> {
-    return await this.channelsService.banMember(
-      session.userId,
-      body.userId,
-      channel
-    )
+    const userId: string = session.userId
+    const memberToBanId: string = body.userId
+    return await this.channelsService.banMember(userId, memberToBanId, channel)
   }
 
   // ************** //
@@ -87,9 +85,11 @@ export class ChannelsController {
     @Body() body: ChangeGroupPasswordDto,
     @CurrentChannel() channel: Channel
   ): Promise<OperationResult> {
+    const userId: string = body.userId
+    const newPassword: string = body.newPassword
     return await this.channelsService.changePassword(
-      body.userId,
-      body.newPassword,
+      userId,
+      newPassword,
       channel
     )
   }
@@ -163,12 +163,9 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
-  async joinGroup(
-    @Body() joinGroupDto: JoinGroupDto,
-    @Session() session: ISession
-  ) {
-    const newMemberId = session.userId
-    return await this.channelsService.joinGroup(joinGroupDto, newMemberId)
+  async joinGroup(@Body() body: JoinGroupDto, @Session() session: ISession) {
+    const userId = session.userId
+    return await this.channelsService.joinGroup(userId, body)
   }
 
   // ********** //
@@ -190,7 +187,30 @@ export class ChannelsController {
     @Body() body: HandleChannelDto,
     @CurrentChannel() channel: Channel
   ): Promise<Channel> {
-    return this.channelsService.kickMember(session.userId, body.userId, channel)
+    const userId: string = session.userId
+    const userToKickId: string = body.userId
+    return this.channelsService.kickMember(userId, userToKickId, channel)
+  }
+
+  // ********* //
+  // leaveGroup //
+  // ********* //
+
+  @Post('/group/leave')
+  @ApiOperation({
+    summary: 'Leave a group',
+    operationId: 'leaveGroup',
+    description: 'Leave a group',
+    tags: ['chat']
+  })
+  @UseGuards(AuthGuard)
+  @UseGuards(MembershipGuard)
+  async leaveGroup(
+    @Session() session: ISession,
+    @CurrentChannel() channel: Channel
+  ) {
+    const userId: string = session.userId
+    return await this.channelsService.leaveGroup(userId, channel)
   }
 
   // ********** //
@@ -212,11 +232,9 @@ export class ChannelsController {
     @Body() body: HandleChannelDto,
     @CurrentChannel() channel: Channel
   ): Promise<OperationResult> {
-    return await this.channelsService.muteMember(
-      session.userId,
-      body.userId,
-      channel
-    )
+    const userId: string = session.userId
+    const userToMuteId: string = body.userId
+    return await this.channelsService.muteMember(userId, userToMuteId, channel)
   }
 
   // ************ //
@@ -237,12 +255,15 @@ export class ChannelsController {
     @Session() session: ISession,
     @Body() body: MessageDto
   ) {
-    const { messageBody, date } = body
-    const message = await this.channelsService.postMessage(session.userId, {
-      channel,
+    const userId: string = session.userId
+    const messageBody: string = body.messageBody
+    const date: any = body.date
+    const message = await this.channelsService.postMessage(
+      userId,
       messageBody,
-      date
-    })
+      date,
+      channel
+    )
 
     return message
   }
@@ -288,11 +309,9 @@ export class ChannelsController {
     @Body() body: HandleChannelDto,
     @CurrentChannel() channel: Channel
   ): Promise<Channel> {
-    return await this.channelsService.setAdmin(
-      session.userId,
-      body.userId,
-      channel
-    )
+    const userId: string = session.userId
+    const userToPromoteId: string = body.userId
+    return await this.channelsService.setAdmin(userId, userToPromoteId, channel)
   }
 
   // *********** //

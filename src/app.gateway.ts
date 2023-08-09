@@ -24,7 +24,7 @@ export class AppGateway {
     userId: string
   }> = []
 
-  constructor(private userService: UsersService) {}
+  constructor(private readonly userService: UsersService) {}
 
   private readonly logger = new Logger(AppGateway.name)
 
@@ -60,5 +60,9 @@ export class AppGateway {
     })
     this.logger.verbose(`Client ${client.id} disconnected`)
     this.server.emit('user:disconnect', client.request.user.id)
+  }
+
+  findClient(userId: string) {
+    return this.connectedSockets.find((sock) => sock.userId === userId)
   }
 }

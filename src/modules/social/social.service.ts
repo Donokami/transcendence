@@ -28,6 +28,7 @@ import {
   FriendshipStatus
 } from '@/modules/social/entities/friendship.entity'
 import { User } from '@/modules/users/user.entity'
+import { AppGateway } from '@/app.gateway'
 
 @Injectable()
 export class SocialService {
@@ -39,7 +40,8 @@ export class SocialService {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     @InjectRepository(Friendship)
-    private readonly friendshipRepository: Repository<Friendship>
+    private readonly friendshipRepository: Repository<Friendship>,
+    private readonly appGateway: AppGateway
   ) {}
 
   // ****** //
@@ -88,6 +90,14 @@ export class SocialService {
         `${userToBlockId} has been successfully blocked by ${blockerId}`
       )
 
+      const client = this.appGateway.findClient(userToBlockId)
+
+      if (client) {
+        this.appGateway.server
+          .to(client.clientId)
+          .emit('social:block', { blockerId })
+      }
+
       return friendship
     } else {
       const newFriendship = await this.createFriendship(blocker, toBlock)
@@ -100,6 +110,14 @@ export class SocialService {
       this.logger.verbose(
         `${userToBlockId} has been successfully blocked by ${blockerId}`
       )
+
+      const client = this.appGateway.findClient(userToBlockId)
+
+      if (client) {
+        this.appGateway.server
+          .to(client.clientId)
+          .emit('social:block', { blockerId })
+      }
 
       return newFriendship
     }
@@ -331,6 +349,13 @@ export class SocialService {
       this.logger.verbose(
         `Friend request sent by : ${senderId} to : ${receiverId} accepted.`
       )
+      const client = this.appGateway.findClient(senderId)
+
+      if (client) {
+        this.appGateway.server
+          .to(client.clientId)
+          .emit('social:accept', request.receiver)
+      }
     } else if (action === 'reject') {
       request.status = FriendshipStatus.REJECTED
       this.logger.verbose(
@@ -380,6 +405,14 @@ export class SocialService {
 
         await this.friendshipRepository.save(friendship)
 
+        const client = this.appGateway.findClient(receiverId)
+
+        if (client) {
+          this.appGateway.server
+            .to(client.clientId)
+            .emit('social:new', friendship)
+        }
+
         return friendship
       }
     } else {
@@ -393,6 +426,14 @@ export class SocialService {
       this.logger.verbose(
         `Friend request successfully sent by ${senderId} to ${receiverId}.`
       )
+
+      const client = this.appGateway.findClient(receiverId)
+
+      if (client) {
+        this.appGateway.server
+          .to(client.clientId)
+          .emit('social:new', friendship)
+      }
 
       return newFriendship
     }
