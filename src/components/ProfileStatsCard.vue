@@ -186,8 +186,7 @@
 
   <!-- FRIEND LIST MODAL -->
   <profile-friend-list-modal
-    v-if="showFriendListModal"
-    @close-modal="closeFriendListModal"></profile-friend-list-modal>
+    v-if="showFriendListModal"></profile-friend-list-modal>
 
   <!-- FRIEND REQUEST MODAL -->
   <profile-friend-request-modal
