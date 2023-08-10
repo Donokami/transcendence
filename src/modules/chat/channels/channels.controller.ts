@@ -117,6 +117,25 @@ export class ChannelsController {
     return channel
   }
 
+  // **************** //
+  // getBannedMembers //
+  // **************** //
+
+  @Get('/:channelId/bannedMembers')
+  @ApiOperation({
+    summary: 'Get channel banned members',
+    operationId: 'getBannedMembers',
+    description: 'Get channel banned members',
+    tags: ['chat']
+  })
+  @UseGuards(AuthGuard)
+  @UseGuards(MembershipGuard)
+  @UseGuards(AdminshipGuard)
+  async getBannedMembers(@CurrentChannel() channel: Channel) {
+    const bannedMembers = await this.channelsService.getBannedMembers(channel)
+    return bannedMembers
+  }
+
   // *********** //
   // getChannel //
   // *********** //
@@ -315,24 +334,24 @@ export class ChannelsController {
   }
 
   // *********** //
-  // unBanMember //
+  // unbanMember //
   // *********** //
 
-  // todo: remove if not required
-  @Delete('/:channelId/bannedMembers/:userId')
+  @Delete('/:channelId/unban')
   @ApiOperation({
-    summary: 'Un-ban a user from a group',
-    operationId: 'unBanMember',
-    description: 'Un-ban a user from a group',
+    summary: 'Unban a member from a group',
+    operationId: 'unbanMember',
+    description: 'Unban a member from a group',
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
-  async unBanMember(
-    @CurrentChannel() channel: Channel,
-    @Param('userId') userId: string
+  async unbanMember(
+    @Body() body: HandleChannelDto,
+    @CurrentChannel() channel: Channel
   ): Promise<Channel> {
-    return this.channelsService.unBanMember(channel, userId)
+    const memberToUnbanId: string = body.userId
+    return await this.channelsService.unbanMember(memberToUnbanId, channel)
   }
 }

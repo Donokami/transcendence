@@ -24,7 +24,6 @@ import { parseMuteTime } from '@/core/utils/parseMuteTime'
 import { ChatGateway } from '@/modules/chat/chat.gateway'
 import { CreateChannelDto } from '@/modules/chat/channels/dtos/create-channel.dto'
 import { JoinGroupDto } from '@/modules/chat/channels/dtos/join-group.dto'
-import { MessageDto } from '@/modules/chat/channels/dtos/message.dto'
 import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { Message } from '@/modules/chat/channels/entities/message.entity'
 import { User } from '@/modules/users/user.entity'
@@ -90,29 +89,33 @@ export class ChannelsService {
   // ********* //
 
   async banMember(
-    userId: string,
-    memberToBanId: string,
+    banningUserId: string,
+    userToBanId: string,
     channel: Channel
   ): Promise<Channel> {
-    const memberToBan: User = await this.checkExistingUser(memberToBanId)
+    const userToBan: User = await this.checkExistingUser(userToBanId)
 
-    await this.permissionChecker('ban', channel, userId, memberToBanId)
+    await this.permissionChecker('ban', channel, banningUserId, userToBanId)
 
     channel.members = this.removeUserFromList(
       'members',
-      memberToBan,
+      userToBan,
       channel.members
     )
 
     channel.bannedMembers = this.addUserToList(
       'bannedMembers',
-      memberToBan,
-      channel.bannedMembers
+      userToBan,
+      channel.bannedMembers ?? []
     )
 
-    const updatePayload = { memberToBanId, channelId: channel.id }
+    const updatePayload = { user: userToBan, channelId: channel.id }
 
-    const updatedChannel = this.updateChannel('ban', channel, updatePayload)
+    const updatedChannel = await this.updateChannel(
+      'chat:ban',
+      channel,
+      updatePayload
+    )
 
     return updatedChannel
   }
@@ -236,6 +239,16 @@ export class ChannelsService {
   }
 
   // *********** //
+  // getBannedMembers //
+  // *********** //
+
+  async getBannedMembers(channel: Channel): Promise<User[]> {
+    const chan = await this.findOneById(channel.id)
+
+    return chan.bannedMembers ?? []
+  }
+
+  // *********** //
   // getChannels //
   // *********** //
 
@@ -340,17 +353,23 @@ export class ChannelsService {
       throw new InvalidGroupPassword()
     }
 
-    channel.members = this.addUserToList('members', newMember, channel.members)
+    // todo: use the updateChannel method instead (Lucas)
+
+    channel.members = this.addUserToList(
+      'members',
+      newMember,
+      channel.members ?? []
+    )
 
     await this.channelsRepository.save(channel)
-
-    const socket = this.chatGateway.getUserSocket(newMember.id)
-    if (socket) socket.join(channel.id)
 
     this.chatGateway.server.to(channel.id).emit('chat:join', {
       user: newMember,
       channelId: channel.id
     })
+
+    const socket = this.chatGateway.getUserSocket(newMember.id)
+    if (socket) socket.join(channel.id)
 
     return { success: true }
   }
@@ -374,18 +393,13 @@ export class ChannelsService {
       channel.members
     )
 
-    const updatePayload = { userToKickId, channelId: channel.id }
+    const updatePayload = { userId: userToKick.id, channelId: channel.id }
 
     const updatedChannel = await this.updateChannel(
-      'kick',
+      'chat:kick',
       channel,
       updatePayload
     )
-
-    this.chatGateway.server.to(updatedChannel.id).emit('chat:kick', {
-      userId: userToKick.id,
-      channelId: updatedChannel.id
-    })
 
     return updatedChannel
   }
@@ -394,8 +408,8 @@ export class ChannelsService {
   // leaveGroup //
   // ********** //
 
-  async leaveGroup(userId: string, channel: Channel): Promise<Channel> {
-    const leavingMember: User = await this.checkExistingUser(userId)
+  async leaveGroup(leavingUserId: string, channel: Channel): Promise<Channel> {
+    const leavingMember: User = await this.checkExistingUser(leavingUserId)
 
     channel.members = this.removeUserFromList(
       'members',
@@ -403,7 +417,7 @@ export class ChannelsService {
       channel.members
     )
 
-    const updatePayload = { userId, channelId: channel.id }
+    const updatePayload = { leavingUserId, channelId: channel.id }
 
     const updatedChannel = this.updateChannel('leave', channel, updatePayload)
 
@@ -427,6 +441,10 @@ export class ChannelsService {
     const muteEndDate = parseMuteTime('1w')
 
     channel.addMuteMember(userToMute, muteEndDate)
+
+    const updatePayload = { userId: userToMute, channelId: channel.id }
+
+    await this.updateChannel('chat:mute', channel, updatePayload)
 
     return { success: true }
   }
@@ -506,7 +524,7 @@ export class ChannelsService {
   // removeAdmin //
   // *********** //
 
-  // todo: remove if not required
+  // todo: implement this (Lucas)
   async removeAdmin(channel: Channel, userId: string): Promise<Channel> {
     const user: User = await this.checkExistingUser(userId)
 
@@ -572,25 +590,32 @@ export class ChannelsService {
   }
 
   // *********** //
-  // unBanMember //
+  // unbanMember //
   // *********** //
 
-  // todo: remove if not required
-  async unBanMember(channel: Channel, userId: string): Promise<Channel> {
-    const user: User = await this.checkExistingUser(userId)
+  async unbanMember(userToUnbanId: string, channel: Channel): Promise<Channel> {
+    const userToUnban: User = await this.checkExistingUser(userToUnbanId)
 
     channel.bannedMembers = this.removeUserFromList(
-      'bannedMember',
-      user,
+      'bannedMembers',
+      userToUnban,
       channel.bannedMembers
     )
 
-    return this.channelsRepository.save(channel)
+    const updatePayload = { user: userToUnban, channelId: channel.id }
+
+    const updatedChannel = await this.updateChannel(
+      'chat:unban',
+      channel,
+      updatePayload
+    )
+
+    return updatedChannel
   }
 
-  // *********** //
+  // ************ //
   // unMuteMember //
-  // *********** //
+  // ************ //
 
   async unMuteMember(channel: Channel, userId: string): Promise<Channel> {
     const user: User = await this.checkExistingUser(userId)
