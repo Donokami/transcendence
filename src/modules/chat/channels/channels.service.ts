@@ -46,7 +46,7 @@ export class ChannelsService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway
-  ) {}
+  ) { }
 
   // ****** //
   // LOGGER //
@@ -347,6 +347,11 @@ export class ChannelsService {
     const socket = this.chatGateway.getUserSocket(newMember.id)
     if (socket) socket.join(channel.id)
 
+    this.chatGateway.server.to(channel.id).emit('chat:join', {
+      user: newMember,
+      channelId: channel.id
+    })
+
     return { success: true }
   }
 
@@ -371,7 +376,12 @@ export class ChannelsService {
 
     const updatePayload = { userToKickId, channelId: channel.id }
 
-    const updatedChannel = this.updateChannel('kick', channel, updatePayload)
+    const updatedChannel = await this.updateChannel('kick', channel, updatePayload)
+
+    this.chatGateway.server.to(updatedChannel.id).emit('chat:kick', {
+      userId: userToKick.id,
+      channelId: updatedChannel.id
+    })
 
     return updatedChannel
   }
