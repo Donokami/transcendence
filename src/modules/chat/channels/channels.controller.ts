@@ -287,33 +287,11 @@ export class ChannelsController {
     return message
   }
 
-  // *********** //
-  // removeAdmin //
-  // *********** //
-
-  // todo: remove if not required
-  @Delete('/:channelId/admins/:userId')
-  @UseGuards(AuthGuard)
-  @ApiOperation({
-    summary: 'Remove a user from the admins list of a group',
-    operationId: 'removeAdmin',
-    description: 'Remove a user from the admins list of a group',
-    tags: ['chat']
-  })
-  @UseGuards(MembershipGuard)
-  @UseGuards(OwnershipGuard)
-  async removeAdmin(
-    @CurrentChannel() channel: Channel,
-    @Param('userId') userId: string
-  ): Promise<Channel> {
-    return this.channelsService.removeAdmin(channel, userId)
-  }
-
   // ******** //
   // setAdmin //
   // ********* //
 
-  @Put('/:channelId/admins')
+  @Put('/:channelId/set-admin')
   @ApiOperation({
     summary: 'Set a user as an admin of a group',
     operationId: 'setAdmin',
@@ -324,13 +302,11 @@ export class ChannelsController {
   @UseGuards(MembershipGuard)
   @UseGuards(OwnershipGuard)
   async setAdmin(
-    @Session() session: ISession,
     @Body() body: HandleChannelDto,
     @CurrentChannel() channel: Channel
   ): Promise<Channel> {
-    const userId: string = session.userId
     const userToPromoteId: string = body.userId
-    return await this.channelsService.setAdmin(userId, userToPromoteId, channel)
+    return await this.channelsService.setAdmin(userToPromoteId, channel)
   }
 
   // *********** //
@@ -353,5 +329,27 @@ export class ChannelsController {
   ): Promise<Channel> {
     const memberToUnbanId: string = body.userId
     return await this.channelsService.unbanMember(memberToUnbanId, channel)
+  }
+
+  // ********** //
+  // unsetAdmin //
+  // ********** //
+
+  @Delete('/:channelId/unset-admin')
+  @ApiOperation({
+    summary: 'Unset a user as admin of a group',
+    operationId: 'unsetAdmin',
+    description: 'Unset a user as admin of a group',
+    tags: ['chat']
+  })
+  @UseGuards(AuthGuard)
+  @UseGuards(MembershipGuard)
+  @UseGuards(OwnershipGuard)
+  async unsetAdmin(
+    @Body() body: HandleChannelDto,
+    @CurrentChannel() channel: Channel
+  ): Promise<Channel> {
+    const userToDemoteId: string = body.userId
+    return this.channelsService.unsetAdmin(userToDemoteId, channel)
   }
 }

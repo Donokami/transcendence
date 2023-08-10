@@ -117,6 +117,9 @@ export class ChannelsService {
       updatePayload
     )
 
+    const socket = this.chatGateway.getUserSocket(userToBan.id)
+    if (socket) socket.leave(channel.id)
+
     return updatedChannel
   }
 
@@ -353,20 +356,15 @@ export class ChannelsService {
       throw new InvalidGroupPassword()
     }
 
-    // todo: use the updateChannel method instead (Lucas)
-
     channel.members = this.addUserToList(
       'members',
       newMember,
       channel.members ?? []
     )
 
-    await this.channelsRepository.save(channel)
+    const updatePayload = { user: newMember, channelId: channel.id }
 
-    this.chatGateway.server.to(channel.id).emit('chat:join', {
-      user: newMember,
-      channelId: channel.id
-    })
+    await this.updateChannel('chat:join', channel, updatePayload)
 
     const socket = this.chatGateway.getUserSocket(newMember.id)
     if (socket) socket.join(channel.id)
@@ -393,13 +391,16 @@ export class ChannelsService {
       channel.members
     )
 
-    const updatePayload = { userId: userToKick.id, channelId: channel.id }
+    const updatePayload = { user: userToKick, channelId: channel.id }
 
     const updatedChannel = await this.updateChannel(
       'chat:kick',
       channel,
       updatePayload
     )
+
+    const socket = this.chatGateway.getUserSocket(userToKick.id)
+    if (socket) socket.leave(channel.id)
 
     return updatedChannel
   }
@@ -409,17 +410,20 @@ export class ChannelsService {
   // ********** //
 
   async leaveGroup(leavingUserId: string, channel: Channel): Promise<Channel> {
-    const leavingMember: User = await this.checkExistingUser(leavingUserId)
+    const leavingUser: User = await this.checkExistingUser(leavingUserId)
 
     channel.members = this.removeUserFromList(
       'members',
-      leavingMember,
+      leavingUser,
       channel.members
     )
 
-    const updatePayload = { leavingUserId, channelId: channel.id }
+    const updatePayload = { user: leavingUser, channelId: channel.id }
 
     const updatedChannel = this.updateChannel('leave', channel, updatePayload)
+
+    const socket = this.chatGateway.getUserSocket(leavingUser.id)
+    if (socket) socket.leave(channel.id)
 
     return updatedChannel
   }
@@ -442,7 +446,7 @@ export class ChannelsService {
 
     channel.addMuteMember(userToMute, muteEndDate)
 
-    const updatePayload = { userId: userToMute, channelId: channel.id }
+    const updatePayload = { user: userToMute, channelId: channel.id }
 
     await this.updateChannel('chat:mute', channel, updatePayload)
 
@@ -468,11 +472,11 @@ export class ChannelsService {
     )
 
     switch (action) {
-      case 'set-admin':
-        if (actingUserId !== channel.owner.id) {
-          throw new CannotSetAdmin()
-        }
-        break
+      // case 'set-admin':
+      //   if (actingUserId !== channel.owner.id) {
+      //     throw new CannotSetAdmin()
+      //   }
+      //   break
       case 'kick':
       case 'ban':
       case 'mute':
@@ -562,26 +566,15 @@ export class ChannelsService {
   // setAdmin //
   // ******** //
 
-  async setAdmin(
-    promotingUserId: string,
-    userToPromoteId: string,
-    channel: Channel
-  ): Promise<Channel> {
+  async setAdmin(userToPromoteId: string, channel: Channel): Promise<Channel> {
     const userToPromote: User = await this.checkExistingUser(userToPromoteId)
-
-    await this.permissionChecker(
-      'set-admin',
-      channel,
-      promotingUserId,
-      userToPromoteId
-    )
 
     channel.admins = this.addUserToList('admins', userToPromote, channel.admins)
 
-    const updatePayload = { userToPromoteId, channelId: channel.id }
+    const updatePayload = { user: userToPromote, channelId: channel.id }
 
     const updatedChannel: Channel = await this.updateChannel(
-      'set-admin',
+      'chat:set-admin',
       channel,
       updatePayload
     )
@@ -623,6 +616,30 @@ export class ChannelsService {
     channel.removeMuteMember(user)
 
     return this.channelsRepository.save(channel)
+  }
+
+  // ********** //
+  // unsetAdmin //
+  // ********** //
+
+  async unsetAdmin(userToDemoteId: string, channel: Channel): Promise<Channel> {
+    const userToDemote: User = await this.checkExistingUser(userToDemoteId)
+
+    channel.admins = this.removeUserFromList(
+      'admins',
+      userToDemote,
+      channel.admins
+    )
+
+    const updatePayload = { user: userToDemote, channelId: channel.id }
+
+    const updatedChannel: Channel = await this.updateChannel(
+      'chat:unset-admin',
+      channel,
+      updatePayload
+    )
+
+    return updatedChannel
   }
 
   // ************* //
