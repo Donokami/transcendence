@@ -36,6 +36,18 @@ export const useChannelStore = defineStore('channels', {
     }
   },
   actions: {
+    // ******** //
+    // addAdmin //
+    // ******** //
+
+    addAdmin(user: User, channelId: string): void {
+      const channel = this.getChannel(channelId)
+
+      if (channel != null) {
+        channel.admins.push(user)
+      }
+    },
+
     // ********* //
     // addMember //
     // ********* //
@@ -142,12 +154,8 @@ export const useChannelStore = defineStore('channels', {
     // ********* //
 
     async banMember(userId: string, channelId: string): Promise<void> {
-      try {
-        await fetcher.put(`/channels/${channelId}/ban`, { userId })
-        console.log(`User with ID : ${userId} successfully banned from channel`)
-      } catch (error) {
-        throw error
-      }
+      await fetcher.put(`/channels/${channelId}/ban`, { userId })
+      console.log(`User with ID : ${userId} successfully banned from channel`)
     },
 
     // **************** //
@@ -285,6 +293,16 @@ export const useChannelStore = defineStore('channels', {
       }
     },
 
+    // async getAdmins(channelId: string) {
+    //   const channel = this.getChannel(channelId)
+
+    //   if (channel != null) {
+    //     const admins = await fetcher.get(`/channels/${channelId}/admins`)
+
+    //     channel.admins = admins
+    //   }
+    // },
+
     async getBannedMembers(channelId: string) {
       const channel = this.getChannel(channelId)
 
@@ -344,18 +362,13 @@ export const useChannelStore = defineStore('channels', {
       return channels ?? []
     },
 
-    // *************** //
-    // giveAdminRights //
-    // *************** //
+    // ********* //
+    // makeAdmin //
+    // ********* //
 
-    async giveAdminRights(userId: string, channelId: string): Promise<void> {
-      try {
-        await fetcher.put(`/channels/${channelId}/admins`, { userId })
-        console.log(`User with ID : ${userId} successfully promoted to admin`)
-      } catch (error) {
-        console.error(`Failed to give admin rights to ${userId}.`, error)
-        throw error
-      }
+    async makeAdmin(userId: string, channelId: string): Promise<void> {
+      await fetcher.put(`/channels/${channelId}/set-admin`, { userId })
+      console.log(`User with ID : ${userId} successfully promoted admin`)
     },
 
     isAdmin(userId: string, channelId: string) {
@@ -376,16 +389,12 @@ export const useChannelStore = defineStore('channels', {
     // ********* //
 
     async joinGroup(channelName: string, password?: string): Promise<void> {
-      try {
-        const response = await fetcher.post(`/channels/group/join`, {
-          channelName,
-          password
-        })
+      const response = await fetcher.post(`/channels/group/join`, {
+        channelName,
+        password
+      })
 
-        console.log(response)
-      } catch (error) {
-        throw error
-      }
+      console.log(response)
     },
 
     // ********** //
@@ -393,12 +402,8 @@ export const useChannelStore = defineStore('channels', {
     // ********** //
 
     async kickMember(userId: string, channelId: string): Promise<void> {
-      try {
-        await fetcher.put(`/channels/${channelId}/kick`, { userId })
-        console.log(`User with ID : ${userId} successfully kicked from channel`)
-      } catch (error) {
-        throw error
-      }
+      await fetcher.put(`/channels/${channelId}/kick`, { userId })
+      console.log(`User with ID : ${userId} successfully kicked from channel`)
     },
 
     // ********** //
@@ -426,6 +431,21 @@ export const useChannelStore = defineStore('channels', {
         const index = this.channelsList?.data?.indexOf(channel)
         if (index != null) {
           this.channelsList?.data?.splice(index, 1)
+        }
+      }
+    },
+
+    // ************ //
+    // removeAdmin //
+    // ************ //
+
+    removeAdmin(userId: string, channelId: string): void {
+      const channel = this.getChannel(channelId)
+
+      if (channel != null) {
+        const index = channel.admins.findIndex((user) => user.id === userId)
+        if (index != null) {
+          channel.admins.splice(index, 1)
         }
       }
     },
@@ -506,14 +526,8 @@ export const useChannelStore = defineStore('channels', {
     // *********** //
 
     async unbanMember(userId: string, channelId: string): Promise<void> {
-      try {
-        await fetcher.delete(`/channels/${channelId}/unban`, { userId })
-        console.log(
-          `User with ID : ${userId} successfully unbanned from channel`
-        )
-      } catch (error) {
-        throw error
-      }
+      await fetcher.delete(`/channels/${channelId}/unban`, { userId })
+      console.log(`User with ID : ${userId} successfully unbanned from channel`)
     }
   }
 })

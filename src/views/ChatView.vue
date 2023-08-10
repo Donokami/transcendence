@@ -190,11 +190,11 @@ chatSocket.on(
       if (loggedUser && loggedUser.id === user.id) {
         channelStore.selectedChannel = null
         channelStore.removeFromChannelList(channelId)
-        toast.success(`You have been banned from ${channel.name}!`)
+        toast.success(`You have been banned from ${channel.name}`)
         return await router.push('/chat')
       }
 
-      toast.success(`User banned from ${channel.name}!`)
+      toast.success(`${user.username} have been banned from ${channel.name}`)
     }
   }
 )
@@ -236,13 +236,12 @@ chatSocket.on(
 
     channelStore.addMember(user, channelId)
 
-    toast.success(`${user.username} joined the channel.`)
-
     if (loggedUser && loggedUser.id === user.id) {
       await channelStore.fetchChannel(channelId)
       channelStore.selectedChannel = channelId
       return await router.push(`/chat/${channelId}`)
     }
+    toast.success(`${user.username} joined the channel`)
   }
 )
 
@@ -250,44 +249,54 @@ chatSocket.on(
 // kick //
 // **** //
 
-chatSocket.on('chat:kick', async ({ userId, channelId }) => {
-  console.log(`[ChatView] - User ${userId} kicked from channel ${channelId}`)
+chatSocket.on(
+  'chat:kick',
+  async ({ user, channelId }: { user: User; channelId: string }) => {
+    console.log(
+      `[ChatView] - User ${user.username} kicked from channel ${channelId}`
+    )
 
-  const channel = channelStore.getChannel(channelId)
+    const channel = channelStore.getChannel(channelId)
 
-  if (channel) {
-    channelStore.removeMember(userId, channelId)
+    if (channel) {
+      channelStore.removeMember(user.id, channelId)
 
-    if (loggedUser && loggedUser.id === userId) {
-      channelStore.selectedChannel = null
-      channelStore.removeFromChannelList(channelId)
-      toast.success(`You have been kicked from ${channel.name}!`)
-      return await router.push('/chat')
+      if (loggedUser && loggedUser.id === user.id) {
+        channelStore.selectedChannel = null
+        channelStore.removeFromChannelList(channelId)
+        toast.success(`You have been kicked from ${channel.name}`)
+        return await router.push('/chat')
+      }
+
+      toast.success(`${user.username} successfully kicked from ${channel.name}`)
     }
-
-    toast.success(`User successfully kicked !`)
   }
-})
+)
 
 // ***** //
 // leave //
 // ***** //
 
-chatSocket.on('chat:leave', async ({ userId, channelId }) => {
-  console.log(`[ChatView] - User ${userId} left channel ${channelId}`)
+chatSocket.on(
+  'chat:leave',
+  async ({ user, channelId }: { user: User; channelId: string }) => {
+    console.log(`[ChatView] - ${user.username} left channel ${channelId}`)
 
-  const channel = channelStore.getChannel(channelId)
+    const channel = channelStore.getChannel(channelId)
 
-  if (channel) {
-    channelStore.removeMember(userId, channelId)
+    if (channel) {
+      channelStore.removeMember(user.id, channelId)
 
-    if (loggedUser && loggedUser.id === userId) {
-      channelStore.selectedChannel = null
-      channelStore.removeFromChannelList(channelId)
-      return await router.push('/chat')
+      if (loggedUser && loggedUser.id === user.id) {
+        channelStore.selectedChannel = null
+        channelStore.removeFromChannelList(channelId)
+        toast.success(`You left ${channel.name}`)
+        return await router.push('/chat')
+      }
+      toast.success(`${user.username} left ${channel.name}`)
     }
   }
-})
+)
 
 // ******* //
 // message //
@@ -321,6 +330,33 @@ chatSocket.on(
   }
 )
 
+// ******** //
+// setAdmin //
+// ******** //
+
+chatSocket.on(
+  'chat:set-admin',
+  async ({ user, channelId }: { user: User; channelId: string }) => {
+    console.log(
+      `[ChatView] - ${user.username} promoted admin of channel ${channelId}`
+    )
+
+    const channel = channelStore.getChannel(channelId)
+
+    if (channel) {
+      channelStore.addAdmin(user, channelId)
+
+      if (loggedUser && loggedUser.id === user.id) {
+        toast.success(`You have been promoted admin of ${channel.name}`)
+      }
+
+      toast.success(
+        `${user.username} have been promoted admin of ${channel.name}`
+      )
+    }
+  }
+)
+
 // ***** //
 // unban //
 // ***** //
@@ -339,10 +375,35 @@ chatSocket.on(
 
       if (loggedUser && loggedUser.id === user.id) {
         channelStore.addToChannelList(channel)
-        toast.success(`You have been unbanned from ${channel.name}!`)
+        toast.success(`You have been unbanned from ${channel.name}`)
       }
 
-      toast.success(`User unbanned from ${channel.name}!`)
+      toast.success(`${user.username} have been unbanned from ${channel.name}`)
+    }
+  }
+)
+
+// ********** //
+// unsetAdmin //
+// ********** //
+
+chatSocket.on(
+  'chat:unset-admin',
+  async ({ user, channelId }: { user: User; channelId: string }) => {
+    console.log(
+      `[ChatView] - ${user.username} promoted admin of channel ${channelId}`
+    )
+
+    const channel = channelStore.getChannel(channelId)
+
+    if (channel) {
+      channelStore.removeAdmin(user.id, channelId)
+
+      if (loggedUser && loggedUser.id === user.id) {
+        toast.success(`You are not admin of ${channel.name} anymore`)
+      }
+
+      toast.success(`${user.username} is not admin of ${channel.name} anymore`)
     }
   }
 )

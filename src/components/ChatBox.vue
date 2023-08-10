@@ -128,17 +128,17 @@ const textClass = computed(() => (message: Message) => {
 async function initChannel(): Promise<void> {
   console.log('selectedChannel :', selectedChannel.value)
 
-  if (selectedChannel.value !== null) {
-    channel.value = channelStore.getChannel(selectedChannel.value)
+  if (!loggedUser.value || !selectedChannel.value) {
+    return
   }
 
-  if (selectedChannel.value !== null && channel.value?.messages.length === 0) {
+  channel.value = channelStore.getChannel(selectedChannel.value)
+
+  if (channel.value?.messages.length === 0) {
     await channelStore.fetchChannelMessages(selectedChannel.value)
   }
 
   if (
-    loggedUser.value != null &&
-    selectedChannel.value != null &&
     channel.value?.bannedMembers.length === 0 &&
     channelStore.isAdmin(loggedUser.value.id, channel.value.id)
   ) {

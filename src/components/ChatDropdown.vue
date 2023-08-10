@@ -35,7 +35,7 @@
       </li>
       <!-- MAKE ADMIN -->
       <div v-if="!isSender">
-        <li class="rounded-none" v-if="isMember" @click="giveAdminRights">
+        <li class="rounded-none" v-if="isMember" @click="makeAdmin">
           <div class="flex gap-3 rounded-none">
             <iconify-icon
               icon="lucide:crown"
@@ -148,11 +148,11 @@ const userStore = useUserStore()
 
 const { loggedUser } = storeToRefs(userStore)
 
-// const isAdmin = computed((): boolean => {
-//   return props.channel.members.some(
-//     (member) => member.isAdmin === props.user.username
-//   )
-// })
+const isAdmin = computed((): boolean => {
+  return props.channel.admins.some(
+    (admin) => admin.username === props.user.username
+  )
+})
 
 const isMember = computed((): boolean => {
   return props.channel.members.some(
@@ -161,8 +161,6 @@ const isMember = computed((): boolean => {
 })
 
 const isBanned = computed((): boolean => {
-  console.log(props.channel)
-
   return props.channel.bannedMembers.some(
     (bannedMember) => bannedMember.username === props.user.username
   )
@@ -188,13 +186,13 @@ const banMember = async (): Promise<void> => {
   }
 }
 
-// *************** //
-// giveAdminRights //
-// *************** //
+// ********* //
+// makeAdmin //
+// ********* //
 
-const giveAdminRights = async (): Promise<void> => {
+const makeAdmin = async (): Promise<void> => {
   try {
-    await channelStore.giveAdminRights(props.user.id, props.channel.id)
+    await channelStore.makeAdmin(props.user.id, props.channel.id)
   } catch (err: any) {
     if (err instanceof ApiError) {
       if (err.code === 'ForbiddenException') {

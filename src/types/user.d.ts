@@ -1,12 +1,12 @@
 import type { Channel } from './Channel'
-import type { Friendship } from './Friendship';
+import type { Friendship } from './Friendship'
 
 export interface User {
   // ******************* //
   // USER AUTHENTICATION //
   // ******************* //
 
-  id: string;
+  id: string
   username: string
   password: string
   profilePicture: string
@@ -26,7 +26,7 @@ export interface User {
   nFriends: number
   sentRequest: Array<Friendship>
   receivedRequest: Array<Friendship>
-  isBlockedBy: boolean;
+  isBlockedBy: boolean
 
   // ************************* //
   // CHAT RELATED INFORMATIONS //
@@ -34,7 +34,6 @@ export interface User {
 
   channels: Array<Channel>
   bannedChannels: Array<Channel>
-  isAdmin: boolean
   messages: Array<Message>
 
   // ************************** //
@@ -49,5 +48,4 @@ export interface User {
   pointsScored: number
   pointsConceded: number
   pointsDifference: number
-
 }
