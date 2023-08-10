@@ -200,6 +200,18 @@ export const useChannelStore = defineStore('channels', {
       })
     },
 
+    async fetchChannel(channelId: string) {
+      const { loggedUser } = useUserStore()
+      if (loggedUser == null) return
+
+      const channel = await fetcher.get(`/channels/${channelId}`)
+      if (channel != null) {
+        this.setChannelInfos(loggedUser, channel)
+        this.channelsList?.data?.push(channel)
+        await this.fetchChannelMessages(channelId)
+      }
+    },
+
     // ******************** //
     // fetchChannelMessages //
     // ******************** //
@@ -268,6 +280,40 @@ export const useChannelStore = defineStore('channels', {
         (channel) => !channel.isDm
       )
       return channels ?? []
+    },
+
+    addChannel(channel: Channel): void {
+      this.channelsList?.data?.push(channel)
+    },
+
+    addMember(user: User, channelId: string): void {
+      const channel = this.getChannel(channelId)
+
+      if (channel != null) {
+        channel.members.push(user)
+      }
+    },
+
+    removeChannel(channelId: string): void {
+      const channel = this.getChannel(channelId)
+
+      if (channel != null) {
+        const index = this.channelsList?.data?.indexOf(channel)
+        if (index != null) {
+          this.channelsList?.data?.splice(index, 1)
+        }
+      }
+    },
+
+    removeMember(userId: string, channelId: string): void {
+      const channel = this.getChannel(channelId)
+
+      if (channel != null) {
+        const index = channel.members.findIndex((user) => user.id === userId)
+        if (index != null) {
+          channel.members.splice(index, 1)
+        }
+      }
     },
 
     // *************** //

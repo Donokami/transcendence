@@ -170,6 +170,37 @@ chatSocket.on('chat:message', async (message: Message) => {
   }
 })
 
+chatSocket.on('chat:kick', async ({ userId, channelId }) => {
+  console.log('[ChatView] - Kicked from channel : ', { userId, channelId })
+
+  const channel = channelStore.getChannel(channelId)
+
+  if (channel) {
+    if (loggedUser && loggedUser.id === userId) {
+      channelStore.selectedChannel = null
+      channelStore.removeChannel(channelId)
+      return await router.push('/chat')
+    }
+    channelStore.removeMember(userId, channelId)
+  }
+})
+
+chatSocket.on(
+  'chat:join',
+  async ({ user, channelId }: { user: User; channelId: string }) => {
+    console.log('[ChatView] - Joined channel : ', { user, channelId })
+
+    if (loggedUser && loggedUser.id === user.id) {
+      const channel = channelStore
+      await channelStore.fetchChannel(channelId)
+      channelStore.selectedChannel = channelId
+      return
+    }
+
+    channelStore.addMember(user, channelId)
+  }
+)
+
 const getChannelId = (observedRoute: any): string | null => {
   console.log('route.params : ', observedRoute)
 
