@@ -117,7 +117,6 @@ appSocket.on('user:connect', (userId) => {
   if (userId === user.value.id) {
     user.value.status = 'online'
   }
-  console.log(`[ProfileStatsCard] - user:connect : `, user.value)
 })
 
 appSocket.on('user:disconnect', (userId) => {
@@ -126,6 +125,5 @@ appSocket.on('user:disconnect', (userId) => {
   if (userId === user.value.id) {
     user.value.status = 'offline'
   }
-  console.log(`[ProfileStatsCard] - user:disconnect : `, user.value)
 })
 </script>

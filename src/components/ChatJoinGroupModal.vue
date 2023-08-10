@@ -143,6 +143,8 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
         passwordRequired.value = true
       } else if (err.code === 'InvalidGroupPassword') {
         passwordError.value = 'Invalid password'
+      } else if (err.code === 'UserIsBanned') {
+        toast.error('You are banned from this group.')
       }
     }
     console.error(err)

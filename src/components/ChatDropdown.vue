@@ -6,6 +6,7 @@
         ? 'dropdown dropdown-left h-fit ml-2'
         : 'dropdown dropdown-right h-fit mr-2'
     ]">
+    <!-- AVATAR DROPDOWN BUTTON -->
     <label
       tabindex="0"
       class="rounded-full cursor-pointer"
@@ -17,10 +18,12 @@
           :status-mode="false"></user-avatar>
       </div>
     </label>
+    <!-- DROPDOWN CONTENT -->
     <ul
       tabindex="0"
       class="dropdown-content menu shadow bg-base-100 p-0 border-2 border-black rounded-none mx-2 w-40 top-100"
       v-if="isOpen">
+      <!-- GO TO PROFILE -->
       <li class="rounded-none">
         <router-link
           :to="`/profile/${user.id}`"
@@ -30,11 +33,9 @@
           <span>Profile</span>
         </router-link>
       </li>
+      <!-- MAKE ADMIN -->
       <div v-if="!isSender">
-        <li
-          class="rounded-none"
-          v-if="isUsernameInMembers"
-          @click="giveAdminRights">
+        <li class="rounded-none" v-if="isMember" @click="giveAdminRights">
           <div class="flex gap-3 rounded-none">
             <iconify-icon
               icon="lucide:crown"
@@ -43,14 +44,15 @@
             <span class="w-full">Make Admin</span>
           </div>
         </li>
-
-        <li class="rounded-none" v-if="isUsernameInMembers">
+        <!-- MUTE -->
+        <li class="rounded-none" v-if="isMember">
           <div class="flex gap-3 rounded-none">
             <iconify-icon icon="lucide:volume-x" class="h-4 w-4 shrink-0">
             </iconify-icon>
             <span>Mute</span>
           </div>
         </li>
+        <!-- BLOCK -->
         <li class="rounded-none">
           <div class="flex gap-3 rounded-none">
             <iconify-icon icon="lucide:ban" class="h-4 w-4 shrink-0">
@@ -58,8 +60,9 @@
             <span>Block</span>
           </div>
         </li>
-        <div v-if="isUsernameInMembers">
+        <div v-if="isMember">
           <div class="divider p-0 m-0 h-[6px]"></div>
+          <!-- KICK -->
           <li class="rounded-none" @click="kickMember">
             <div
               class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
@@ -68,6 +71,7 @@
               <span>Kick</span>
             </div>
           </li>
+          <!-- BAN -->
           <li class="rounded-none" @click="banMember">
             <div
               class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
@@ -77,18 +81,44 @@
             </div>
           </li>
         </div>
+        <div v-else-if="isBanned">
+          <!-- UNBAN -->
+          <li class="rounded-none" @click="unbanMember">
+            <div
+              class="flex gap-3 rounded-none text-green-500 hover:text-green-500">
+              <iconify-icon icon="lucide:gavel" class="h-4 w-4 shrink-0">
+              </iconify-icon>
+              <span>Unban</span>
+            </div>
+          </li>
+        </div>
       </div>
     </ul>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, PropType, computed, onMounted, onUnmounted } from 'vue'
+// ******* //
+// IMPORTS //
+// ******* //
+
+import { storeToRefs } from 'pinia'
+
+import {
+  computed,
+  onMounted,
+  onUnmounted,
+  ref,
+  watch,
+  type PropType
+} from 'vue'
+import { useToast } from 'vue-toastification'
+
+import UserAvatar from '@/components/UserAvatar.vue'
+import { useUserStore } from '@/stores/UserStore.js'
 import { useChannelStore } from '@/stores/ChannelStore.js'
 import type { User, Channel } from '@/types'
-import { useUserStore } from '@/stores/UserStore.js'
-import { storeToRefs } from 'pinia'
-import UserAvatar from './UserAvatar.vue'
+import { ApiError } from '@/utils/fetcher'
 
 const props = defineProps({
   user: {
@@ -110,8 +140,11 @@ const props = defineProps({
   }
 })
 
-const userStore = useUserStore()
 const channelStore = useChannelStore()
+const dropdownRef = ref<HTMLElement | null>(null)
+const isOpen = ref(props.openDropdown === parseInt(props.user.id))
+const toast = useToast()
+const userStore = useUserStore()
 
 const { loggedUser } = storeToRefs(userStore)
 
@@ -121,25 +154,59 @@ const { loggedUser } = storeToRefs(userStore)
 //   )
 // })
 
-const isUsernameInMembers = computed((): boolean => {
+const isMember = computed((): boolean => {
   return props.channel.members.some(
     (member) => member.username === props.user.username
   )
 })
 
-const giveAdminRights = async (): Promise<void> => {
-  await channelStore.giveAdminRights(props.user.id, props.channel.id)
-}
+const isBanned = computed((): boolean => {
+  console.log(props.channel)
 
-const kickMember = async (): Promise<void> => {
-  await channelStore.kickMember(props.user.id, props.channel.id)
-}
+  return props.channel.bannedMembers.some(
+    (bannedMember) => bannedMember.username === props.user.username
+  )
+})
+
+// ********************* //
+// FUNCTIONS DEFINITIONS //
+// ********************* //
+
+// ********* //
+// banMember //
+// ********* //
 
 const banMember = async (): Promise<void> => {
-  await channelStore.banMember(props.user.id, props.channel.id)
+  try {
+    await channelStore.banMember(props.user.id, props.channel.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to ban this member.')
+      }
+    }
+  }
 }
 
-const dropdownRef = ref<HTMLElement | null>(null)
+// *************** //
+// giveAdminRights //
+// *************** //
+
+const giveAdminRights = async (): Promise<void> => {
+  try {
+    await channelStore.giveAdminRights(props.user.id, props.channel.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to give admin right to this user.')
+      }
+    }
+  }
+}
+
+// ****************** //
+// handleClickOutside //
+// ****************** //
 
 const handleClickOutside = (event: MouseEvent): void => {
   const { target } = event
@@ -152,6 +219,50 @@ const handleClickOutside = (event: MouseEvent): void => {
   }
 }
 
+// ********** //
+// kickMember //
+// ********** //
+
+const kickMember = async (): Promise<void> => {
+  try {
+    await channelStore.kickMember(props.user.id, props.channel.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to kick this member.')
+      }
+    }
+  }
+}
+
+// ************** //
+// toggleDropdown //
+// ************** //
+
+const toggleDropdown = (): void => {
+  isOpen.value = !isOpen.value
+}
+
+// *********** //
+// unbanMember //
+// *********** //
+
+const unbanMember = async (): Promise<void> => {
+  try {
+    await channelStore.unbanMember(props.user.id, props.channel.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to unban this member.')
+      }
+    }
+  }
+}
+
+// ********************* //
+// VueJs LIFECYCLE HOOKS //
+// ********************* //
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
 })
@@ -160,16 +271,10 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-const isOpen = ref(props.openDropdown === parseInt(props.user.id))
-
 watch(
   () => props.openDropdown,
   (newValue) => {
     isOpen.value = newValue === parseInt(props.user.id)
   }
 )
-
-const toggleDropdown = (): void => {
-  isOpen.value = !isOpen.value
-}
 </script>

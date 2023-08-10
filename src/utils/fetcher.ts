@@ -91,6 +91,38 @@ class Fetcher {
     return await res.json()
   }
 
+  async delete(
+    url: string = '',
+    body: any = {},
+    config: RequestInit = {}
+  ): Promise<any> {
+    const res = await fetch(this.baseURL + url, {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body),
+      ...config
+    })
+
+    if (!res.ok) {
+      const error = await res.json()
+      if (!error.code) {
+        throw new HttpError(error.message, res.status)
+      }
+      throw new ApiError(
+        error.message,
+        res.status,
+        error.code,
+        error.timestamp,
+        error.path,
+        error.method
+      )
+    }
+    return await res.json()
+  }
+
   async put(
     url: string = '',
     body: any = {},

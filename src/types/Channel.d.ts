@@ -19,7 +19,6 @@ export interface Channel {
   members: User[]
   admins: User[]
   bannedMembers: User[]
-  kickedMembers: User[]
   mutedMembers: User[]
 
   // **************************** //

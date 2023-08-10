@@ -121,11 +121,11 @@ const textClass = computed(() => (message: Message) => {
 // FUNCTION DEFINITIONS //
 // ******************** //
 
-// ****************** //
-// getChannelMessages //
-// ****************** //
+// *********** //
+// initChannel //
+// *********** //
 
-async function getChannelMessages(): Promise<void> {
+async function initChannel(): Promise<void> {
   console.log('selectedChannel :', selectedChannel.value)
 
   if (selectedChannel.value !== null) {
@@ -136,6 +136,15 @@ async function getChannelMessages(): Promise<void> {
     await channelStore.fetchChannelMessages(selectedChannel.value)
   }
 
+  if (
+    loggedUser.value != null &&
+    selectedChannel.value != null &&
+    channel.value?.bannedMembers.length === 0 &&
+    channelStore.isAdmin(loggedUser.value.id, channel.value.id)
+  ) {
+    await channelStore.getBannedMembers(selectedChannel.value)
+  }
+
   emit('scroll-to-bottom')
 }
 
@@ -144,7 +153,7 @@ async function getChannelMessages(): Promise<void> {
 // ********************* //
 
 onBeforeMount(async () => {
-  await getChannelMessages()
+  await initChannel()
 })
 
 onBeforeRouteUpdate(async () => {
@@ -154,7 +163,7 @@ onBeforeRouteUpdate(async () => {
 watch(
   () => selectedChannel.value,
   async () => {
-    await getChannelMessages()
+    await initChannel()
   }
 )
 </script>

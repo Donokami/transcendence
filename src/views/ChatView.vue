@@ -1,7 +1,7 @@
 <template>
   <div class="mx-auto w-full max-w-7xl">
     <div class="flex max-h-[calc(100vh-164px)] text-black m-4">
-      <!-- SIDEBAR -->
+      <!-- LEFT SIDEBAR -->
       <div
         class="border-2 border-black min-h-[calc(100vh-164px)] w-60 sm:w-[19rem] min-w-[14rem] sm:min-w-[19rem] max-w-[19rem] flex flex-col">
         <chat-left-sidebar
@@ -9,14 +9,13 @@
           @list-state-changed="listState = $event">
         </chat-left-sidebar>
       </div>
-
       <!-- DISCUSSION -->
       <div
         class="flex flex-col justify-between text-justify mx-4 w-full overflow-auto"
         v-if="selectedChannel && channelsList?.loading === false">
-        <!-- TITLE -->
         <div
           class="flex gap-2 border-x-2 border-t-2 border-black items-center justify-between p-5">
+          <!-- CHANNEL PICTURE -->
           <div class="flex gap-2 items-center">
             <router-link
               :to="`/profile/${
@@ -40,13 +39,13 @@
                   class="object-cover rounded-full h-11 w-11" />
               </div>
             </router-link>
-
+            <!-- CHANNEL NAME -->
             <h2
               class="text-lg sm:text-xl font-bold text-black capitalize truncate w-24 sm:w-fit">
               {{ channelStore.getChannel(selectedChannel)?.name }}
             </h2>
           </div>
-
+          <!-- GAME INVITE BUTTON -->
           <button
             v-if="channelStore.getChannel(selectedChannel)?.isDm === true"
             @click="createGame"
@@ -64,8 +63,8 @@
         </div>
         <!-- MESSAGE INPUT -->
         <chat-input></chat-input>
-        <!-- RIGHT SIDEBAR -->
       </div>
+      <!-- RIGHT SIDEBAR -->
       <div
         v-if="
           selectedChannel &&
@@ -84,13 +83,13 @@
 // ******* //
 
 import { ref, onBeforeMount, onBeforeUnmount } from 'vue'
-
 import {
   onBeforeRouteLeave,
   onBeforeRouteUpdate,
   useRoute,
   useRouter
 } from 'vue-router'
+import { useToast } from 'vue-toastification'
 
 import { storeToRefs } from 'pinia'
 // import InfiniteLoading from 'v3-infinite-loading'
@@ -119,6 +118,7 @@ const chatbox = ref<HTMLElement | null>(null)
 const listState = ref('dms')
 const router = useRouter()
 const route = useRoute()
+const toast = useToast()
 
 const { selectedChannel, channelsList } = storeToRefs(channelStore)
 
@@ -126,10 +126,9 @@ const { selectedChannel, channelsList } = storeToRefs(channelStore)
 // FUNCTIONS DEFINITIONS //
 // ********************* //
 
-function scrollToBottom(): void {
-  if (chatbox.value != null)
-    chatbox.value.scrollTop = chatbox.value.scrollHeight
-}
+// ********** //
+// createGame //
+// ********** //
 
 function createGame(): void {
   useFetcher({
@@ -143,63 +142,9 @@ function createGame(): void {
   })
 }
 
-// ****** //
-// SOCKET //
-// ****** //
-
-chatSocket.connect()
-
-chatSocket.on('disconnect', async () => {
-  console.log('[ChatView] - Disconnected from the chat.')
-})
-
-chatSocket.on('error', (error) => {
-  console.error('[ChatView] - Error : ', error)
-})
-
-chatSocket.on('chat:channel-created', async (channel: Channel) => {
-  if (loggedUser === null) return
-  channelStore.setChannelInfos(loggedUser, channel)
-  channelStore.channelsList?.data?.push(channel)
-})
-
-chatSocket.on('chat:message', async (message: Message) => {
-  await channelStore.addMessage(message, message.channel.id)
-  if (chatbox.value != null) {
-    scrollToBottom()
-  }
-})
-
-chatSocket.on('chat:kick', async ({ userId, channelId }) => {
-  console.log('[ChatView] - Kicked from channel : ', { userId, channelId })
-
-  const channel = channelStore.getChannel(channelId)
-
-  if (channel) {
-    if (loggedUser && loggedUser.id === userId) {
-      channelStore.selectedChannel = null
-      channelStore.removeChannel(channelId)
-      return await router.push('/chat')
-    }
-    channelStore.removeMember(userId, channelId)
-  }
-})
-
-chatSocket.on(
-  'chat:join',
-  async ({ user, channelId }: { user: User; channelId: string }) => {
-    console.log('[ChatView] - Joined channel : ', { user, channelId })
-
-    if (loggedUser && loggedUser.id === user.id) {
-      const channel = channelStore
-      await channelStore.fetchChannel(channelId)
-      channelStore.selectedChannel = channelId
-      return
-    }
-
-    channelStore.addMember(user, channelId)
-  }
-)
+// ************ //
+// getChannelId //
+// ************ //
 
 const getChannelId = (observedRoute: any): string | null => {
   console.log('route.params : ', observedRoute)
@@ -210,6 +155,198 @@ const getChannelId = (observedRoute: any): string | null => {
   return null
 }
 
+// ************** //
+// scrollToBottom //
+// ************** //
+
+function scrollToBottom(): void {
+  if (chatbox.value != null)
+    chatbox.value.scrollTop = chatbox.value.scrollHeight
+}
+
+// ****** //
+// SOCKET //
+// ****** //
+
+chatSocket.connect()
+
+// *** //
+// ban //
+// *** //
+
+chatSocket.on(
+  'chat:ban',
+  async ({ user, channelId }: { user: User; channelId: string }) => {
+    console.log(
+      `[ChatView] - ${user.username} banned from channel ${channelId}`
+    )
+
+    const channel = channelStore.getChannel(channelId)
+
+    if (channel) {
+      channelStore.addBannedMember(user, channelId)
+      channelStore.removeMember(user.id, channelId)
+
+      if (loggedUser && loggedUser.id === user.id) {
+        channelStore.selectedChannel = null
+        channelStore.removeFromChannelList(channelId)
+        toast.success(`You have been banned from ${channel.name}!`)
+        return await router.push('/chat')
+      }
+
+      toast.success(`User banned from ${channel.name}!`)
+    }
+  }
+)
+
+// ************** //
+// channelCreated //
+// ************** //
+
+chatSocket.on('chat:channel-created', async (channel: Channel) => {
+  if (loggedUser === null) return
+  channelStore.setChannelInfos(loggedUser, channel)
+  channelStore.channelsList?.data?.push(channel)
+})
+
+// ********** //
+// disconnect //
+// ********** //
+
+chatSocket.on('disconnect', async () => {
+  console.log('[ChatView] - Disconnected from the chat.')
+})
+
+// ***** //
+// error //
+// ***** //
+
+chatSocket.on('error', (error) => {
+  console.error('[ChatView] - Error : ', error)
+})
+
+// **** //
+// join //
+// **** //
+
+chatSocket.on(
+  'chat:join',
+  async ({ user, channelId }: { user: User; channelId: string }) => {
+    console.log(`[ChatView] - ${user.username} joined ${channelId}`)
+
+    channelStore.addMember(user, channelId)
+
+    toast.success(`${user.username} joined the channel.`)
+
+    if (loggedUser && loggedUser.id === user.id) {
+      await channelStore.fetchChannel(channelId)
+      channelStore.selectedChannel = channelId
+      return await router.push(`/chat/${channelId}`)
+    }
+  }
+)
+
+// **** //
+// kick //
+// **** //
+
+chatSocket.on('chat:kick', async ({ userId, channelId }) => {
+  console.log(`[ChatView] - User ${userId} kicked from channel ${channelId}`)
+
+  const channel = channelStore.getChannel(channelId)
+
+  if (channel) {
+    channelStore.removeMember(userId, channelId)
+
+    if (loggedUser && loggedUser.id === userId) {
+      channelStore.selectedChannel = null
+      channelStore.removeFromChannelList(channelId)
+      toast.success(`You have been kicked from ${channel.name}!`)
+      return await router.push('/chat')
+    }
+
+    toast.success(`User successfully kicked !`)
+  }
+})
+
+// ***** //
+// leave //
+// ***** //
+
+chatSocket.on('chat:leave', async ({ userId, channelId }) => {
+  console.log(`[ChatView] - User ${userId} left channel ${channelId}`)
+
+  const channel = channelStore.getChannel(channelId)
+
+  if (channel) {
+    channelStore.removeMember(userId, channelId)
+
+    if (loggedUser && loggedUser.id === userId) {
+      channelStore.selectedChannel = null
+      channelStore.removeFromChannelList(channelId)
+      return await router.push('/chat')
+    }
+  }
+})
+
+// ******* //
+// message //
+// ******* //
+
+chatSocket.on('chat:message', async (message: Message) => {
+  await channelStore.addMessage(message, message.channel.id)
+  if (chatbox.value != null) {
+    scrollToBottom()
+  }
+})
+
+// **** //
+// mute //
+// **** //
+
+chatSocket.on(
+  'chat:mute',
+  async ({ user, channelId }: { user: User; channelId: string }) => {
+    console.log(`[ChatView] - ${user.username} muted in channel ${channelId}`)
+
+    const channel = channelStore.getChannel(channelId)
+
+    if (channel) {
+      channelStore.addMutedMember(user, channelId)
+
+      if (loggedUser && loggedUser.id === user.id) {
+        // todo: block the send button for a certain time
+      }
+    }
+  }
+)
+
+// ***** //
+// unban //
+// ***** //
+
+chatSocket.on(
+  'chat:unban',
+  async ({ user, channelId }: { user: User; channelId: string }) => {
+    console.log(
+      `[ChatView] - ${user.username} unbanned from channel ${channelId}`
+    )
+
+    const channel = channelStore.getChannel(channelId)
+
+    if (channel) {
+      channelStore.removeBannedMember(user.id, channelId)
+
+      if (loggedUser && loggedUser.id === user.id) {
+        channelStore.addToChannelList(channel)
+        toast.success(`You have been unbanned from ${channel.name}!`)
+      }
+
+      toast.success(`User unbanned from ${channel.name}!`)
+    }
+  }
+)
+
 // ********************* //
 // VueJs LIFECYCLE HOOKS //
 // ********************* //
@@ -219,7 +356,7 @@ onBeforeMount(async () => {
     channelsList.value === undefined ||
     channelsList.value?.data?.length === 0
   ) {
-    channelStore.fetchChannels()
+    channelStore.fetchChannelList()
     console.log('[ChatView] - Channels : ', channelsList.value)
   }
 
