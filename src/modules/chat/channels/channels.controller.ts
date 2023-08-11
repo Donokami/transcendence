@@ -5,7 +5,6 @@ import {
   Get,
   Logger,
   NotFoundException,
-  Param,
   Post,
   Put,
   Session,
@@ -28,6 +27,7 @@ import { MessageDto } from '@/modules/chat/channels/dtos/message.dto'
 import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { Message } from '@/modules/chat/channels/entities/message.entity'
 import { AdminshipGuard } from '@/modules/chat/channels/guards/adminship.guard'
+import { GroupGuard } from '@/modules/chat/channels/guards/group.guard'
 import { MembershipGuard } from '@/modules/chat/channels/guards/membership.guard'
 import { OwnershipGuard } from '@/modules/chat/channels/guards/ownership.guard'
 
@@ -35,7 +35,7 @@ import { OwnershipGuard } from '@/modules/chat/channels/guards/ownership.guard'
 @Controller('channels')
 @UseFilters(new GlobalExceptionFilter())
 export class ChannelsController {
-  constructor(private readonly channelsService: ChannelsService) { }
+  constructor(private readonly channelsService: ChannelsService) {}
 
   // ****** //
   // LOGGER //
@@ -55,6 +55,7 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
+  @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
   async banMember(
@@ -79,6 +80,7 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
+  @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(OwnershipGuard)
   async changeGroupPassword(
@@ -124,6 +126,7 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
+  @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(OwnershipGuard)
   async deleteGroupPassword(
@@ -144,6 +147,7 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
+  @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
   async getBannedMembers(@CurrentChannel() channel: Channel) {
@@ -214,6 +218,7 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
+  @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
   async kickMember(
@@ -238,6 +243,7 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
+  @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   async leaveGroup(
     @Session() session: ISession,
@@ -259,6 +265,7 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
+  @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
   async muteMember(
@@ -314,6 +321,7 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
+  @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(OwnershipGuard)
   async setAdmin(
@@ -336,6 +344,7 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
+  @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
   async unbanMember(
@@ -346,9 +355,9 @@ export class ChannelsController {
     return await this.channelsService.unbanMember(memberToUnbanId, channel)
   }
 
-  // ********* //
-  // unbanMute //
-  // ********* //
+  // ************ //
+  // unmuteMember //
+  // ************ //
 
   @Delete('/:channelId/unmute')
   @ApiOperation({
@@ -358,6 +367,7 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
+  @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
   async unmuteMember(
@@ -379,6 +389,7 @@ export class ChannelsController {
     description: 'Unset a user as admin of a group',
     tags: ['chat']
   })
+  @UseGuards(GroupGuard)
   @UseGuards(OwnershipGuard)
   async unsetAdmin(
     @Body() body: HandleChannelDto,
