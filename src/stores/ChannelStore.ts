@@ -371,17 +371,26 @@ export const useChannelStore = defineStore('channels', {
       console.log(`User with ID : ${userId} successfully promoted admin`)
     },
 
-    isAdmin(userId: string, channelId: string) {
+    // ******* //
+    // isAdmin //
+    // ******* //
+
+    isAdmin(userId: string, channelId: string): boolean {
       const channel = this.getChannel(channelId)
+      if (!channel) return false
 
-      if (channel != null) {
-        return channel.admins.some((user) => user.id === userId) ||
-          channel.owner.id === userId
-          ? true
-          : false
-      }
+      return !!channel.admins.some((user) => user.id === userId)
+    },
 
-      return false
+    // ******* //
+    // isOwner //
+    // ******* //
+
+    isOwner(userId: string, channelId: string): boolean {
+      const channel = this.getChannel(channelId)
+      if (!channel) return false
+
+      return channel.owner.id === userId
     },
 
     // ********* //

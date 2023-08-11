@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-auto overflow-auto w-fit">
+  <div class="flex-auto overflow-auto w-fit h-full">
     <!-- LOADER FOR CHANNEL LIST -->
     <div v-if="channelStore.channelsList?.loading === true">
       <div class="flex justify-center items-center h-fit">
@@ -12,19 +12,84 @@
       v-else-if="loggedUser && channelStore.channelsList?.loading === false"
       class="bg-base-100 w-full">
       <li v-for="user in channel?.members" :key="user.id">
-        <div class="flex rounded-none hover:bg-base-300 cursor-pointer">
-          <div class="py-3">
-            <div class="flex items-center mx-auto px-4 w-18">
-              <div class="w-10 h-10">
-                <user-avatar
-                  :userProps="(user as User)"
-                  :uploadMode="false"></user-avatar>
+        <div class="dropdown dropdown-bottom">
+          <label
+            tabindex="0"
+            class="flex rounded-none hover:bg-base-300 cursor-pointer">
+            <div class="py-3">
+              <div class="flex items-center mx-auto px-4 w-18">
+                <div class="w-10 h-10">
+                  <user-avatar :userProps="(user as User)" :uploadMode="false">
+                  </user-avatar>
+                </div>
+                <span class="pl-3 truncate w-28 text-sm">{{
+                  user.username
+                }}</span>
               </div>
-              <span class="pl-3 truncate w-28 text-sm">{{
-                user.username
-              }}</span>
             </div>
-          </div>
+          </label>
+          <ul
+            tabindex="0"
+            class="dropdown-content menu shadow bg-base-100 z-[1000] p-0 border-2 border-black rounded-none mx-2 w-40 top-100">
+            <li class="rounded-none">
+              <router-link
+                :to="`/profile/${user.id}`"
+                class="flex gap-3 rounded-none">
+                <iconify-icon icon="lucide:user" class="h-4 w-4 shrink-0">
+                </iconify-icon>
+                <span>Profile</span>
+              </router-link>
+            </li>
+            <div v-if="user.id !== loggedUser?.id">
+              <li
+                class="rounded-none"
+                v-if="showMakeAdmin(user)"
+                @click="giveAdminRights(user)">
+                <div class="flex gap-3 rounded-none">
+                  <iconify-icon
+                    icon="lucide:crown"
+                    class="h-4 w-4 shrink-0 self-start mt-0.5">
+                  </iconify-icon>
+                  <span class="w-full">Make Admin</span>
+                </div>
+              </li>
+              <li class="rounded-none">
+                <div class="flex gap-3 rounded-none">
+                  <iconify-icon icon="lucide:volume-x" class="h-4 w-4 shrink-0">
+                  </iconify-icon>
+                  <span>Mute</span>
+                </div>
+              </li>
+              <li class="rounded-none">
+                <div class="flex gap-3 rounded-none">
+                  <iconify-icon icon="lucide:ban" class="h-4 w-4 shrink-0">
+                  </iconify-icon>
+                  <span>Block</span>
+                </div>
+              </li>
+              <div v-if="showAdminActions(user)">
+                <div class="divider p-0 m-0 h-[6px]"></div>
+                <li class="rounded-none" @click="kickMember(user)">
+                  <div
+                    class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+                    <iconify-icon
+                      icon="lucide:door-open"
+                      class="h-4 w-4 shrink-0">
+                    </iconify-icon>
+                    <span>Kick</span>
+                  </div>
+                </li>
+                <li class="rounded-none" @click="banMember(user)">
+                  <div
+                    class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+                    <iconify-icon icon="lucide:gavel" class="h-4 w-4 shrink-0">
+                    </iconify-icon>
+                    <span>Ban</span>
+                  </div>
+                </li>
+              </div>
+            </div>
+          </ul>
         </div>
       </li>
     </ul>
@@ -58,10 +123,57 @@ const { loggedUser } = storeToRefs(userStore)
 const { selectedChannel } = storeToRefs(channelStore)
 const channel = ref<Channel>()
 
+function showAdminActions(target: User): boolean {
+  if (!channel.value || !loggedUser.value) return false
+
+  const isTargetAdmin = channelStore.isAdmin(target.id, channel.value.id)
+  const isTargetOwner = channelStore.isOwner(target.id, channel.value.id)
+  const isUserOwner = channelStore.isOwner(
+    loggedUser.value.id,
+    channel.value.id
+  )
+  const isUserAdmin = channelStore.isAdmin(
+    loggedUser.value.id,
+    channel.value.id
+  )
+  return isUserOwner || (isUserAdmin && !isTargetAdmin && !isTargetOwner)
+}
+
+function showMakeAdmin(target: User): boolean {
+  if (!channel.value || !loggedUser.value) return false
+
+  const isTargetOwner = channelStore.isOwner(target.id, channel.value.id)
+  const isTargetAdmin = channelStore.isAdmin(target.id, channel.value.id)
+  const isUserOwner = channelStore.isOwner(
+    loggedUser.value.id,
+    channel.value.id
+  )
+  const isUserAdmin = channelStore.isAdmin(
+    loggedUser.value.id,
+    channel.value.id
+  )
+  return (isUserAdmin || isUserOwner) && !isTargetAdmin && !isTargetOwner
+}
+
 async function getChannel(): Promise<void> {
   if (selectedChannel.value !== null) {
     channel.value = channelStore.getChannel(selectedChannel.value)
   }
+}
+
+const giveAdminRights = (target: User): void => {
+  if (!channel.value) return
+  channelStore.addAdmin(target, channel.value.id)
+}
+
+const kickMember = async (target: User): Promise<void> => {
+  if (!channel.value) return
+  await channelStore.kickMember(target.id, channel.value.id)
+}
+
+const banMember = async (target: User): Promise<void> => {
+  if (!channel.value) return
+  await channelStore.banMember(target.id, channel.value.id)
 }
 
 // ********************* //

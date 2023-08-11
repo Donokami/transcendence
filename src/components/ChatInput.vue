@@ -16,7 +16,7 @@
       </div>
       <button
         type="submit"
-        class="flex self-end btn m-0 p-0 min-h-0 h-8 px-0 mx-0 w-0 relative bg-base-100 border-base-100 hover:bg-base-100 hover:border-base-100 hover:text-zinc-600">
+        class="flex self-end btn m-0 p-0 min-h-0 h-8 px-0 mx-0 w-0 relative bg-base-100 border-base-100 hover:bg-base-100 hover:border-base-100 hover:text-zinc-600 -mr-1">
         <iconify-icon
           icon="lucide:send-horizonal"
           class="h-6 w-6 self-center absolute">

@@ -48,7 +48,7 @@
           :to="`/chat/${channel.id}`">
           <div class="py-3" v-if="channel.isDm === true">
             <div class="flex items-center mx-auto px-2 sm:px-4 w-18">
-              <div class="h-11 w-11" v-if="channel.isDm">
+              <div class="h-8 w-8 sm:h-11 sm:w-11" v-if="channel.isDm">
                 <user-avatar
                   :userProps="(channel.dmUser as User)"
                   :uploadMode="false"></user-avatar>
@@ -59,7 +59,7 @@
                   :src="`http://localhost:3000/${channel.image}`"
                   class="object-cover rounded-full h-11 w-11" />
               </div>
-              <span class="pl-4 text-base truncate w-28 sm:w-48">{{
+              <span class="pl-3 sm:pl-4 text-base truncate w-28 sm:w-48">{{
                 channel.name
               }}</span>
               <span
@@ -85,7 +85,7 @@
                 <div
                   v-for="user in (channel.members || []).slice(0, 2)"
                   :key="user.id">
-                  <div class="w-11 h-11">
+                  <div class="w-10 h-10 sm:w-12 sm:h-12">
                     <user-avatar
                       :userProps="(user as User)"
                       :uploadMode="false"
@@ -94,7 +94,7 @@
                 </div>
               </div>
 
-              <span class="pl-3 text-base truncate w-28 sm:w-48">{{
+              <span class="pl-2 sm:pl-3 text-base truncate w-28 sm:w-48">{{
                 channel.name
               }}</span>
             </div>

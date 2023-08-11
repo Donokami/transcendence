@@ -1,32 +1,47 @@
 <template>
   <div class="mx-auto w-full max-w-7xl">
-    <div class="flex max-h-[calc(100vh-164px)] text-black m-4">
+    <div
+      class="flex flex-col sm:flex-row sm:max-h-[calc(100vh-164px)] text-black m-4">
       <!-- LEFT SIDEBAR -->
       <div
-        class="border-2 border-black min-h-[calc(100vh-164px)] w-60 sm:w-[19rem] min-w-[14rem] sm:min-w-[19rem] max-w-[19rem] flex flex-col">
+        class="border-2 border-black min-h-[calc(100vh-164px)] w-60 sm:w-[19rem] min-w-[12rem] sm:min-w-[19rem] max-w-[19rem] hidden sm:flex sm:flex-col">
         <chat-left-sidebar
           :list-state="listState"
           @list-state-changed="listState = $event">
         </chat-left-sidebar>
       </div>
-      <!-- DISCUSSION -->
+      <!-- CHAT -->
       <div
-        class="flex flex-col justify-between text-justify mx-4 w-full overflow-auto"
+        class="flex flex-col justify-between text-justify w-full overflow-auto min-h-[calc(100vh-164px)] sm:mx-3"
         v-if="selectedChannel && channelsList?.loading === false">
         <div
-          class="flex gap-2 border-x-2 border-t-2 border-black items-center justify-between p-5">
-          <!-- CHANNEL PICTURE -->
+          class="flex gap-2 border-x-2 border-t-2 border-black items-center justify-between px-5 py-4 sm:px-5 sm:py-5">
           <div class="flex gap-2 items-center">
+            <!-- CHANNEL MOBILE BUTTON -->
+            <chat-left-drawer
+              :list-state="listState"
+              @list-state-changed="listState = $event">
+            </chat-left-drawer>
+            <label
+              type="submit"
+              for="my-drawer"
+              class="my-auto sm:hidden flex self-end btn m-0 p-0 min-h-0 h-8 px-0 mx-0 w-0 relative bg-base-100 border-base-100 hover:bg-base-100 hover:border-base-100 hover:text-zinc-600 -ml-3">
+              <iconify-icon
+                icon="lucide:chevron-left"
+                class="h-7 w-7 self-center text-black absolute">
+              </iconify-icon>
+            </label>
+            <!-- CHANNEL PICTURE -->
             <router-link
               :to="`/profile/${
                 channelStore.getChannel(selectedChannel)?.dmUser?.id
               }`"
-              class="hidden md:block cursor-pointer"
+              class="cursor-pointer"
               v-if="channelStore.getChannel(selectedChannel)?.isDm === true">
               <div class="flex">
                 <div
                   v-if="channelStore.getChannel(selectedChannel)?.isDm"
-                  class="w-11 h-11">
+                  class="w-10 h-10 sm:w-11 sm:h-11">
                   <user-avatar
                     :userProps="(channelStore.getChannel(selectedChannel)?.dmUser as User)"
                     :uploadMode="false"></user-avatar>
@@ -36,12 +51,30 @@
                   :src="`http://localhost:3000/${
                     channelStore.getChannel(selectedChannel)?.image
                   }`"
-                  class="object-cover rounded-full h-11 w-11" />
+                  class="object-cover rounded-full w-10 h-10 sm:h-11 sm:w-11" />
               </div>
             </router-link>
+            <div v-else class="flex items-center mx-auto">
+              <div
+                class="avatar-group -space-x-6 -mx-1 sm:-mx-0"
+                v-if="channelStore.getChannel(selectedChannel)?.isDm === false">
+                <div
+                  v-for="user in (
+                    channelStore.getChannel(selectedChannel)?.members || []
+                  ).slice(0, 2)"
+                  :key="user.id">
+                  <div class="w-11 h-11 sm:w-12 sm:h-12">
+                    <user-avatar
+                      :userProps="(user as User)"
+                      :uploadMode="false"
+                      :status-mode="false"></user-avatar>
+                  </div>
+                </div>
+              </div>
+            </div>
             <!-- CHANNEL NAME -->
             <h2
-              class="text-lg sm:text-xl font-bold text-black capitalize truncate w-24 sm:w-fit">
+              class="text-lg sm:text-xl font-bold text-black capitalize truncate sm:w-fit">
               {{ channelStore.getChannel(selectedChannel)?.name }}
             </h2>
           </div>
@@ -49,16 +82,30 @@
           <button
             v-if="channelStore.getChannel(selectedChannel)?.isDm === true"
             @click="createGame"
-            class="btn btn-sm sm:btn-md bg-white border-2 shrink border-black text-black hover:bg-black hover:border-black hover:text-white">
+            class="btn bg-white border-2 shrink border-black text-black hover:bg-black hover:border-black hover:text-white">
             <iconify-icon
               icon="material-symbols:mail-outline"
-              class="hidden sm:block w-7 h-7"></iconify-icon>
-            <span class="hidden sm:block">Send game invite</span>
-            <span class="sm:hidden block">Invite</span>
+              class="hidden lg:block w-7 h-7"></iconify-icon>
+            <span class="hidden lg:block">Send game invite</span>
+            <span class="lg:hidden block">Invite</span>
           </button>
+          <!-- MANAGE CHANNEL MOBILE BUTTON -->
+          <chat-right-drawer />
+          <label
+            v-if="channelStore.getChannel(selectedChannel)?.isDm === false"
+            for="my-drawer-4"
+            type="submit"
+            class="my-auto flex self-end btn m-0 p-0 min-h-0 h-8 px-0 mx-0 w-0 relative bg-base-100 border-base-100 hover:bg-base-100 hover:border-base-100 hover:text-zinc-600 -mr-1">
+            <iconify-icon
+              icon="lucide:settings"
+              class="h-7 w-7 self-center text-black absolute">
+            </iconify-icon>
+          </label>
         </div>
         <!-- CHAT BOX -->
-        <div ref="chatbox" class="border-black border-2 h-full overflow-auto">
+        <div
+          ref="chatbox"
+          class="border-black border-2 flex-auto overflow-auto">
           <chat-box @scroll-to-bottom="scrollToBottom"></chat-box>
         </div>
         <!-- MESSAGE INPUT -->
@@ -103,6 +150,8 @@ import ChatRightSidebar from '@/components/ChatRightSidebar.vue'
 import ChatBox from '@/components/ChatBox.vue'
 import ChatInput from '@/components/ChatInput.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
+import ChatLeftDrawer from '@/components/ChatLeftDrawer.vue'
+import ChatRightDrawer from '@/components/ChatRightDrawer.vue'
 
 import type { Channel, Message, Room, User } from '@/types'
 import { useFetcher, fetcher } from '@/utils/fetcher'
