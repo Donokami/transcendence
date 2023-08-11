@@ -46,7 +46,7 @@
                       :key="friend.username">
                       <a
                         class="flex rounded-none"
-                        @click="pushUserToAdd(friend.username, friend.id)">
+                        @click="pushUserToAdd(friend)">
                         {{ friend.username }}
                       </a>
                     </li>
@@ -60,15 +60,12 @@
             </div>
             <!-- USER TO ADD BADGES -->
             <div class="mt-2 flex gap-2 flex-wrap">
-              <div
-                class="bg-red-300"
-                v-for="username in usersToAdd"
-                :key="username">
+              <div class="bg-red-300" v-for="user in usersToAdd" :key="user.id">
                 <div
                   class="cursor-pointer bg-black flex justify-between gap-1 p-1 items-center w-fit"
-                  @click="cancelUserToAdd(username)">
+                  @click="cancelUserToAdd(user)">
                   <span class="text-white border-none rounded-none">
-                    {{ username }}
+                    {{ user.username }}
                   </span>
                   <iconify-icon
                     icon="material-symbols:close"
@@ -127,6 +124,7 @@ import { onBeforeRouteUpdate } from 'vue-router'
 import { useChannelStore } from '@/stores/ChannelStore'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useToast } from 'vue-toastification'
+import type { User } from '@/types/User'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -139,7 +137,6 @@ const channelName = ref<string>('')
 const channelNameError = ref<string | null>(null)
 const emit = defineEmits(['update:showModal'])
 const friendListError = ref<string | null>(null)
-const idUsersToAdd = ref<string[]>([])
 const password = ref<string | null>(null)
 const passwordRequired = ref<boolean>(false)
 const passwordError = ref<string | null>(null)
@@ -147,16 +144,14 @@ const props = defineProps({
   showModal: { type: Boolean }
 })
 const toast = useToast()
-const usersToAdd = ref<string[]>([])
+const usersToAdd = ref<User[]>([])
 
 const { friendList } = storeToRefs(userStore)
 const { loggedUser } = storeToRefs(userStore)
 const { showModal } = toRefs(props)
 
 const filteredFriendList = computed(() => {
-  return friendList.value.filter(
-    (user) => !usersToAdd.value.includes(user.username)
-  )
+  return friendList.value.filter((user) => !usersToAdd.value.includes(user))
 })
 
 // ******************** //
@@ -167,16 +162,13 @@ const filteredFriendList = computed(() => {
 // cancelUserToAdd //
 // *************** //
 
-const cancelUserToAdd = (username: string) => {
-  const indexUsername = usersToAdd.value.indexOf(username)
-  if (indexUsername > -1) {
-    usersToAdd.value.splice(indexUsername, 1)
+const cancelUserToAdd = (user: User) => {
+  const userIndex = usersToAdd.value.indexOf(user)
+  if (userIndex > -1) {
+    usersToAdd.value.splice(userIndex, 1)
   }
 
-  const indexId = idUsersToAdd.value.indexOf(username)
-  if (indexId > -1) {
-    usersToAdd.value.splice(indexId, 1)
-  }
+  console.log(`usersToAdd : `, usersToAdd.value)
 }
 
 // ********** //
@@ -217,11 +209,13 @@ const createGroupChannel = async (): Promise<void> => {
     return
   }
 
+  const idUsersToAdd: string[] = usersToAdd.value.map((user) => user.id)
+
   try {
     usersToAdd.value
     await channelStore.createGroupChannel(
       channelName.value,
-      idUsersToAdd.value,
+      idUsersToAdd,
       password.value
     )
     toast.success(`Group created successfully`)
@@ -239,13 +233,12 @@ const createGroupChannel = async (): Promise<void> => {
 // pushUserToAdd //
 // ************* //
 
-const pushUserToAdd = (username: string, id: string): void => {
-  if (!usersToAdd.value.includes(username)) {
-    usersToAdd.value.push(username)
+const pushUserToAdd = (user: User): void => {
+  if (!usersToAdd.value.includes(user)) {
+    usersToAdd.value.push(user)
   }
-  if (!idUsersToAdd.value.includes(id)) {
-    idUsersToAdd.value.push(id)
-  } else console.log(`[ChatCreateGroupModal] - User already in group !`)
+
+  console.log(`usersToAdd : `, usersToAdd.value)
 }
 
 // ********************** //
