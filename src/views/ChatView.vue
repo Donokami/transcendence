@@ -360,10 +360,23 @@ chatSocket.on(
     const channel = channelStore.getChannel(channelId)
 
     if (channel) {
-      channelStore.addMutedMember(user, channelId)
-
       if (loggedUser && loggedUser.id === user.id) {
-        // todo: block the send button for a certain time
+        channel.isMuted = true
+      }
+    }
+  }
+)
+
+chatSocket.on(
+  'chat:unmute',
+  async ({ user, channelId }: { user: User; channelId: string }) => {
+    console.log(`[ChatView] - ${user.username} unmuted in channel ${channelId}`)
+
+    const channel = channelStore.getChannel(channelId)
+
+    if (channel) {
+      if (loggedUser && loggedUser.id === user.id) {
+        channel.isMuted = false
       }
     }
   }

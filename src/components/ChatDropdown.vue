@@ -45,7 +45,7 @@
           </div>
         </li>
         <!-- MUTE -->
-        <li class="rounded-none" v-if="isMember">
+        <li class="rounded-none" v-if="isMember" @click="muteMember">
           <div class="flex gap-3 rounded-none">
             <iconify-icon icon="lucide:volume-x" class="h-4 w-4 shrink-0">
             </iconify-icon>
@@ -252,6 +252,18 @@ const unbanMember = async (): Promise<void> => {
     if (err instanceof ApiError) {
       if (err.code === 'ForbiddenException') {
         toast.error('You are not allowed to unban this member.')
+      }
+    }
+  }
+}
+
+const muteMember = async (): Promise<void> => {
+  try {
+    await channelStore.muteMember(props.user.id, props.channel.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to mute this member.')
       }
     }
   }

@@ -6,7 +6,11 @@ import { defineStore } from 'pinia'
 
 import { useUserStore } from '@/stores/UserStore'
 import type { Channel, Message, User } from '@/types'
-import fetcher, { useFetcher, type FetcherResponse } from '@/utils/fetcher'
+import fetcher, {
+  useFetcher,
+  type FetcherResponse,
+  ApiError
+} from '@/utils/fetcher'
 
 const router = useRouter()
 const toast = useToast()
@@ -118,13 +122,13 @@ export const useChannelStore = defineStore('channels', {
     // addMutedMember //
     // ************** //
 
-    addMutedMember(user: User, channelId: string): void {
-      const channel = this.getChannel(channelId)
+    // addMutedMember(user: User, channelId: string): void {
+    //   const channel = this.getChannel(channelId)
 
-      if (channel != null) {
-        channel.mutedMembers.push(user)
-      }
-    },
+    //   if (channel != null) {
+    //     channel.mutedMembers.push(user)
+    //   }
+    // },
 
     // **************** //
     // addToChannelList //
@@ -400,7 +404,10 @@ export const useChannelStore = defineStore('channels', {
       const channel = this.getChannel(channelId)
       if (!channel) return false
 
-      return !!channel.admins.some((user) => user.id === userId)
+      return !!(
+        channel.admins.some((user) => user.id === userId) ||
+        channel.owner.id === userId
+      )
     },
 
     // ******* //
@@ -562,8 +569,17 @@ export const useChannelStore = defineStore('channels', {
           messageBody: message,
           date: new Date()
         })
-      } catch (error) {
-        console.error(error)
+      } catch (err) {
+        if (err instanceof ApiError) {
+          if (err.code === 'UserIsMuted') {
+            const channel = this.getChannel()
+
+            if (channel != null) {
+              channel.isMuted = true
+            }
+          }
+        }
+        console.error(err)
       }
     },
 
