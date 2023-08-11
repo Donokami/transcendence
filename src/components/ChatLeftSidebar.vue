@@ -131,7 +131,7 @@
         icon="ci:message-plus-alt"
         class="hidden sm:block absolute left-5 w-7 h-7"></iconify-icon>
       <div class="my-auto">
-        {{ listState === 'dms' ? 'Send a new dm' : 'Start new group' }}
+        {{ listState === 'dms' ? 'Send a new dm' : 'Create a new group' }}
       </div>
     </button>
   </div>

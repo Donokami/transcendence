@@ -74,7 +74,7 @@
             </div>
             <!-- CHANNEL NAME -->
             <h2
-              class="text-lg sm:text-xl font-bold text-black capitalize truncate sm:w-fit">
+              class="text-lg sm:text-xl font-bold text-black truncate sm:w-fit">
               {{ channelStore.getChannel(selectedChannel)?.name }}
             </h2>
           </div>
@@ -283,18 +283,16 @@ chatSocket.on(
   async ({ user, channelId }: { user: User; channelId: string }) => {
     console.log(`[ChatView] - ${user.username} joined ${channelId}`)
 
-    const channel = channelStore.getChannel(channelId)
+    channelStore.addMember(user, channelId)
 
-    if (channel) {
-      channelStore.addMember(user, channel.id)
-      if (loggedUser && loggedUser.id === user.id) {
-        await channelStore.fetchChannel(channel.id)
-        channelStore.selectedChannel = channel.id
-        toast.success(`You joined the channel`)
-        return await router.push(`/chat/${channel.id}`)
-      }
-      toast.success(`${user.username} joined the channel`)
+    if (loggedUser && loggedUser.id === user.id) {
+      await channelStore.fetchChannel(channelId)
+      channelStore.selectedChannel = channelId
+      toast.success(`You joined the channel`)
+      return await router.push(`/chat/${channelId}`)
     }
+
+    toast.success(`${user.username} joined the channel`)
   }
 )
 
@@ -334,20 +332,8 @@ chatSocket.on(
   'chat:leave',
   async ({ user, channelId }: { user: User; channelId: string }) => {
     console.log(`[ChatView] - ${user.username} left channel ${channelId}`)
-
-    const channel = channelStore.getChannel(channelId)
-
-    if (channel) {
-      channelStore.removeMember(user.id, channelId)
-
-      if (loggedUser && loggedUser.id === user.id) {
-        channelStore.selectedChannel = null
-        channelStore.removeFromChannelList(channelId)
-        toast.success(`You left ${channel.name}`)
-        return await router.push('/chat')
-      }
-      toast.success(`${user.username} left ${channel.name}`)
-    }
+    channelStore.removeMember(user.id, channelId)
+    toast.success(`${user.username} left the channel`)
   }
 )
 

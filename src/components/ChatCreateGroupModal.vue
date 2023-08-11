@@ -3,20 +3,20 @@
     <input type="checkbox" id="my-modal-3" class="modal-toggle" />
     <div class="modal">
       <div class="modal-box rounded-none border-2 border-black">
+        <!-- TITLE -->
+        <div class="text-xl flex justify-between">
+          <h1>Create a group</h1>
+          <button
+            @click="closeModal()"
+            class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
+            <iconify-icon
+              icon="material-symbols:close"
+              class="h-6 w-6 absolute">
+            </iconify-icon>
+          </button>
+        </div>
+        <!-- FORM -->
         <Form ref="formRef" @submit="submitForm">
-          <!-- TITLE -->
-          <div class="text-xl flex justify-between">
-            <h1>Create a group</h1>
-            <button
-              @click="closeModal()"
-              class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
-              <iconify-icon
-                icon="material-symbols:close"
-                class="h-6 w-6 absolute">
-              </iconify-icon>
-            </button>
-          </div>
-          <!-- GROUP SETTINGS -->
           <div>
             <!-- GROUP NAME -->
             <div class="form-control mt-6">
@@ -104,8 +104,7 @@
           <div class="modal-action">
             <button
               class="btn bg-white border-2 border-black my-4 mb-2 text-black hover:bg-black hover:border-black hover:text-white"
-              type="submit"
-              @click="closeModal">
+              type="submit">
               CREATE GROUP
             </button>
           </div>
@@ -127,6 +126,7 @@ import { onBeforeRouteUpdate } from 'vue-router'
 
 import { useChannelStore } from '@/stores/ChannelStore'
 import { useUserStore } from '@/stores/UserStore.js'
+import { useToast } from 'vue-toastification'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -139,14 +139,15 @@ const channelName = ref<string>('')
 const channelNameError = ref<string | null>(null)
 const emit = defineEmits(['update:showModal'])
 const friendListError = ref<string | null>(null)
+const idUsersToAdd = ref<string[]>([])
 const password = ref<string | null>(null)
 const passwordRequired = ref<boolean>(false)
 const passwordError = ref<string | null>(null)
 const props = defineProps({
   showModal: { type: Boolean }
 })
+const toast = useToast()
 const usersToAdd = ref<string[]>([])
-const idUsersToAdd = ref<string[]>([])
 
 const { friendList } = storeToRefs(userStore)
 const { loggedUser } = storeToRefs(userStore)
@@ -183,10 +184,16 @@ const cancelUserToAdd = (username: string) => {
 // ********** //
 
 function closeModal(): void {
-  if (passwordRequired.value && (!password.value || passwordError.value)) return
   const modalElement = document.getElementById('my-modal-3') as HTMLInputElement
   if (modalElement) {
+    channelName.value = ''
+    channelNameError.value = null
+    friendListError.value = null
+    password.value = null
+    passwordError.value = null
+
     modalElement.checked = !modalElement.checked
+
     emit('update:showModal', modalElement.checked)
   }
 }
@@ -200,8 +207,13 @@ const createGroupChannel = async (): Promise<void> => {
     return
   }
 
+  if (!channelName.value) {
+    toast.error(`Channel name required`)
+    return
+  }
+
   if (passwordRequired.value && !password.value) {
-    console.error(`[ChatGroupModal] - Password is required but not provided!`)
+    toast.error(`Password required`)
     return
   }
 
@@ -212,10 +224,14 @@ const createGroupChannel = async (): Promise<void> => {
       idUsersToAdd.value,
       password.value
     )
-    console.log(`[ChatGroupModal] - Group created successfully !`)
+    toast.success(`Group created successfully`)
+    channelName.value = ''
+    channelNameError.value = null
+    friendListError.value = null
+    password.value = null
     passwordError.value = null
   } catch (error) {
-    console.error(`[ChatGroupModal] - Failed to create group ! Error: `, error)
+    toast.error(`Failed to create group`)
   }
 }
 
@@ -224,9 +240,12 @@ const createGroupChannel = async (): Promise<void> => {
 // ************* //
 
 const pushUserToAdd = (username: string, id: string): void => {
-  if (!usersToAdd.value.includes(username)) usersToAdd.value.push(username)
-  if (!idUsersToAdd.value.includes(id)) idUsersToAdd.value.push(id)
-  else console.log(`[ChatGroupModal] - User already in group !`)
+  if (!usersToAdd.value.includes(username)) {
+    usersToAdd.value.push(username)
+  }
+  if (!idUsersToAdd.value.includes(id)) {
+    idUsersToAdd.value.push(id)
+  } else console.log(`[ChatCreateGroupModal] - User already in group !`)
 }
 
 // ********************** //
@@ -234,8 +253,11 @@ const pushUserToAdd = (username: string, id: string): void => {
 // ********************** //
 
 const setPasswordRequirement = (): void => {
-  if (passwordRequired.value) passwordRequired.value = false
-  else passwordRequired.value = true
+  if (passwordRequired.value === true) {
+    passwordRequired.value = false
+  } else {
+    passwordRequired.value = true
+  }
   passwordError.value = null
 }
 
@@ -244,33 +266,35 @@ const setPasswordRequirement = (): void => {
 // ********** //
 
 const submitForm = async (values: Record<string, any>): Promise<void> => {
-  if (!channelName.value.length) {
-    channelNameError.value = 'You need to name the group before creating it.'
+  if (channelName.value.length === 0) {
+    channelNameError.value = 'Group name is required for group creation'
     return
+  } else {
+    channelNameError.value = null
   }
 
   if (usersToAdd.value.length === 0) {
-    friendListError.value =
-      'You need to add friends to the group before creating it.'
+    friendListError.value = 'Adding friends is required for group creation'
     return
+  } else {
+    friendListError.value = null
   }
 
-  if (passwordRequired.value && !password.value) {
-    passwordError.value = 'The password field is required.'
-    return
+  if (passwordRequired.value) {
+    if (!password.value || !password.value.length) {
+      passwordError.value = 'Password is required for group creation.'
+      return
+    }
+    if (
+      password.value &&
+      (password.value.length < 8 || password.value.length > 100)
+    ) {
+      passwordError.value = 'The password must be between 8 and 100 characters.'
+      return
+    }
+  } else {
+    passwordError.value = null
   }
-
-  if (
-    password.value &&
-    (password.value.length < 8 || password.value.length > 100)
-  ) {
-    passwordError.value = 'The password must be between 8 and 100 characters.'
-    return
-  }
-
-  passwordError.value = null
-  channelNameError.value = null
-  friendListError.value = null
 
   createGroupChannel()
 }

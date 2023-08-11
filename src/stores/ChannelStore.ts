@@ -1,11 +1,15 @@
+import type { Ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
+
 import { defineStore } from 'pinia'
 
-import { useUserStore } from './UserStore'
-
+import { useUserStore } from '@/stores/UserStore'
+import type { Channel, Message, User } from '@/types'
 import fetcher, { useFetcher, type FetcherResponse } from '@/utils/fetcher'
 
-import type { Channel, Message, User } from '@/types'
-import type { Ref } from 'vue'
+const router = useRouter()
+const toast = useToast()
 
 function parseUrl(message: Message): {
   roomId: string
@@ -437,7 +441,14 @@ export const useChannelStore = defineStore('channels', {
     // ********** //
 
     async leaveGroup(userId: string, channelId: string): Promise<void> {
-      await fetcher.delete(`/channels/${channelId}/leave`, { userId })
+      await fetcher
+        .delete(`/channels/${channelId}/leave`, { userId })
+        .then(() => {
+          this.selectedChannel = null
+          this.removeFromChannelList(channelId)
+          toast.success(`You left the channel`)
+          return router.push('/chat')
+        })
       console.log(`User with ID : ${userId} successfully left channel`)
     },
 
