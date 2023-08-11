@@ -283,14 +283,18 @@ chatSocket.on(
   async ({ user, channelId }: { user: User; channelId: string }) => {
     console.log(`[ChatView] - ${user.username} joined ${channelId}`)
 
-    channelStore.addMember(user, channelId)
+    const channel = channelStore.getChannel(channelId)
 
-    if (loggedUser && loggedUser.id === user.id) {
-      await channelStore.fetchChannel(channelId)
-      channelStore.selectedChannel = channelId
-      return await router.push(`/chat/${channelId}`)
+    if (channel) {
+      channelStore.addMember(user, channel.id)
+      if (loggedUser && loggedUser.id === user.id) {
+        await channelStore.fetchChannel(channel.id)
+        channelStore.selectedChannel = channel.id
+        toast.success(`You joined the channel`)
+        return await router.push(`/chat/${channel.id}`)
+      }
+      toast.success(`${user.username} joined the channel`)
     }
-    toast.success(`${user.username} joined the channel`)
   }
 )
 

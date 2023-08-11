@@ -128,6 +128,18 @@
             <div class="text-center w-full">Manage Password</div>
           </label>
         </div>
+        <div>
+          <label
+            class="btn bg-white border-t-2 border-x-0 border-b-0 border-black text-black hover:bg-black hover:border-black hover:text-white w-full relative"
+            type="button"
+            @click="leaveGroup">
+            <iconify-icon
+              icon="lucide:door-open"
+              class="absolute left-5 w-6 h-6">
+            </iconify-icon>
+            <div class="text-center w-full">Leave channel</div>
+          </label>
+        </div>
       </div>
     </div>
     <!-- MANAGE PASSWORD MODAL -->
@@ -219,6 +231,11 @@ const kickMember = async (target: User): Promise<void> => {
 const banMember = async (target: User): Promise<void> => {
   if (!channel.value) return
   await channelStore.banMember(target.id, channel.value.id)
+}
+
+const leaveGroup = async (): Promise<void> => {
+  if (!loggedUser.value || !channel.value) return
+  await channelStore.leaveGroup(loggedUser.value.id, channel.value.id)
 }
 
 // ********************* //

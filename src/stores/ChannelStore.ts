@@ -179,6 +179,20 @@ export const useChannelStore = defineStore('channels', {
       return newMessage
     },
 
+    // ******************* //
+    // changeGroupPassword //
+    // ******************* //
+
+    async changeGroupPassword(
+      channelId: string,
+      newPassword: string
+    ): Promise<void> {
+      await fetcher.put(`/channels/${channelId}/password/change`, {
+        newPassword
+      })
+      console.log(`Password successfully changed in channel ${channelId}`)
+    },
+
     // *************** //
     // createDmChannel //
     // *************** //
@@ -233,6 +247,15 @@ export const useChannelStore = defineStore('channels', {
         'New group channel pushed to channelsList in store : ',
         this.channelsList
       )
+    },
+
+    // ******************* //
+    // deleteGroupPassword //
+    // ******************* //
+
+    async deleteGroupPassword(channelId: string): Promise<void> {
+      await fetcher.delete(`/channels/${channelId}/password/delete`)
+      console.log(`Password successfully deleted in channel ${channelId}`)
     },
 
     // **************** //
@@ -293,15 +316,9 @@ export const useChannelStore = defineStore('channels', {
       }
     },
 
-    // async getAdmins(channelId: string) {
-    //   const channel = this.getChannel(channelId)
-
-    //   if (channel != null) {
-    //     const admins = await fetcher.get(`/channels/${channelId}/admins`)
-
-    //     channel.admins = admins
-    //   }
-    // },
+    // **************** //
+    // getBannedMembers //
+    // **************** //
 
     async getBannedMembers(channelId: string) {
       const channel = this.getChannel(channelId)
@@ -413,6 +430,15 @@ export const useChannelStore = defineStore('channels', {
     async kickMember(userId: string, channelId: string): Promise<void> {
       await fetcher.put(`/channels/${channelId}/kick`, { userId })
       console.log(`User with ID : ${userId} successfully kicked from channel`)
+    },
+
+    // ********** //
+    // leaveGroup //
+    // ********** //
+
+    async leaveGroup(userId: string, channelId: string): Promise<void> {
+      await fetcher.delete(`/channels/${channelId}/leave`, { userId })
+      console.log(`User with ID : ${userId} successfully left channel`)
     },
 
     // ********** //

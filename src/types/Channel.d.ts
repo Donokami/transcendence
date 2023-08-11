@@ -24,7 +24,7 @@ export interface Channel {
   // **************************** //
   // PRIVACY RELATED INFORMATIONS //
   // **************************** //
-  passwordRequired: boolean
+  isPrivate: boolean
   password: string
 
   // ***************************** //
