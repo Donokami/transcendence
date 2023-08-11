@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common'
 
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+import { IsNull, Not, Repository } from 'typeorm'
 
 import {
   CannotActOnSelf,
@@ -18,7 +18,9 @@ import {
   UserAlreadyInChannel,
   UserIsBanned,
   UserNotFound,
-  UserNotInChannel
+  UserNotInChannel,
+  UserAlreadyMuted,
+  UserIsMuted
 } from '@/core/exceptions'
 import { parseMuteTime } from '@/core/utils/parseMuteTime'
 import { ChatGateway } from '@/modules/chat/chat.gateway'
@@ -28,6 +30,8 @@ import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { Message } from '@/modules/chat/channels/entities/message.entity'
 import { User } from '@/modules/users/user.entity'
 import { UsersService } from '@/modules/users/users.service'
+import { MutedUser } from './entities/muted-user.entity'
+import { Cron, CronExpression, Interval } from '@nestjs/schedule'
 
 export interface OperationResult {
   success: boolean
@@ -45,7 +49,7 @@ export class ChannelsService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway
-  ) {}
+  ) { }
 
   // ****** //
   // LOGGER //
@@ -246,6 +250,17 @@ export class ChannelsService {
     return channel
   }
 
+  async findAllWithMutedMembers(): Promise<Channel[]> {
+    const currentDate = new Date()
+
+    return await this.channelsRepository
+      .createQueryBuilder('channel')
+      .leftJoinAndSelect('channel.mutedMembers', 'mutedMembers')
+      .leftJoinAndSelect('mutedMembers.user', 'mutedUser')
+      .where('mutedMembers.muteEndDate <= :currentDate', { currentDate })
+      .getMany()
+  }
+
   // *********** //
   // getBannedMembers //
   // *********** //
@@ -300,33 +315,6 @@ export class ChannelsService {
     )
 
     return messages
-  }
-
-  // **************** //
-  // getMutedChannels //
-  // **************** //
-
-  async getMutedChannels(userId: string): Promise<Channel[]> {
-    const user: User = await this.checkExistingUser(userId)
-
-    const channels: Channel[] = await this.channelsRepository
-      .createQueryBuilder('channel')
-      .leftJoinAndSelect('channel.mutedMembers', 'mutedMembers')
-      .where((qb) => {
-        const subQuery = qb
-          .subQuery()
-          .select('channel.id')
-          .from('channel', 'channel')
-          .leftJoin('channel.mutedMembers', 'mutedMembers')
-          .where('mutedMembers.id = :userId', { userId: user.id })
-          .getQuery()
-        return 'channel.id IN ' + subQuery
-      })
-      .getMany()
-
-    this.logger.verbose(`Muted channels of : ${userId} successfully retrieved.`)
-
-    return channels
   }
 
   // ********* //
@@ -450,8 +438,12 @@ export class ChannelsService {
 
     await this.permissionChecker('mute', channel, mutingUserId, userToMuteId)
 
+    if (channel.isMuted(userToMute)) {
+      throw new UserAlreadyMuted()
+    }
+
     // todo: add a string param to replace '1w'
-    const muteEndDate = parseMuteTime('1w')
+    const muteEndDate = parseMuteTime('5s')
 
     channel.addMuteMember(userToMute, muteEndDate)
 
@@ -506,6 +498,10 @@ export class ChannelsService {
     channel: Channel
   ): Promise<Message> {
     const user: User = await this.checkExistingUser(userId)
+
+    if (channel.isMuted(user)) {
+      throw new UserIsMuted()
+    }
 
     const newMessage = this.messagesRepository.create({
       messageBody,
@@ -612,7 +608,10 @@ export class ChannelsService {
 
     channel.removeMuteMember(user)
 
-    return this.channelsRepository.save(channel)
+    return await this.updateChannel('chat:unmute', channel, {
+      user,
+      channelId: channel.id
+    })
   }
 
   // ********** //

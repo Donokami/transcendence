@@ -21,6 +21,7 @@ import { ServeStaticModule } from '@nestjs/serve-static'
 import { join } from 'path'
 import { ConfigService } from '@nestjs/config'
 import { AppGateway } from './app.gateway'
+import { ScheduleModule } from '@nestjs/schedule'
 
 const configService = new ConfigService()
 
@@ -44,6 +45,7 @@ export const session: RequestHandler = require('cookie-session')({
     TypeOrmModule.forRootAsync({
       useClass: TypeOrmConfigService
     }),
+    ScheduleModule.forRoot(),
     ChatModule,
     SocialModule,
     GameModule,

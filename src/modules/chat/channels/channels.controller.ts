@@ -35,7 +35,7 @@ import { OwnershipGuard } from '@/modules/chat/channels/guards/ownership.guard'
 @Controller('channels')
 @UseFilters(new GlobalExceptionFilter())
 export class ChannelsController {
-  constructor(private readonly channelsService: ChannelsService) {}
+  constructor(private readonly channelsService: ChannelsService) { }
 
   // ****** //
   // LOGGER //
@@ -346,6 +346,28 @@ export class ChannelsController {
     return await this.channelsService.unbanMember(memberToUnbanId, channel)
   }
 
+  // ********* //
+  // unbanMute //
+  // ********* //
+
+  @Delete('/:channelId/unmute')
+  @ApiOperation({
+    summary: 'Unmute a member from a group',
+    operationId: 'unmuteMember',
+    description: 'Unmute a member from a group',
+    tags: ['chat']
+  })
+  @UseGuards(AuthGuard)
+  @UseGuards(MembershipGuard)
+  @UseGuards(AdminshipGuard)
+  async unmuteMember(
+    @Body() body: HandleChannelDto,
+    @CurrentChannel() channel: Channel
+  ): Promise<Channel> {
+    const memberToUnmuteId: string = body.userId
+    return await this.channelsService.unMuteMember(channel, memberToUnmuteId)
+  }
+
   // ********** //
   // unsetAdmin //
   // ********** //
@@ -357,8 +379,6 @@ export class ChannelsController {
     description: 'Unset a user as admin of a group',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
-  @UseGuards(MembershipGuard)
   @UseGuards(OwnershipGuard)
   async unsetAdmin(
     @Body() body: HandleChannelDto,

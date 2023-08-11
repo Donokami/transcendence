@@ -7,10 +7,10 @@ export class MutedUser {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @ManyToOne(() => Channel, (channel: Channel) => channel.mutedMembers)
+  @ManyToOne(() => Channel, (channel: Channel) => channel.mutedMembers, { eager: true })
   channel: Channel
 
-  @ManyToOne(() => User, (user: User) => user.mutedChannels)
+  @ManyToOne(() => User, (user: User) => user.mutedChannels, { eager: true })
   user: User
 
   @Column()

@@ -43,7 +43,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChannelsService))
     private readonly channelService: ChannelsService
-  ) {}
+  ) { }
 
   // ****** //
   // LOGGER //
@@ -57,22 +57,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @Cron(CronExpression.EVERY_10_SECONDS)
   async checkMuteTimers(): Promise<void> {
-    for (const [userId, clientId] of this.connectedUsers) {
-      const socket = this.getUserSocket(userId)
-      if (socket) {
-        const mutedChannels = await this.channelService.getMutedChannels(userId)
-        mutedChannels.forEach(async (channel) => {
-          const now = new Date()
-          const mutedMember = channel.mutedMembers.find(
-            (member) => member.id === userId
-          )
+    const channels = await this.channelService.findAllWithMutedMembers()
+    channels.forEach(async (channel) => {
+      channel.mutedMembers.forEach(async (mutedMember) => {
+        await this.channelService.unMuteMember(channel, mutedMember.user.id)
 
-          if (mutedMember.muteEndDate && mutedMember.muteEndDate < now) {
-            await this.channelService.unMuteMember(channel, userId)
-          }
-        })
-      }
-    }
+        this.logger.debug(
+          `User ${mutedMember.user.username} has been unmuted in channel ${channel.name}.`
+        )
+      })
+    })
   }
 
   getUserSocket(userId: string): Socket | null {

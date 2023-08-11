@@ -107,3 +107,9 @@ export class UserNotInChannel extends HttpException {
     super('User not in channel.', HttpStatus.BAD_REQUEST)
   }
 }
+
+export class UserIsMuted extends HttpException {
+  constructor() {
+    super('User is muted.', HttpStatus.BAD_REQUEST)
+  }
+}

@@ -20,7 +20,7 @@ import { ChannelsMiddleware } from './middleware/get-channel.middelware'
 @Module({
   imports: [
     TypeOrmModule.forFeature([Channel, Message, MutedUser, User]),
-    forwardRef(() => UsersModule)
+    forwardRef(() => UsersModule),
   ],
   controllers: [ChannelsController],
   providers: [ChatGateway, ChannelsService],

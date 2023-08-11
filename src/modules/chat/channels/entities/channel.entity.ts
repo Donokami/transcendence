@@ -57,7 +57,7 @@ export class Channel {
   @ManyToMany(() => User, (user: User) => user.bannedChannels)
   bannedMembers: User[]
 
-  @OneToMany(() => MutedUser, (mutedUser: MutedUser) => mutedUser.channel)
+  @OneToMany(() => MutedUser, (mutedUser: MutedUser) => mutedUser.channel, { cascade: ['insert', 'update', 'remove'] })
   mutedMembers: MutedUser[]
 
   // **************************** //
@@ -97,16 +97,19 @@ export class Channel {
     mutedMember.muteEndDate = muteEndDate
 
     this.mutedMembers.push(mutedMember)
-    //todo: save if not done automatically
   }
 
   removeMuteMember(user: User) {
     if (!this.mutedMembers) return
-    this.mutedMembers = this.mutedMembers.filter((mute) => mute.user !== user)
+    this.mutedMembers = this.mutedMembers.filter(mute => mute.user.id !== user.id)
     //todo: save if not done automatically
   }
 
   isAdmin(user: User) {
     return this.admins.find((admin) => user.id === admin.id)
+  }
+
+  isMuted(user: User) {
+    return this.mutedMembers.find((mutedMember) => mutedMember.user.id === user.id)
   }
 }
