@@ -30,8 +30,6 @@ import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { Message } from '@/modules/chat/channels/entities/message.entity'
 import { User } from '@/modules/users/user.entity'
 import { UsersService } from '@/modules/users/users.service'
-import { MutedUser } from './entities/muted-user.entity'
-import { Cron, CronExpression, Interval } from '@nestjs/schedule'
 
 export interface OperationResult {
   success: boolean
@@ -49,7 +47,7 @@ export class ChannelsService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway
-  ) { }
+  ) {}
 
   // ****** //
   // LOGGER //
