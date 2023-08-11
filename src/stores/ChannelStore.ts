@@ -309,14 +309,10 @@ export const useChannelStore = defineStore('channels', {
       try {
         const messages = await fetcher.get(`/channels/${channelId}/messages`)
         const channel = this.getChannel(channelId)
-        console.log('[Message Fetch] channel : ', channel)
-        console.log('[Message Fetch] messages : ', messages)
 
         const messageFetch = messages.map((message: Message) => {
           return this.bindRoomToInvite(message)
         })
-
-        console.log('[Message Fetch] messages after parsing : ', messageFetch)
 
         if (channel != null) channel.messages = messageFetch
       } catch (error) {
@@ -392,6 +388,7 @@ export const useChannelStore = defineStore('channels', {
     // ********* //
 
     async makeAdmin(userId: string, channelId: string): Promise<void> {
+      console.log(`DEBUG : HERE`)
       await fetcher.put(`/channels/${channelId}/set-admin`, { userId })
       console.log(`User with ID : ${userId} successfully promoted admin`)
     },

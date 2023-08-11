@@ -163,7 +163,7 @@ async function getChannel(): Promise<void> {
 
 const giveAdminRights = (target: User): void => {
   if (!channel.value) return
-  channelStore.addAdmin(target, channel.value.id)
+  channelStore.makeAdmin(target.id, channel.value.id)
 }
 
 const kickMember = async (target: User): Promise<void> => {

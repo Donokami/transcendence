@@ -83,8 +83,6 @@ const pictureSrc = computed(() => {
     return null
   }
 
-  console.log(`[ProfileStatsCard] - pictureSrc : `, profilePicture)
-
   if (profilePicture.includes('cdn.intra.42')) {
     return profilePicture
   } else {
@@ -93,8 +91,6 @@ const pictureSrc = computed(() => {
 })
 
 const statusBadge = (): string => {
-  console.log(`[ProfileStatsCard] - statusBadge : `, user.value)
-
   if (props.statusMode === false) return ''
 
   if (user.value === null || loggedUser.value === null) return 'offline'

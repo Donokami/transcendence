@@ -196,8 +196,6 @@ function createGame(): void {
 // ************ //
 
 const getChannelId = (observedRoute: any): string | null => {
-  console.log('route.params : ', observedRoute)
-
   if (observedRoute.params.catchAll !== '') {
     return observedRoute.params.catchAll.slice(1)
   }
@@ -470,7 +468,6 @@ onBeforeMount(async () => {
     channelsList.value?.data?.length === 0
   ) {
     channelStore.fetchChannelList()
-    console.log('[ChatView] - Channels : ', channelsList.value)
   }
 
   chatSocket.on('chat:connect', () => {
