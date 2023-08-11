@@ -1,13 +1,10 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common'
-
 import { InjectRepository } from '@nestjs/typeorm'
-import { IsNull, Not, Repository } from 'typeorm'
+import { DeleteResult, Repository } from 'typeorm'
 
 import {
   CannotActOnSelf,
-  CannotModifyPassword,
   CannotKickBanMuteAdmin,
-  CannotSetAdmin,
   ChannelNotFound,
   ChannelMembersNotFound,
   InvalidGroupPassword,
@@ -20,7 +17,9 @@ import {
   UserNotFound,
   UserNotInChannel,
   UserAlreadyMuted,
-  UserIsMuted
+  UserIsMuted,
+  UserIsNotAdmin,
+  UserIsNotBanned
 } from '@/core/exceptions'
 import { parseMuteTime } from '@/core/utils/parseMuteTime'
 import { ChatGateway } from '@/modules/chat/chat.gateway'
@@ -400,14 +399,39 @@ export class ChannelsService {
   // leaveGroup //
   // ********** //
 
-  async leaveGroup(leavingUserId: string, channel: Channel): Promise<Channel> {
+  async leaveGroup(
+    leavingUserId: string,
+    channel: Channel
+  ): Promise<Channel | DeleteResult> {
     const leavingUser: User = await this.checkExistingUser(leavingUserId)
+
+    if (channel.admins.find((admin) => admin.id === leavingUser.id)) {
+      channel.admins = this.removeUserFromList(
+        'admins',
+        leavingUser,
+        channel.admins
+      )
+    }
 
     channel.members = this.removeUserFromList(
       'members',
       leavingUser,
       channel.members
     )
+
+    if (leavingUser.id === channel.owner.id) {
+      if (channel.admins.length === 0) {
+        return await this.channelsRepository.delete(channel.id)
+      }
+
+      const newOwner = channel.admins[0]
+      channel.owner = newOwner
+      channel.admins = this.removeUserFromList(
+        'admins',
+        newOwner,
+        channel.admins
+      )
+    }
 
     const updatePayload = { user: leavingUser, channelId: channel.id }
 
@@ -540,9 +564,9 @@ export class ChannelsService {
     if (!userList.find((item) => item.id === user.id)) {
       switch (listName) {
         case 'admins':
-          throw new UserAlreadyAdmin()
+          throw new UserIsNotAdmin()
         case 'bannedMembers':
-          throw new UserAlreadyBanned()
+          throw new UserIsNotBanned()
         case 'members':
           throw new UserNotInChannel()
         default:

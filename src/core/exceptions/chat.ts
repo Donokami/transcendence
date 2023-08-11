@@ -15,24 +15,6 @@ export class CannotKickBanMuteAdmin extends HttpException {
   }
 }
 
-export class CannotModifyPassword extends HttpException {
-  constructor() {
-    super(
-      'Only the owner of the group can set, change, or remove the password.',
-      HttpStatus.UNAUTHORIZED
-    )
-  }
-}
-
-export class CannotSetAdmin extends HttpException {
-  constructor() {
-    super(
-      'Only the owner of the group can set a user as an admin.',
-      HttpStatus.UNAUTHORIZED
-    )
-  }
-}
-
 export class ChannelMembersNotFound extends HttpException {
   constructor() {
     super(
@@ -68,7 +50,7 @@ export class MissingGroupPassword extends HttpException {
 
 export class UserAlreadyAdmin extends HttpException {
   constructor() {
-    super('User is already a gorup admin.', HttpStatus.BAD_REQUEST)
+    super('User is already a group admin.', HttpStatus.BAD_REQUEST)
   }
 }
 
@@ -99,6 +81,18 @@ export class UserAlreadyInChannel extends HttpException {
 export class UserIsBanned extends HttpException {
   constructor() {
     super('User is banned.', HttpStatus.UNAUTHORIZED)
+  }
+}
+
+export class UserIsNotAdmin extends HttpException {
+  constructor() {
+    super('User is not a group admin.', HttpStatus.BAD_REQUEST)
+  }
+}
+
+export class UserIsNotBanned extends HttpException {
+  constructor() {
+    super('User is not banned admin.', HttpStatus.BAD_REQUEST)
   }
 }
 

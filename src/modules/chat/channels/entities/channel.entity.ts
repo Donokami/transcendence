@@ -45,19 +45,25 @@ export class Channel {
   // MEMBERS RELATED INFORMATIONS //
   // **************************** //
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { cascade: true })
   owner: User
 
-  @ManyToMany(() => User, (user: User) => user.channels)
+  @ManyToMany(() => User, (user: User) => user.channels, { cascade: true })
   members: Array<User>
 
-  @ManyToMany(() => User, (user: User) => user.administratedChannels)
+  @ManyToMany(() => User, (user: User) => user.administratedChannels, {
+    cascade: true
+  })
   admins: User[]
 
-  @ManyToMany(() => User, (user: User) => user.bannedChannels)
+  @ManyToMany(() => User, (user: User) => user.bannedChannels, {
+    cascade: true
+  })
   bannedMembers: User[]
 
-  @OneToMany(() => MutedUser, (mutedUser: MutedUser) => mutedUser.channel, { cascade: ['insert', 'update', 'remove'] })
+  @OneToMany(() => MutedUser, (mutedUser: MutedUser) => mutedUser.channel, {
+    cascade: ['insert', 'update', 'remove']
+  })
   mutedMembers: MutedUser[]
 
   // **************************** //
@@ -101,7 +107,9 @@ export class Channel {
 
   removeMuteMember(user: User) {
     if (!this.mutedMembers) return
-    this.mutedMembers = this.mutedMembers.filter(mute => mute.user.id !== user.id)
+    this.mutedMembers = this.mutedMembers.filter(
+      (mute) => mute.user.id !== user.id
+    )
     //todo: save if not done automatically
   }
 
@@ -110,6 +118,8 @@ export class Channel {
   }
 
   isMuted(user: User) {
-    return this.mutedMembers.find((mutedMember) => mutedMember.user.id === user.id)
+    return this.mutedMembers.find(
+      (mutedMember) => mutedMember.user.id === user.id
+    )
   }
 }
