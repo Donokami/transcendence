@@ -2,9 +2,9 @@ import { ApiProperty } from '@nestjs/swagger'
 import { IsString, IsUUID } from 'class-validator'
 
 export class ChangeGroupPasswordDto {
-  @ApiProperty()
-  @IsUUID('4')
-  userId: string
+  // @ApiProperty()
+  // @IsUUID('4')
+  // userId: string
 
   // todo: check what we want as a group password policy
   @ApiProperty()

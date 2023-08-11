@@ -74,24 +74,19 @@ export class ChannelsController {
   @Put('/:channelId/password/change')
   @ApiOperation({
     summary: 'Change the password of a group',
-    operationId: 'changePassword',
+    operationId: 'changeGroupPassword',
     description: 'Change the password of a group',
     tags: ['chat']
   })
   @UseGuards(AuthGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(OwnershipGuard)
-  async changePassword(
+  async changeGroupPassword(
     @Body() body: ChangeGroupPasswordDto,
     @CurrentChannel() channel: Channel
   ): Promise<OperationResult> {
-    const userId: string = body.userId
     const newPassword: string = body.newPassword
-    return await this.channelsService.changePassword(
-      userId,
-      newPassword,
-      channel
-    )
+    return await this.channelsService.changeGroupPassword(newPassword, channel)
   }
 
   // ************* //
@@ -115,6 +110,26 @@ export class ChannelsController {
     if (!channel)
       throw new NotFoundException(`Failed to create ${body.name} channel `)
     return channel
+  }
+
+  // ******************* //
+  // deleteGroupPassword //
+  // ******************* //
+
+  @Delete('/:channelId/password/delete')
+  @ApiOperation({
+    summary: 'Delete the password of a group',
+    operationId: 'deleteGroupPassword',
+    description: 'Delete the password of a group',
+    tags: ['chat']
+  })
+  @UseGuards(AuthGuard)
+  @UseGuards(MembershipGuard)
+  @UseGuards(OwnershipGuard)
+  async deleteGroupPassword(
+    @CurrentChannel() channel: Channel
+  ): Promise<OperationResult> {
+    return await this.channelsService.deleteGroupPassword(channel)
   }
 
   // **************** //
@@ -215,7 +230,7 @@ export class ChannelsController {
   // leaveGroup //
   // ********* //
 
-  @Post('/group/leave')
+  @Delete(':channelId/leave')
   @ApiOperation({
     summary: 'Leave a group',
     operationId: 'leaveGroup',

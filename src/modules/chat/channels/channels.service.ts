@@ -127,21 +127,28 @@ export class ChannelsService {
   // changePassword //
   // ************** //
 
-  // todo: check what we want as group password policy
-  async changePassword(
-    userId: string,
+  // todo: implement group password policy and check if socket required here ?
+  async changeGroupPassword(
     newPassword: string,
     channel: Channel
   ): Promise<OperationResult> {
-    const user: User = await this.checkExistingUser(userId)
-
-    await this.permissionChecker('change-password', channel, userId)
-
     channel.password = newPassword
 
-    const updatePayload = { user, channelId: channel.id }
+    await this.channelsRepository.save(channel)
 
-    await this.updateChannel('change-password', channel, updatePayload)
+    return { success: true }
+  }
+
+  // ************** //
+  // deletePassword //
+  // ************** //
+
+  // todo: check if socket required here ?
+  async deleteGroupPassword(channel: Channel): Promise<OperationResult> {
+    channel.password = null
+    channel.isPrivate = false
+
+    await this.channelsRepository.save(channel)
 
     return { success: true }
   }
@@ -169,7 +176,7 @@ export class ChannelsService {
   // createChannel //
   // ************* //
 
-  // todo: check what we want as group password policy
+  // todo: implement group password policy
   async createChannel(
     createChannelDto: CreateChannelDto,
     ownerId: string
@@ -186,9 +193,7 @@ export class ChannelsService {
       owner: owner,
       members: members,
       name: createChannelDto.isDm ? null : createChannelDto.name,
-      passwordRequired: createChannelDto.isDm
-        ? false
-        : !!createChannelDto.password,
+      isPrivate: createChannelDto.isDm ? false : !!createChannelDto.password,
       password: createChannelDto.isDm ? null : createChannelDto.password
     })
 
@@ -229,7 +234,7 @@ export class ChannelsService {
   async findOneByName(name: string): Promise<Channel> {
     const channel: Channel = await this.channelsRepository.findOne({
       where: { name, isDm: false },
-      select: ['id', 'members', 'name', 'password', 'passwordRequired'],
+      select: ['id', 'members', 'name', 'password', 'isPrivate'],
       relations: ['members', 'bannedMembers']
     })
 
@@ -348,11 +353,11 @@ export class ChannelsService {
     )
       throw new UserIsBanned()
 
-    if (channel.passwordRequired && !password) {
+    if (channel.isPrivate && !password) {
       throw new MissingGroupPassword()
     }
 
-    if (channel.passwordRequired && password !== channel.password) {
+    if (channel.isPrivate && password !== channel.password) {
       throw new InvalidGroupPassword()
     }
 
@@ -364,10 +369,10 @@ export class ChannelsService {
 
     const updatePayload = { user: newMember, channelId: channel.id }
 
-    await this.updateChannel('chat:join', channel, updatePayload)
-
     const socket = this.chatGateway.getUserSocket(newMember.id)
     if (socket) socket.join(channel.id)
+
+    await this.updateChannel('chat:join', channel, updatePayload)
 
     return { success: true }
   }
@@ -420,7 +425,11 @@ export class ChannelsService {
 
     const updatePayload = { user: leavingUser, channelId: channel.id }
 
-    const updatedChannel = this.updateChannel('leave', channel, updatePayload)
+    const updatedChannel = this.updateChannel(
+      'chat:leave',
+      channel,
+      updatePayload
+    )
 
     const socket = this.chatGateway.getUserSocket(leavingUser.id)
     if (socket) socket.leave(channel.id)
@@ -472,23 +481,11 @@ export class ChannelsService {
     )
 
     switch (action) {
-      // case 'set-admin':
-      //   if (actingUserId !== channel.owner.id) {
-      //     throw new CannotSetAdmin()
-      //   }
-      //   break
       case 'kick':
       case 'ban':
       case 'mute':
         if (targetIsAdmin === true && actingUserId !== channel.owner.id) {
           throw new CannotKickBanMuteAdmin()
-        }
-        break
-      case 'change-password':
-      case 'set-password': // todo: function to implement if necessary
-      case 'remove-password': // todo: function to implement if necessary
-        if (actingUserId !== channel.owner.id) {
-          throw new CannotModifyPassword()
         }
         break
       default:
