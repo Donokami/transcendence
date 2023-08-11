@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 
 import { useUserStore } from './UserStore'
 
-import fetcher, { useFetcher, type FetcherResponse } from '@/utils/fetcher'
+import fetcher, { useFetcher, type FetcherResponse, ApiError } from '@/utils/fetcher'
 
 import type { Channel, Message, User } from '@/types'
 import type { Ref } from 'vue'
@@ -114,13 +114,13 @@ export const useChannelStore = defineStore('channels', {
     // addMutedMember //
     // ************** //
 
-    addMutedMember(user: User, channelId: string): void {
-      const channel = this.getChannel(channelId)
+    // addMutedMember(user: User, channelId: string): void {
+    //   const channel = this.getChannel(channelId)
 
-      if (channel != null) {
-        channel.mutedMembers.push(user)
-      }
-    },
+    //   if (channel != null) {
+    //     channel.mutedMembers.push(user)
+    //   }
+    // },
 
     // **************** //
     // addToChannelList //
@@ -396,7 +396,8 @@ export const useChannelStore = defineStore('channels', {
       const channel = this.getChannel(channelId)
       if (!channel) return false
 
-      return !!channel.admins.some((user) => user.id === userId)
+      return !!(channel.admins.some((user) => user.id === userId) ||
+        channel.owner.id === userId)
     },
 
     // ******* //
@@ -551,8 +552,17 @@ export const useChannelStore = defineStore('channels', {
           messageBody: message,
           date: new Date()
         })
-      } catch (error) {
-        console.error(error)
+      } catch (err) {
+        if (err instanceof ApiError) {
+          if (err.code === 'UserIsMuted') {
+            const channel = this.getChannel()
+
+            if (channel != null) {
+              channel.isMuted = true
+            }
+          }
+        }
+        console.error(err)
       }
     },
 
@@ -562,7 +572,9 @@ export const useChannelStore = defineStore('channels', {
 
     async unbanMember(userId: string, channelId: string): Promise<void> {
       await fetcher.delete(`/channels/${channelId}/unban`, { userId })
-      console.log(`User with ID : ${userId} successfully unbanned from channel`)
-    }
+      console.log(
+        `User with ID : ${userId} successfully unbanned from channel`
+      )
+    },
   }
 })

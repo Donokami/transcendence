@@ -10,6 +10,7 @@ export interface Channel {
   isDm: boolean
   image: string
   unreadMessages: number
+  isMuted: boolean
 
   // **************************** //
   // MEMBERS RELATED INFORMATIONS //

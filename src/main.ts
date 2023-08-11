@@ -1,4 +1,4 @@
-import { HttpError } from './utils/fetcher'
+import { ApiError, HttpError } from './utils/fetcher'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { Icon } from '@iconify/vue'
@@ -33,7 +33,7 @@ const options: PluginOptions = {
 app.use(Toast, options)
 
 app.config.errorHandler = (err, vm, info) => {
-  if (err instanceof HttpError) {
+  if (err instanceof ApiError) {
     useToast().error(err.message)
   } else {
     throw err

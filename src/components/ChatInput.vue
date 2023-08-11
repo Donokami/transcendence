@@ -11,11 +11,15 @@
           tabindex="0"
           data-id="root"
           rows="1"
-          placeholder="Type your message here"
+          :disabled="!channel || channel.isMuted"
+          :placeholder="
+            channel?.isMuted ? 'You are muted' : 'Type your message here'
+          "
           class="h-full m-0 w-full outline-none overflow-auto resize-none bg-transparent max-h-[100px]"></textarea>
       </div>
       <button
         type="submit"
+        :disabled="!channel || channel.isMuted"
         class="flex self-end btn m-0 p-0 min-h-0 h-8 px-0 mx-0 w-0 relative bg-base-100 border-base-100 hover:bg-base-100 hover:border-base-100 hover:text-zinc-600 -mr-1">
         <iconify-icon
           icon="lucide:send-horizonal"
@@ -38,6 +42,7 @@ import { useChannelStore } from '@/stores/ChannelStore.js'
 const channelStore = useChannelStore()
 const input = ref('')
 const myTextarea: Ref<HTMLElement | null> = ref(null)
+const channel = channelStore.getChannel()
 
 onMounted(() => {
   autoResize()
