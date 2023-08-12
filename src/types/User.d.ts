@@ -22,19 +22,19 @@ export interface User {
   // FRIENDSHIP RELATED INFORMATIONS //
   // ******************************* //
 
-  friends: Array<User>
+  friends: User[]
   nFriends: number
-  sentRequest: Array<Friendship>
-  receivedRequest: Array<Friendship>
+  sentRequest: Friendship[]
+  receivedRequest: Friendship[]
   isBlockedBy: boolean
 
   // ************************* //
   // CHAT RELATED INFORMATIONS //
   // ************************* //
 
-  channels: Array<Channel>
-  bannedChannels: Array<Channel>
-  messages: Array<Message>
+  channels: Channel[]
+  bannedChannels: Channel[]
+  messages: Message[]
 
   // ************************** //
   // STATS RELATED INFORMATIONS //

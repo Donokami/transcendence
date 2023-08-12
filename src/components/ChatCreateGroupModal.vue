@@ -2,16 +2,16 @@
   <div>
     <input type="checkbox" id="my-modal-3" class="modal-toggle" />
     <div class="modal">
-      <div class="modal-box rounded-none border-2 border-black">
+      <div class="border-2 border-black rounded-none modal-box">
         <!-- TITLE -->
-        <div class="text-xl flex justify-between">
+        <div class="flex justify-between text-xl">
           <h1>Create a group</h1>
           <button
             @click="closeModal()"
-            class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
+            class="relative border-2 border-black btn btn-square hover:border-2 hover:border-black btn-sm">
             <iconify-icon
               icon="material-symbols:close"
-              class="h-6 w-6 absolute">
+              class="absolute w-6 h-6">
             </iconify-icon>
           </button>
         </div>
@@ -19,28 +19,28 @@
         <Form ref="formRef" @submit="submitForm">
           <div>
             <!-- GROUP NAME -->
-            <div class="form-control mt-6">
+            <div class="mt-6 form-control">
               <span class="text-base text-black">Group Name</span>
               <input
                 v-model="channelName"
-                class="neobrutalist-input py-2 text-sm"
+                class="py-2 text-sm neobrutalist-input"
                 placeholder="Enter a group name" />
               <div v-if="channelNameError" class="text-red-500">
                 {{ channelNameError }}
               </div>
             </div>
             <!-- FRIENDS LIST -->
-            <div class="form-control mt-6">
+            <div class="mt-6 form-control">
               <span class="text-base text-black">Invite Friends</span>
               <div
-                class="collapse collapse-arrow border-2 mt-2 border-black rounded-none">
+                class="mt-2 border-2 border-black rounded-none collapse collapse-arrow">
                 <input type="checkbox" />
-                <div class="collapse-title text-base">Friends list</div>
+                <div class="text-base collapse-title">Friends list</div>
                 <!-- AVAILABLE FRIENDS TO ADD TO THE GROUP -->
-                <div class="collapse-content text-base p-0">
+                <div class="p-0 text-base collapse-content">
                   <ul
                     v-if="filteredFriendList.length > 0"
-                    class="menu w-full p-0">
+                    class="w-full p-0 menu">
                     <li
                       v-for="friend in filteredFriendList"
                       :key="friend.username">
@@ -59,10 +59,10 @@
               </div>
             </div>
             <!-- USER TO ADD BADGES -->
-            <div class="mt-2 flex gap-2 flex-wrap">
+            <div class="flex flex-wrap gap-2 mt-2">
               <div class="bg-red-300" v-for="user in usersToAdd" :key="user.id">
                 <div
-                  class="cursor-pointer bg-black flex justify-between gap-1 p-1 items-center w-fit"
+                  class="flex items-center justify-between gap-1 p-1 bg-black cursor-pointer w-fit"
                   @click="cancelUserToAdd(user)">
                   <span class="text-white border-none rounded-none">
                     {{ user.username }}
@@ -79,18 +79,18 @@
               {{ friendListError }}
             </div>
             <!-- PASSWORD -->
-            <div class="form-control mt-6">
-              <label class="label cursor-pointer px-0">
+            <div class="mt-6 form-control">
+              <label class="px-0 cursor-pointer label">
                 <span class="text-base text-black">Password</span>
                 <input
                   type="checkbox"
-                  class="checkbox border-2 border-black rounded-none"
+                  class="border-2 border-black rounded-none checkbox"
                   @click="setPasswordRequirement()" />
               </label>
               <input
                 v-model="password"
                 v-if="passwordRequired === true"
-                class="neobrutalist-input py-2 text-sm"
+                class="py-2 text-sm neobrutalist-input"
                 placeholder="Choose a password for your group" />
               <div v-if="passwordError" class="text-red-500">
                 {{ passwordError }}
@@ -100,7 +100,7 @@
           <!-- CREATE GROUP BUTTON -->
           <div class="modal-action">
             <button
-              class="btn bg-white border-2 border-black my-4 mb-2 text-black hover:bg-black hover:border-black hover:text-white"
+              class="my-4 mb-2 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white"
               type="submit">
               CREATE GROUP
             </button>
@@ -124,7 +124,7 @@ import { onBeforeRouteUpdate } from 'vue-router'
 import { useChannelStore } from '@/stores/ChannelStore'
 import { useUserStore } from '@/stores/UserStore.js'
 import { useToast } from 'vue-toastification'
-import type { User } from '@/types/User'
+import type { User } from '@/types'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -246,7 +246,7 @@ const pushUserToAdd = (user: User): void => {
 // ********************** //
 
 const setPasswordRequirement = (): void => {
-  if (passwordRequired.value === true) {
+  if (passwordRequired.value) {
     passwordRequired.value = false
   } else {
     passwordRequired.value = true

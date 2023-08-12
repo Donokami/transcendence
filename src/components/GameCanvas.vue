@@ -1,7 +1,8 @@
 <template>
   <div class="w-[720px] h-[480px] relative mx-auto border-black border-2">
-    <div class="absolute z-10 flex items-center w-full m-auto text-white">
-      <span class="m-auto">{{ Math.round(gameState.remainingTime) }}</span>
+    <div
+      class="absolute z-10 flex items-center w-full m-auto text-2xl text-white">
+      <span class="m-auto">{{ calculatedRemainingTime }}</span>
     </div>
     <div
       class="absolute z-10 flex items-center w-full h-full bg-black bg-opacity-30"
@@ -105,6 +106,28 @@ import { socket } from '@/includes/gameSocket'
 import { useUserStore } from '@/stores/UserStore'
 
 const { loggedUser } = useUserStore()
+
+const calculatedRemainingTime = computed(() => {
+  function fancyTimeFormat(duration: number): string {
+    // Hours, minutes and seconds
+    const hrs = ~~(duration / 3600)
+    const mins = ~~((duration % 3600) / 60)
+    const secs = ~~duration % 60
+
+    // Output like "1:01" or "4:03:59" or "123:03:59"
+    let ret = ''
+
+    if (hrs > 0) {
+      ret += `${hrs}:${mins < 10 ? '0' : ''}`
+    }
+
+    ret += `${mins}:${secs < 10 ? '0' : ''}`
+    ret += `${secs}`
+
+    return ret
+  }
+  return fancyTimeFormat(Math.round(gameState.value.remainingTime))
+})
 
 const isSpectator = computed(() => {
   return (

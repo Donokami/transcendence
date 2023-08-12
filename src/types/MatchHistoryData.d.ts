@@ -1,5 +1,3 @@
-// import type { User } from './User.js'
-
 export interface MatchHistoryData {
   game_index: number
   username: string
