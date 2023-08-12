@@ -108,9 +108,6 @@ export class User {
   // STATS RELATED INFORMATIONS //
   // ************************** //
 
-  @Column({ nullable: true, select: false })
-  rank: number
-
   @Column({ default: 0, select: false })
   gamesPlayed: number
 
@@ -120,7 +117,7 @@ export class User {
   @Column({ default: 0, select: false })
   loss: number
 
-  @Column({ default: 0, select: false })
+  @Column({ type: 'float', default: 0, select: false })
   winRate: number
 
   @Column({ default: 0, select: false })

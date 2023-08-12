@@ -3,6 +3,7 @@ import { randomUUID } from 'crypto'
 import { User } from '../users/user.entity'
 import { GameGateway } from './game.gateway'
 import { Game } from './game.engine'
+import { UsersService } from '@/modules/users/users.service'
 
 export enum RoomStatus {
   OPEN = 'open',
@@ -45,7 +46,8 @@ export class Room implements RoomObject {
   private readonly logger = new Logger(Room.name)
   constructor(
     { name, owner, isPrivate }: RoomOpts,
-    private readonly gameGateway: GameGateway
+    private readonly gameGateway: GameGateway,
+    private readonly usersService: UsersService
   ) {
     this.id = randomUUID()
 
@@ -111,6 +113,7 @@ export class Room implements RoomObject {
     this.gameState = new Game(
       this,
       this.gameGateway,
+      this.usersService,
       this.paddleRatio,
       this.gameDuration,
       this.ballSpeed

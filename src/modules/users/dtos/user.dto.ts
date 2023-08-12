@@ -74,11 +74,6 @@ export class UserDto {
   // ************************** //
   // STATS RELATED INFORMATIONS //
   // ************************** //
-
-  @ApiProperty()
-  @Expose()
-  rank: number
-
   @ApiProperty()
   @Expose()
   gamesPlayed: number

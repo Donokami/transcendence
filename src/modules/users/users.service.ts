@@ -32,7 +32,7 @@ export class UsersService {
     @InjectRepository(Friendship)
     private readonly friendshipRepository: Repository<Friendship>,
     private readonly configService: ConfigService
-  ) { }
+  ) {}
 
   // ****** //
   // LOGGER //
@@ -48,10 +48,7 @@ export class UsersService {
   // create //
   // ****** //
 
-  async create(
-    username: string,
-    password: string
-  ): Promise<User> {
+  async create(username: string, password: string): Promise<User> {
     const user = this.userRepository.create({ password, username })
     return await this.userRepository.save(user)
   }
@@ -90,7 +87,6 @@ export class UsersService {
     return paginate(query, this.userRepository, {
       sortableColumns: [
         'id',
-        'rank',
         'gamesPlayed',
         'win',
         'loss',
@@ -106,7 +102,6 @@ export class UsersService {
       searchableColumns: [
         'username',
         'status',
-        'rank',
         'gamesPlayed',
         'win',
         'loss',
@@ -118,7 +113,6 @@ export class UsersService {
       filterableColumns: {
         name: [FilterOperator.EQ, FilterSuffix.NOT],
         status: [FilterOperator.EQ, FilterSuffix.NOT],
-        rank: [FilterOperator.EQ, FilterSuffix.NOT],
         gamesPlayed: [FilterOperator.EQ, FilterSuffix.NOT],
         win: [FilterOperator.EQ, FilterSuffix.NOT],
         loss: [FilterOperator.EQ, FilterSuffix.NOT],
@@ -132,7 +126,6 @@ export class UsersService {
         'username',
         'status',
         'profilePicture',
-        'rank',
         'gamesPlayed',
         'win',
         'loss',
@@ -231,7 +224,6 @@ export class UsersService {
         'username',
         'status',
         'profilePicture',
-        'rank',
         'gamesPlayed',
         'win',
         'loss',

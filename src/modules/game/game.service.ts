@@ -27,10 +27,10 @@ export class GameService {
   private readonly rooms: Room[] = []
 
   constructor(
-    private readonly userService: UsersService,
+    private readonly usersService: UsersService,
     @Inject(forwardRef(() => GameGateway))
     private readonly gameGateway: GameGateway
-  ) { }
+  ) {}
 
   private readonly logger = new Logger(GameService.name)
 
@@ -63,7 +63,7 @@ export class GameService {
   }
 
   public async create(ownerId: string): Promise<RoomObject> {
-    const owner = await this.userService.findOneById(ownerId)
+    const owner = await this.usersService.findOneById(ownerId)
 
     if (!owner) {
       throw new UserNotFound()
@@ -85,7 +85,8 @@ export class GameService {
         owner: owner,
         isPrivate: false
       },
-      this.gameGateway
+      this.gameGateway,
+      this.usersService
     )
 
     this.rooms.push(room)
@@ -140,7 +141,7 @@ export class GameService {
     socketId: string
   ): Promise<RoomObject> {
     const room = this.findOne(id)
-    const user = await this.userService.findOneById(userId)
+    const user = await this.usersService.findOneById(userId)
 
     if (!room) {
       throw new RoomNotFound()
@@ -174,7 +175,7 @@ export class GameService {
   }
 
   public async leaveAll(userId: string) {
-    const user = await this.userService.findOneById(userId)
+    const user = await this.usersService.findOneById(userId)
     this.rooms.forEach((room) => {
       this.leave(room.id, user.id)
     })
@@ -183,7 +184,7 @@ export class GameService {
   // todo: maybe not that crappy but not sure about that
   public async leave(id: string, userId: string): Promise<void> {
     const room = this.findOne(id)
-    const user = await this.userService.findOneById(userId)
+    const user = await this.usersService.findOneById(userId)
 
     if (!room) {
       throw new RoomNotFound()
@@ -236,7 +237,7 @@ export class GameService {
     roomId: string
   ): Promise<void> {
     const room = this.findOne(roomId)
-    const user = await this.userService.findOneById(userId)
+    const user = await this.usersService.findOneById(userId)
 
     if (!room) throw new RoomNotFound()
     if (!user) throw new UserNotFound()

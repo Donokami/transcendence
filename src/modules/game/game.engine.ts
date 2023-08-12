@@ -1,8 +1,10 @@
 import { Logger } from '@nestjs/common'
 import { Object3D, Vector3 } from 'three'
 import { GameGateway } from './game.gateway'
+import { UsersService } from '@/modules/users/users.service'
 import { Room, RoomStatus } from './room'
 import { type SimObject3D, type Metrics, PhysicsEngine } from './game.physics'
+import { User } from '../users/user.entity'
 
 const metrics: Metrics = {
   canvasHeight: 480,
@@ -41,6 +43,7 @@ export class Game {
   constructor(
     private readonly roomState: Room,
     private readonly gameGateway: GameGateway,
+    private readonly usersService: UsersService,
     private readonly paddleRatio: number,
     private readonly gameDuration: number,
     private readonly ballSpeed: number
@@ -124,6 +127,8 @@ export class Game {
 
   public userSurrended(userId: string) {
     // Remove all points from the user who surrended
+    this.logger.log(`User ${userId} surrended`)
+
     const playerIndex = this.gameState.players.findIndex(
       (player) => player.userId === userId
     )
@@ -136,9 +141,59 @@ export class Game {
     this.logger.log('start of game!')
   }
 
-  public endGame() {
+  private async updateUserStats() {
+    if (this.gameState.players[1].userId === 'bot') return
+    const players = this.gameState.players
+    const firstPlayer = await this.usersService.findOneByIdWithStats(
+      players[0].userId
+    )
+    const secondPlayer = await this.usersService.findOneByIdWithStats(
+      players[1].userId
+    )
+
+    const scoreDifference = players[0].score - players[1].score
+    const isFirstPlayerWinner = scoreDifference > 0
+    const isSecondPlayerWinner = scoreDifference < 0
+
+    const updatedPlayerStats = (player: Partial<User>, isWinner: boolean) => ({
+      ...player,
+      gamesPlayed: player.gamesPlayed + 1,
+      win: isWinner ? player.win + 1 : player.win,
+      loss: isWinner ? player.loss : player.loss + 1,
+      winRate:
+        (isWinner ? player.win + 1 : player.win) / (player.gamesPlayed + 1),
+      pointsScored: player.pointsScored + players[isWinner ? 0 : 1].score,
+      pointsConceded: player.pointsConceded + players[isWinner ? 1 : 0].score,
+      pointsDifference:
+        player.pointsScored -
+        player.pointsConceded +
+        players[isWinner ? 0 : 1].score -
+        players[isWinner ? 1 : 0].score
+    })
+
+    const updatedFirstPlayer = updatedPlayerStats(
+      firstPlayer,
+      isFirstPlayerWinner
+    )
+    const updatedSecondPlayer = updatedPlayerStats(
+      secondPlayer,
+      isSecondPlayerWinner
+    )
+    try {
+      this.logger.log(firstPlayer.id)
+      this.logger.log(updatedFirstPlayer)
+      this.logger.log(firstPlayer)
+      this.usersService.update(firstPlayer.id, updatedFirstPlayer)
+      this.usersService.update(secondPlayer.id, updatedSecondPlayer)
+    } catch (error) {
+      this.logger.error(error)
+    }
+  }
+
+  public async endGame() {
     this.gameState.endTime = Date.now()
     this.gameGateway.server.to(this.roomState.id).emit(`game:end`)
+    await this.updateUserStats()
     // todo: to test, it may be broken
     this.roomState.update({ ...this.roomState, status: RoomStatus.OPEN })
     this.logger.log('end of game!')
