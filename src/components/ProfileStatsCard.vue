@@ -41,7 +41,7 @@
       <div class="flex items-top justify-between h-14">
         <div class="stat-value text-xl">Rank</div>
         <iconify-icon
-          class="w-10 h-10"
+          class="w-8 h-8"
           icon="icon-park-outline:ranking"
           style="color: #5d4df8"></iconify-icon>
       </div>
@@ -57,7 +57,7 @@
       <div class="flex items-top justify-between h-14">
         <div class="stat-value text-xl">Win Rate</div>
         <iconify-icon
-          class="w-10 h-10"
+          class="w-8 h-8"
           icon="mdi:target-arrow"
           style="color: #5d4df8"></iconify-icon>
       </div>
@@ -76,67 +76,36 @@
         <!-- NUMBER OF FRIENDS -->
         <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
         <!-- SEND REQUEST -->
-        <div
-          class="stat-figure text-primary tooltip tooltip-top"
+        <button
           v-if="
             isFriend === false &&
             loggedUser.isBlockedBy == null &&
             observedUser.isBlockedBy == null
           "
-          data-tip="Add friend">
-          <iconify-icon
-            class="w-10 h-10"
-            :icon="iconSendRequest"
-            style="color: #5d4df8"
-            @click="sendFriendRequest"
-            @mouseover="iconSendRequest = 'mdi:account-plus'"
-            @mouseout="
-              iconSendRequest = 'mdi:account-plus-outline'
-            "></iconify-icon>
-        </div>
+          class="btn bg-white border-2 border-black text-black hover:bg-black hover:border-black hover:text-white h-14 items-center no-animation"
+          type="button"
+          @click="sendFriendRequest">
+          <div>Add friend</div>
+          <iconify-icon class="w-8 h-8" :icon="iconSendRequest"></iconify-icon>
+        </button>
         <!-- BLOCK USER -->
-        <div
-          class="stat-figure text-primary tooltip tooltip-top"
+        <button
           v-else-if="isFriend === true && loggedUser.isBlockedBy != true"
-          data-tip="Block user">
-          <iconify-icon
-            class="w-10 h-10"
-            :icon="iconBlockUser"
-            style="color: #5d4df8"
-            @click="blockUser"
-            @mouseover="iconBlockUser = 'mdi:account-cancel'"
-            @mouseout="
-              iconBlockUser = 'mdi:account-cancel-outline'
-            "></iconify-icon>
-        </div>
+          class="btn bg-white border-2 border-black text-black hover:bg-black hover:border-black hover:text-white h-14 items-center no-animation"
+          type="button"
+          @click="blockUser">
+          <div>Block user</div>
+          <iconify-icon class="w-8 h-8" :icon="iconBlockUser"></iconify-icon>
+        </button>
         <!-- UNBLOCK USER -->
-        <div
-          class="stat-figure text-primary tooltip tooltip-top"
+        <button
           v-else-if="isFriend === false && observedUser.isBlockedBy == true"
-          data-tip="Unblock user">
-          <iconify-icon
-            class="w-10 h-10"
-            :icon="iconUnblockUser"
-            style="color: #5d4df8"
-            @click="unblockUser"
-            @mouseover="iconUnblockUser = 'mdi:account-cancel-outline'"
-            @mouseout="iconUnblockUser = 'mdi:account-cancel'"></iconify-icon>
-        </div>
-        <!-- BLOCK USER -->
-        <div
-          class="stat-figure text-primary tooltip tooltip-top"
-          v-else
-          data-tip="Block user">
-          <iconify-icon
-            class="w-10 h-10"
-            :icon="iconBlockUser"
-            style="color: #5d4df8"
-            @click="blockUser"
-            @mouseover="iconBlockUser = 'mdi:account-cancel'"
-            @mouseout="
-              iconBlockUser = 'mdi:account-cancel-outline'
-            "></iconify-icon>
-        </div>
+          class="btn bg-white border-2 border-black text-black hover:bg-black hover:border-black hover:text-white h-14 items-center no-animation"
+          type="button"
+          @click="unblockUser">
+          <div>Unblock user</div>
+          <iconify-icon class="w-8 h-8" :icon="iconUnblockUser"></iconify-icon>
+        </button>
       </div>
     </div>
     <!-- FRIEND REQUEST NOTIFICATION -->
@@ -155,26 +124,22 @@
       </div>
       <div class="flex items-center justify-between h-24">
         <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
-        <div class="stat-figure text-primary" v-if="nFriendRequests > 0">
+        <label
+          v-if="nFriendRequests > 0"
+          for="my-modal-3"
+          class="btn bg-white border-2 border-black text-black hover:bg-black hover:border-black hover:text-white h-16 items-center no-animation"
+          type="button"
+          @click="showFriendRequestModal = true">
+          <div>Handle requests</div>
           <div class="indicator">
-            <label
-              for="my-modal-3"
-              type="button"
-              @click="showFriendRequestModal = true">
-              <span class="badge badge-secondary indicator-item text-white">{{
-                nFriendRequests
-              }}</span>
-              <iconify-icon
-                class="w-10 h-10"
-                :icon="iconRequestNotification"
-                style="color: 5d4df8"
-                @mouseover="iconRequestNotification = 'mdi:account-alert'"
-                @mouseout="
-                  iconRequestNotification = 'mdi:account-alert-outline'
-                "></iconify-icon>
-            </label>
+            <span class="badge badge-secondary indicator-item text-white">{{
+              nFriendRequests
+            }}</span>
+            <iconify-icon
+              class="w-8 h-8"
+              :icon="iconRequestNotification"></iconify-icon>
           </div>
-        </div>
+        </label>
       </div>
     </div>
   </div>
@@ -212,6 +177,7 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import { appSocket } from '@/includes/appSocket'
 import { useUserStore } from '@/stores/UserStore'
 import type { User } from '@/types'
+import { ApiError } from '@/utils/fetcher'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -394,8 +360,12 @@ const sendFriendRequest = async (): Promise<void> => {
   try {
     await userStore.sendFriendRequest(observedUser.value.id)
     toast.success('Friend request sent !')
-  } catch (error) {
-    toast.error('Failed to send friend request !')
+  } catch (error: any) {
+    if (error instanceof ApiError) {
+      if (error.code === 'FriendshipAlreadyPending') {
+        toast.error('Friendship already pending !')
+      }
+    } else toast.error('Failed to send friend request !')
   }
 }
 
