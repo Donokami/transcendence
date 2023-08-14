@@ -29,6 +29,10 @@ import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { Message } from '@/modules/chat/channels/entities/message.entity'
 import { User } from '@/modules/users/user.entity'
 import { UsersService } from '@/modules/users/users.service'
+import { randomBytes, scrypt as _scrypt } from 'crypto'
+import { promisify } from 'util'
+
+const scrypt = promisify(_scrypt)
 
 export interface OperationResult {
   success: boolean
@@ -46,7 +50,7 @@ export class ChannelsService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway
-  ) {}
+  ) { }
 
   // ****** //
   // LOGGER //
@@ -189,13 +193,20 @@ export class ChannelsService {
     )
     if (!members || members.length < 2) throw new ChannelMembersNotFound()
 
+    let hashedPassword: string = null
+    if (!createChannelDto.isDm) {
+      const salt = randomBytes(8).toString('hex')
+      const hash = (await scrypt(createChannelDto.password, salt, 32)) as Buffer
+      hashedPassword = salt + '.' + hash.toString('hex')
+    }
+
     const newChannel: Channel = this.channelsRepository.create({
       isDm: createChannelDto.isDm,
       owner: owner,
       members: members,
       name: createChannelDto.isDm ? null : createChannelDto.name,
       isPrivate: createChannelDto.isDm ? false : !!createChannelDto.password,
-      password: createChannelDto.isDm ? null : createChannelDto.password
+      password: createChannelDto.isDm ? null : hashedPassword
     })
 
     const channel: Channel = await this.channelsRepository.save(newChannel)
@@ -342,8 +353,15 @@ export class ChannelsService {
       throw new MissingGroupPassword()
     }
 
-    if (channel.isPrivate && password !== channel.password) {
-      throw new InvalidGroupPassword()
+
+    if (channel.isPrivate) {
+      const [salt, storedHash] = channel.password.split('.')
+
+      const hash = (await scrypt(password, salt, 32)) as Buffer
+
+      if (storedHash !== hash.toString('hex')) {
+        throw new InvalidGroupPassword()
+      }
     }
 
     channel.members = this.addUserToList(

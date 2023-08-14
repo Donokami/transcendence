@@ -25,7 +25,19 @@ import { ISession } from '@/core/types'
 @Controller('games')
 @UseFilters(new GlobalExceptionFilter())
 export class GameController {
-  constructor(private readonly gameService: GameService) {}
+  constructor(private readonly gameService: GameService) { }
+
+  @Get('/matchmaking')
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Join the matchmaking queue',
+    operationId: 'joinQueue',
+    description: 'Join the matchmaking queue',
+    tags: ['game']
+  })
+  joinQueue(@Session() session: ISession): Promise<RoomObject> {
+    return this.gameService.joinQueue(session.userId)
+  }
 
   @Get(':id')
   @UseGuards(AuthGuard)
@@ -58,18 +70,6 @@ export class GameController {
     return this.gameService
       .findAll()
       .filter((room) => !room.isPrivate || room.owner.id === session.userId)
-  }
-
-  @Get('/matchmaking')
-  @UseGuards(AuthGuard)
-  @ApiOperation({
-    summary: 'Join the matchmaking queue',
-    operationId: 'joinQueue',
-    description: 'Join the matchmaking queue',
-    tags: ['game']
-  })
-  joinQueue(@Session() session: ISession): Promise<RoomObject> {
-    return this.gameService.joinQueue(session.userId)
   }
 
   @Post()

@@ -23,6 +23,7 @@ import * as fs from 'fs'
 
 import { User } from './user.entity'
 import { UserNotFound, UserNotInChannel } from '@/core/exceptions'
+import { Subject } from 'rxjs'
 
 @Injectable()
 export class UsersService {
@@ -39,10 +40,23 @@ export class UsersService {
   // ****** //
 
   private logger: Logger = new Logger(UsersService.name)
+  private shutdownListener$: Subject<void> = new Subject()
 
   // ******************** //
   // FUNCTION DEFINITIONS //
   // ******************** //
+
+  // onModuleDestroy() {
+  //   this.logger.log('Shutting down...')
+  // }
+
+  // subscribeToShutdown(shutdownFn: () => void): void {
+  //   this.shutdownListener$.subscribe(() => shutdownFn())
+  // }
+
+  // shutdown() {
+  //   this.shutdownListener$.next()
+  // }
 
   // ****** //
   // create //
@@ -358,5 +372,9 @@ export class UsersService {
       throw new BadRequestException('Invalid file path')
     }
     return
+  }
+
+  async disconnectAll() {
+    await this.userRepository.update({}, { status: 'offline' })
   }
 }

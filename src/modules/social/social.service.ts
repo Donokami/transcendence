@@ -1,9 +1,6 @@
 import {
-  BadRequestException,
   Injectable,
   Logger,
-  NotFoundException,
-  UnauthorizedException
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
@@ -28,7 +25,7 @@ import {
   FriendshipStatus
 } from '@/modules/social/entities/friendship.entity'
 import { User } from '@/modules/users/user.entity'
-import { AppGateway } from '@/app.gateway'
+import { SocialGateway } from './social.gateway'
 
 @Injectable()
 export class SocialService {
@@ -41,8 +38,8 @@ export class SocialService {
     private readonly usersRepository: Repository<User>,
     @InjectRepository(Friendship)
     private readonly friendshipRepository: Repository<Friendship>,
-    private readonly appGateway: AppGateway
-  ) {}
+    private readonly socialGateway: SocialGateway
+  ) { }
 
   // ****** //
   // LOGGER //
@@ -90,10 +87,10 @@ export class SocialService {
         `${userToBlockId} has been successfully blocked by ${blockerId}`
       )
 
-      const client = this.appGateway.findClient(userToBlockId)
+      const client = this.socialGateway.findClient(userToBlockId)
 
       if (client) {
-        this.appGateway.server
+        this.socialGateway.server
           .to(client.clientId)
           .emit('social:block', { blockerId })
       }
@@ -111,10 +108,10 @@ export class SocialService {
         `${userToBlockId} has been successfully blocked by ${blockerId}`
       )
 
-      const client = this.appGateway.findClient(userToBlockId)
+      const client = this.socialGateway.findClient(userToBlockId)
 
       if (client) {
-        this.appGateway.server
+        this.socialGateway.server
           .to(client.clientId)
           .emit('social:block', { blockerId })
       }
@@ -349,10 +346,10 @@ export class SocialService {
       this.logger.verbose(
         `Friend request sent by : ${senderId} to : ${receiverId} accepted.`
       )
-      const client = this.appGateway.findClient(senderId)
+      const client = this.socialGateway.findClient(senderId)
 
       if (client) {
-        this.appGateway.server
+        this.socialGateway.server
           .to(client.clientId)
           .emit('social:accept', request.receiver)
       }
@@ -405,10 +402,10 @@ export class SocialService {
 
         await this.friendshipRepository.save(friendship)
 
-        const client = this.appGateway.findClient(receiverId)
+        const client = this.socialGateway.findClient(receiverId)
 
         if (client) {
-          this.appGateway.server
+          this.socialGateway.server
             .to(client.clientId)
             .emit('social:new', friendship)
         }
@@ -427,10 +424,10 @@ export class SocialService {
         `Friend request successfully sent by ${senderId} to ${receiverId}.`
       )
 
-      const client = this.appGateway.findClient(receiverId)
+      const client = this.socialGateway.findClient(receiverId)
 
       if (client) {
-        this.appGateway.server
+        this.socialGateway.server
           .to(client.clientId)
           .emit('social:new', friendship)
       }

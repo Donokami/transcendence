@@ -5,14 +5,17 @@ import { ConfigService } from '@nestjs/config'
 import { SocketIoAdapter } from '@/core/websockets/auth-adapter'
 import * as express from 'express'
 import * as fs from 'fs/promises'
+import { config } from 'dotenv'
+import { AppService } from './app.service'
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-require('dotenv').config({ path: '../envs/.env' })
+config({ path: '../envs/.env' })
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
   const configService = app.get(ConfigService)
+
+  app.enableShutdownHooks();
 
   app.enableCors({
     allowedHeaders: ['content-type'],
@@ -41,6 +44,8 @@ async function bootstrap() {
   } catch {
     await fs.mkdir(dir, { recursive: true })
   }
+
+  app.get(AppService).subscribeToShutdown(() => app.close());
 
   await app.listen(configService.get('PORT'))
 }

@@ -55,6 +55,8 @@ export class GameService {
   async joinQueue(userId: string): Promise<RoomObject> {
     const rooms = this.findPublic()
 
+    console.log(rooms);
+
     if (!rooms.length) {
       return this.create(userId)
     }

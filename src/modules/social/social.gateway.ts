@@ -1,4 +1,4 @@
-import { Logger, UseFilters } from '@nestjs/common'
+import { Injectable, Logger, UseFilters } from '@nestjs/common'
 
 import { Server } from 'socket.io'
 
@@ -11,11 +11,12 @@ import { UsersService } from '@/modules/users/users.service'
 import { UserStatus } from '@/modules/users/user.entity'
 
 @WebSocketGateway({
-  namespace: '/app',
+  namespace: '/social',
   transport: ['websocket', 'polling']
 })
 @UseFilters(new GlobalExceptionFilter())
-export class AppGateway {
+@Injectable()
+export class SocialGateway {
   @WebSocketServer()
   server: Server
 
@@ -24,9 +25,9 @@ export class AppGateway {
     userId: string
   }> = []
 
-  constructor(private readonly userService: UsersService) {}
+  constructor(private readonly userService: UsersService) { }
 
-  private readonly logger = new Logger(AppGateway.name)
+  private readonly logger = new Logger(SocialGateway.name)
 
   async handleConnection(client: IUserSocket) {
     this.userService.update(client.request.user.id, {
@@ -38,7 +39,7 @@ export class AppGateway {
       userId: client.request.user.id
     })
 
-    this.logger.verbose(`Client ${client.id} connected to / socket`)
+    this.logger.debug(`Client ${client.id} connected to /social socket`)
     this.server.emit('user:connect', client.request.user.id)
   }
 

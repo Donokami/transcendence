@@ -25,4 +25,4 @@ import { ChatModule } from '@/modules/chat/chat.module'
   ],
   exports: [UsersService]
 })
-export class UsersModule {}
+export class UsersModule { }
