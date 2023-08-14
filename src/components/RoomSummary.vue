@@ -12,15 +12,12 @@
                 {{ room.players[0].username }}
               </span>
             </div>
-            <img
-              v-if="room.players[0].profilePicture"
-              :src="room.players[0].profilePicture"
-              class="object-cover w-10 h-10 rounded-full sm:h-12 sm:w-12" />
-            <iconify-icon
-              v-else
-              icon="ri:account-circle-line"
-              class="w-10 h-10 sm:h-12 sm:w-12">
-            </iconify-icon>
+            <div class="w-10 h-10 sm:h-12 sm:w-12">
+              <user-avatar
+                :userProps="(room.players[0] as User)"
+                :uploadMode="false"
+                :status-mode="false"></user-avatar>
+            </div>
           </template>
           <iconify-icon
             v-else
@@ -40,15 +37,12 @@
                 {{ room.players[1].username }}
               </span>
             </div>
-            <img
-              v-if="room.players[1].profilePicture"
-              :src="room.players[1].profilePicture"
-              class="object-cover w-10 h-10 rounded-full sm:h-12 sm:w-12" />
-            <iconify-icon
-              v-else
-              icon="ri:account-circle-line"
-              class="w-10 h-10 sm:h-12 sm:w-12">
-            </iconify-icon>
+            <div class="w-10 h-10 sm:h-12 sm:w-12">
+              <user-avatar
+                :userProps="(room.players[1] as User)"
+                :uploadMode="false"
+                :status-mode="false"></user-avatar>
+            </div>
           </template>
           <iconify-icon
             v-else
@@ -72,9 +66,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { Game, Room } from '@/types'
+import type { Game, Room, User } from '@/types'
 import { socket } from '@/includes/gameSocket'
 import { useUserStore } from '@/stores/UserStore'
+import UserAvatar from '@/components/UserAvatar.vue'
 
 const props = defineProps<{
   room: Room
