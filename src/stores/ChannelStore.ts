@@ -48,12 +48,12 @@ export const useChannelStore = defineStore('channels', {
     // addAdmin //
     // ******** //
 
-    addAdmin(user: User, channelId: string): void {
+    async addAdmin(user: User, channelId: string): Promise<void> {
       const channel = this.getChannel(channelId)
+      if (!channel) return
 
-      if (channel != null) {
-        channel.admins.push(user)
-      }
+      channel.admins.push(user)
+      await fetcher.put(`/channels/${channelId}/set-admin`, { userId: user.id })
     },
 
     // ********* //
@@ -234,14 +234,13 @@ export const useChannelStore = defineStore('channels', {
       channelName: string,
       receiversId: string[],
       password: string | null
-    ): Promise<void> {
+    ): Promise<Channel> {
       const { loggedUser } = useUserStore()
-      if (loggedUser == null) return
 
       const channelParam = {
         isDm: false,
         name: channelName,
-        membersIds: [loggedUser.id, ...receiversId],
+        membersIds: [loggedUser?.id, ...receiversId],
         password
       }
 
@@ -255,6 +254,7 @@ export const useChannelStore = defineStore('channels', {
         'New group channel pushed to channelsList in store : ',
         this.channelsList
       )
+      return response
     },
 
     // ******************* //
@@ -383,23 +383,13 @@ export const useChannelStore = defineStore('channels', {
       return channels ?? []
     },
 
-    // ********* //
-    // makeAdmin //
-    // ********* //
-
-    async makeAdmin(userId: string, channelId: string): Promise<void> {
-      console.log(`DEBUG : HERE`)
-      await fetcher.put(`/channels/${channelId}/set-admin`, { userId })
-      console.log(`User with ID : ${userId} successfully promoted admin`)
-    },
-
     // ******* //
     // isAdmin //
     // ******* //
 
     isAdmin(userId: string, channelId: string): boolean {
       const channel = this.getChannel(channelId)
-      if (!channel) return false
+      if (!channel?.admins?.length) return false
 
       return !!(
         channel.admins.some((user) => user.id === userId) ||
@@ -416,6 +406,28 @@ export const useChannelStore = defineStore('channels', {
       if (!channel) return false
 
       return channel.owner.id === userId
+    },
+
+    // ******* //
+    // isBanned //
+    // ******* //
+
+    isBanned(userId: string, channelId: string): boolean {
+      const channel = this.getChannel(channelId)
+      if (!channel?.bannedMembers?.length) return false
+
+      return !!channel.bannedMembers.some(
+        (bannedMember) => bannedMember.id === userId
+      )
+    },
+
+    // ********* //
+    // makeAdmin //
+    // ********* //
+
+    async makeAdmin(userId: string, channelId: string): Promise<void> {
+      // await fetcher.put(`/channels/${channelId}/set-admin`, { userId })
+      console.log(`User with ID : ${userId} successfully promoted admin`)
     },
 
     // ********* //
@@ -447,11 +459,11 @@ export const useChannelStore = defineStore('channels', {
     async leaveGroup(userId: string, channelId: string): Promise<void> {
       await fetcher
         .delete(`/channels/${channelId}/leave`, { userId })
-        .then(() => {
+        .then(async () => {
           this.selectedChannel = null
           this.removeFromChannelList(channelId)
           toast.success(`You left the channel`)
-          return router.push('/chat')
+          return await router.push('/chat')
         })
       console.log(`User with ID : ${userId} successfully left channel`)
     },
@@ -489,15 +501,15 @@ export const useChannelStore = defineStore('channels', {
     // removeAdmin //
     // ************ //
 
-    removeAdmin(userId: string, channelId: string): void {
+    async removeAdmin(userId: string, channelId: string): Promise<void> {
       const channel = this.getChannel(channelId)
+      if (!channel) return
 
-      if (channel != null) {
-        const index = channel.admins.findIndex((user) => user.id === userId)
-        if (index != null) {
-          channel.admins.splice(index, 1)
-        }
-      }
+      const userIndex = channel.admins.findIndex((user) => user.id === userId)
+      if (!userIndex) return
+
+      channel.admins.splice(userIndex, 1)
+      await fetcher.delete(`/channels/${channelId}/unset-admin`, { userId })
     },
 
     // ************ //

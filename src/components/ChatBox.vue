@@ -21,7 +21,7 @@
         </div>
         <div
           :class="bubbleClass(message)"
-          class="flex flex-col max-w-[10rem] sm:max-w-sm w-fit p-2 text-justify border-black border-2 h-fit mt-0.5">
+          class="flex flex-col max-w-[10rem] md:max-w-sm w-fit p-2 text-justify border-black border-2 h-fit mt-0.5">
           <div v-if="message.room && message.room.loading === false">
             <div class="text-sm" :class="textClass(message)">
               <h1 v-if="!message.room.data">Invite link expired</h1>
@@ -32,7 +32,7 @@
                 </p>
                 <button
                   class="btn border-2 bg-white border-black text-black hover:bg-black hover:border-white hover:text-white mt-2 block w-full"
-                  :class="{ invert: message.user.id === loggedUser.value?.id }">
+                  :class="{ invert: message.user.id === loggedUser.id }">
                   <router-link
                     :to="`/room/${message.room.data.id}`"
                     class="flex gap-2 w-fit mx-auto">

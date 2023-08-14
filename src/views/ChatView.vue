@@ -394,7 +394,7 @@ chatSocket.on(
     const channel = channelStore.getChannel(channelId)
 
     if (channel) {
-      channelStore.addAdmin(user, channelId)
+      await channelStore.addAdmin(user, channelId)
 
       if (loggedUser && loggedUser.id === user.id) {
         toast.success(`You have been promoted admin of ${channel.name}`)
@@ -447,7 +447,7 @@ chatSocket.on(
     const channel = channelStore.getChannel(channelId)
 
     if (channel) {
-      channelStore.removeAdmin(user.id, channelId)
+      await channelStore.removeAdmin(user.id, channelId)
 
       if (loggedUser && loggedUser.id === user.id) {
         toast.success(`You are not admin of ${channel.name} anymore`)
@@ -474,8 +474,7 @@ onBeforeMount(async () => {
     console.log('[ChatView] - Connected to the chat.')
   })
 
-  // fix: on reload router.push -> /chat bug
-  if (selectedChannel.value !== null) {
+  if (selectedChannel.value) {
     await router.push(`/chat/${selectedChannel.value}`)
   } else {
     await router.push(`/chat`)

@@ -21,7 +21,7 @@
     <!-- DROPDOWN CONTENT -->
     <ul
       tabindex="0"
-      class="dropdown-content menu shadow bg-base-100 p-0 border-2 border-black rounded-none mx-2 w-40 top-100"
+      class="dropdown-content menu shadow bg-base-100 p-0 border-2 border-black rounded-none mx-2 w-max"
       v-if="isOpen">
       <!-- GO TO PROFILE -->
       <li class="rounded-none">
@@ -35,7 +35,7 @@
       </li>
       <!-- MAKE ADMIN -->
       <div v-if="!isSender">
-        <li class="rounded-none" v-if="isMember" @click="makeAdmin">
+        <li class="rounded-none" v-if="showMakeAdmin()" @click="makeAdmin">
           <div class="flex gap-3 rounded-none">
             <iconify-icon
               icon="lucide:crown"
@@ -60,8 +60,22 @@
             <span>Block</span>
           </div>
         </li>
-        <div v-if="isMember">
+        <div v-if="isMember && showAdminActions()">
           <div class="divider p-0 m-0 h-[6px]"></div>
+          <!-- REVOKE ADMIN -->
+          <li
+            class="rounded-none"
+            v-if="showRevokeAdmin()"
+            @click="revokeAdminRights()">
+            <div
+              class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+              <iconify-icon
+                icon="lucide:x"
+                class="h-4 w-4 shrink-0 self-start mt-0.5">
+              </iconify-icon>
+              <span class="w-full">Revoke Admin</span>
+            </div>
+          </li>
           <!-- KICK -->
           <li class="rounded-none" @click="kickMember">
             <div
@@ -81,8 +95,8 @@
             </div>
           </li>
         </div>
-        <div v-else-if="isBanned">
-          <!-- UNBAN -->
+        <!-- UNBAN -->
+        <!-- <div v-if="isBanned">
           <li class="rounded-none" @click="unbanMember">
             <div
               class="flex gap-3 rounded-none text-green-500 hover:text-green-500">
@@ -91,7 +105,7 @@
               <span>Unban</span>
             </div>
           </li>
-        </div>
+        </div> -->
       </div>
     </ul>
   </div>
@@ -148,11 +162,52 @@ const userStore = useUserStore()
 
 const { loggedUser } = storeToRefs(userStore)
 
-const isAdmin = computed((): boolean => {
-  return props.channel.admins.some(
-    (admin) => admin.username === props.user.username
+function showRevokeAdmin(): boolean {
+  if (!props.channel || !loggedUser.value) return false
+
+  const isTargetAdmin = channelStore.isAdmin(props.user.id, props.channel.id)
+  const isUserOwner = channelStore.isOwner(
+    loggedUser.value.id,
+    props.channel.id
   )
-})
+  return isUserOwner && isTargetAdmin
+}
+
+function showAdminActions(): boolean {
+  if (!props.channel || !loggedUser.value) return false
+
+  const isTargetAdmin = channelStore.isAdmin(props.user.id, props.channel.id)
+  const isTargetOwner = channelStore.isOwner(props.user.id, props.channel.id)
+  const isUserOwner = channelStore.isOwner(
+    loggedUser.value.id,
+    props.channel.id
+  )
+  const isUserAdmin = channelStore.isAdmin(
+    loggedUser.value.id,
+    props.channel.id
+  )
+  return isUserOwner || (isUserAdmin && !isTargetAdmin && !isTargetOwner)
+}
+
+function showMakeAdmin(): boolean {
+  if (!props.channel || !loggedUser.value) return false
+
+  const isTargetOwner = channelStore.isOwner(props.user.id, props.channel.id)
+  const isTargetAdmin = channelStore.isAdmin(props.user.id, props.channel.id)
+  const isUserOwner = channelStore.isOwner(
+    loggedUser.value.id,
+    props.channel.id
+  )
+  const isUserAdmin = channelStore.isAdmin(
+    loggedUser.value.id,
+    props.channel.id
+  )
+  return (isUserAdmin || isUserOwner) && !isTargetAdmin && !isTargetOwner
+}
+
+// ********************* //
+// FUNCTIONS DEFINITIONS //
+// ********************* //
 
 const isMember = computed((): boolean => {
   return props.channel.members.some(
@@ -160,15 +215,25 @@ const isMember = computed((): boolean => {
   )
 })
 
-const isBanned = computed((): boolean => {
-  return props.channel.bannedMembers.some(
-    (bannedMember) => bannedMember.username === props.user.username
-  )
-})
+// const isBanned = computed((): boolean => {
+//   return props.channel.bannedMembers.some(
+//     (bannedMember) => bannedMember.username === props.user.username
+//   )
+// })
 
-// ********************* //
-// FUNCTIONS DEFINITIONS //
-// ********************* //
+const revokeAdminRights = async (): Promise<void> => {
+  try {
+    await channelStore.removeAdmin(props.user.id, props.channel.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error(
+          'You are not allowed to revoke the admin rights of this user.'
+        )
+      }
+    }
+  }
+}
 
 // ********* //
 // banMember //
@@ -192,7 +257,7 @@ const banMember = async (): Promise<void> => {
 
 const makeAdmin = async (): Promise<void> => {
   try {
-    await channelStore.makeAdmin(props.user.id, props.channel.id)
+    await channelStore.addAdmin(props.user, props.channel.id)
   } catch (err: any) {
     if (err instanceof ApiError) {
       if (err.code === 'ForbiddenException') {

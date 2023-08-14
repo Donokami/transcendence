@@ -91,7 +91,7 @@ const pictureSrc = computed(() => {
 })
 
 const statusBadge = (): string => {
-  if (props.statusMode === false) return ''
+  if (!props.statusMode) return ''
 
   if (user.value === null || loggedUser.value === null) return 'offline'
   if (user.value.id === loggedUser.value.id) return 'online'

@@ -1,125 +1,129 @@
 <template>
-  <div class="neobrutalist-box sm:w-[30rem] p-7 sm:p-11">
+  <div class="sm:w-[28rem]">
     <h2 class="text-xl sm:text-2xl font-bold mb-8 text-black">Register</h2>
-    <Form ref="formRef" :validation-schema="registerSchema" @submit="submitForm">
+    <Form
+      ref="formRef"
+      :validation-schema="registerSchema"
+      @submit="submitForm">
       <div class="mb-6">
-        <label class="block font-medium mb-1 text-lg sm:text-xl" for="username"> Username </label>
+        <label class="block font-medium mb-1 text-lg sm:text-xl" for="username">
+          Username
+        </label>
         <Field
           class="neobrutalist-input w-full text-black"
           id="username"
           name="username"
           type="username"
-          placeholder="Choose a username"
-        />
-        <ErrorMessage class="font-normal text-base text-red-600" name="username" />
+          placeholder="Choose a username" />
+        <ErrorMessage
+          class="font-normal text-base text-red-600"
+          name="username" />
       </div>
       <div class="mb-6">
-        <label class="block font-medium mb-1 text-lg sm:text-xl" for="password">Password</label>
+        <label class="block font-medium mb-1 text-lg sm:text-xl" for="password"
+          >Password</label
+        >
         <Field
           class="neobrutalist-input w-full text-black"
           name="password"
           type="password"
           placeholder="Enter your password"
-          autocomplete
-        />
-        <ErrorMessage class="font-normal text-base text-red-600" name="password" />
+          autocomplete />
+        <ErrorMessage
+          class="font-normal text-base text-red-600"
+          name="password" />
       </div>
       <div class="mb-6">
-        <label class="block font-medium mb-1 text-lg sm:text-xl" for="confirmPassword">Confirm Password</label>
+        <label
+          class="block font-medium mb-1 text-lg sm:text-xl"
+          for="confirmPassword"
+          >Confirm Password</label
+        >
         <Field
           class="neobrutalist-input w-full text-black"
           id="confirmPassword"
           name="confirmPassword"
           type="password"
           placeholder="Confirm your password"
-          autocomplete
-        />
-        <ErrorMessage class="font-normal text-base text-red-600" name="confirmPassword" />
+          autocomplete />
+        <ErrorMessage
+          class="font-normal text-base text-red-600"
+          name="confirmPassword" />
       </div>
       <div
         class="text-white text-center font-bold p-4 rounded mb-4"
         v-if="showAlert"
-        :class="alertColor"
-      >
+        :class="alertColor">
         {{ alertMsg }}
       </div>
       <div class="flex items-center gap-2 justify-between mt-8">
-        <button class="btn bg-zinc-900 text-white" type="submit" :disabled="inSubmission">
+        <button
+          class="btn bg-zinc-900 text-white"
+          type="submit"
+          :disabled="inSubmission">
           Create account
         </button>
         <button
           class="btn bg-gray-400 border-gray-400 hover:bg-gray-300 hover:border-gray-300 text-zinc-900"
           type="button"
-          @click="toggleForm"
-        >
+          @click="toggleForm">
           Sign In
         </button>
       </div>
     </Form>
-    <div class="divider before:bg-gray-400 after:bg-gray-400 m-8">or</div>
-    <div class="flex justify-center">
-      <button
-        class="btn bg-zinc-900 border-zinc-900 text-white"
-        type="submit"
-        :disabled="inSubmission"
-      >
-        Register with
-        <img class="icon mx-3 h-2/4" src="../assets/42-logo.svg" alt="42 Logo" />
-      </button>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ref } from 'vue'
-  import { Form, Field, ErrorMessage } from 'vee-validate'
-  import { useUserStore } from '../stores/UserStore'
-  import { useToast } from 'vue-toastification'
+import { ref } from 'vue'
+import { Form, Field, ErrorMessage } from 'vee-validate'
+import { useUserStore } from '../stores/UserStore'
+import { useToast } from 'vue-toastification'
 
-  const alertMsg = ref('Your account is being created...')
-  const alertColor = ref('bg-blue-500')
-  const inSubmission = ref(false)
-  const showAlert = ref(false)
+const alertMsg = ref('Your account is being created...')
+const alertColor = ref('bg-blue-500')
+const inSubmission = ref(false)
+const showAlert = ref(false)
 
-  const toast = useToast()
+const toast = useToast()
 
-  const userStore = useUserStore();
+const userStore = useUserStore()
 
-  const emit = defineEmits(['form-state-changed'])
+const emit = defineEmits(['form-state-changed'])
 
-  const registerSchema = {
-    username: 'required|min:3|max:100',
-    password: 'required|min:8|max:100',
-    confirmPassword: 'required|password_mismatch:@password',
-  };
+const registerSchema = {
+  username: 'required|min:3|max:100',
+  password: 'required|min:8|max:100',
+  confirmPassword: 'required|password_mismatch:@password'
+}
 
-  const submitForm = async (values: Record<string, any>): Promise<void> => {
-    showAlert.value = true
-    inSubmission.value = true
-    alertMsg.value = 'Account is being created...'
-    alertColor.value = 'bg-blue-500'
+const submitForm = async (values: Record<string, any>): Promise<void> => {
+  showAlert.value = true
+  inSubmission.value = true
+  alertMsg.value = 'Account is being created...'
+  alertColor.value = 'bg-blue-500'
 
-    try {
-      await userStore.register(values)
-      alertColor.value = 'bg-green-500'
-      alertMsg.value = 'Account created!'
-      setTimeout( () => toggleForm(), 2000);
+  try {
+    await userStore.register(values)
+    alertColor.value = 'bg-green-500'
+    alertMsg.value = 'Account created!'
+    setTimeout(() => toggleForm(), 2000)
+  } catch (error: any) {
+    if (error.message === 'User already exists') {
+      alertColor.value = 'bg-red-500'
+      alertMsg.value = 'User already exist!'
+    } else {
+      toast.error('Something went wrong')
     }
-    catch (error: any) {
-      if (error.message === 'User already exists') {
-        alertColor.value = 'bg-red-500'
-        alertMsg.value = 'User already exist!'
-      } else {
-        toast.error('Something went wrong')
-      }
-    }
-    finally {
-      inSubmission.value = false
-      setTimeout(() => {showAlert.value = false;}, 2000);
-    }
+  } finally {
+    inSubmission.value = false
+    setTimeout(() => {
+      showAlert.value = false
+    }, 2000)
   }
+}
 
-  const toggleForm = (): void => {
-    emit('form-state-changed', 'signIn')
-  }
+const toggleForm = (): void => {
+  emit('form-state-changed', 'signIn')
+}
 </script>

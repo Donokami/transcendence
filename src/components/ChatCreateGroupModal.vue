@@ -119,7 +119,7 @@
 import { storeToRefs } from 'pinia'
 import { Form } from 'vee-validate'
 import { computed, onBeforeMount, ref, toRefs, watch } from 'vue'
-import { onBeforeRouteUpdate } from 'vue-router'
+import { onBeforeRouteUpdate, useRouter } from 'vue-router'
 
 import { useChannelStore } from '@/stores/ChannelStore'
 import { useUserStore } from '@/stores/UserStore.js'
@@ -132,6 +132,7 @@ import type { User } from '@/types'
 
 const channelStore = useChannelStore()
 const userStore = useUserStore()
+const router = useRouter()
 
 const channelName = ref<string>('')
 const channelNameError = ref<string | null>(null)
@@ -162,7 +163,7 @@ const filteredFriendList = computed(() => {
 // cancelUserToAdd //
 // *************** //
 
-const cancelUserToAdd = (user: User) => {
+const cancelUserToAdd = (user: User): void => {
   const userIndex = usersToAdd.value.indexOf(user)
   if (userIndex > -1) {
     usersToAdd.value.splice(userIndex, 1)
@@ -212,20 +213,24 @@ const createGroupChannel = async (): Promise<void> => {
   const idUsersToAdd: string[] = usersToAdd.value.map((user) => user.id)
 
   try {
-    usersToAdd.value
-    await channelStore.createGroupChannel(
+    const channel = await channelStore.createGroupChannel(
       channelName.value,
       idUsersToAdd,
       password.value
     )
     toast.success(`Group created successfully`)
+    channelStore.selectedChannel = channel.id
+    await router.push(`/chat/${channel.id}`)
+  } catch (error) {
+    toast.error(`Failed to create group`)
+  } finally {
     channelName.value = ''
     channelNameError.value = null
     friendListError.value = null
     password.value = null
     passwordError.value = null
-  } catch (error) {
-    toast.error(`Failed to create group`)
+    usersToAdd.value = []
+    closeModal()
   }
 }
 
@@ -274,7 +279,7 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
   }
 
   if (passwordRequired.value) {
-    if (!password.value || !password.value.length) {
+    if (!password.value?.length) {
       passwordError.value = 'Password is required for group creation.'
       return
     }
@@ -289,7 +294,7 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
     passwordError.value = null
   }
 
-  createGroupChannel()
+  await createGroupChannel()
 }
 
 // ********************* //

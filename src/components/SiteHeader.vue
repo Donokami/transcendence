@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full mx-auto border-black border-y-2">
+  <div class="w-full mx-auto border-black border-y-2 z-[1000]">
     <div class="z-40 items-stretch p-0 mx-auto text-black navbar bg-base-100">
       <div class="flex-grow navbar-start md:hidden">
         <div class="flex items-center w-full h-full dropdown">
@@ -85,7 +85,7 @@
           <ul
             v-if="userStore.loggedUser"
             tabindex="0"
-            class="mt-40 ml-[-2.8rem] shadow menu dropdown-content bg-base-100 border-2 border-black p-0 w-fit">
+            class="mt-40 ml-[-2.8rem] shadow menu dropdown-content bg-base-100 border-2 border-black p-0 w-fit z-[1000]">
             <li class="w-fit">
               <router-link
                 :to="{

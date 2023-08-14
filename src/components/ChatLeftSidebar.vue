@@ -36,7 +36,6 @@
         </div>
       </div>
     </div>
-
     <!-- CHANNELS LIST -->
     <ul
       v-else-if="loggedUser && channelStore.channelsList?.loading === false"
@@ -83,6 +82,7 @@
                 "
                 v-if="channel.isDm === false">
                 <div
+                  class="w-fit"
                   v-for="user in (channel.members || []).slice(0, 2)"
                   :key="user.id">
                   <div class="w-10 h-10 sm:w-12 sm:h-12">

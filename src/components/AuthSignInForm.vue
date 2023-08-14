@@ -1,5 +1,5 @@
 <template>
-  <div class="neobrutalist-box sm:w-[30rem] p-7 sm:p-11">
+  <div class="sm:w-[28rem]">
     <h2 class="text-xl sm:text-2xl font-bold mb-8 text-black">Sign In</h2>
     <Form ref="formRef" :validation-schema="signInSchema" @submit="submitForm">
       <div class="mb-6">
@@ -50,20 +50,6 @@
         </button>
       </div>
     </Form>
-    <div class="divider before:bg-gray-400 after:bg-gray-400 m-8">or</div>
-    <div class="flex justify-center">
-      <button
-        @click="handleOauth"
-        class="btn bg-zinc-900 text-white"
-        type="submit"
-        :disabled="inSubmission">
-        Sign in with
-        <img
-          class="icon mx-3 h-2/4"
-          src="../assets/42-logo.svg"
-          alt="42 Logo" />
-      </button>
-    </div>
   </div>
 </template>
 
@@ -72,7 +58,7 @@
 // IMPORTS //
 // ******* //
 
-import { ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { Form, Field, ErrorMessage } from 'vee-validate'
@@ -147,42 +133,5 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
 
 const toggleForm = (): void => {
   emit('form-state-changed', 'register')
-}
-
-// *********** //
-// handleOauth //
-// *********** //
-
-const handleOauth = async (): Promise<void> => {
-  inSubmission.value = true
-
-  const authUrl = 'http://localhost:3000/api/auth/42/signIn'
-  const popup = window.open(authUrl, '_blank', 'width=500,height=600')
-
-  const intervalId = setInterval(async () => {
-    try {
-      if (popup?.closed) return clearInterval(intervalId)
-      const authStatus = await userStore.getAuthStatus()
-
-      console.log('authStatus', authStatus)
-
-      if (authStatus.status === 'authenticated') {
-        clearInterval(intervalId)
-        if (popup != null) popup.close()
-        await userStore.refreshUser()
-        await router.push('/')
-      }
-
-      if (authStatus.status === 'requires_2fa') {
-        clearInterval(intervalId)
-        if (popup != null) popup.close()
-        await router.push('/mfa')
-      }
-    } catch (error: any) {
-      toast.error('Something went wrong !')
-    }
-  }, 1000)
-
-  inSubmission.value = false
 }
 </script>

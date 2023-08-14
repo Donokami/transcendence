@@ -30,7 +30,7 @@
           </label>
           <ul
             tabindex="0"
-            class="dropdown-content menu shadow bg-base-100 z-[1000] p-0 border-2 border-black rounded-none mx-2 w-40 top-100">
+            class="dropdown-content menu shadow bg-base-100 z-[1000] p-0 border-2 border-black rounded-none mx-2 w-max">
             <li class="rounded-none">
               <router-link
                 :to="`/profile/${user.id}`"
@@ -69,6 +69,19 @@
               </li>
               <div v-if="showAdminActions(user)">
                 <div class="divider p-0 m-0 h-[6px]"></div>
+                <li
+                  class="rounded-none"
+                  v-if="showRevokeAdmin(user)"
+                  @click="revokeAdminRights(user)">
+                  <div
+                    class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+                    <iconify-icon
+                      icon="lucide:x"
+                      class="h-4 w-4 shrink-0 self-start mt-0.5">
+                    </iconify-icon>
+                    <span class="w-full">Revoke Admin</span>
+                  </div>
+                </li>
                 <li class="rounded-none" @click="kickMember(user)">
                   <div
                     class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
@@ -123,6 +136,21 @@ const { loggedUser } = storeToRefs(userStore)
 const { selectedChannel } = storeToRefs(channelStore)
 const channel = ref<Channel>()
 
+// ********************* //
+// FUNCTIONS DEFINITIONS //
+// ********************* //
+
+function showRevokeAdmin(target: User): boolean {
+  if (!channel.value || !loggedUser.value) return false
+
+  const isTargetAdmin = channelStore.isAdmin(target.id, channel.value.id)
+  const isUserOwner = channelStore.isOwner(
+    loggedUser.value.id,
+    channel.value.id
+  )
+  return isUserOwner && isTargetAdmin
+}
+
 function showAdminActions(target: User): boolean {
   if (!channel.value || !loggedUser.value) return false
 
@@ -161,17 +189,22 @@ async function getChannel(): Promise<void> {
   }
 }
 
-const giveAdminRights = (target: User): void => {
+async function revokeAdminRights(target: User): Promise<void> {
   if (!channel.value) return
-  channelStore.makeAdmin(target.id, channel.value.id)
+  await channelStore.removeAdmin(target.id, channel.value.id)
 }
 
-const kickMember = async (target: User): Promise<void> => {
+async function giveAdminRights(target: User): Promise<void> {
+  if (!channel.value) return
+  await channelStore.addAdmin(target, channel.value.id)
+}
+
+async function kickMember(target: User): Promise<void> {
   if (!channel.value) return
   await channelStore.kickMember(target.id, channel.value.id)
 }
 
-const banMember = async (target: User): Promise<void> => {
+async function banMember(target: User): Promise<void> {
   if (!channel.value) return
   await channelStore.banMember(target.id, channel.value.id)
 }
