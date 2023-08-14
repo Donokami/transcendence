@@ -194,7 +194,7 @@ export class ChannelsService {
     if (!members || members.length < 2) throw new ChannelMembersNotFound()
 
     let hashedPassword: string = null
-    if (!createChannelDto.isDm) {
+    if (!createChannelDto.isDm && createChannelDto.password) {
       const salt = randomBytes(8).toString('hex')
       const hash = (await scrypt(createChannelDto.password, salt, 32)) as Buffer
       hashedPassword = salt + '.' + hash.toString('hex')
