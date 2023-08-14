@@ -18,10 +18,9 @@ import { storeToRefs } from 'pinia'
 import AppFooter from '@/components/AppFooter.vue'
 import AuthHeader from '@/components/AuthHeader.vue'
 import SiteHeader from '@/components/SiteHeader.vue'
-import { appSocket } from '@/includes/appSocket'
+import { socialSocket } from '@/includes/socialSocket'
 import { useUserStore } from '@/stores/UserStore'
 import type { User } from '@/types'
-
 
 const route = useRoute()
 
@@ -30,24 +29,25 @@ const userStore = useUserStore()
 const { loggedUser, friendList } = storeToRefs(userStore)
 
 watch(loggedUser, (user) => {
-  if (!user && appSocket.connected) {
-    appSocket.disconnect()
+  if (!user && socialSocket.connected) {
+    socialSocket.disconnect()
     return
   }
-  console.log('attempting to connect to app socket')
-  appSocket.connect()
+  console.log('attempting to connect to social socket')
 
-  appSocket.on('connect', () => {
-    console.log('connected to app socket')
+  socialSocket.connect()
+
+  socialSocket.on('connect', () => {
+    console.log('connected to social socket')
   })
 
-  appSocket.on('social:block', (data: { blockerId: string }) => {
+  socialSocket.on('social:block', (data: { blockerId: string }) => {
     friendList.value = friendList.value.filter(
       (friend: User) => data.blockerId === friend.id
     )
   })
 
-  appSocket.on('social:accept', (user: User) => {
+  socialSocket.on('social:accept', (user: User) => {
     friendList.value.push(user)
   })
 })
@@ -65,3 +65,4 @@ watch(loggedUser, (user) => {
   background-color: black !important;
 }
 </style>
+@/includes/socialSocket

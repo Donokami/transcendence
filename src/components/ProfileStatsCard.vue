@@ -174,7 +174,7 @@ import ProfileChangeUsernameModal from '@/components/ProfileChangeUsernameModal.
 import ProfileFriendListModal from '@/components/ProfileFriendListModal.vue'
 import ProfileFriendRequestModal from '@/components/ProfileFriendRequestModal.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
-import { appSocket } from '@/includes/appSocket'
+import { socialSocket } from '@/includes/socialSocket'
 import { useUserStore } from '@/stores/UserStore'
 import type { User } from '@/types'
 import { ApiError } from '@/utils/fetcher'
@@ -387,11 +387,11 @@ const unblockUser = async (): Promise<void> => {
   }
 }
 
-appSocket.on('social:new', () => {
+socialSocket.on('social:new', () => {
   nFriendRequests.value += 1
 })
 
-appSocket.on('social:accept', (user: User) => {
+socialSocket.on('social:accept', (user: User) => {
   console.log('friend request accepted', user)
   console.log('observedUser', observedUser.value?.id)
   if (observedUser.value?.id === user.id) {
@@ -452,3 +452,4 @@ onBeforeRouteUpdate(async (to, from) => {
   }
 })
 </script>
+@/includes/socialSocket

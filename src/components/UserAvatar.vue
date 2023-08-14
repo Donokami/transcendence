@@ -27,7 +27,7 @@ import type { User } from '@/types'
 import { computed, ref, type PropType, type Ref } from 'vue'
 import { useUserStore } from '@/stores/UserStore'
 import { storeToRefs } from 'pinia'
-import { appSocket } from '@/includes/appSocket'
+import { socialSocket } from '@/includes/socialSocket'
 import { useToast } from 'vue-toastification'
 
 const userStore = useUserStore()
@@ -107,7 +107,7 @@ const statusBadge = (): string => {
   }
 }
 
-appSocket.on('user:connect', (userId) => {
+socialSocket.on('user:connect', (userId) => {
   if (user.value === null) return
 
   if (userId === user.value.id) {
@@ -115,7 +115,7 @@ appSocket.on('user:connect', (userId) => {
   }
 })
 
-appSocket.on('user:disconnect', (userId) => {
+socialSocket.on('user:disconnect', (userId) => {
   if (user.value === null) return
 
   if (userId === user.value.id) {
@@ -123,3 +123,4 @@ appSocket.on('user:disconnect', (userId) => {
   }
 })
 </script>
+@/includes/socialSocket
