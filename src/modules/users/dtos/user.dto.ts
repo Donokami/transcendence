@@ -17,6 +17,10 @@ export class UserDto {
 
   @ApiProperty()
   @Expose()
+  fortyTwoId: string
+
+  @ApiProperty()
+  @Expose()
   username: string
 
   @ApiProperty()

@@ -17,3 +17,21 @@ export class InvalidPassword extends HttpException {
     super('Invalid password', HttpStatus.UNAUTHORIZED)
   }
 }
+
+export class MissingUsername extends HttpException {
+  constructor() {
+    super('Username is missing', HttpStatus.BAD_REQUEST)
+  }
+}
+
+export class UsernameExists extends HttpException {
+  constructor() {
+    super('Username already exists', HttpStatus.BAD_REQUEST)
+  }
+}
+
+export class UserHasUsername extends HttpException {
+  constructor() {
+    super('User already has a username', HttpStatus.BAD_REQUEST)
+  }
+}

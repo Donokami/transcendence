@@ -26,6 +26,7 @@ import { UsersService } from './users.service'
 import { UpdateUserDto } from './dtos/update-user.dto'
 import { CurrentUser } from './decorators/current-user.decorator'
 
+import { UsernameGuard } from '@/core/guards/username.guard'
 import { OwnershipGuard } from './guards/ownership.guard'
 import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate'
 import { ApiOkResponse, ApiOperation } from '@nestjs/swagger'
@@ -51,7 +52,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly socialService: SocialService,
     private readonly channelsService: ChannelsService
-  ) { }
+  ) {}
 
   // ****** //
   // LOGGER //
@@ -69,6 +70,7 @@ export class UsersController {
 
   @Get()
   @UseGuards(AuthGuard)
+  @UseGuards(UsernameGuard)
   @PaginateQueryOptions()
   @ApiOkResponse({
     description: 'The user records',
@@ -90,6 +92,7 @@ export class UsersController {
 
   @Get('/stats')
   @UseGuards(AuthGuard)
+  @UseGuards(UsernameGuard)
   @PaginateQueryOptions()
   @ApiOperation({
     summary: 'Get all users with stats',
@@ -111,6 +114,7 @@ export class UsersController {
 
   @Post('/upload')
   @UseGuards(AuthGuard)
+  @UseGuards(UsernameGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),
@@ -172,6 +176,7 @@ export class UsersController {
 
   @Get('/me/channels')
   @UseGuards(AuthGuard)
+  @UseGuards(UsernameGuard)
   @ApiOperation({
     summary: 'Get current user channels',
     operationId: 'getUserChannels',
@@ -190,6 +195,7 @@ export class UsersController {
 
   @Get('/:id')
   @UseGuards(AuthGuard)
+  @UseGuards(UsernameGuard)
   @ApiOkResponse({
     description: 'The user corresponding on the passed id',
     type: User
@@ -214,6 +220,7 @@ export class UsersController {
 
   @Get('/:id/stats')
   @UseGuards(AuthGuard)
+  @UseGuards(UsernameGuard)
   @ApiOperation({
     summary: 'Get user by ID with stats',
     operationId: 'findUserByIdWithStats',

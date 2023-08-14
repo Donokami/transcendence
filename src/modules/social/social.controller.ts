@@ -13,6 +13,7 @@ import { ApiOperation } from '@nestjs/swagger'
 
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { AuthGuard } from '@/core/guards/auth.guard'
+import { UsernameGuard } from '@/core/guards/username.guard'
 import { ISession } from '@/core/types'
 import { SocialService } from '@/modules/social/social.service'
 import { HandleBlockDto } from '@/modules/social/dtos/handle-block-dto'
@@ -21,6 +22,7 @@ import { SendFriendRequestDto } from '@/modules/social/dtos/send-friend-request.
 import { Friendship } from '@/modules/social/entities/friendship.entity'
 import { User } from '@/modules/users/user.entity'
 
+@UseGuards(AuthGuard, UsernameGuard)
 @Controller('social')
 @UseFilters(new GlobalExceptionFilter())
 export class SocialController {
@@ -41,7 +43,6 @@ export class SocialController {
     description: 'Accept a friend request',
     tags: ['social']
   })
-  @UseGuards(AuthGuard)
   async acceptFriendRequest(
     @Body() handleFriendRequestDto: HandleFriendRequestDto,
     @Session() session: ISession
@@ -67,7 +68,6 @@ export class SocialController {
     description: 'Block a user',
     tags: ['social']
   })
-  @UseGuards(AuthGuard)
   async blockUser(
     @Body() handleBlockDto: HandleBlockDto,
     @Session() session: ISession
@@ -88,7 +88,6 @@ export class SocialController {
     description: 'Get blocker id',
     tags: ['social']
   })
-  @UseGuards(AuthGuard)
   async getBlockerId(
     @Session() session: ISession,
     @Param('observedUserId') observedUserId: string
@@ -111,7 +110,6 @@ export class SocialController {
     description: 'Get friend list for the given user id',
     tags: ['social']
   })
-  @UseGuards(AuthGuard)
   async getFriendList(@Session() session: ISession): Promise<User[]> {
     const friendList = await this.socialService.getFriendList(session.userId)
     return friendList
@@ -128,7 +126,6 @@ export class SocialController {
     description: 'Get friend requests for the given user id',
     tags: ['social']
   })
-  @UseGuards(AuthGuard)
   async getFriendRequests(@Session() session: ISession): Promise<Friendship[]> {
     const friendRequests = await this.socialService.getUserFriendRequests(
       session.userId
@@ -147,7 +144,6 @@ export class SocialController {
     description: 'Reject a friend request',
     tags: ['social']
   })
-  @UseGuards(AuthGuard)
   async rejectFriendRequest(
     @Body() handleFriendRequestDto: HandleFriendRequestDto,
     @Session() session: ISession
@@ -173,7 +169,6 @@ export class SocialController {
     description: 'Send a friend request',
     tags: ['social']
   })
-  @UseGuards(AuthGuard)
   async sendFriendRequest(
     @Body() sendFriendRequestDto: SendFriendRequestDto,
     @Session() session: ISession
@@ -195,7 +190,6 @@ export class SocialController {
     description: 'Unblock a user',
     tags: ['social']
   })
-  @UseGuards(AuthGuard)
   async unblockUser(
     @Body() handleBlockDto: HandleBlockDto,
     @Session() session: ISession

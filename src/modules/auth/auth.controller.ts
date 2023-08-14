@@ -14,24 +14,34 @@ import { AuthGuard } from '@nestjs/passport'
 
 import { RegisterUserDto } from '@/modules/users/dtos/register-user.dto'
 import { SignInUserDto } from '@/modules/users/dtos/signin-user.dto'
+import { SetUsernameDto } from './dtos/set-username.dto'
 
 import { AuthService } from './auth.service'
+import { UsersService } from '../users/users.service'
 import { VerifyTokenDto } from './dtos/verify-token.dto'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { ApiOperation } from '@nestjs/swagger'
 
 import { User } from '../users/user.entity'
 import { IRequestWithUser, ISession } from '@/core/types'
+import {
+  MissingUsername,
+  UsernameExists,
+  UserHasUsername
+} from '@/core/exceptions'
 
 @Controller('auth')
 @UseFilters(new GlobalExceptionFilter())
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly usersService: UsersService
+  ) {}
 
   @Get('42/signIn')
   @UseGuards(AuthGuard('42'))
   @ApiOperation({
-    summary: 'Sign in with 42',
+    summary: ' h 42',
     operationId: 'fortyTwoAuth',
     description: 'Sign in with 42',
     tags: ['auth']
@@ -116,6 +126,38 @@ export class AuthController {
     return user
   }
 
+  @Post('/set-username')
+  @ApiOperation({
+    summary: 'Set username',
+    operationId: 'setUsername',
+    description: 'Set user username',
+    tags: ['auth']
+  })
+  async setusername(
+    @Body() body: SetUsernameDto,
+    @Session() session: ISession
+  ) {
+    const { username } = body
+    if (!username) {
+      throw new MissingUsername()
+    }
+
+    const isUsernameTaken = await this.usersService.findOneByUsername(username)
+    if (isUsernameTaken) {
+      throw new UsernameExists()
+    }
+
+    const user = await this.usersService.findOneById(session.userId)
+    if (user.username) {
+      throw new UserHasUsername()
+    }
+
+    await this.usersService.update(session.userId, {
+      username
+    })
+    return user
+  }
+
   @Post('/enableTwoFactor')
   @ApiOperation({
     summary: 'Enable 2FA',
@@ -127,7 +169,6 @@ export class AuthController {
     @Session() session: ISession
   ): Promise<Record<string, string | boolean>> {
     const result = await this.authService.toggleTwoFactor(session.userId)
-
     return result
   }
 

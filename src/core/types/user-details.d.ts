@@ -1,4 +1,4 @@
 export interface IUserDetails {
-  username: string
+  fortyTwoId: string
   profilePicture: string
 }

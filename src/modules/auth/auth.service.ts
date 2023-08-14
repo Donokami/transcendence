@@ -1,10 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  Logger,
-  NotFoundException,
-  UnauthorizedException
-} from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 
 import * as qrcode from 'qrcode'
 import { authenticator } from 'otplib'
@@ -13,7 +7,6 @@ import { randomBytes, scrypt as _scrypt } from 'crypto'
 
 import { UsersService } from '@/modules/users/users.service'
 import { type IUserDetails } from '@/core/types/user-details'
-import { QueryFailedError } from 'typeorm'
 import {
   InvalidPassword,
   InvalidTwoFaToken,
@@ -29,7 +22,7 @@ export class AuthService {
   // CONSTRUCTOR //
   // *********** //
 
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   // ****** //
   // LOGGER //
@@ -46,13 +39,14 @@ export class AuthService {
   // ************ //
 
   async validateUser(details: IUserDetails) {
-    const user = await this.usersService.findOneByUsernameWithAuthInfos(
-      details.username
+    const user = await this.usersService.findOneByFortyTwoIdWithAuthInfos(
+      details.fortyTwoId
     )
     if (!user) {
       const newUser = await this.usersService.createOauth(details)
       return newUser
     }
+
     return user
   }
 
@@ -118,10 +112,7 @@ export class AuthService {
     const hash = (await scrypt(password, salt, 32)) as Buffer
     const hashedPassword = salt + '.' + hash.toString('hex')
 
-    const newUser = await this.usersService.create(
-      username,
-      hashedPassword
-    )
+    const newUser = await this.usersService.create(username, hashedPassword)
     return newUser
   }
 
@@ -130,7 +121,9 @@ export class AuthService {
   // ****** //
 
   async signIn(username: string, password: string) {
-    const user = await this.usersService.findOneByUsernameWithAuthInfos(username)
+    const user = await this.usersService.findOneByUsernameWithAuthInfos(
+      username
+    )
     if (!user) {
       this.logger.warn('User not found')
       throw new UserNotFound()

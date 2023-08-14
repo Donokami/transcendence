@@ -44,7 +44,11 @@ export class User {
   @ApiProperty()
   id: string
 
-  @Column({ unique: true })
+  @Column({ nullable: true, unique: true })
+  @ApiProperty()
+  fortyTwoId: string
+
+  @Column({ nullable: true, unique: true })
   @ApiProperty()
   username: string
 

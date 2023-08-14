@@ -204,6 +204,30 @@ export class UsersService {
   // findOneByIdWithAuthInfos //
   // ************************ //
 
+  async findOneByFortyTwoIdWithAuthInfos(fortyTwoId: string): Promise<User> {
+    if (!fortyTwoId) {
+      return null
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { fortyTwoId },
+      select: [
+        'id',
+        'fortyTwoId',
+        'username',
+        'password',
+        'twoFactorSecret',
+        'isTwoFactorEnabled'
+      ]
+    })
+
+    return user
+  }
+
+  // ************************ //
+  // findOneByIdWithAuthInfos //
+  // ************************ //
+
   async findOneByIdWithAuthInfos(id: string): Promise<User> {
     if (!id) {
       return null
@@ -223,9 +247,9 @@ export class UsersService {
     return user
   }
 
-  // ************************ //
-  // findOneByIdWithAuthInfos //
-  // ************************ //
+  // ******************** //
+  // findOneByIdWithStats //
+  // ******************** //
 
   async findOneByIdWithStats(id: string): Promise<User> {
     if (!id) {

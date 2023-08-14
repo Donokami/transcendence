@@ -30,8 +30,10 @@ import { AdminshipGuard } from '@/modules/chat/channels/guards/adminship.guard'
 import { GroupGuard } from '@/modules/chat/channels/guards/group.guard'
 import { MembershipGuard } from '@/modules/chat/channels/guards/membership.guard'
 import { OwnershipGuard } from '@/modules/chat/channels/guards/ownership.guard'
+import { UsernameGuard } from '@/core/guards/username.guard'
 
 // todo: change controller name "channels" to "chat"
+@UseGuards(AuthGuard, UsernameGuard)
 @Controller('channels')
 @UseFilters(new GlobalExceptionFilter())
 export class ChannelsController {
@@ -54,7 +56,6 @@ export class ChannelsController {
     description: 'Ban a member from a group',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
@@ -79,7 +80,6 @@ export class ChannelsController {
     description: 'Change the password of a group',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(OwnershipGuard)
@@ -102,7 +102,6 @@ export class ChannelsController {
     description: 'Create a new channel',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   async createChannel(
     @Body() body: CreateChannelDto,
     @Session() session: ISession
@@ -125,7 +124,6 @@ export class ChannelsController {
     description: 'Delete the password of a group',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(OwnershipGuard)
@@ -146,7 +144,6 @@ export class ChannelsController {
     description: 'Get channel banned members',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
@@ -166,7 +163,6 @@ export class ChannelsController {
     description: 'Get a channel (via channel id)',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   @UseGuards(MembershipGuard)
   async getChannel(@CurrentChannel() channel: Channel) {
     return channel
@@ -183,7 +179,6 @@ export class ChannelsController {
     description: 'Get all the messages sent in a channel (via channel id)',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   @UseGuards(MembershipGuard)
   async getMessages(@CurrentChannel() channel: Channel): Promise<Message[]> {
     return await this.channelsService.getMessages(channel)
@@ -200,7 +195,6 @@ export class ChannelsController {
     description: 'Join a group',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   async joinGroup(@Body() body: JoinGroupDto, @Session() session: ISession) {
     const userId = session.userId
     return await this.channelsService.joinGroup(userId, body)
@@ -217,7 +211,6 @@ export class ChannelsController {
     description: 'Kick a member from a group',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
@@ -242,7 +235,6 @@ export class ChannelsController {
     description: 'Leave a group',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   async leaveGroup(
@@ -264,7 +256,6 @@ export class ChannelsController {
     description: 'Mute a group member',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
@@ -289,7 +280,6 @@ export class ChannelsController {
     description: 'Post messages sent in a channel, in the database',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   @UseGuards(MembershipGuard)
   async postMessages(
     @CurrentChannel() channel: Channel,
@@ -320,7 +310,6 @@ export class ChannelsController {
     description: 'Set a user as an admin of a group',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(OwnershipGuard)
@@ -343,7 +332,6 @@ export class ChannelsController {
     description: 'Unban a member from a group',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
@@ -366,7 +354,6 @@ export class ChannelsController {
     description: 'Unmute a member from a group',
     tags: ['chat']
   })
-  @UseGuards(AuthGuard)
   @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)

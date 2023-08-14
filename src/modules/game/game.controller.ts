@@ -14,6 +14,7 @@ import { GameService } from './game.service'
 
 import { AuthGuard } from '@/core/guards/auth.guard'
 import { OwnershipGuard } from './guards/ownership.guard'
+import { UsernameGuard } from '@/core/guards/username.guard'
 
 import { UpdateGameDto } from './dtos/update-game-dto'
 import { RoomObject } from './room'
@@ -22,13 +23,13 @@ import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { RoomNotFound } from '@/core/exceptions/game'
 import { ISession } from '@/core/types'
 
+@UseGuards(AuthGuard, UsernameGuard)
 @Controller('games')
 @UseFilters(new GlobalExceptionFilter())
 export class GameController {
-  constructor(private readonly gameService: GameService) { }
+  constructor(private readonly gameService: GameService) {}
 
   @Get('/matchmaking')
-  @UseGuards(AuthGuard)
   @ApiOperation({
     summary: 'Join the matchmaking queue',
     operationId: 'joinQueue',
@@ -40,7 +41,6 @@ export class GameController {
   }
 
   @Get(':id')
-  @UseGuards(AuthGuard)
   @ApiOperation({
     summary: 'Get a game by id',
     operationId: 'findOne',
@@ -59,7 +59,6 @@ export class GameController {
   }
 
   @Get()
-  @UseGuards(AuthGuard)
   @ApiOperation({
     summary: 'Get all games',
     operationId: 'findAll',
@@ -73,7 +72,6 @@ export class GameController {
   }
 
   @Post()
-  @UseGuards(AuthGuard)
   @ApiOperation({
     summary: 'Create a game',
     operationId: 'create',
@@ -85,7 +83,6 @@ export class GameController {
   }
 
   @Patch(':id')
-  @UseGuards(AuthGuard)
   @UseGuards(OwnershipGuard)
   @ApiOperation({
     summary: 'Update a game with given id',
@@ -98,7 +95,6 @@ export class GameController {
   }
 
   //   @Delete(':id')
-  //   @UseGuards(AuthGuard)
   //   @UseGuards(OwnershipGuard)
   //   @ApiOperation({
   //     summary: 'Delete a game with given id',
