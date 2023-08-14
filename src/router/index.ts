@@ -9,6 +9,7 @@ import NotFoundView from '../views/NotFoundView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import StatsView from '../views/StatsView.vue'
 import RoomView from '../views/RoomView.vue'
+import UsernameView from '../views/UsernameView.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -20,6 +21,11 @@ const routes: RouteRecordRaw[] = [
     component: MfaView,
     path: '/mfa',
     name: 'mfa'
+  },
+  {
+    component: UsernameView,
+    path: '/username',
+    name: 'username'
   },
   {
     component: HomeView,
@@ -59,19 +65,31 @@ const router = createRouter({
   linkExactActiveClass: 'bg-zinc-900 text-white'
 })
 
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, from) => {
   const userStore = useUserStore()
+
   if (userStore.loggedUser === null) {
     await userStore.refreshUser()
   }
+
+  if (
+    to.name !== 'username' &&
+    userStore.loggedUser &&
+    !userStore.loggedUser?.username
+  ) {
+    return { name: 'username' }
+  }
+
   if (
     to.name !== 'auth' &&
     to.name !== 'mfa' &&
     userStore.loggedUser === null
   ) {
-    next({ name: 'auth' })
-  } else {
-    next()
+    return { name: 'auth' }
+  }
+
+  if (to.name === 'username' && userStore.loggedUser?.username) {
+    return { name: 'home' }
   }
 })
 

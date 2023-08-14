@@ -254,6 +254,18 @@ export const useUserStore = defineStore('users', {
       this.loggedUser = response
       return response
     },
+
+    // *********** //
+    // setUsername //
+    // *********** //
+
+    async setUsername(username: string): Promise<User> {
+      const response: User = await fetcher.post('/auth/set-username', {
+        username
+      })
+      return response
+    },
+
     // ************* //
     // getAuthStatus //
     // ************* //

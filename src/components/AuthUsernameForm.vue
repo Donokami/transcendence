@@ -1,20 +1,24 @@
 <template>
   <div class="neobrutalist-box sm:w-[30rem] px-4 py-7 sm:p-11">
-    <h2 class="text-xl sm:text-2xl font-bold mb-8 text-black">Welcome back</h2>
-    <Form ref="formRef" :validation-schema="mfaSchema" @submit="submitForm">
+    <h2 class="text-xl sm:text-2xl font-bold mb-8 text-black">
+      Choose your username
+    </h2>
+    <Form :validation-schema="usernameSchema" @submit="submitForm">
       <div class="mb-6">
         <label
           class="block font-medium mb-1 text-md text-lg sm:text-xl"
-          for="token"
-          >6 digits code</label
+          for="username"
+          >Username</label
         >
         <Field
           class="neobrutalist-input w-full text-black"
-          name="token"
+          name="username"
           type="text"
-          placeholder="Enter the code"
+          placeholder="Choose a username"
           autocomplete="off" />
-        <ErrorMessage class="font-normal text-base text-red-600" name="token" />
+        <ErrorMessage
+          class="font-normal text-base text-red-600"
+          name="username" />
       </div>
       <div
         class="text-white text-center font-bold p-4 rounded mb-4"
@@ -27,7 +31,7 @@
           class="btn border-zinc-900 bg-zinc-900 text-white sm:w-fit w-full"
           type="submit"
           :disabled="inSubmission">
-          Sign in
+          Update profile
         </button>
       </div>
     </Form>
@@ -51,26 +55,27 @@ const userStore = useUserStore()
 
 const router = useRouter()
 
-const mfaSchema = {
-  token: 'required|numeric|min:6|max:6'
+const usernameSchema = {
+  username: 'required|min:3|max:100'
 }
 
-const submitForm = async (values: Record<string, any>): Promise<any> => {
+const submitForm = async (values: Record<string, any>): Promise<void> => {
   showAlert.value = true
   inSubmission.value = true
-  alertMsg.value = 'Verifying your 2FA code...'
+  alertMsg.value = 'Verifying username availability...'
   alertColor.value = 'bg-blue-500'
 
   try {
-    await userStore.verifyTwoFactor(values)
+    await userStore.setUsername(values.username)
+    await userStore.refreshUser()
     alertColor.value = 'bg-green-500'
-    alertMsg.value = 'Your 2FA code has been verified!'
+    alertMsg.value = 'Profile updated successfully!'
     await router.push('/')
   } catch (error: any) {
     console.log(JSON.stringify(error, Object.getOwnPropertyNames(error)))
-    if (error.message === 'Invalid 2FA token') {
+    if (error.message === 'Username already exists') {
       alertColor.value = 'bg-red-500'
-      alertMsg.value = 'Your 2FA code could not be verified!'
+      alertMsg.value = 'Username is already taken!'
     } else {
       toast.error('Something went wrong!')
     }
