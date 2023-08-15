@@ -83,7 +83,7 @@ export const useUserStore = defineStore('users', {
 
     async fetchBlockerId(observedUserId: string): Promise<string> {
       const response = await fetcher.get(
-        `/social/get/blocker-id/${observedUserId}`
+        `/social/blocker-id/${observedUserId}`
       )
 
       return response.blockerId
@@ -94,7 +94,7 @@ export const useUserStore = defineStore('users', {
     // *************** //
 
     async fetchFriendList(): Promise<User[]> {
-      const response: User[] = await fetcher.get(`/social/get/friend-list`)
+      const response: User[] = await fetcher.get(`/social/friend-list`)
       return response
     },
 
@@ -104,7 +104,7 @@ export const useUserStore = defineStore('users', {
 
     async fetchFriendRequests(): Promise<Friendship[]> {
       const response: Friendship[] = await fetcher.get(
-        `/social/get/friend-requests`
+        `/social/friend-requests`
       )
       return response
     },
