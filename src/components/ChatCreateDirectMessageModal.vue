@@ -101,15 +101,8 @@ const createDmChannel = async (friend: User): Promise<void> => {
   if (loggedUser.value == null || !friend) {
     return
   }
-  try {
-    await channelStore.createDmChannel(friend.id)
-    console.log(`[ChatMessagesModal] - DM channel created successfully !`)
-  } catch (error) {
-    console.error(
-      `[ChatMessagesModal] - Failed to create DM channel ! Error: `,
-      error
-    )
-  }
+  await channelStore.createDmChannel(friend.id)
+  console.log(`[ChatMessagesModal] - DM channel created successfully !`)
 }
 
 // **************** //

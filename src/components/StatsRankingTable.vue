@@ -62,4 +62,3 @@ onBeforeMount(async () => {
   users.value.data.forEach((user, index) => (user.rank = index + 1))
 })
 </script>
-@/types/User

@@ -29,10 +29,11 @@ const userStore = useUserStore()
 const { loggedUser, friendList } = storeToRefs(userStore)
 
 watch(loggedUser, (user) => {
-  if (!user && socialSocket.connected) {
-    socialSocket.disconnect()
+  if (!user) {
+    if (socialSocket.connected) socialSocket.disconnect()
     return
   }
+
   console.log('attempting to connect to social socket')
 
   socialSocket.connect()

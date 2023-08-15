@@ -160,7 +160,7 @@ export const useUserStore = defineStore('users', {
         const user = await this.fetchUser()
         this.loggedUser = user
         this.twoFactorEnabled = user.isTwoFactorEnabled
-      } catch (error) {}
+      } catch (error) { }
     },
 
     // ******** //

@@ -1,4 +1,3 @@
-import type { Ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 
@@ -9,7 +8,7 @@ import type { Channel, Message, User } from '@/types'
 import fetcher, {
   useFetcher,
   type FetcherResponse,
-  ApiError
+  ApiError,
 } from '@/utils/fetcher'
 
 function parseUrl(message: Message): {
@@ -36,7 +35,7 @@ function parseUrl(message: Message): {
 export const useChannelStore = defineStore('channels', {
   state: () => {
     return {
-      channelsList: undefined as FetcherResponse<Ref<Channel[]>> | undefined,
+      channelsList: undefined as FetcherResponse<Channel[]> | undefined,
       selectedChannel: null as string | null
     }
   },
@@ -207,7 +206,7 @@ export const useChannelStore = defineStore('channels', {
       if (loggedUser == null) return
 
       const channelParam = {
-        isDm: true,
+        type: 'dm',
         membersIds: [loggedUser.id, receiverId]
       }
 
@@ -230,20 +229,23 @@ export const useChannelStore = defineStore('channels', {
     async createGroupChannel(
       channelName: string,
       receiversId: string[],
-      password: string | null
+      password: string | null,
+      isPrivate: boolean
     ): Promise<Channel> {
       const { loggedUser } = useUserStore()
 
-      const channelParam = {
-        isDm: false,
-        name: channelName,
-        membersIds: [loggedUser?.id, ...receiversId],
-        password
-      }
-
       const response: Channel = await fetcher.post(
         `/channels/create`,
-        channelParam
+        {
+          name: channelName,
+          type: (() => {
+            if (isPrivate) return 'private'
+            if (password) return 'protected'
+            return 'public'
+          })(),
+          membersIds: [loggedUser?.id, ...receiversId],
+          password
+        }
       )
 
       console.log('New group channel created ! ID : ', response.id)
@@ -276,8 +278,8 @@ export const useChannelStore = defineStore('channels', {
         onSuccess: (data: Channel[]) => {
           data.forEach((channel: Channel) => {
             this.setChannelInfos(loggedUser, channel)
-            return channel
           })
+          return data
         }
       })
     },
@@ -550,6 +552,7 @@ export const useChannelStore = defineStore('channels', {
     setChannelInfos(loggedUser: User, channel: Channel): void {
       channel.messages = []
       channel.bannedMembers = []
+      channel.isDm = channel.type === 'dm'
 
       if (channel.isDm) {
         const receiverUser = channel.members.find(

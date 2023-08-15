@@ -78,8 +78,18 @@
             <div v-if="friendListError" class="text-red-500">
               {{ friendListError }}
             </div>
+            <!-- PRIVATE -->
+            <div v-if="!passwordRequired" class="mt-6 form-control">
+              <label class="px-0 cursor-pointer label">
+                <span class="text-base text-black">Private</span>
+                <input
+                  type="checkbox"
+                  class="border-2 border-black rounded-none checkbox"
+                  @click="isPrivate = !isPrivate" />
+              </label>
+            </div>
             <!-- PASSWORD -->
-            <div class="mt-6 form-control">
+            <div v-if="!isPrivate" class="mt-6 form-control">
               <label class="px-0 cursor-pointer label">
                 <span class="text-base text-black">Password</span>
                 <input
@@ -141,6 +151,7 @@ const friendListError = ref<string | null>(null)
 const password = ref<string | null>(null)
 const passwordRequired = ref<boolean>(false)
 const passwordError = ref<string | null>(null)
+const isPrivate = ref<boolean>(false)
 const props = defineProps({
   showModal: { type: Boolean }
 })
@@ -216,7 +227,8 @@ const createGroupChannel = async (): Promise<void> => {
     const channel = await channelStore.createGroupChannel(
       channelName.value,
       idUsersToAdd,
-      password.value
+      password.value,
+      isPrivate.value
     )
     toast.success(`Group created successfully`)
     channelStore.selectedChannel = channel.id

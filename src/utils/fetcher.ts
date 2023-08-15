@@ -160,7 +160,6 @@ class Fetcher {
     body: any = {},
     config: RequestInit = {}
   ): Promise<any> {
-    console.log(body)
     const res = await fetch(this.baseURL + url, {
       method: 'PATCH',
       credentials: 'include',

@@ -12,7 +12,10 @@
           class="absolute w-full h-full object-cover rounded-full cursor-pointer"
           v-if="props.uploadMode"
           @click="triggerFileInput"></div>
-        <img v-if="pictureSrc" :src="pictureSrc" />
+        <div
+          v-if="!userProps"
+          class="w-full h-full bg-slate-200/20 animate-pulse"></div>
+        <img v-else-if="pictureSrc" :src="pictureSrc" />
         <iconify-icon
           v-else
           icon="ri:account-circle-line"
@@ -37,8 +40,7 @@ const toast = useToast()
 
 const props = defineProps({
   userProps: {
-    type: Object as PropType<User>,
-    required: true
+    type: Object as PropType<User>
   },
   uploadMode: {
     type: Boolean as PropType<boolean>,
@@ -123,4 +125,3 @@ socialSocket.on('user:disconnect', (userId) => {
   }
 })
 </script>
-@/includes/socialSocket
