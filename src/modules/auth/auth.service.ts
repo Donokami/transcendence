@@ -56,6 +56,9 @@ export class AuthService {
 
   async toggleTwoFactor(userId: string) {
     const user = await this.usersService.findOneByIdWithAuthInfos(userId)
+    if (!user) {
+      throw new UserNotFound()
+    }
 
     if (user.isTwoFactorEnabled) {
       user.isTwoFactorEnabled = false
@@ -69,7 +72,11 @@ export class AuthService {
       user.isTwoFactorEnabled = true
       await this.usersService.update(user.id, user)
 
-      const otpauth = authenticator.keyuri(user.username, 'YourService', secret) // todo: change YourService to something else
+      const otpauth = authenticator.keyuri(
+        user.username,
+        'ft_transcendence',
+        secret
+      )
       const dataUrl = await qrcode.toDataURL(otpauth)
 
       return { isTwoFactorEnabled: true, dataUrl }
@@ -135,7 +142,7 @@ export class AuthService {
     const hash = (await scrypt(password, salt, 32)) as Buffer
 
     if (storedHash !== hash.toString('hex')) {
-      this.logger.warn('Bad password')
+      this.logger.warn('Authentication failed')
       throw new InvalidPassword()
     }
 
