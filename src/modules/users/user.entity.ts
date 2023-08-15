@@ -62,7 +62,7 @@ export class User {
   @Column({ nullable: true, select: false })
   twoFactorSecret: string
 
-  @Column({ default: false, select: false })
+  @Column({ default: false })
   isTwoFactorEnabled: boolean
 
   // ****************** //

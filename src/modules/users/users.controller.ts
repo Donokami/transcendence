@@ -17,7 +17,6 @@ import {
 
 import { AuthGuard } from '@/core/guards/auth.guard'
 import { Serialize } from '@/core/interceptors/serialize.interceptor'
-import { Friendship } from '@/modules/social/entities/friendship.entity'
 import { SocialService } from '@/modules/social/social.service'
 import { FileUploadExceptionFilter } from '@/core/filters/file-upload-exception.filter'
 

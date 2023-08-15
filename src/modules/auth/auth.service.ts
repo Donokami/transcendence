@@ -81,10 +81,11 @@ export class AuthService {
   // ******************** //
 
   async verifyTwoFactorToken(userId: string, token: string) {
-    const user = await this.usersService.findOneById(userId)
+    const user = await this.usersService.findOneByIdWithAuthInfos(userId)
     if (!user) {
       throw new UserNotFound()
     }
+
     if (!user.isTwoFactorEnabled) {
       this.logger.warn('2FA is disabled')
       throw new TwoFaDisabled()
