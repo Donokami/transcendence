@@ -72,7 +72,7 @@
                     <div v-else>
                       <img
                         v-if="channel.image"
-                        :src="`http://localhost:3000/${channel.image}`"
+                        :src="channelImageUrl(channel.image)"
                         class="object-cover rounded-full h-11 w-11" />
                     </div>
                     <span class="pl-3 sm:pl-4 text-base truncate w-48">{{
@@ -184,7 +184,7 @@
 // ******* //
 
 import { storeToRefs } from 'pinia'
-import { onBeforeMount, ref } from 'vue'
+import { onBeforeMount, ref, computed } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 
 import ChatCreateDirectMessageModal from '@/components/ChatCreateDirectMessageModal.vue'
@@ -198,6 +198,10 @@ import type { Channel, User } from '@/types'
 // ******************** //
 // VARIABLE DEFINITIONS //
 // ******************** //
+
+const channelImageUrl = (imagePath: string): string => {
+  return `${import.meta.env.VITE_APP_BASE_URL}/${imagePath}`
+}
 
 const props = defineProps({
   listState: String

@@ -48,9 +48,7 @@
                 </div>
                 <img
                   v-else
-                  :src="`http://localhost:3000/${
-                    channelStore.getChannel(selectedChannel)?.image
-                  }`"
+                  :src="channelImageUrl"
                   class="object-cover rounded-full w-10 h-10 sm:h-11 sm:w-11" />
               </div>
             </router-link>
@@ -160,6 +158,10 @@ import { useUserStore } from '@/stores/UserStore'
 // ******************** //
 // VARIABLE DEFINITIONS //
 // ******************** //
+
+const channelImageUrl = (imagePath: string): string => {
+  return `${import.meta.env.VITE_APP_BASE_URL}/${imagePath}`
+}
 
 const channelStore = useChannelStore()
 const { loggedUser } = useUserStore()

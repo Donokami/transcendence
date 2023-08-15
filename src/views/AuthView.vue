@@ -52,7 +52,7 @@ const formState = ref('signIn')
 // *********** //
 
 const handleOauth = async (): Promise<void> => {
-  const authUrl = 'http://localhost:3000/api/auth/42/signIn'
+  const authUrl = `${import.meta.env.VITE_API_URL}/auth/42/signIn`
   const popup = window.open(authUrl, '_blank', 'width=500,height=600')
 
   inSubmission.value = true

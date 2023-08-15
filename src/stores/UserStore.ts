@@ -295,11 +295,14 @@ export const useUserStore = defineStore('users', {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await fetch('http://localhost:3000/api/user/upload', {
-        method: 'POST',
-        credentials: 'include',
-        body: formData
-      })
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/user/upload`,
+        {
+          method: 'POST',
+          credentials: 'include',
+          body: formData
+        }
+      )
 
       if (!response.ok) {
         throw new Error(`HTTP error status: ${response.status}`)

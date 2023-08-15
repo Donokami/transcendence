@@ -55,7 +55,7 @@
               <div v-else>
                 <img
                   v-if="channel.image"
-                  :src="`http://localhost:3000/${channel.image}`"
+                  :src="channelImageUrl(channel.image)"
                   class="object-cover rounded-full h-11 w-11" />
               </div>
               <span class="pl-3 sm:pl-4 text-base truncate w-28 sm:w-48">{{
@@ -71,7 +71,7 @@
             </div>
           </div>
 
-          <div class="py-3 w-full" v-else-if="channel.isDm === false">
+          <div class="py-3" v-else-if="channel.isDm === false">
             <div class="flex items-center mx-auto px-2 sm:px-3 w-18">
               <div
                 class="avatar-group -space-x-6"
@@ -93,16 +93,10 @@
                   </div>
                 </div>
               </div>
+
               <span class="pl-2 sm:pl-3 text-base truncate w-28 sm:w-48">{{
                 channel.name
               }}</span>
-              <span
-                class="badge badge-ghost float-right mx-2"
-                v-if="channel.unreadMessages > 0"
-                >{{
-                  channel.unreadMessages < 100 ? channel.unreadMessages : '99+'
-                }}</span
-              >
             </div>
           </div>
         </router-link>
@@ -170,7 +164,7 @@
 // ******* //
 
 import { storeToRefs } from 'pinia'
-import { onBeforeMount, ref } from 'vue'
+import { onBeforeMount, ref, computed } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 
 import ChatCreateDirectMessageModal from '@/components/ChatCreateDirectMessageModal.vue'
@@ -188,6 +182,10 @@ import type { Channel, User } from '@/types'
 const props = defineProps({
   listState: String
 })
+
+const channelImageUrl = (imagePath: string): string => {
+  return `${import.meta.env.VITE_APP_BASE_URL}/${imagePath}`
+}
 
 const channelStore = useChannelStore()
 const emit = defineEmits(['list-state-changed'])

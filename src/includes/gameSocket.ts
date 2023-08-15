@@ -7,7 +7,7 @@ import router from '@/router'
 
 const toast = useToast()
 
-export const socket: Socket = io('http://localhost:3001/game', {
+export const socket: Socket = io(`${import.meta.env.VITE_SOCKET_URL}/game`, {
   withCredentials: true,
   autoConnect: false,
   transports: ['websocket']

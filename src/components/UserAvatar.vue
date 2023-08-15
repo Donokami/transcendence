@@ -86,7 +86,7 @@ const pictureSrc = computed(() => {
   if (profilePicture.includes('cdn.intra.42')) {
     return profilePicture
   } else {
-    return 'http://localhost:3000/' + profilePicture
+    return import.meta.env.VITE_APP_BASE_URL + '/' + profilePicture
   }
 })
 
