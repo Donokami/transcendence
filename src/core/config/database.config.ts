@@ -23,21 +23,21 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
           port: parseInt(process.env.DB_PORT),
           username: process.env.DB_USER,
           password: process.env.DB_PASS,
-          database: process.env.DB_NAME_DEVELOPMENT,
+          database: process.env.DB_NAME,
           entities: [Channel, Friendship, Message, User, MutedUser],
           synchronize: true
         }
       case 'development':
         return {
           type: 'sqlite',
-          database: 'db.sqlite',
+          database: process.env.DB_PATH + process.env.DB_NAME + '.dev.sqlite',
           entities: [Channel, Friendship, Message, User, MutedUser],
           synchronize: true
         }
       case 'test':
         return {
           type: 'sqlite',
-          database: 'db.sqlite',
+          database: process.env.DB_PATH + process.env.DB_NAME + '.test.sqlite',
           entities: [Channel, Friendship, Message, User, MutedUser],
           synchronize: true,
           dropSchema: true

@@ -3,23 +3,26 @@ import {
   ArrayNotEmpty,
   IsArray,
   IsUUID,
-  IsBoolean,
   IsOptional,
   IsString,
-  ValidateIf
+  ValidateIf,
+  IsEnum
 } from 'class-validator'
 
 import { ApiProperty } from '@nestjs/swagger'
+import { ChannelTypes } from '../entities/channel.entity'
 
 export class CreateChannelDto {
   @ApiProperty()
   @IsString()
-  @ValidateIf((o) => o.isDm === false)
+  @ValidateIf((o) => o.type !== ChannelTypes.DM)
   name?: string
 
-  @ApiProperty()
-  @IsBoolean()
-  isDm: boolean
+  @ApiProperty({
+    default: ChannelTypes.PUBLIC
+  })
+  @IsEnum(ChannelTypes)
+  type: ChannelTypes
 
   @ApiProperty()
   @IsArray()

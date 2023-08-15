@@ -12,7 +12,7 @@ export class GroupGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest()
 
-    if (request.channel.isDm === true) {
+    if (request.channel.isDm() === true) {
       this.logger.warn(`Channel with ID : ${request.channel.id} is not a group`)
       return false
     }

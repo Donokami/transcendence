@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { DeleteResult, Repository } from 'typeorm'
+import { DeleteResult, Not, Repository } from 'typeorm'
 
 import {
   CannotActOnSelf,
@@ -27,7 +27,7 @@ import { parseMuteTime } from '@/core/utils/parseMuteTime'
 import { ChatGateway } from '@/modules/chat/chat.gateway'
 import { CreateChannelDto } from '@/modules/chat/channels/dtos/create-channel.dto'
 import { JoinGroupDto } from '@/modules/chat/channels/dtos/join-group.dto'
-import { Channel } from '@/modules/chat/channels/entities/channel.entity'
+import { Channel, ChannelTypes } from '@/modules/chat/channels/entities/channel.entity'
 import { Message } from '@/modules/chat/channels/entities/message.entity'
 import { User } from '@/modules/users/user.entity'
 import { UsersService } from '@/modules/users/users.service'
@@ -52,7 +52,7 @@ export class ChannelsService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway
-  ) {}
+  ) { }
 
   // ****** //
   // LOGGER //
@@ -153,7 +153,7 @@ export class ChannelsService {
   // todo: check if socket required here ?
   async deleteGroupPassword(channel: Channel): Promise<OperationResult> {
     channel.password = null
-    channel.isPrivate = false
+    channel.type = ChannelTypes.PUBLIC
 
     await this.channelsRepository.save(channel)
 
@@ -195,17 +195,17 @@ export class ChannelsService {
     )
     if (!members || members.length < 2) throw new ChannelMembersNotFound()
 
-    if (createChannelDto.isDm && members.length > 2) {
+    if (createChannelDto.type === ChannelTypes.DM && members.length > 2) {
       throw new DmChannelMembersLimit()
     }
 
     members.sort((a, b) => a.id.localeCompare(b.id))
 
-    if (createChannelDto.isDm) {
+    if (createChannelDto.type === ChannelTypes.DM) {
       const existingDm = await this.channelsRepository
         .createQueryBuilder('channel')
         .innerJoin('channel.members', 'member')
-        .where('channel.isDm = :isDm', { isDm: true })
+        .where('channel.type = :type', { type: ChannelTypes.DM })
         .andWhere('member.id IN (:...memberIds)', {
           memberIds: members.map((m) => m.id)
         })
@@ -221,19 +221,18 @@ export class ChannelsService {
     }
 
     let hashedPassword: string = null
-    if (!createChannelDto.isDm && createChannelDto.password) {
+    if (createChannelDto.type === ChannelTypes.PROTECTED && createChannelDto.password) {
       const salt = randomBytes(8).toString('hex')
       const hash = (await scrypt(createChannelDto.password, salt, 32)) as Buffer
       hashedPassword = salt + '.' + hash.toString('hex')
     }
 
     const newChannel: Channel = this.channelsRepository.create({
-      isDm: createChannelDto.isDm,
       owner: owner,
       members: members,
-      name: createChannelDto.isDm ? null : createChannelDto.name,
-      isPrivate: createChannelDto.isDm ? false : !!createChannelDto.password,
-      password: createChannelDto.isDm ? null : hashedPassword
+      name: createChannelDto.type === ChannelTypes.DM ? null : createChannelDto.name,
+      type: createChannelDto.type,
+      password: createChannelDto.type !== ChannelTypes.PROTECTED ? null : hashedPassword
     })
 
     const channel: Channel = await this.channelsRepository.save(newChannel)
@@ -272,8 +271,8 @@ export class ChannelsService {
 
   async findOneByName(name: string): Promise<Channel> {
     const channel: Channel = await this.channelsRepository.findOne({
-      where: { name, isDm: false },
-      select: ['id', 'members', 'name', 'password', 'isPrivate'],
+      where: { name, type: Not(ChannelTypes.DM && ChannelTypes.PRIVATE) },
+      select: ['id', 'members', 'name', 'password', 'type'],
       relations: ['members', 'bannedMembers']
     })
 
@@ -376,11 +375,11 @@ export class ChannelsService {
     )
       throw new UserIsBanned()
 
-    if (channel.isPrivate && !password) {
+    if (channel.isProtected() && !password) {
       throw new MissingGroupPassword()
     }
 
-    if (channel.isPrivate) {
+    if (channel.isProtected()) {
       const [salt, storedHash] = channel.password.split('.')
 
       const hash = (await scrypt(password, salt, 32)) as Buffer

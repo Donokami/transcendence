@@ -6,7 +6,6 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   ManyToMany,
-  OneToOne,
   ManyToOne
 } from 'typeorm'
 
@@ -19,6 +18,13 @@ import { MutedUser } from './muted-user.entity'
 // ****** //
 // LOGGER //
 // ****** //
+
+export enum ChannelTypes {
+  PUBLIC = 'public',
+  PRIVATE = 'private',
+  PROTECTED = 'protected',
+  DM = 'dm'
+}
 
 const logger = new Logger('channel')
 
@@ -37,9 +43,6 @@ export class Channel {
 
   @Column({ nullable: true })
   name: string
-
-  @Column({ default: true })
-  isDm: boolean
 
   // **************************** //
   // MEMBERS RELATED INFORMATIONS //
@@ -70,8 +73,12 @@ export class Channel {
   // PRIVACY RELATED INFORMATIONS //
   // **************************** //
 
-  @Column({ default: false })
-  isPrivate: boolean
+  @Column({
+    type: process.env.NODE_ENV === 'production' ? 'enum' : 'text',
+    enum: ChannelTypes,
+    default: ChannelTypes.PUBLIC,
+  })
+  type: ChannelTypes;
 
   @Column({ nullable: true, select: false })
   password: string
@@ -110,7 +117,6 @@ export class Channel {
     this.mutedMembers = this.mutedMembers.filter(
       (mute) => mute.user.id !== user.id
     )
-    //todo: save if not done automatically
   }
 
   isAdmin(user: User) {
@@ -121,5 +127,21 @@ export class Channel {
     return this.mutedMembers.find(
       (mutedMember) => mutedMember.user.id === user.id
     )
+  }
+
+  isDm() {
+    return this.type === ChannelTypes.DM
+  }
+
+  isPublic() {
+    return this.type === ChannelTypes.PUBLIC
+  }
+
+  isPrivate() {
+    return this.type === ChannelTypes.PRIVATE
+  }
+
+  isProtected() {
+    return this.type === ChannelTypes.PROTECTED
   }
 }

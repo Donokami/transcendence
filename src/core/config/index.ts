@@ -5,7 +5,7 @@ import 'dotenv/config'
 
 export default registerAs('transcendence-config', () => {
   const values = {
-    nodeEnv: process.env.NODE_ENV,
+    nodeEnv: process.env.NODE_ENV || 'development',
     port: parseInt(process.env.PORT),
     frontendUrl: process.env.FRONTEND_URL,
 
@@ -13,6 +13,8 @@ export default registerAs('transcendence-config', () => {
     dbPort: parseInt(process.env.DB_PORT),
     dbUser: process.env.DB_USER,
     dbPass: process.env.DB_PASSWORD,
+    dbName: process.env.DB_NAME,
+    dbPath: process.env.DB_PATH,
 
     cookieSessionKey: process.env.COOKIE_SESSION_KEY,
 
@@ -35,6 +37,8 @@ export default registerAs('transcendence-config', () => {
     dbPort: z.number(),
     dbUser: z.string(),
     dbPass: z.string(),
+    dbName: z.string(),
+    dbPath: z.string().optional(),
 
     cookieSessionKey: z.string(),
 

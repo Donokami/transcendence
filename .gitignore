@@ -1,7 +1,6 @@
 .env
 .env.development
 .env.test
-db.sqlite
 package-lock.json
 pnpm-lock.yaml
 /postgres-data
@@ -45,3 +44,7 @@ lerna-debug.log*
 # Tests
 /coverage
 /.nyc_output
+
+# Database
+data/
+db.sqlite
