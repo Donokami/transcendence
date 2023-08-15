@@ -188,6 +188,11 @@ export class ChannelsService {
     createChannelDto: CreateChannelDto,
     ownerId: string
   ): Promise<Channel> {
+    const existingChannel: Channel = await this.channelsRepository.findOne({
+      where: { name: createChannelDto.name }
+    })
+    if (existingChannel) throw new ChannelAlreadyExists()
+
     const owner: User = await this.checkExistingUser(ownerId)
 
     const members: User[] = await this.userService.findByIds(
