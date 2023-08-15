@@ -24,6 +24,21 @@ export class ChannelMembersNotFound extends HttpException {
   }
 }
 
+export class DmChannelMembersLimit extends HttpException {
+  constructor() {
+    super(
+      'DM channel should not have more than 2 members.',
+      HttpStatus.BAD_REQUEST
+    )
+  }
+}
+
+export class ChannelAlreadyExists extends HttpException {
+  constructor() {
+    super('Channel already exists.', HttpStatus.BAD_REQUEST)
+  }
+}
+
 export class ChannelNotFound extends HttpException {
   constructor() {
     super('Channel not found.', HttpStatus.NOT_FOUND)

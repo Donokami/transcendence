@@ -7,6 +7,8 @@ import {
   CannotKickBanMuteAdmin,
   ChannelNotFound,
   ChannelMembersNotFound,
+  ChannelAlreadyExists,
+  DmChannelMembersLimit,
   InvalidGroupPassword,
   MissingGroupPassword,
   MissingUserId,
@@ -50,7 +52,7 @@ export class ChannelsService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway
-  ) { }
+  ) {}
 
   // ****** //
   // LOGGER //
@@ -192,6 +194,31 @@ export class ChannelsService {
       createChannelDto.membersIds
     )
     if (!members || members.length < 2) throw new ChannelMembersNotFound()
+
+    if (createChannelDto.isDm && members.length > 2) {
+      throw new DmChannelMembersLimit()
+    }
+
+    members.sort((a, b) => a.id.localeCompare(b.id))
+
+    if (createChannelDto.isDm) {
+      const existingDm = await this.channelsRepository
+        .createQueryBuilder('channel')
+        .innerJoin('channel.members', 'member')
+        .where('channel.isDm = :isDm', { isDm: true })
+        .andWhere('member.id IN (:...memberIds)', {
+          memberIds: members.map((m) => m.id)
+        })
+        .groupBy('channel.id')
+        .having('COUNT(member.id) = :membersCount', {
+          membersCount: members.length
+        })
+        .getOne()
+
+      if (existingDm) {
+        throw new ChannelAlreadyExists()
+      }
+    }
 
     let hashedPassword: string = null
     if (!createChannelDto.isDm && createChannelDto.password) {
@@ -352,7 +379,6 @@ export class ChannelsService {
     if (channel.isPrivate && !password) {
       throw new MissingGroupPassword()
     }
-
 
     if (channel.isPrivate) {
       const [salt, storedHash] = channel.password.split('.')
