@@ -134,9 +134,9 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
       return
     } else if (
       passwordRequired.value &&
-      (password.length < 8 || password.length > 100)
+      (password.length < 4 || password.length > 50)
     ) {
-      passwordError.value = 'The password must be between 8 and 100 characters.'
+      passwordError.value = 'The password must be 4 and 50 characters.'
       return
     }
 
@@ -145,7 +145,6 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
     passwordRequired.value = false
   } catch (err: any) {
     if (err instanceof ApiError) {
-      console.log(err.code)
       if (err.code === 'MissingGroupPassword') {
         passwordRequired.value = true
       } else if (err.code === 'InvalidGroupPassword') {
@@ -154,6 +153,8 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
         toast.error('You are banned from this group.')
       } else if (err.code === 'ChannelNotFound') {
         toast.error('Channel not found.')
+      } else if (err.code === 'UserAlreadyInChannel') {
+        toast.error('You are already in this channel.')
       } else {
         toast.error('Something went wrong')
       }

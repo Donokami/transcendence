@@ -297,9 +297,9 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
     }
     if (
       password.value &&
-      (password.value.length < 8 || password.value.length > 100)
+      (password.value.length < 4 || password.value.length > 50)
     ) {
-      passwordError.value = 'The password must be between 8 and 100 characters.'
+      passwordError.value = 'The password must be between 4 and 50 characters.'
       return
     }
   } else {

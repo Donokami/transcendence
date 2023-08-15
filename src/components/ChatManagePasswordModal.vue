@@ -3,20 +3,20 @@
     <input type="checkbox" id="my-modal-13" class="modal-toggle" />
     <div class="modal">
       <div class="modal-box rounded-none border-2 border-black">
+        <!-- TITLE -->
+        <div class="text-xl flex justify-between">
+          <h1>Manage password</h1>
+          <button
+            @click="closeModal()"
+            class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
+            <iconify-icon
+              icon="material-symbols:close"
+              class="h-6 w-6 absolute">
+            </iconify-icon>
+          </button>
+        </div>
         <!-- FORM -->
         <Form ref="formRef" @submit="submitForm">
-          <!-- TITLE -->
-          <div class="text-xl flex justify-between">
-            <h1>Manage password</h1>
-            <button
-              @click="closeModal()"
-              class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
-              <iconify-icon
-                icon="material-symbols:close"
-                class="h-6 w-6 absolute">
-              </iconify-icon>
-            </button>
-          </div>
           <div class="form-control mt-6">
             <label class="label cursor-pointer px-0">
               <span class="text-base text-black">Change password</span>
@@ -175,9 +175,9 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
 
   if (
     password.value &&
-    (password.value.length < 8 || password.value.length > 100)
+    (password.value.length < 4 || password.value.length > 50)
   ) {
-    passwordError.value = 'The password must be between 8 and 100 characters.'
+    passwordError.value = 'The password must be 4 and 50 characters.'
     return
   }
 
