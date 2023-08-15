@@ -15,8 +15,6 @@ export class AuthGuard implements CanActivate {
   canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest()
 
-    this.logger.verbose(`Session user ID : ${request.session.userId}`)
-
     return request.session.userId
   }
 }
