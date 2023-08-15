@@ -1,4 +1,4 @@
-import { defineStore, getActivePinia, type Pinia, type Store } from 'pinia'
+import { defineStore } from 'pinia'
 
 import type { User, Friendship, Paginated } from '@/types'
 import fetcher from '@/utils/fetcher'

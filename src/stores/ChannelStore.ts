@@ -12,9 +12,6 @@ import fetcher, {
   ApiError
 } from '@/utils/fetcher'
 
-const router = useRouter()
-const toast = useToast()
-
 function parseUrl(message: Message): {
   roomId: string
   url: URL
@@ -457,6 +454,8 @@ export const useChannelStore = defineStore('channels', {
     // ********** //
 
     async leaveGroup(userId: string, channelId: string): Promise<void> {
+      const router = useRouter()
+      const toast = useToast()
       await fetcher
         .delete(`/channels/${channelId}/leave`, { userId })
         .then(async () => {

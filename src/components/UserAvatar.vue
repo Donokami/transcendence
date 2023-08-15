@@ -64,7 +64,7 @@ const onFileChange = async (event: Event): Promise<void> => {
   if (target.files != null) {
     const file = target.files[0]
     try {
-      if (loggedUser == null) return
+      if (loggedUser === null) return
       await userStore.uploadProfilePicture(loggedUser.value.id, file)
       location.reload()
     } catch (error) {

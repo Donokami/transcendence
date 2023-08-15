@@ -16,7 +16,10 @@
           </button>
         </div>
 
-        <Form ref="formRef" @submit="submitForm">
+        <Form
+          ref="formRef"
+          :validation-schema="joinGroupSchema"
+          @submit="submitForm">
           <!-- GROUP SETTINGS -->
           <div>
             <!-- GROUP NAME -->
@@ -26,6 +29,9 @@
                 name="channelName"
                 class="neobrutalist-input py-2"
                 placeholder="Enter a group name" />
+              <ErrorMessage
+                class="font-normal text-base text-red-600"
+                name="channelName" />
               <div v-if="channelNameError" class="text-red-500">
                 {{ channelNameError }}
               </div>
@@ -62,14 +68,12 @@
 // IMPORTS //
 // ******* //
 
-import { storeToRefs } from 'pinia'
 import { Form, Field } from 'vee-validate'
 import { onBeforeMount, ref, toRefs, watch } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 import { useToast } from 'vue-toastification'
 
 import { useChannelStore } from '@/stores/ChannelStore'
-import { useUserStore } from '@/stores/UserStore.js'
 import { ApiError } from '@/utils/fetcher'
 
 // ******************** //
@@ -77,7 +81,6 @@ import { ApiError } from '@/utils/fetcher'
 // ******************** //
 
 const channelStore = useChannelStore()
-const userStore = useUserStore()
 
 const channelNameError = ref<string | null>(null)
 const emit = defineEmits(['update:showModal'])
@@ -88,8 +91,11 @@ const props = defineProps({
 })
 const toast = useToast()
 
-const { loggedUser } = storeToRefs(userStore)
 const { showModal } = toRefs(props)
+
+const joinGroupSchema = {
+  channelName: 'required|min:3|max:50'
+}
 
 // ******************** //
 // FUNCTION DEFINITIONS //
@@ -123,11 +129,11 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
   }
 
   try {
-    if (passwordRequired.value === true && !password) {
+    if (passwordRequired.value && !password) {
       passwordError.value = 'A password is required for this channel.'
       return
     } else if (
-      passwordRequired.value === true &&
+      passwordRequired.value &&
       (password.length < 8 || password.length > 100)
     ) {
       passwordError.value = 'The password must be between 8 and 100 characters.'
@@ -139,15 +145,19 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
     passwordRequired.value = false
   } catch (err: any) {
     if (err instanceof ApiError) {
+      console.log(err.code)
       if (err.code === 'MissingGroupPassword') {
         passwordRequired.value = true
       } else if (err.code === 'InvalidGroupPassword') {
         passwordError.value = 'Invalid password'
       } else if (err.code === 'UserIsBanned') {
         toast.error('You are banned from this group.')
+      } else if (err.code === 'ChannelNotFound') {
+        toast.error('Channel not found.')
+      } else {
+        toast.error('Something went wrong')
       }
     }
-    console.error(err)
     return
   }
 
