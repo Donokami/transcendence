@@ -5,7 +5,10 @@
       <!-- TITLE -->
       <h2 class="mb-8 font-bold text-2xl text-black">Profile</h2>
       <!-- STATS CARD -->
-      <profile-stats-card></profile-stats-card>
+      <profile-stats-card
+        :user="user"
+        v-if="user"
+        @update-user="fetchProfile(user.id)" />
       <!-- 2FA  -->
       <div class="mt-4">
         <!-- TOGGLER-->
@@ -27,46 +30,28 @@
     <div
       class="relative items-center px-4 py-7 sm:p-11 my-2 sm:my-4 mx-2 sm:mx-4 text-justify border-2 border-black">
       <h2 class="mb-8 text-2xl font-bold text-black">Stats</h2>
-      <stats-ranking-table
-        @table-state-changed="tableState = $event"
-        v-show="tableState === 'ranking'"></stats-ranking-table>
-      <stats-match-history-table
-        @table-state-changed="tableState = $event"
-        v-show="tableState === 'matchHistory'"></stats-match-history-table>
+      <StatsSwitcher :user-id="user.id" v-if="user" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
-
-import { ref } from 'vue'
+import { ref, type Ref, onMounted } from 'vue'
 
 import ProfileStatsCard from '@/components/ProfileStatsCard.vue'
-import StatsRankingTable from '@/components/StatsRankingTable.vue'
-import StatsMatchHistoryTable from '@/components/StatsMatchHistoryTable.vue'
 import { useUserStore } from '@/stores/UserStore'
 import { useToast } from 'vue-toastification'
+import StatsSwitcher from '@/components/StatsSwitcher.vue'
+import type { User } from '@/types'
+import fetcher from '@/utils/fetcher'
+import { useRoute, useRouter, onBeforeRouteUpdate } from 'vue-router'
 
-// ******************** //
-// VARIABLE DEFINITIONS //
-// ******************** //
-
+const user: Ref<User | null> = ref(null)
 const authMessage = ref('Activate 2FA')
 const qrCodeUrl = ref('')
-const tableState = ref('ranking')
 const userStore = useUserStore()
 const toast = useToast()
-
-// ******************** //
-// FUNCTION DEFINITIONS //
-// ******************** //
-
-// ***************** //
-// switchAuthMessage //
-// ***************** //
+const router = useRouter()
 
 const switchAuthMessage = async (): Promise<void> => {
   try {
@@ -82,4 +67,21 @@ const switchAuthMessage = async (): Promise<void> => {
     toast.error('An error occured while enabling 2FA')
   }
 }
+
+async function fetchProfile(userId: string): Promise<void> {
+  try {
+    user.value = await fetcher.get(`/user/${userId}/stats`)
+  } catch (error) {
+    toast.error("This profile wasn't found")
+    await router.push('/')
+  }
+}
+
+onMounted(async () => {
+  await fetchProfile(useRoute().params.id as string)
+})
+
+onBeforeRouteUpdate(async (to, from) => {
+  await fetchProfile(to.params.id as string)
+})
 </script>

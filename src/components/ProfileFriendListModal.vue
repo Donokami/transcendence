@@ -2,10 +2,8 @@
   <input type="checkbox" id="my-modal-3" class="modal-toggle" />
   <div class="modal">
     <div class="modal-box rounded-none border-2 border-black">
-      <div class="text-xl flex justify-between">
-        <!-- TITLE -->
+      <div class="text-xl flex justify-between mb-4">
         <h1>Friend list</h1>
-        <!-- CLOSING CROSS -->
         <label
           for="my-modal-3"
           class="relative btn btn-sm btn-square border-2 border-black hover:border-2 hover:border-black">
@@ -13,20 +11,24 @@
           </iconify-icon>
         </label>
       </div>
-      <!-- FRIEND LIST -->
-
-      <ul class="flex menu bg-base-100 w-full p-0">
-        <li v-for="friend in friendList" :key="friend.id">
+      <ul class="flex bg-base-100 menu w-full p-0">
+        <li
+          v-if="friendList && friendList.length === 0"
+          class="flex items-center px-2 sm:px-4 w-18 rounded-none">
+          <span class="pl-4 text-base truncate">
+            You have no friends yet.
+          </span>
+        </li>
+        <li v-for="friend in friendList" :key="friend.id" v-else>
           <div class="flex items-center px-2 sm:px-4 w-18 rounded-none">
             <div class="h-11 w-11">
               <user-avatar
-                :userProps="friend"
-                :uploadMode="false"></user-avatar>
+                :user-props="friend"
+                :upload-mode="false"></user-avatar>
             </div>
-            <span class="pl-4 text-base truncate w-28 sm:w-48">
-              {{ friend.username }} is {{ friend.status }}
+            <span class="pl-4 text-base truncate">
+              {{ friend.username }} ({{ friend.status }})
             </span>
-            <span class="pl-4 text-base truncate w-28 sm:w-48"> </span>
           </div>
         </li>
       </ul>
@@ -41,26 +43,15 @@
 
 import { onBeforeMount } from 'vue'
 
-import { storeToRefs } from 'pinia'
-
 import UserAvatar from '@/components/UserAvatar.vue'
 import { useUserStore } from '@/stores/UserStore.js'
-
-// ******************** //
-// VARIABLE DEFINITIONS //
-// ******************** //
+import type { User } from '@/types'
 
 const userStore = useUserStore()
 
-const { friendList } = storeToRefs(userStore)
+const { friendList }: { friendList: User[] } = useUserStore()
 
-// ******************** //
-// FUNCTION DEFINITIONS //
-// ******************** //
-
-// ********************* //
-// VueJs LIFECYCLE HOOKS //
-// ********************* //
-
-onBeforeMount(userStore.fetchFriendList)
+onBeforeMount(async () => {
+  await userStore.refreshFriendList()
+})
 </script>

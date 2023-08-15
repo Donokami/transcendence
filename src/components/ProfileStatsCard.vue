@@ -3,13 +3,11 @@
     <div class="lg:border-r-2 border-black -ml-6 stat lg:-ml-2 h-52">
       <div class="flex items-top justify-between h-14">
         <!-- USERNAME -->
-        <div v-if="observedUser" class="stat-value text-black text-xl">
-          {{ observedUser.username }}
+        <div v-if="user" class="stat-value text-black text-xl">
+          {{ user.username }}
         </div>
         <label
-          v-if="
-            observedUser && loggedUser && observedUser.id === loggedUser?.id
-          "
+          v-if="user && loggedUser && props.user.id === loggedUser?.id"
           for="my-modal-4"
           class="mb-2 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white"
           type="button"
@@ -21,16 +19,14 @@
       <div class="flex-col h-24">
         <div class="w-16 text-black">
           <user-avatar
-            :userProps="(observedUser as User)"
-            :uploadMode="loggedUser?.id === observedUser?.id"></user-avatar>
+            :userProps="(user as User)"
+            :uploadMode="loggedUser?.id === user?.id"></user-avatar>
         </div>
         <div class="flex items-baseline">
           <div class="stat-title">Status:</div>
-          <div v-if="observedUser" class="" :class="statusColor">
+          <div v-if="user" class="" :class="statusColor">
             {{
-              observedUser.id === loggedUser?.id
-                ? 'online'
-                : observedUser.status
+              props.user.id === loggedUser?.id ? 'online' : props.user.status
             }}
           </div>
         </div>
@@ -46,8 +42,8 @@
           style="color: #5d4df8"></iconify-icon>
       </div>
       <div class="flex items-center h-24">
-        <div v-if="observedUser" class="stat-value text-primary">
-          {{ observedUser.rank ?? '-' }}
+        <div v-if="user" class="stat-value text-primary">
+          {{ props.user.rank ?? '-' }}
         </div>
       </div>
     </div>
@@ -62,25 +58,25 @@
           style="color: #5d4df8"></iconify-icon>
       </div>
       <div class="flex items-center h-24">
-        <div v-if="observedUser" class="stat-value text-primary">
-          {{ observedUser.winRate }} %
+        <div v-if="props.user" class="stat-value text-primary">
+          {{ props.user.winRate * 100 }} %
         </div>
       </div>
     </div>
     <!-- USER FRIENDS -->
     <div
       class="stat border-black -ml-6 lg:-ml-0 lg:!border-l-2"
-      v-if="loggedUser && observedUser && observedUser.id !== loggedUser.id">
+      v-if="loggedUser && props.user.id !== loggedUser.id">
       <div class="text-xl stat-value h-14">Friends</div>
       <div class="flex items-center justify-between h-24">
         <!-- NUMBER OF FRIENDS -->
-        <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
+        <div class="stat-value text-primary">{{ props.user.nFriends }}</div>
         <!-- SEND REQUEST -->
         <button
           v-if="
             isFriend === false &&
-            loggedUser.isBlockedBy == null &&
-            observedUser.isBlockedBy == null
+            !isUserBlockedByProfile &&
+            !isProfileBlockedByUser
           "
           class="btn bg-white border-2 border-black text-black hover:bg-black hover:border-black hover:text-white h-14 items-center no-animation"
           type="button"
@@ -90,7 +86,7 @@
         </button>
         <!-- BLOCK USER -->
         <button
-          v-else-if="isFriend === true && loggedUser.isBlockedBy != true"
+          v-else-if="isFriend === true && !isUserBlockedByProfile"
           class="btn bg-white border-2 border-black text-black hover:bg-black hover:border-black hover:text-white h-14 items-center no-animation"
           type="button"
           @click="blockUser">
@@ -99,7 +95,7 @@
         </button>
         <!-- UNBLOCK USER -->
         <button
-          v-else-if="isFriend === false && observedUser.isBlockedBy == true"
+          v-else-if="isFriend === false && isProfileBlockedByUser"
           class="btn bg-white border-2 border-black text-black hover:bg-black hover:border-black hover:text-white h-14 items-center no-animation"
           type="button"
           @click="unblockUser">
@@ -111,19 +107,20 @@
     <!-- FRIEND REQUEST NOTIFICATION -->
     <div
       class="stat border-black -ml-6 lg:-ml-0 !border-t-2 lg:!border-t-0 lg:!border-l-2"
-      v-if="loggedUser && observedUser && observedUser.id === loggedUser.id">
+      v-if="loggedUser && user && props.user.id === loggedUser.id">
       <div class="flex items-top justify-between h-14">
         <div class="stat-value text-xl">Friends</div>
         <label
           for="my-modal-3"
           class="mb-2 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white"
           type="button"
+          v-if="props.user.nFriends > 0"
           @click="showFriendListModal = true">
           See friend list
         </label>
       </div>
       <div class="flex items-center justify-between h-24">
-        <div class="stat-value text-primary">{{ observedUser.nFriends }}</div>
+        <div class="stat-value text-primary">{{ props.user.nFriends }}</div>
         <label
           v-if="nFriendRequests > 0"
           for="my-modal-3"
@@ -164,8 +161,7 @@
 // IMPORTS //
 // ******* //
 
-import { computed, onBeforeMount, ref } from 'vue'
-import { onBeforeRouteUpdate, useRoute } from 'vue-router'
+import { computed, ref, type Ref, onMounted } from 'vue'
 import { useToast } from 'vue-toastification'
 
 import { storeToRefs } from 'pinia'
@@ -189,24 +185,27 @@ const iconRequestNotification = ref('mdi:account-alert-outline')
 const iconSendRequest = ref('mdi:account-plus-outline')
 const iconUnblockUser = ref('mdi:account-cancel')
 const isFriend = ref(false)
+const isProfileBlockedByUser = ref(false)
+const isUserBlockedByProfile = ref(false)
 const nFriendRequests = ref(0)
-const route = useRoute()
 const showFriendListModal = ref(false)
 const showFriendRequestModal = ref(false)
 const showUsernameModal = ref(false)
 const userStore = useUserStore()
 
-const { loggedUser, observedUser } = storeToRefs(userStore)
+const { loggedUser } = storeToRefs(userStore)
+
+const props = defineProps<{
+  user: User
+}>()
+
+const emit = defineEmits(['updateUser'])
 
 const statusColor = computed(() => {
-  if (observedUser.value === null || loggedUser.value === null)
-    return 'text-gray-500'
-  if (
-    observedUser.value.status === 'online' ||
-    observedUser.value.id === loggedUser.value.id
-  )
+  if (loggedUser.value === null) return 'text-gray-500'
+  if (props.user.status === 'online' || props.user.id === loggedUser.value.id)
     return 'text-[#62D49A]'
-  if (observedUser.value.status === 'offline') return 'text-red-500'
+  if (props.user.status === 'offline') return 'text-red-500'
   return 'text-gray-500'
 })
 
@@ -219,17 +218,14 @@ const statusColor = computed(() => {
 // ********* //
 
 const blockUser = async (): Promise<void> => {
-  if (observedUser.value === null) return
   try {
-    await userStore.blockUser(observedUser.value.id)
+    await userStore.blockUser(props.user.id)
     await checkBlockedStatus()
     isFriend.value = false
-    if (observedUser.value.nFriends > 0) {
-      observedUser.value.nFriends -= 1
-    }
-    toast.success('User blocked !')
+    emit('updateUser')
+    toast.success(`${props.user.username} has been blocked.`)
   } catch (error) {
-    console.log(`[ProfileStatsCard] - Failed to block user! Error : `, error)
+    toast.error('An error occured while blocking user.')
   }
 }
 
@@ -238,47 +234,37 @@ const blockUser = async (): Promise<void> => {
 // ****************** //
 
 const checkBlockedStatus = async (): Promise<void> => {
-  if (!loggedUser.value || !observedUser.value) return
+  if (!loggedUser.value) return
   try {
-    const response = await userStore.fetchBlockerId(observedUser.value.id)
-    console.log(`[ProfileStatsCard] - fetchBlockerId : ${response}`)
+    const response = await userStore.fetchBlockerId(props.user.id)
     if (response === loggedUser.value.id) {
-      observedUser.value.isBlockedBy = true
-      console.log(
-        `[ProfileStatsCard] - ${observedUser.value.id} isBlockedBy : ${loggedUser.value.id}`
-      )
-    } else if (response === observedUser.value.id) {
-      loggedUser.value.isBlockedBy = true
-      console.log(
-        `[ProfileStatsCard] - ${loggedUser.value.id} isBlockedBy : ${observedUser.value.id}`
-      )
+      isProfileBlockedByUser.value = true
+    } else if (response === props.user.id) {
+      isUserBlockedByProfile.value = true
     }
   } catch (error) {
-    toast.error('Failed to fetch blocked user and check friendship !')
+    toast.error('Failed to fetch blocked user and check friendship!')
   }
 }
 
-// ********* //
-// fetchUser //
-// ********* //
+// ******************** //
+// closeFriendListModal //
+// ******************** //
 
-const fetchUser = async (id: string | undefined): Promise<void> => {
-  try {
-    if (id) {
-      observedUser.value = await userStore.fetchUserByIdWithStats(id)
-      console.log(
-        `[ProfileView] - The current observed user is ${observedUser.value.username}`
-      )
-    } else if (loggedUser.value != null) {
-      observedUser.value = loggedUser.value
-      console.log(
-        `[ProfileView] - The current observed user is ${observedUser.value.username}`
-      )
-    } else {
-      console.log(`[ProfileView] - The current observed user is not defined`)
-    }
-  } catch (error) {
-    toast.error('Failed to fetch user !')
+// const closeFriendListModal = (): void => {
+//   showFriendListModal.value = false
+// }
+
+// *********************** //
+// closeFriendRequestModal //
+// *********************** //
+
+const closeFriendRequestModal = (event: string): void => {
+  showFriendRequestModal.value = false
+
+  if (event === 'accept') {
+    nFriendRequests.value -= 1
+    emit('updateUser')
   }
 }
 
@@ -291,35 +277,10 @@ const getFriendRequestsNumber = async (): Promise<number> => {
   try {
     const response = await userStore.fetchFriendRequests()
     nFriendRequests.value = response.length
-    console.log(
-      `[ProfileStatsCard] - Number of friend requests : `,
-      nFriendRequests.value
-    )
     return response.length
   } catch (error) {
     toast.error('Failed to get friend requests number !')
     return 0
-  }
-}
-
-// ******************** //
-// closeFriendListModal //
-// ******************** //
-
-const closeFriendListModal = (): void => {
-  showFriendListModal.value = false
-}
-
-// *********************** //
-// closeFriendRequestModal //
-// *********************** //
-
-const closeFriendRequestModal = (event: string): void => {
-  showFriendRequestModal.value = false
-
-  if (observedUser.value && event === 'accept') {
-    nFriendRequests.value -= 1
-    observedUser.value.nFriends += 1
   }
 }
 
@@ -336,36 +297,36 @@ const handleCloseUsernameModal = (): void => {
 // searchInFriendList //
 // ****************** //
 
-const searchInFriendList = async (user: User): Promise<boolean> => {
-  if (!user) return false
-  try {
-    const friend = userStore.friendList.find(
-      (friend: User) => friend.id === user.id
-    )
-    isFriend.value = !(friend == null)
-    console.log(`[ProfileStatsCard] - isFriend : `, isFriend.value)
-    return true
-  } catch (error) {
-    toast.error('Failed to get friend requests number !')
-    return false
-  }
-}
+// const searchInFriendList = async (user: User): Promise<boolean> => {
+//   if (!user) return false
+//   try {
+//     const friend = userStore.friendList.find(
+//       (friend: User) => friend.id === props.user.id
+//     )
+//     isFriend.value = !(friend == null)
+//     console.log(`[ProfileStatsCard] - isFriend : `, isFriend.value)
+//     return true
+//   } catch (error) {
+//     toast.error('Failed to get friend requests number !')
+//     return false
+//   }
+// }
 
 // ***************** //
 // sendFriendRequest //
 // ***************** //
 
 const sendFriendRequest = async (): Promise<void> => {
-  if (observedUser.value === null) return
+  if (props.user === null) return
   try {
-    await userStore.sendFriendRequest(observedUser.value.id)
-    toast.success('Friend request sent !')
+    await userStore.sendFriendRequest(props.user.id)
+    toast.success('Friend request sent!')
   } catch (error: any) {
     if (error instanceof ApiError) {
       if (error.code === 'FriendshipAlreadyPending') {
-        toast.error('Friendship already pending !')
+        toast.error('A friendship request is already pending!')
       }
-    } else toast.error('Failed to send friend request !')
+    } else toast.error('Failed to send friend request!')
   }
 }
 
@@ -374,13 +335,12 @@ const sendFriendRequest = async (): Promise<void> => {
 // *********** //
 
 const unblockUser = async (): Promise<void> => {
-  if (observedUser.value === null) return
   try {
-    await userStore.unblockUser(observedUser.value.id)
+    await userStore.unblockUser(props.user.id)
     await checkBlockedStatus()
     // todo: check if the blocker and userToUnblock are already friend or not
     isFriend.value = true
-    observedUser.value.nFriends += 1
+    emit('updateUser')
     toast.success('User unblocked !')
   } catch (error) {
     toast.error('Failed to unblock user !')
@@ -391,65 +351,70 @@ socialSocket.on('social:new', () => {
   nFriendRequests.value += 1
 })
 
-socialSocket.on('social:accept', (user: User) => {
-  console.log('friend request accepted', user)
-  console.log('observedUser', observedUser.value?.id)
-  if (observedUser.value?.id === user.id) {
-    observedUser.value.nFriends += 1
-    isFriend.value = true
-    console.log('isFriend', isFriend.value)
-  }
+socialSocket.on('social:accept', (user: Ref<User>) => {
+  emit('updateUser')
+  isFriend.value = true
 })
 
 // ********************* //
 // VueJs LIFECYCLE HOOKS //
 // ********************* //
 
-onBeforeMount(async () => {
-  let id = route.params.id
-  if (Array.isArray(id)) {
-    id = id[0]
-  }
+onMounted(async () => {
+  if (loggedUser.value == null) return
   try {
-    await fetchUser(id)
-
     await userStore.refreshFriendList()
-
-    if (
-      loggedUser.value != null &&
-      observedUser.value !== null &&
-      observedUser.value.id !== loggedUser.value.id
-    ) {
-      await searchInFriendList(observedUser.value)
-      await checkBlockedStatus()
-    }
-
-    await getFriendRequestsNumber()
+    await checkBlockedStatus()
+    nFriendRequests.value = await getFriendRequestsNumber()
   } catch (error: any) {
     toast.error('Something went wrong !')
   }
 })
 
-onBeforeRouteUpdate(async (to, from) => {
-  const id = to.path.split('/').pop()
-  try {
-    await fetchUser(id)
+// onBeforeMount(async () => {
+//   let id = route.params.id
+//   if (Array.isArray(id)) {
+//     id = id[0]
+//   }
+//   try {
+//     await fetchUser(id)
 
-    await userStore.refreshFriendList()
+//     await userStore.refreshFriendList()
 
-    if (
-      loggedUser.value &&
-      observedUser.value &&
-      observedUser.value.id !== loggedUser.value.id
-    ) {
-      await searchInFriendList(observedUser.value)
-      await checkBlockedStatus()
-    }
+//     if (
+//       loggedUser.value != null &&
+//       user !== null &&
+//       props.user.id !== loggedUser.value.id
+//     ) {
+//       await searchInFriendList(user)
+//       await checkBlockedStatus()
+//     }
 
-    await getFriendRequestsNumber()
-  } catch (error: any) {
-    toast.error('Something went wrong !')
-  }
-})
+//     await getFriendRequestsNumber()
+//   } catch (error: any) {
+//     toast.error('Something went wrong !')
+//   }
+// })
+
+// onBeforeRouteUpdate(async (to, from) => {
+//   const id = to.path.split('/').pop()
+//   try {
+//     await fetchUser(id)
+
+//     await userStore.refreshFriendList()
+
+//     if (
+//       loggedUser.value &&
+//       user &&
+//       props.user.id !== loggedUser.value.id
+//     ) {
+//       await searchInFriendList(user)
+//       await checkBlockedStatus()
+//     }
+
+//     await getFriendRequestsNumber()
+//   } catch (error: any) {
+//     toast.error('Something went wrong !')
+//   }
+// })
 </script>
-@/includes/socialSocket

@@ -1,23 +1,18 @@
 <template>
   <div class="w-full mx-auto text-black">
-    <!-- TABLE -->
-    <div class="border-2 border-black my-2 sm:my-4 mx-2 sm:mx-4 px-4 py-7 sm:p-11">
-      <!-- STATS -->
-      <stats-ranking-table
-        @table-state-changed="tableState = $event"
-        v-show="tableState === 'ranking'"></stats-ranking-table>
-      <!-- MATCH HISTORY -->
-      <stats-match-history-table
-        @table-state-changed="tableState = $event"
-        v-show="tableState === 'matchHistory'"></stats-match-history-table>
+    <div
+      class="border-2 border-black my-2 sm:my-4 mx-2 sm:mx-4 px-4 py-7 sm:p-11">
+      <StatsSwitcher :user-id="loggedUser.id" v-if="loggedUser" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import StatsRankingTable from '../components/StatsRankingTable.vue'
-import StatsMatchHistoryTable from '../components/StatsMatchHistoryTable.vue'
+import StatsSwitcher from '@/components/StatsSwitcher.vue'
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/UserStore.js'
 
-const tableState = ref('ranking')
+const userStore = useUserStore()
+
+const { loggedUser } = storeToRefs(userStore)
 </script>

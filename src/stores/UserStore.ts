@@ -4,11 +4,11 @@ import type { User, Friendship, Paginated } from '@/types'
 import fetcher from '@/utils/fetcher'
 import { useChannelStore } from './ChannelStore'
 
-interface UserData {
-  username?: string
-  password?: string
-  profilePicture?: string
-}
+// interface UserData {
+//   username?: string
+//   password?: string
+//   profilePicture?: string
+// }
 
 interface TwoFactorData {
   isTwoFactorEnabled: boolean
@@ -26,11 +26,8 @@ interface UploadData {
 export const useUserStore = defineStore('users', {
   state: () => ({
     loggedUser: null as unknown as User | null,
-    friendList: [] as User[],
     twoFactorEnabled: false,
-
-    observedUser: null as unknown as User | null,
-
+    friendList: [] as User[],
     tempUserId: null as unknown as string | null
   }),
   actions: {
@@ -81,10 +78,8 @@ export const useUserStore = defineStore('users', {
     // fetchBlockerId //
     // ************** //
 
-    async fetchBlockerId(observedUserId: string): Promise<string> {
-      const response = await fetcher.get(
-        `/social/blocker-id/${observedUserId}`
-      )
+    async fetchBlockerId(userId: string): Promise<string> {
+      const response = await fetcher.get(`/social/blocker-id/${userId}`)
 
       return response.blockerId
     },
@@ -160,7 +155,7 @@ export const useUserStore = defineStore('users', {
         const user = await this.fetchUser()
         this.loggedUser = user
         this.twoFactorEnabled = user.isTwoFactorEnabled
-      } catch (error) { }
+      } catch (error) {}
     },
 
     // ******** //
@@ -279,11 +274,8 @@ export const useUserStore = defineStore('users', {
     // updateUser //
     // ********** //
 
-    async updateUser(id: string, userData: UserData): Promise<User> {
-      console.log(`[UserStore] - updateUser : `, userData)
-      console.log(`[UserStore] - updateUser : `, id)
+    async updateUser(id: string, userData: Partial<User>): Promise<User> {
       const response: User = await fetcher.patch(`/user/${id}`, userData)
-      console.log(`[UserStore] - updateUser response : `, response)
       return response
     },
 
