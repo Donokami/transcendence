@@ -7,7 +7,7 @@ import Toast, {
   POSITION,
   useToast
 } from 'vue-toastification'
-import 'vue-toastification/dist/index.css' // todo: remove this import if using custom css file
+import 'vue-toastification/dist/index.css'
 
 import App from './App.vue'
 import router from './router'

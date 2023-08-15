@@ -97,7 +97,6 @@ const filteredFriendList = computed(() => {
 // createDmChannel //
 // *************** //
 
-// todo (Lucas): close modal after creating DM channel
 const createDmChannel = async (friend: User): Promise<void> => {
   if (loggedUser.value == null || !friend) {
     return
