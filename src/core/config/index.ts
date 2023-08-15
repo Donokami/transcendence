@@ -1,7 +1,9 @@
 import { registerAs } from '@nestjs/config'
 import { z } from 'zod'
 import { generateErrorMessage, type ErrorMessageOptions } from 'zod-error'
-import 'dotenv/config'
+import { config } from 'dotenv'
+
+config({ path: `@/../envs/.env.${process.env.NODE_ENV || 'development'}` })
 
 export default registerAs('transcendence-config', () => {
   const values = {
@@ -10,7 +12,7 @@ export default registerAs('transcendence-config', () => {
     frontendUrl: process.env.FRONTEND_URL,
 
     dbHost: process.env.DB_HOST,
-    dbPort: parseInt(process.env.DB_PORT),
+    dbPort: process.env.DB_PORT,
     dbUser: process.env.DB_USER,
     dbPass: process.env.DB_PASSWORD,
     dbName: process.env.DB_NAME,
@@ -33,10 +35,10 @@ export default registerAs('transcendence-config', () => {
     port: z.number(),
     frontendUrl: z.string(),
 
-    dbHost: z.string(),
-    dbPort: z.number(),
-    dbUser: z.string(),
-    dbPass: z.string(),
+    dbHost: process.env.NODE_ENV === 'production' ? z.string() : z.string().optional(),
+    dbPort: process.env.NODE_ENV === 'production' ? z.string() : z.string().optional(),
+    dbUser: process.env.NODE_ENV === 'production' ? z.string() : z.string().optional(),
+    dbPass: process.env.NODE_ENV === 'production' ? z.string() : z.string().optional(),
     dbName: z.string(),
     dbPath: z.string().optional(),
 

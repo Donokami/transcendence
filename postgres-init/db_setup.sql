@@ -1,3 +1,0 @@
-CREATE DATABASE nest_dev;
-CREATE DATABASE nest_test;
-CREATE DATABASE nest_prod;

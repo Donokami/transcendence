@@ -1,6 +1,5 @@
+envs/
 .env
-.env.development
-.env.test
 package-lock.json
 pnpm-lock.yaml
 /postgres-data

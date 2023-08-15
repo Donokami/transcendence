@@ -7,7 +7,7 @@ import {
   JoinTable,
   OneToMany,
   ManyToMany,
-  PrimaryGeneratedColumn
+  PrimaryGeneratedColumn,
 } from 'typeorm'
 
 import { Logger } from '@nestjs/common'
@@ -134,12 +134,13 @@ export class User {
   @Column({ default: 0, select: false })
   pointsDifference: number
 
-  @Column({ default: Date.now() })
+  @Column(process.env.NODE_ENV === 'production' ? { type: "timestamptz", default: () => "CURRENT_TIMESTAMP" } : { default: Date.now() })
   @ApiProperty()
-  createdAt: Date
+  createdAt: Date;
 
-  @Column({ default: Date.now(), select: false })
-  updatedAt: Date
+  @Column(process.env.NODE_ENV === 'production' ? { type: "timestamptz", default: () => "CURRENT_TIMESTAMP" } : { default: Date.now() })
+  @ApiProperty()
+  updatedAt: Date;
 
   // ***** //
   // UTILS //

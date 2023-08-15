@@ -5,10 +5,7 @@ import { ConfigService } from '@nestjs/config'
 import { SocketIoAdapter } from '@/core/websockets/auth-adapter'
 import * as express from 'express'
 import * as fs from 'fs/promises'
-import { config } from 'dotenv'
 import { AppService } from './app.service'
-
-config({ path: '../envs/.env' })
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
