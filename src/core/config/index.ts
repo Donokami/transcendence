@@ -3,8 +3,9 @@ import { z } from 'zod'
 import { generateErrorMessage, type ErrorMessageOptions } from 'zod-error'
 import { config } from 'dotenv'
 
-config({ path: `@/../envs/.env.${process.env.NODE_ENV || 'development'}` })
-
+config({
+  path: __dirname + `/../../../envs/.env.${process.env.NODE_ENV || 'development'}`
+})
 export default registerAs('transcendence-config', () => {
   const values = {
     nodeEnv: process.env.NODE_ENV || 'development',
