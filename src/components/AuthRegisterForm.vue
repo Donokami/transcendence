@@ -93,7 +93,7 @@ const emit = defineEmits(['form-state-changed'])
 
 const registerSchema = {
   username: 'required|min:3|max:100',
-  password: 'required|min:8|max:100',
+  password: 'required|min:4|max:100',
   confirmPassword: 'required|password_mismatch:@password'
 }
 

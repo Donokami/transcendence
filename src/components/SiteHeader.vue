@@ -56,7 +56,7 @@
         </ul>
       </div>
       <div class="text-white bg-black border-black navbar-center border-x-2">
-        <router-link to="/" class="p-2 px-6 text-xl font-bold">
+        <router-link to="/" class="p-2 px-6 text-sm sm:text-xl font-bold">
           __TRANSCENDENCE__
         </router-link>
       </div>

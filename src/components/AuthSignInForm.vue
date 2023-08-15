@@ -86,7 +86,7 @@ const showAlert = ref(false)
 
 const signInSchema = {
   username: 'required|min:3|max:100',
-  password: 'required|min:8|max:100'
+  password: 'required|min:4|max:100'
 }
 
 // ******************** //
@@ -119,7 +119,14 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
       setTimeout(() => {
         showAlert.value = false
       }, 2000)
+    } else if (error.code === 'InvalidPassword') {
+      alertColor.value = 'bg-red-500'
+      alertMsg.value = 'Incorrect password!'
+      setTimeout(() => {
+        showAlert.value = false
+      }, 2000)
     } else {
+      alertMsg.value = ''
       toast.error('Something went wrong !')
     }
   } finally {

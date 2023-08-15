@@ -103,7 +103,8 @@
       </li>
     </ul>
   </div>
-  <div>
+
+  <div class="">
     <!-- JOIN CHANNEL BUTTON -->
     <button
       v-if="listState === 'groups'"
@@ -120,7 +121,7 @@
     <!-- CREATE CHANNELS BUTTON -->
     <button
       for="my-modal-3"
-      class="btn bg-white border-t-2 border-x-0 border-b-0 border-black text-black hover:bg-black hover:border-black hover:text-white w-full no-animation relative"
+      class="btn border-t-2 border-x-0 border-b-0 border-black text-black hover:bg-black hover:border-black hover:text-white w-full no-animation relative"
       type="button"
       @click="
         activateModal(
@@ -164,7 +165,7 @@
 // ******* //
 
 import { storeToRefs } from 'pinia'
-import { onBeforeMount, ref, computed } from 'vue'
+import { onBeforeMount, ref } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 
 import ChatCreateDirectMessageModal from '@/components/ChatCreateDirectMessageModal.vue'
@@ -227,11 +228,11 @@ const getChannels = (): Channel[] => {
 // ********************* //
 
 onBeforeMount(() => {
-  channels.value = getChannels()
+  channels.value = getChannels() as typeof channels.value
 })
 
 onBeforeRouteUpdate((to, from) => {
-  channels.value = getChannels()
+  channels.value = getChannels() as typeof channels.value
 })
 </script>
 

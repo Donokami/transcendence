@@ -3,7 +3,7 @@
     <div
       class="flex flex-col sm:flex-row sm:max-h-[calc(100vh-164px)] text-black m-4">
       <!-- LEFT SIDEBAR -->
-      <div v-if="showSidebar" :class="sidebarClasses">
+      <div :class="sidebarClasses">
         <chat-left-sidebar
           :list-state="listState"
           @list-state-changed="listState = $event">
@@ -158,19 +158,14 @@ import { useUserStore } from '@/stores/UserStore'
 // VARIABLE DEFINITIONS //
 // ******************** //
 
-const showSidebar = computed(() => {
-  if (window.innerWidth <= 640 && route.path.startsWith('/chat/')) {
-    return false
-  }
-  return true
-})
-
 const sidebarClasses = computed(() => {
   const baseClasses =
-    'border-2 border-black min-h-[calc(100vh-164px)] w-60 sm:w-[19rem] min-w-[12rem] sm:min-w-[19rem] max-w-[19rem] sm:flex sm:flex-col'
+    'border-2 border-black min-h-[calc(100vh-164px)] w-60 sm:w-[19rem] min-w-[12rem] sm:min-w-[19rem] max-w-[19rem] flex flex-col'
 
   if (route.path === '/chat/') {
     return `${baseClasses} mx-auto`
+  } else if (route.path.startsWith('/chat/') && route.path !== '/chat/') {
+    return `${baseClasses} hidden sm:flex`
   }
 
   return baseClasses
