@@ -78,6 +78,7 @@ export class User {
   // ******************************* //
 
   nFriends: number
+  blockedUsers: User[]
 
   @OneToMany(() => Friendship, (friendship) => friendship.sender)
   sentRequests: Friendship[]

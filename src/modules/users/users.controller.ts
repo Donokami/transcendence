@@ -51,7 +51,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly socialService: SocialService,
     private readonly channelsService: ChannelsService
-  ) {}
+  ) { }
 
   // ****** //
   // LOGGER //
@@ -166,10 +166,12 @@ export class UsersController {
     description: 'Get current user',
     tags: ['users']
   })
-  whoAmI(@CurrentUser() user: User): User {
+  async whoAmI(@CurrentUser() user: User): Promise<User> {
     if (!user) {
       throw new UserNotFound()
     }
+
+    user.blockedUsers = await this.socialService.getBlockedUsers(user.id)
     return user
   }
 
