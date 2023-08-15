@@ -182,6 +182,34 @@ export class SocialService {
     return null
   }
 
+  async getBlockedUsers(userId: string): Promise<User[]> {
+    await this.checkExistingUser(userId)
+
+    const friendships: Friendship[] = await this.friendshipRepository.find({
+      where: [
+        { sender: { id: userId }, status: FriendshipStatus.BLOCKED },
+        { receiver: { id: userId }, status: FriendshipStatus.BLOCKED }
+      ]
+    })
+
+    if (!friendships) {
+      this.logger.warn(`No blocked friendships found for ${userId}.`)
+      return []
+    }
+
+    const blockedUsers = friendships.map((friendship: Friendship) => {
+      if (friendship.sender.id === userId) {
+        return friendship.receiver
+      } else {
+        return friendship.sender
+      }
+    })
+
+    this.logger.verbose(`Blocked users of : ${userId} successfully retrieved.`)
+
+    return blockedUsers
+  }
+
   // *************** //
   // getExistingUser //
   // *************** //

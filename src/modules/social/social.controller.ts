@@ -30,7 +30,7 @@ export class SocialController {
   // CONSTRUCTOR //
   // *********** //
 
-  constructor(private readonly socialService: SocialService) {}
+  constructor(private readonly socialService: SocialService) { }
 
   // ******************* //
   // acceptFriendRequest //
@@ -81,7 +81,7 @@ export class SocialController {
   // getBlockerId //
   // ************ //
 
-  @Get('/get/blocker-id/:observedUserId')
+  @Get('/blocker-id/:observedUserId')
   @ApiOperation({
     summary: 'Get blocker id',
     operationId: 'getBlockerId',
@@ -99,11 +99,25 @@ export class SocialController {
     return { blockerId }
   }
 
+  @Get('/blocked-users')
+  @ApiOperation({
+    summary: 'Get blocked users',
+    operationId: 'getBlockedUsers',
+    description: 'Get blocked users',
+    tags: ['social']
+  })
+  async getBlockedUsers(@Session() session: ISession): Promise<User[]> {
+    const blockedUsers = await this.socialService.getBlockedUsers(
+      session.userId
+    )
+    return blockedUsers
+  }
+
   // ************* //
   // getFriendList //
   // ************* //
 
-  @Get('/get/friend-list')
+  @Get('/friend-list')
   @ApiOperation({
     summary: 'Get friend list',
     operationId: 'acceptFriendRequest',
@@ -119,7 +133,7 @@ export class SocialController {
   // getFriendRequests //
   // ***************** //
 
-  @Get('/get/friend-requests')
+  @Get('/friend-requests')
   @ApiOperation({
     summary: 'Get friend requests',
     operationId: 'getFriendRequests',
