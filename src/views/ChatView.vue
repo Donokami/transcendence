@@ -3,8 +3,7 @@
     <div
       class="flex flex-col sm:flex-row sm:max-h-[calc(100vh-164px)] text-black m-4">
       <!-- LEFT SIDEBAR -->
-      <div
-        class="border-2 border-black min-h-[calc(100vh-164px)] w-60 sm:w-[19rem] min-w-[12rem] sm:min-w-[19rem] max-w-[19rem] hidden sm:flex sm:flex-col">
+      <div v-if="showSidebar" :class="sidebarClasses">
         <chat-left-sidebar
           :list-state="listState"
           @list-state-changed="listState = $event">
@@ -127,7 +126,7 @@
 // IMPORTS //
 // ******* //
 
-import { ref, onBeforeMount, onBeforeUnmount } from 'vue'
+import { ref, onBeforeMount, onBeforeUnmount, computed } from 'vue'
 import {
   onBeforeRouteLeave,
   onBeforeRouteUpdate,
@@ -158,6 +157,24 @@ import { useUserStore } from '@/stores/UserStore'
 // ******************** //
 // VARIABLE DEFINITIONS //
 // ******************** //
+
+const showSidebar = computed(() => {
+  if (window.innerWidth <= 640 && route.path.startsWith('/chat/')) {
+    return false
+  }
+  return true
+})
+
+const sidebarClasses = computed(() => {
+  const baseClasses =
+    'border-2 border-black min-h-[calc(100vh-164px)] w-60 sm:w-[19rem] min-w-[12rem] sm:min-w-[19rem] max-w-[19rem] sm:flex sm:flex-col'
+
+  if (route.path === '/chat/') {
+    return `${baseClasses} mx-auto`
+  }
+
+  return baseClasses
+})
 
 const channelImageUrl = (imagePath: string): string => {
   return `${import.meta.env.VITE_APP_BASE_URL}/${imagePath}`
