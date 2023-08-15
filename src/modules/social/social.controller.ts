@@ -30,7 +30,7 @@ export class SocialController {
   // CONSTRUCTOR //
   // *********** //
 
-  constructor(private readonly socialService: SocialService) { }
+  constructor(private readonly socialService: SocialService) {}
 
   // ******************* //
   // acceptFriendRequest //

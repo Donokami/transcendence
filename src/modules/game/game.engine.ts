@@ -2,9 +2,11 @@ import { Logger } from '@nestjs/common'
 import { Object3D, Vector3 } from 'three'
 import { GameGateway } from './game.gateway'
 import { UsersService } from '@/modules/users/users.service'
-import { Room, RoomStatus } from './room'
+import { Room, RoomStatus } from './game.room'
 import { type SimObject3D, type Metrics, PhysicsEngine } from './game.physics'
 import { User } from '../users/user.entity'
+import { Repository } from 'typeorm'
+import { Match } from './entities/match.entity'
 
 const metrics: Metrics = {
   canvasHeight: 480,
@@ -44,6 +46,7 @@ export class Game {
     private readonly roomState: Room,
     private readonly gameGateway: GameGateway,
     private readonly usersService: UsersService,
+    private readonly matchRepository: Repository<Match>,
     private readonly paddleRatio: number,
     private readonly gameDuration: number,
     private readonly ballSpeed: number
@@ -179,15 +182,15 @@ export class Game {
       secondPlayer,
       isSecondPlayerWinner
     )
-    try {
-      this.logger.log(firstPlayer.id)
-      this.logger.log(updatedFirstPlayer)
-      this.logger.log(firstPlayer)
-      this.usersService.update(firstPlayer.id, updatedFirstPlayer)
-      this.usersService.update(secondPlayer.id, updatedSecondPlayer)
-    } catch (error) {
-      this.logger.error(error)
-    }
+
+    this.usersService.update(firstPlayer.id, updatedFirstPlayer)
+    this.usersService.update(secondPlayer.id, updatedSecondPlayer)
+
+    const match = new Match()
+    match.players = [firstPlayer, secondPlayer]
+    match.scoreA = players[0].score
+    match.scoreB = players[1].score
+    await this.matchRepository.save(match)
   }
 
   public async endGame() {

@@ -4,6 +4,8 @@ import { User } from '../users/user.entity'
 import { GameGateway } from './game.gateway'
 import { Game } from './game.engine'
 import { UsersService } from '@/modules/users/users.service'
+import { Repository } from 'typeorm'
+import { Match } from './entities/match.entity'
 
 export enum RoomStatus {
   OPEN = 'open',
@@ -47,7 +49,8 @@ export class Room implements RoomObject {
   constructor(
     { name, owner, isPrivate }: RoomOpts,
     private readonly gameGateway: GameGateway,
-    private readonly usersService: UsersService
+    private readonly usersService: UsersService,
+    private readonly matchRepository: Repository<Match>
   ) {
     this.id = randomUUID()
 
@@ -114,6 +117,7 @@ export class Room implements RoomObject {
       this,
       this.gameGateway,
       this.usersService,
+      this.matchRepository,
       this.paddleRatio,
       this.gameDuration,
       this.ballSpeed

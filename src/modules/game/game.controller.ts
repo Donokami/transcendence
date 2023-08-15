@@ -5,7 +5,6 @@ import {
   Param,
   Patch,
   Post,
-  Req,
   Session,
   UseFilters,
   UseGuards
@@ -17,7 +16,7 @@ import { OwnershipGuard } from './guards/ownership.guard'
 import { UsernameGuard } from '@/core/guards/username.guard'
 
 import { UpdateGameDto } from './dtos/update-game-dto'
-import { RoomObject } from './room'
+import { RoomObject } from './game.room'
 import { ApiOperation } from '@nestjs/swagger'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { RoomNotFound } from '@/core/exceptions/game'
@@ -56,6 +55,18 @@ export class GameController {
     }
 
     return room.get()
+  }
+
+  @Get('/matchs/:userId')
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Get the matches by userId',
+    operationId: 'findMatches',
+    description: 'Get the matches by userId',
+    tags: ['game']
+  })
+  findMatches(@Param('userId') userId: string) {
+    return this.gameService.findMatches(userId)
   }
 
   @Get()

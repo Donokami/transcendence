@@ -11,7 +11,7 @@ import { UsersService } from '@/modules/users/users.service'
 import { type UpdateGameDto } from './dtos/update-game-dto'
 import { GameGateway } from './game.gateway'
 
-import { Room, type RoomObject } from './room'
+import { Room, type RoomObject } from './game.room'
 import {
   UserNotFound,
   RoomAlreadyExists,
@@ -21,6 +21,9 @@ import {
   RoomNameCannotBeEmpty,
   GameNotStarted
 } from '@/core/exceptions'
+import { Match } from './entities/match.entity'
+import { InjectRepository } from '@nestjs/typeorm'
+import { Repository } from 'typeorm'
 
 @Injectable()
 export class GameService {
@@ -29,33 +32,54 @@ export class GameService {
   constructor(
     private readonly usersService: UsersService,
     @Inject(forwardRef(() => GameGateway))
-    private readonly gameGateway: GameGateway
+    private readonly gameGateway: GameGateway,
+    @InjectRepository(Match)
+    private readonly MatchRepository: Repository<Match>
   ) {}
 
   private readonly logger = new Logger(GameService.name)
 
-  findOne(id: string): Room {
+  public findOne(id: string): Room {
     return this.rooms.find((room) => room.get().id === id)
   }
 
-  findAll(): RoomObject[] {
-    // return paginate(
-    //   query,
-    //   this.rooms.map((room) => room.get())
-    // )
+  public findAll(): RoomObject[] {
     return this.rooms.map((room) => room.get())
   }
 
-  findPublic(): RoomObject[] {
+  public async findMatches(userId: string): Promise<Match[]> {
+    const user = await this.usersService.findOneById(userId)
+    if (!user) throw new UserNotFound()
+
+    const matches = await this.MatchRepository.createQueryBuilder('match')
+      .leftJoinAndSelect('match.players', 'player')
+      .where((qb) => {
+        const subQuery = qb
+          .subQuery()
+          .select('match.id')
+          .from(Match, 'match')
+          .leftJoin('match.players', 'player')
+          .where('player.id = :playerId', { playerId: userId })
+          .getQuery()
+        return 'match.id IN ' + subQuery
+      })
+      .orderBy('match.playedAt', 'DESC')
+      .limit(50)
+      .getMany()
+
+    return matches
+  }
+
+  public findPublic(): RoomObject[] {
     return this.rooms
       .filter((room) => !room.get().isPrivate && room.players.length !== 2)
       .map((room) => room.get())
   }
 
-  async joinQueue(userId: string): Promise<RoomObject> {
+  public async joinQueue(userId: string): Promise<RoomObject> {
     const rooms = this.findPublic()
 
-    console.log(rooms);
+    console.log(rooms)
 
     if (!rooms.length) {
       return this.create(userId)
@@ -88,7 +112,8 @@ export class GameService {
         isPrivate: false
       },
       this.gameGateway,
-      this.usersService
+      this.usersService,
+      this.MatchRepository
     )
 
     this.rooms.push(room)
