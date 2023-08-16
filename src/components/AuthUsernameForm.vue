@@ -56,7 +56,7 @@ const userStore = useUserStore()
 const router = useRouter()
 
 const usernameSchema = {
-  username: 'required|min:3|max:100'
+  username: 'required|min:4|max:50'
 }
 
 const submitForm = async (values: Record<string, any>): Promise<void> => {

@@ -53,7 +53,7 @@ const toast = useToast()
 const emit = defineEmits(['close-modal'])
 const userStore = useUserStore()
 const usernameSchema = {
-  username: 'required|min:3|max:15|'
+  username: 'required|min:4|max:50'
 }
 
 // ******************** //

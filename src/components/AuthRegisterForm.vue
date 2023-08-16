@@ -92,8 +92,8 @@ const userStore = useUserStore()
 const emit = defineEmits(['form-state-changed'])
 
 const registerSchema = {
-  username: 'required|min:3|max:100',
-  password: 'required|min:4|max:100',
+  username: 'required|min:4|max:50',
+  password: 'required|min:4|max:50',
   confirmPassword: 'required|password_mismatch:@password'
 }
 

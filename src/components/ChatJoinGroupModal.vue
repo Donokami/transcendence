@@ -94,7 +94,7 @@ const toast = useToast()
 const { showModal } = toRefs(props)
 
 const joinGroupSchema = {
-  channelName: 'required|min:3|max:50'
+  channelName: 'required|min:4|max:50'
 }
 
 // ******************** //

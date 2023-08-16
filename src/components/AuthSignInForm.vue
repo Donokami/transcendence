@@ -85,8 +85,8 @@ const inSubmission = ref(false)
 const showAlert = ref(false)
 
 const signInSchema = {
-  username: 'required|min:3|max:100',
-  password: 'required|min:4|max:100'
+  username: 'required|min:4|max:50',
+  password: 'required|min:4|max:50'
 }
 
 // ******************** //
