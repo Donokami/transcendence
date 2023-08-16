@@ -6,7 +6,8 @@ import {
   PrimaryGeneratedColumn,
   OneToMany,
   ManyToMany,
-  ManyToOne
+  ManyToOne,
+  Index
 } from 'typeorm'
 
 import { User } from '@/modules/users/user.entity'
@@ -42,6 +43,7 @@ export class Channel {
   id: string
 
   @Column({ nullable: true })
+  @Index({ unique: true, where: "name IS NOT NULL" })
   name: string
 
   // **************************** //

@@ -1,6 +1,6 @@
 import { TypeOrmConfigService } from '../config/database.config'
 
-const dbConfig = new TypeOrmConfigService().createTypeOrmOptions()
+export const dbConfig = new TypeOrmConfigService().createTypeOrmOptions()
 
 export const CONSTRAINS =
   dbConfig.type === 'sqlite'

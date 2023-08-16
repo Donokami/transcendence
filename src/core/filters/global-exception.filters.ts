@@ -12,7 +12,7 @@ import { QueryFailedError } from 'typeorm'
 import { EntityNotFoundError } from 'typeorm/error/EntityNotFoundError'
 import { CannotCreateEntityIdMapError } from 'typeorm/error/CannotCreateEntityIdMapError'
 import { GlobalResponseError } from '../utils/global.response.error'
-import { CONSTRAINS } from '../constants'
+import { CONSTRAINS, dbConfig } from '../constants'
 
 interface IError {
   statusCode: number
@@ -22,6 +22,7 @@ interface IError {
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
+
   catch(exception: Error, host: ArgumentsHost) {
     switch (host.getType<ContextType>()) {
       case 'http':
@@ -61,7 +62,17 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         code = 'QueryFailedError'
         message = (exception as QueryFailedError).message
         if ((exception as any).code === CONSTRAINS.UNIQUE_VIOLATION) {
-          message = 'User already exists'
+          switch (dbConfig.type) {
+            case 'postgres':
+              message = (exception as any)['detail'].replace(
+                /^Key \((.*)\)=\((.*)\) (.*)/,
+                '$1 $2 already exists',
+              ) // todo: to test on production mode
+              break
+            case 'sqlite':
+              message = (exception as any)['driverError'].toString()
+              break
+          }
         }
         break
       case EntityNotFoundError: // this is another TypeOrm error

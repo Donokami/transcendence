@@ -55,7 +55,7 @@ export class ChannelsService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway
-  ) {}
+  ) { }
 
   // ****** //
   // LOGGER //
@@ -189,16 +189,16 @@ export class ChannelsService {
     createChannelDto: CreateChannelDto,
     ownerId: string
   ): Promise<Channel> {
-    if (createChannelDto.type !== ChannelTypes.DM) {
-      const existingChannel = await this.channelsRepository.findOne({
-        where: {
-          name: createChannelDto.name,
-          type: Not(ChannelTypes.DM)
-        }
-      })
-      console.log(existingChannel)
-      if (existingChannel) throw new ChannelAlreadyExists()
-    }
+    // if (createChannelDto.type !== ChannelTypes.DM) {
+    //   const existingChannel = await this.channelsRepository.findOne({
+    //     where: {
+    //       name: createChannelDto.name,
+    //       type: Not(ChannelTypes.DM)
+    //     }
+    //   })
+    //   console.log(existingChannel)
+    //   if (existingChannel) throw new ChannelAlreadyExists()
+    // }
 
     const owner: User = await this.checkExistingUser(ownerId)
 
