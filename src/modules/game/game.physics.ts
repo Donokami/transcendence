@@ -1,5 +1,5 @@
 import { Server } from 'socket.io'
-import { Object3D } from 'three'
+import { Object3D, Vector3 } from 'three'
 import { type gameState } from './game.engine'
 import { Logger } from '@nestjs/common'
 
@@ -214,7 +214,34 @@ export class PhysicsEngine {
   }
 
   private processCpuPaddle(): void {
-    this.gameState.players[1].paddle.position.x = this.gameState.ball.position.x
+    const ballPos = this.gameState.ball.position
+    const normalize = (val: number, min: number, max: number): number =>
+      (val - min) / (max - min)
+    const velocity = Math.min(
+      normalize(
+        ballPos.z,
+        -this.metrics.fieldDepth * 0.5,
+        this.metrics.fieldDepth * 0.5
+      ),
+      0.4 // This set the difficulty of the bot
+    )
+
+    const cpuPos = this.gameState.players[1].paddle.position
+    const newPosX = Math.min(
+      Math.max(
+        ballPos.x,
+        -this.metrics.fieldWidth * 0.5 +
+          this.metrics.fieldWidth * this.metrics.paddleRatio * 0.5
+      ),
+      this.metrics.fieldWidth * 0.5 -
+        this.metrics.fieldWidth * this.metrics.paddleRatio * 0.5
+    )
+
+    this.gameState.players[1].paddle.position.lerpVectors(
+      cpuPos,
+      new Vector3(newPosX, cpuPos.y, cpuPos.z),
+      velocity
+    )
   }
 
   public calculateFrame(gameState: gameState) {
