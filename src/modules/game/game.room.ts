@@ -99,6 +99,11 @@ export class Room implements RoomObject {
         this.gameState.userSurrended(user.id)
       }
     }
+    if (user.id === this.owner.id && this.players.length > 0) {
+      this.owner = this.players[0]
+      this.name = `${this.owner.username}'s room`
+      this.gameGateway.server.to(this.id).emit('room:update', this.get())
+    }
   }
 
   public update(updatedRoom: RoomObject) {

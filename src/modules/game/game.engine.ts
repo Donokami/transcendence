@@ -128,22 +128,6 @@ export class Game {
     })
   }
 
-  public userSurrended(userId: string) {
-    // Remove all points from the user who surrended
-    this.logger.log(`User ${userId} surrended`)
-
-    const playerIndex = this.gameState.players.findIndex(
-      (player) => player.userId === userId
-    )
-    this.gameState.players[playerIndex].score = 0
-    this.gameState.endTime = Date.now() + (1000 / this.metrics.tps) * 1.5
-  }
-
-  public startGame() {
-    this.gameLoop()
-    this.logger.log('start of game!')
-  }
-
   private async updateUserStats() {
     if (this.gameState.players[1].userId === 'bot') return
     const players = this.gameState.players
@@ -191,6 +175,22 @@ export class Game {
     match.scoreA = players[0].score
     match.scoreB = players[1].score
     await this.matchRepository.save(match)
+  }
+
+  public userSurrended(userId: string) {
+    // Remove all points from the user who surrended
+    this.logger.log(`User ${userId} surrended`)
+
+    const playerIndex = this.gameState.players.findIndex(
+      (player) => player.userId === userId
+    )
+    this.gameState.players[playerIndex].score = 0
+    this.gameState.endTime = Date.now() + (1000 / this.metrics.tps) * 3
+  }
+
+  public startGame() {
+    this.gameLoop()
+    this.logger.log('start of game!')
   }
 
   public async endGame() {
