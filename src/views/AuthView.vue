@@ -66,8 +66,10 @@ const handleOauth = async (): Promise<void> => {
         clearInterval(intervalId)
         if (popup != null) popup.close()
         inSubmission.value = false
-        await userStore.refreshUser()
-        await router.push('/')
+        setTimeout(async () => {
+          await userStore.refreshUser()
+          await router.push('/')
+        }, 1000)
       }
 
       if (authStatus.status === 'requires_2fa') {

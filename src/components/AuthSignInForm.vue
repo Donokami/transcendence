@@ -58,7 +58,7 @@
 // IMPORTS //
 // ******* //
 
-import { ref, type Ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 
 import { Form, Field, ErrorMessage } from 'vee-validate'

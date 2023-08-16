@@ -68,9 +68,7 @@ const router = createRouter({
 router.beforeEach(async (to, from) => {
   const userStore = useUserStore()
   if (userStore.loggedUser === null) {
-    try {
-      await userStore.refreshUser()
-    } catch (e) {}
+    await userStore.refreshUser()
   }
   if (
     to.name !== 'username' &&
