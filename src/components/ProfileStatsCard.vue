@@ -297,20 +297,20 @@ const handleCloseUsernameModal = (): void => {
 // searchInFriendList //
 // ****************** //
 
-// const searchInFriendList = async (user: User): Promise<boolean> => {
-//   if (!user) return false
-//   try {
-//     const friend = userStore.friendList.find(
-//       (friend: User) => friend.id === props.user.id
-//     )
-//     isFriend.value = !(friend == null)
-//     console.log(`[ProfileStatsCard] - isFriend : `, isFriend.value)
-//     return true
-//   } catch (error) {
-//     toast.error('Failed to get friend requests number !')
-//     return false
-//   }
-// }
+const searchInFriendList = async (user: User): Promise<boolean> => {
+  if (!user) return false
+  try {
+    const friend = userStore.friendList.find(
+      (friend: User) => friend.id === props.user.id
+    )
+    isFriend.value = !(friend == null)
+    console.log(`[ProfileStatsCard] - isFriend : `, isFriend.value)
+    return true
+  } catch (error) {
+    toast.error('Failed to get friend requests number !')
+    return false
+  }
+}
 
 // ***************** //
 // sendFriendRequest //
@@ -325,6 +325,8 @@ const sendFriendRequest = async (): Promise<void> => {
     if (error instanceof ApiError) {
       if (error.code === 'FriendshipAlreadyPending') {
         toast.error('A friendship request is already pending!')
+      } else if (error.code === 'FriendshipAlreadyAccepted') {
+        toast.error('You are already friend with this user!')
       }
     } else toast.error('Failed to send friend request!')
   }
@@ -364,6 +366,7 @@ onMounted(async () => {
   if (loggedUser.value == null) return
   try {
     await userStore.refreshFriendList()
+    await searchInFriendList(props.user)
     await checkBlockedStatus()
     nFriendRequests.value = await getFriendRequestsNumber()
   } catch (error: any) {

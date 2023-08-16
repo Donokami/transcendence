@@ -69,7 +69,7 @@ const handleOauth = async (): Promise<void> => {
         setTimeout(async () => {
           await userStore.refreshUser()
           await router.push('/')
-        }, 1000)
+        }, 3000)
       }
 
       if (authStatus.status === 'requires_2fa') {
