@@ -55,10 +55,16 @@
 
     <div class="mt-auto">
       <button
-        class="block px-4 py-2 mx-auto text-xl bg-blue-500 neobrutalist-box"
+        class="block px-4 py-2 mx-auto text-xl neobrutalist-box"
         @click="startGame"
-        :disabled="loggedUser?.id !== room?.owner?.id">
+        v-if="loggedUser?.id === room?.owner?.id">
         Start game
+      </button>
+      <button
+        class="block px-4 py-2 mx-auto text-xl neobrutalist-box"
+        disabled
+        v-else>
+        Waiting for game to start...
       </button>
     </div>
   </div>

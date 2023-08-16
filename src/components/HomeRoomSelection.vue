@@ -2,7 +2,7 @@
   <div class="px-4 py-7 sm:p-11 my-2 mx-2 sm:m-4 border-2 border-black">
     <div class="flex items-center justify-between">
       <!-- TITLE -->
-      <h2 class="text-xl sm:text-2xl font-bold text-black">Watch a game</h2>
+      <h2 class="text-xl sm:text-2xl font-bold text-black">Available rooms</h2>
       <!-- RELOAD ROOMS BUTTON -->
       <button @click="fetchRooms()" class="p-2 neobrutalist-box">
         <span class="text-base sm:text-lg">Reload</span>
@@ -22,7 +22,7 @@
         </router-link>
       </div>
       <div v-else>
-        <p>There are no games available</p>
+        <p>There are no rooms available. Create one!</p>
       </div>
     </div>
   </div>

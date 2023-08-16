@@ -109,12 +109,10 @@ const { loggedUser } = useUserStore()
 
 const calculatedRemainingTime = computed(() => {
   function fancyTimeFormat(duration: number): string {
-    // Hours, minutes and seconds
     const hrs = ~~(duration / 3600)
     const mins = ~~((duration % 3600) / 60)
     const secs = ~~duration % 60
 
-    // Output like "1:01" or "4:03:59" or "123:03:59"
     let ret = ''
 
     if (hrs > 0) {
@@ -138,12 +136,20 @@ const isSpectator = computed(() => {
 
 const winnerMessage = computed(() => {
   if (gameState.value.players[0].score > gameState.value.players[1].score) {
-    const username: string = room.value?.players[0]?.username || 'bot'
+    const username: string =
+      room.value?.players[0]?.username ??
+      gameState.value.players[0].userId === 'bot'
+        ? 'bot'
+        : loggedUser?.username ?? 'player'
     return `${username} wins!`
   } else if (
     gameState.value.players[0].score < gameState.value.players[1].score
   ) {
-    const username: string = room.value?.players[1]?.username || 'bot'
+    const username: string =
+      room.value?.players[1]?.username ??
+      gameState.value.players[1].userId === 'bot'
+        ? 'bot'
+        : loggedUser?.username ?? 'player'
     return `${username} wins!`
   }
   return 'Draw'
