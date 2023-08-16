@@ -209,7 +209,7 @@ export class UsersController {
     tags: ['users']
   })
   async findUserById(@Param() params: UserIdParams): Promise<User> {
-    const user = await this.usersService.findOneById(params.userId)
+    const user = await this.usersService.findOneById(params.id)
     if (!user) {
       throw new UserNotFound()
     }
@@ -230,7 +230,7 @@ export class UsersController {
     tags: ['users']
   })
   async findUserByIdWithStats(@Param() params: UserIdParams): Promise<User> {
-    const user = await this.usersService.findOneByIdWithStats(params.userId)
+    const user = await this.usersService.findOneByIdWithStats(params.id)
     if (!user) {
       throw new UserNotFound()
     }
@@ -255,8 +255,8 @@ export class UsersController {
     @Param() params: UserIdParams,
     @Body() body: UpdateUserDto
   ): Promise<User> {
-    console.log('id, body', params.userId, body)
-    return await this.usersService.update(params.userId, body)
+    console.log('id, body', params.id, body)
+    return await this.usersService.update(params.id, body)
   }
 
   // ********** //
@@ -273,6 +273,6 @@ export class UsersController {
     tags: ['users']
   })
   async removeUser(@Param() params: UserIdParams): Promise<User> {
-    return await this.usersService.remove(params.userId)
+    return await this.usersService.remove(params.id)
   }
 }
