@@ -32,7 +32,7 @@ export class GameGateway {
   constructor(
     @Inject(forwardRef(() => GameService))
     private gameService: GameService
-  ) { }
+  ) {}
 
   private readonly logger = new Logger(GameGateway.name)
 

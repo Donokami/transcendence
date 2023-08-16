@@ -5,8 +5,6 @@ import {
   Logger
 } from '@nestjs/common'
 
-import { ChannelsService } from '@/modules/chat/channels/channels.service'
-
 @Injectable()
 export class OwnershipGuard implements CanActivate {
   private readonly logger = new Logger(OwnershipGuard.name)

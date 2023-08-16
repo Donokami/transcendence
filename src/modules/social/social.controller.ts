@@ -19,6 +19,7 @@ import { SocialService } from '@/modules/social/social.service'
 import { HandleBlockDto } from '@/modules/social/dtos/handle-block-dto'
 import { HandleFriendRequestDto } from '@/modules/social/dtos/handle-friend-request.dto'
 import { SendFriendRequestDto } from '@/modules/social/dtos/send-friend-request.dto'
+import { BlockerIdParams } from '@/modules/social/dtos/blocker-id.dto'
 import { Friendship } from '@/modules/social/entities/friendship.entity'
 import { User } from '@/modules/users/user.entity'
 
@@ -81,7 +82,7 @@ export class SocialController {
   // getBlockerId //
   // ************ //
 
-  @Get('/blocker-id/:observedUserId')
+  @Get('/blocker-id/:observedUser')
   @ApiOperation({
     summary: 'Get blocker id',
     operationId: 'getBlockerId',
@@ -90,11 +91,11 @@ export class SocialController {
   })
   async getBlockerId(
     @Session() session: ISession,
-    @Param('observedUserId') observedUserId: string
+    @Param() params: BlockerIdParams
   ): Promise<{ blockerId: string }> {
     const blockerId = await this.socialService.getBlockerId(
       session.userId,
-      observedUserId
+      params.observedUser
     )
     return { blockerId }
   }
@@ -189,6 +190,8 @@ export class SocialController {
   ): Promise<Friendship> {
     const senderId = session.userId
     const receiverId = sendFriendRequestDto.receiverId
+    console.log('senderId', senderId)
+    console.log('receiverId', receiverId)
     return await this.socialService.sendFriendRequest(senderId, receiverId)
   }
 

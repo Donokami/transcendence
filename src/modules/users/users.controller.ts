@@ -24,6 +24,7 @@ import { User } from './user.entity'
 import { UsersService } from './users.service'
 import { UpdateUserDto } from './dtos/update-user.dto'
 import { CurrentUser } from './decorators/current-user.decorator'
+import { UserIdParams } from './dtos/user-id.dto'
 
 import { UsernameGuard } from '@/core/guards/username.guard'
 import { OwnershipGuard } from './guards/ownership.guard'
@@ -51,7 +52,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly socialService: SocialService,
     private readonly channelsService: ChannelsService
-  ) { }
+  ) {}
 
   // ****** //
   // LOGGER //
@@ -207,8 +208,8 @@ export class UsersController {
     description: 'Get user by ID',
     tags: ['users']
   })
-  async findUserById(@Param('id') id: string): Promise<User> {
-    const user = await this.usersService.findOneById(id)
+  async findUserById(@Param() params: UserIdParams): Promise<User> {
+    const user = await this.usersService.findOneById(params.userId)
     if (!user) {
       throw new UserNotFound()
     }
@@ -228,8 +229,8 @@ export class UsersController {
     description: 'Get user by ID with stats',
     tags: ['users']
   })
-  async findUserByIdWithStats(@Param('id') id: string): Promise<User> {
-    const user = await this.usersService.findOneByIdWithStats(id)
+  async findUserByIdWithStats(@Param() params: UserIdParams): Promise<User> {
+    const user = await this.usersService.findOneByIdWithStats(params.userId)
     if (!user) {
       throw new UserNotFound()
     }
@@ -251,11 +252,11 @@ export class UsersController {
     tags: ['users']
   })
   async updateUser(
-    @Param('id') id: string,
+    @Param() params: UserIdParams,
     @Body() body: UpdateUserDto
   ): Promise<User> {
-    console.log('id, body', id, body)
-    return await this.usersService.update(id, body)
+    console.log('id, body', params.userId, body)
+    return await this.usersService.update(params.userId, body)
   }
 
   // ********** //
@@ -271,7 +272,7 @@ export class UsersController {
     description: 'Remove user',
     tags: ['users']
   })
-  async removeUser(@Param('id') id: string): Promise<User> {
-    return await this.usersService.remove(id)
+  async removeUser(@Param() params: UserIdParams): Promise<User> {
+    return await this.usersService.remove(params.userId)
   }
 }
