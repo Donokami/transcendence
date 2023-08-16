@@ -61,7 +61,7 @@
         </router-link>
       </div>
       <div class="items-stretch flex-grow navbar-end">
-        <div class="flex items-center border-black dropdown border-x-2">
+        <div class="flex items-center border-black dropdown">
           <label
             tabindex="0"
             class="flex items-center h-full cursor-pointer hover:bg-gray-300">

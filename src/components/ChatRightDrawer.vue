@@ -9,11 +9,11 @@
     <div class="drawer-side">
       <label for="my-drawer-4" class="drawer-overlay"></label>
       <div
-        class="flex flex-col w-72 bg-base-100 text-base-content p-0 border-2 border-black min-h-full">
-        <div class="overflow-auto w-full flex-auto">
+        class="flex flex-col min-h-full p-0 border-2 border-black w-72 bg-base-100 text-base-content">
+        <div class="flex-auto w-full overflow-auto">
           <!-- LOADER FOR CHANNEL LIST -->
           <div v-if="channelStore.channelsList?.loading === true">
-            <div class="flex justify-center items-center h-fit">
+            <div class="flex items-center justify-center h-fit">
               <span class="loading loading-spinner loading-lg"></span>
             </div>
           </div>
@@ -23,21 +23,21 @@
             v-else-if="
               loggedUser && channelStore.channelsList?.loading === false
             "
-            class="bg-base-100 w-full">
+            class="w-full bg-base-100">
             <li v-for="user in channel?.members" :key="user.id">
-              <div class="dropdown dropdown-bottom rounded-none w-full">
+              <div class="w-full rounded-none dropdown dropdown-bottom">
                 <label
                   tabindex="0"
-                  class="flex rounded-none hover:bg-base-300 cursor-pointer">
+                  class="flex rounded-none cursor-pointer hover:bg-base-300">
                   <div class="py-3">
-                    <div class="flex items-center mx-auto px-4">
+                    <div class="flex items-center px-4 mx-auto">
                       <div class="w-10 h-10">
                         <user-avatar
                           :userProps="(user as User)"
                           :uploadMode="false">
                         </user-avatar>
                       </div>
-                      <span class="pl-3 truncate w-28 text-sm">{{
+                      <span class="pl-3 text-sm truncate w-28">{{
                         user.username
                       }}</span>
                     </div>
@@ -50,7 +50,7 @@
                     <router-link
                       :to="`/profile/${user.id}`"
                       class="flex gap-3 rounded-none">
-                      <iconify-icon icon="lucide:user" class="h-4 w-4 shrink-0">
+                      <iconify-icon icon="lucide:user" class="w-4 h-4 shrink-0">
                       </iconify-icon>
                       <span>Profile</span>
                     </router-link>
@@ -72,7 +72,7 @@
                       <div class="flex gap-3 rounded-none">
                         <iconify-icon
                           icon="lucide:volume-x"
-                          class="h-4 w-4 shrink-0">
+                          class="w-4 h-4 shrink-0">
                         </iconify-icon>
                         <span>Mute</span>
                       </div>
@@ -81,7 +81,7 @@
                       <div class="flex gap-3 rounded-none">
                         <iconify-icon
                           icon="lucide:ban"
-                          class="h-4 w-4 shrink-0">
+                          class="w-4 h-4 shrink-0">
                         </iconify-icon>
                         <span>Block</span>
                       </div>
@@ -90,20 +90,20 @@
                       <div class="divider p-0 m-0 h-[6px]"></div>
                       <li class="rounded-none" @click="kickMember(user)">
                         <div
-                          class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+                          class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
                           <iconify-icon
                             icon="lucide:door-open"
-                            class="h-4 w-4 shrink-0">
+                            class="w-4 h-4 shrink-0">
                           </iconify-icon>
                           <span>Kick</span>
                         </div>
                       </li>
                       <li class="rounded-none" @click="banMember(user)">
                         <div
-                          class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+                          class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
                           <iconify-icon
                             icon="lucide:gavel"
-                            class="h-4 w-4 shrink-0">
+                            class="w-4 h-4 shrink-0">
                           </iconify-icon>
                           <span>Ban</span>
                         </div>
@@ -119,25 +119,25 @@
         <div>
           <label
             for="my-modal-13"
-            class="btn bg-white border-t-2 border-x-0 border-b-0 border-black text-black hover:bg-black hover:border-black hover:text-white w-full relative"
+            class="relative w-full text-black bg-white border-t-2 border-b-0 border-black btn border-x-0 hover:bg-black hover:border-black hover:text-white"
             type="button">
             <iconify-icon
               icon="lucide:key-round"
-              class="absolute left-5 w-6 h-6">
+              class="absolute w-6 h-6 left-5">
             </iconify-icon>
-            <div class="text-center w-full">Manage Password</div>
+            <div class="w-full text-center">Manage Password</div>
           </label>
         </div>
         <div>
           <label
-            class="btn bg-white border-t-2 border-x-0 border-b-0 border-black text-black hover:bg-black hover:border-black hover:text-white w-full relative"
+            class="relative w-full text-black bg-white border-t-2 border-b-0 border-black btn border-x-0 hover:bg-black hover:border-black hover:text-white"
             type="button"
             @click="leaveGroup">
             <iconify-icon
               icon="lucide:door-open"
-              class="absolute left-5 w-6 h-6">
+              class="absolute w-6 h-6 left-5">
             </iconify-icon>
-            <div class="text-center w-full">Leave channel</div>
+            <div class="w-full text-center">Leave channel</div>
           </label>
         </div>
       </div>
@@ -218,9 +218,9 @@ async function getChannel(): Promise<void> {
   }
 }
 
-const giveAdminRights = (target: User): void => {
+const giveAdminRights = async (target: User): Promise<void> => {
   if (!channel.value) return
-  channelStore.makeAdmin(target.id, channel.value.id)
+  await channelStore.makeAdmin(target.id, channel.value.id)
 }
 
 const kickMember = async (target: User): Promise<void> => {

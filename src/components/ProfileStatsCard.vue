@@ -1,9 +1,9 @@
 <template>
-  <div class="lg:-ml-4 rounded-none stats stats-vertical lg:stats-horizontal">
-    <div class="lg:border-r-2 border-black -ml-6 stat lg:-ml-2 h-52">
-      <div class="flex items-top justify-between h-14">
+  <div class="rounded-none lg:-ml-4 stats stats-vertical lg:stats-horizontal">
+    <div class="-ml-6 border-black lg:border-r-2 stat lg:-ml-2 h-52">
+      <div class="flex justify-between items-top h-14">
         <!-- USERNAME -->
-        <div v-if="user" class="stat-value text-black text-xl">
+        <div v-if="user" class="text-xl text-black stat-value">
           {{ user.username }}
         </div>
         <label
@@ -34,8 +34,8 @@
     </div>
     <!-- USER RANK -->
     <div class="lg:border-none stat !border-t-2 !border-black -ml-6 lg:-ml-0">
-      <div class="flex items-top justify-between h-14">
-        <div class="stat-value text-xl">Rank</div>
+      <div class="flex justify-between items-top h-14">
+        <div class="text-xl stat-value">Rank</div>
         <iconify-icon
           class="w-8 h-8"
           icon="icon-park-outline:ranking"
@@ -50,8 +50,8 @@
     <!-- USER WIN RATE -->
     <div
       class="stat border-black -ml-6 lg:-ml-0 !border-t-2 lg:!border-t-0 lg:!border-l-2">
-      <div class="flex items-top justify-between h-14">
-        <div class="stat-value text-xl">Win Rate</div>
+      <div class="flex justify-between items-top h-14">
+        <div class="text-xl stat-value">Win Rate</div>
         <iconify-icon
           class="w-8 h-8"
           icon="mdi:target-arrow"
@@ -78,7 +78,7 @@
             !isUserBlockedByProfile &&
             !isProfileBlockedByUser
           "
-          class="btn bg-white border-2 border-black text-black hover:bg-black hover:border-black hover:text-white h-14 items-center no-animation"
+          class="items-center text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white h-14 no-animation"
           type="button"
           @click="sendFriendRequest">
           <div>Add friend</div>
@@ -87,7 +87,7 @@
         <!-- BLOCK USER -->
         <button
           v-else-if="isFriend === true && !isUserBlockedByProfile"
-          class="btn bg-white border-2 border-black text-black hover:bg-black hover:border-black hover:text-white h-14 items-center no-animation"
+          class="items-center text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white h-14 no-animation"
           type="button"
           @click="blockUser">
           <div>Block user</div>
@@ -96,7 +96,7 @@
         <!-- UNBLOCK USER -->
         <button
           v-else-if="isFriend === false && isProfileBlockedByUser"
-          class="btn bg-white border-2 border-black text-black hover:bg-black hover:border-black hover:text-white h-14 items-center no-animation"
+          class="items-center text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white h-14 no-animation"
           type="button"
           @click="unblockUser">
           <div>Unblock user</div>
@@ -108,8 +108,8 @@
     <div
       class="stat border-black -ml-6 lg:-ml-0 !border-t-2 lg:!border-t-0 lg:!border-l-2"
       v-if="loggedUser && user && props.user.id === loggedUser.id">
-      <div class="flex items-top justify-between h-14">
-        <div class="stat-value text-xl">Friends</div>
+      <div class="flex justify-between items-top h-14">
+        <div class="text-xl stat-value">Friends</div>
         <label
           for="my-modal-3"
           class="mb-2 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white"
@@ -124,12 +124,12 @@
         <label
           v-if="nFriendRequests > 0"
           for="my-modal-3"
-          class="btn bg-white border-2 border-black text-black hover:bg-black hover:border-black hover:text-white h-16 items-center no-animation"
+          class="items-center h-16 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white no-animation"
           type="button"
           @click="showFriendRequestModal = true">
           <div>Handle requests</div>
           <div class="indicator">
-            <span class="badge badge-secondary indicator-item text-white">{{
+            <span class="text-white badge badge-secondary indicator-item">{{
               nFriendRequests
             }}</span>
             <iconify-icon

@@ -23,11 +23,18 @@ interface UploadData {
   status: string
 }
 
+interface State {
+  loggedUser: User | null
+  twoFactorEnabled: boolean
+  friendList: User[]
+  tempUserId: string | null
+}
+
 export const useUserStore = defineStore('users', {
-  state: () => ({
+  state: (): State => ({
     loggedUser: null as unknown as User | null,
     twoFactorEnabled: false,
-    friendList: [] as User[],
+    friendList: [],
     tempUserId: null as unknown as string | null
   }),
   actions: {
@@ -135,12 +142,11 @@ export const useUserStore = defineStore('users', {
     // refreshFriendList //
     // ***************** //
 
-    async refreshFriendList() {
+    async refreshFriendList(): Promise<User[]> {
       if (this.loggedUser == null) {
         return []
       }
-      const response = await this.fetchFriendList()
-      this.friendList = response
+      this.friendList = await this.fetchFriendList()
 
       return this.friendList
     },

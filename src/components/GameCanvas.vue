@@ -1,6 +1,6 @@
 <template>
   <div
-    class="max-w-[720px] aspect-video relative mx-auto border-black border-2">
+    class="max-w-[960px] aspect-video relative mx-auto border-black border-2">
     <div
       class="absolute z-10 flex items-center w-full m-auto text-white sm:text-2xl">
       <span class="m-auto">{{ calculatedRemainingTime }}</span>
@@ -138,21 +138,25 @@ const isSpectator = computed(() => {
 
 const winnerMessage = computed(() => {
   if (gameState.value.players[0].score > gameState.value.players[1].score) {
-    const username: string =
-      room.value?.players[0]?.username ??
-      gameState.value.players[0].userId === 'bot'
-        ? 'bot'
-        : loggedUser?.username ?? 'player'
-    return `${username} wins!`
+    if (gameState.value.players[0].userId === 'bot') {
+      return 'Bot wins!'
+    } else {
+      const user = room.value?.players.find(
+        (player) => player.id === gameState.value.players[0].userId
+      )
+      return `${user?.username ?? 'player'} wins!`
+    }
   } else if (
     gameState.value.players[0].score < gameState.value.players[1].score
   ) {
-    const username: string =
-      room.value?.players[1]?.username ??
-      gameState.value.players[1].userId === 'bot'
-        ? 'bot'
-        : loggedUser?.username ?? 'player'
-    return `${username} wins!`
+    if (gameState.value.players[1].userId === 'bot') {
+      return 'Bot wins!'
+    } else {
+      const user = room.value?.players.find(
+        (player) => player.id === gameState.value.players[1].userId
+      )
+      return `${user?.username ?? 'player'} wins!`
+    }
   }
   return 'Draw'
 })
