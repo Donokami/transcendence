@@ -72,10 +72,6 @@ export class UsersController {
   @UseGuards(AuthGuard)
   @UseGuards(UsernameGuard)
   @PaginateQueryOptions()
-  @ApiOkResponse({
-    description: 'The user records',
-    type: Paginated<User> // fix: not working
-  })
   @ApiOperation({
     summary: 'Get all users',
     operationId: 'getAllUsers',
