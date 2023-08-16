@@ -6,7 +6,8 @@ import {
   IsOptional,
   IsString,
   ValidateIf,
-  IsEnum
+  IsEnum,
+  Length
 } from 'class-validator'
 
 import { ApiProperty } from '@nestjs/swagger'
@@ -15,6 +16,7 @@ import { ChannelTypes } from '../entities/channel.entity'
 export class CreateChannelDto {
   @ApiProperty()
   @IsString()
+  @Length(4, 50)
   @ValidateIf((o) => o.type !== ChannelTypes.DM)
   name?: string
 
@@ -34,5 +36,6 @@ export class CreateChannelDto {
   @ApiProperty()
   @IsString()
   @IsOptional()
+  @Length(4, 50)
   password?: string
 }

@@ -1,12 +1,14 @@
-import { IsString } from 'class-validator';
+import { IsString, Length, IsUUID } from 'class-validator'
 
 export class KickUserDto {
   @IsString()
-  channelId: string;
+  channelId: string
 
   @IsString()
-  userId: string;
+  @IsUUID('4')
+  userId: string
 
   @IsString()
-  reason: string;
+  @Length(0, 255)
+  reason: string
 }
