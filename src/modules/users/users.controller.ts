@@ -100,7 +100,6 @@ export class UsersController {
     description: 'Get all users with stats',
     tags: ['users']
   })
-  // @ApiQuery({ name: "filter.parentId", required: false, description: "Possible values: '$null' or '$eq:_id_' ", example: "$null" })
   async getAllUsersStats(
     @Paginate() query: PaginateQuery
   ): Promise<Paginated<User>> {
@@ -255,7 +254,6 @@ export class UsersController {
     @Param() params: UserIdParams,
     @Body() body: UpdateUserDto
   ): Promise<User> {
-    console.log('id, body', params.id, body)
     return await this.usersService.update(params.id, body)
   }
 

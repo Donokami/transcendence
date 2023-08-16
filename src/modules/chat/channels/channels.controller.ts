@@ -32,7 +32,6 @@ import { MembershipGuard } from '@/modules/chat/channels/guards/membership.guard
 import { OwnershipGuard } from '@/modules/chat/channels/guards/ownership.guard'
 import { UsernameGuard } from '@/core/guards/username.guard'
 
-// todo: change controller name "channels" to "chat"
 @UseGuards(AuthGuard, UsernameGuard)
 @Controller('channels')
 @UseFilters(new GlobalExceptionFilter())

@@ -4,7 +4,7 @@ import {
   Entity,
   Column,
   PrimaryGeneratedColumn,
-  ManyToOne,
+  ManyToOne
 } from 'typeorm'
 
 import { Logger } from '@nestjs/common'
@@ -27,7 +27,9 @@ export class Message {
   @Column()
   messageBody: string
 
-  @ManyToOne(() => Channel, (channel: Channel) => channel.messages)
+  @ManyToOne(() => Channel, (channel: Channel) => channel.messages, {
+    onDelete: 'CASCADE'
+  })
   channel: Channel
 
   @ManyToOne(() => User, (user: User) => user.messages)

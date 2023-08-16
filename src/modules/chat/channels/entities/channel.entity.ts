@@ -43,27 +43,23 @@ export class Channel {
   id: string
 
   @Column({ nullable: true })
-  @Index({ unique: true, where: "name IS NOT NULL" })
+  @Index({ unique: true, where: 'name IS NOT NULL' })
   name: string
 
   // **************************** //
   // MEMBERS RELATED INFORMATIONS //
   // **************************** //
 
-  @ManyToOne(() => User, { cascade: true })
+  @ManyToOne(() => User)
   owner: User
 
-  @ManyToMany(() => User, (user: User) => user.channels, { cascade: true })
+  @ManyToMany(() => User, (user: User) => user.channels)
   members: Array<User>
 
-  @ManyToMany(() => User, (user: User) => user.administratedChannels, {
-    cascade: true
-  })
+  @ManyToMany(() => User, (user: User) => user.administratedChannels)
   admins: User[]
 
-  @ManyToMany(() => User, (user: User) => user.bannedChannels, {
-    cascade: true
-  })
+  @ManyToMany(() => User, (user: User) => user.bannedChannels)
   bannedMembers: User[]
 
   @OneToMany(() => MutedUser, (mutedUser: MutedUser) => mutedUser.channel, {
@@ -78,9 +74,9 @@ export class Channel {
   @Column({
     type: process.env.NODE_ENV === 'production' ? 'enum' : 'text',
     enum: ChannelTypes,
-    default: ChannelTypes.PUBLIC,
+    default: ChannelTypes.PUBLIC
   })
-  type: ChannelTypes;
+  type: ChannelTypes
 
   @Column({ nullable: true, select: false })
   password: string

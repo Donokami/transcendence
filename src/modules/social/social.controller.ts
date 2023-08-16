@@ -190,8 +190,6 @@ export class SocialController {
   ): Promise<Friendship> {
     const senderId = session.userId
     const receiverId = sendFriendRequestDto.receiverId
-    console.log('senderId', senderId)
-    console.log('receiverId', receiverId)
     return await this.socialService.sendFriendRequest(senderId, receiverId)
   }
 

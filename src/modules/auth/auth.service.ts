@@ -18,25 +18,9 @@ const scrypt = promisify(_scrypt)
 
 @Injectable()
 export class AuthService {
-  // *********** //
-  // CONSTRUCTOR //
-  // *********** //
-
   constructor(private readonly usersService: UsersService) {}
 
-  // ****** //
-  // LOGGER //
-  // ****** //
-
   private logger = new Logger(AuthService.name)
-
-  // ******************** //
-  // FUNCTION DEFINITIONS //
-  // ******************** //
-
-  // ************ //
-  // validateUser //
-  // ************ //
 
   async validateUser(details: IUserDetails) {
     const user = await this.usersService.findOneByFortyTwoIdWithAuthInfos(

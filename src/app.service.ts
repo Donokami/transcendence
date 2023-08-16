@@ -5,18 +5,10 @@ import { UsersService } from './modules/users/users.service'
 
 @Injectable()
 export class AppService {
-
-  constructor(private usersService: UsersService) { }
-  // ****** //
-  // LOGGER //
-  // ****** //
+  constructor(private usersService: UsersService) {}
 
   private logger: Logger = new Logger(AppService.name)
   private shutdownListener$: Subject<void> = new Subject()
-
-  // ******************** //
-  // FUNCTION DEFINITIONS //
-  // ******************** //
 
   onModuleDestroy() {
     this.usersService.disconnectAll()

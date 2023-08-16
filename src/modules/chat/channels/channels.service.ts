@@ -55,7 +55,7 @@ export class ChannelsService {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway
-  ) { }
+  ) {}
 
   // ****** //
   // LOGGER //
@@ -189,17 +189,6 @@ export class ChannelsService {
     createChannelDto: CreateChannelDto,
     ownerId: string
   ): Promise<Channel> {
-    // if (createChannelDto.type !== ChannelTypes.DM) {
-    //   const existingChannel = await this.channelsRepository.findOne({
-    //     where: {
-    //       name: createChannelDto.name,
-    //       type: Not(ChannelTypes.DM)
-    //     }
-    //   })
-    //   console.log(existingChannel)
-    //   if (existingChannel) throw new ChannelAlreadyExists()
-    // }
-
     const owner: User = await this.checkExistingUser(ownerId)
 
     const members: User[] = await this.userService.findByIds(
@@ -483,7 +472,19 @@ export class ChannelsService {
 
     if (leavingUser.id === channel.owner.id) {
       if (channel.admins.length === 0) {
-        return await this.channelsRepository.delete(channel.id)
+        channel.members.forEach(async (member) => {
+          channel.members = this.removeUserFromList(
+            'members',
+            member,
+            channel.members
+          )
+          const updatePayload = { user: member, channelId: channel.id }
+          await this.updateChannel('chat:kick', channel, updatePayload)
+          const socket = this.chatGateway.getUserSocket(member.id)
+          if (socket) socket.leave(channel.id)
+        })
+
+        return await this.channelsRepository.remove(channel)
       }
 
       const newOwner = channel.admins[0]
@@ -526,7 +527,6 @@ export class ChannelsService {
       throw new UserAlreadyMuted()
     }
 
-    // todo: add a string param to replace '1w'
     const muteEndDate = parseMuteTime('5s')
 
     channel.addMuteMember(userToMute, muteEndDate)
