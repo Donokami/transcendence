@@ -222,21 +222,13 @@ export class GameService {
     room.leave(user)
 
     if (room.players.length === 0) {
-      setTimeout(() => {
-        if (room.players.length > 0) {
-          return
-        }
+      this.logger.verbose(`Removing room ${user.id} because no players left`)
 
-        this.logger.verbose(`Removing room ${user.id} because no players left`)
+      this.rooms.splice(this.rooms.indexOf(room), 1)
 
-        this.rooms.splice(this.rooms.indexOf(room), 1)
-
-        this.gameGateway.server.emit('room:delete', {
-          id: room.id
-        })
-
-        return
-      }, 5000)
+      this.gameGateway.server.emit('room:delete', {
+        id: room.id
+      })
     }
 
     this.gameGateway.server.to(room.id).emit('room:update', room.get())
