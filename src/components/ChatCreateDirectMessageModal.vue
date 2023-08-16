@@ -102,7 +102,6 @@ const createDmChannel = async (friend: User): Promise<void> => {
     return
   }
   await channelStore.createDmChannel(friend.id)
-  console.log(`[ChatMessagesModal] - DM channel created successfully !`)
 }
 
 // **************** //

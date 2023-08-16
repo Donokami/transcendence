@@ -96,7 +96,7 @@
           </li>
         </div>
         <!-- UNBAN -->
-        <!-- <div v-if="isBanned">
+        <div v-if="isBanned">
           <li class="rounded-none" @click="unbanMember">
             <div
               class="flex gap-3 rounded-none text-green-500 hover:text-green-500">
@@ -105,7 +105,7 @@
               <span>Unban</span>
             </div>
           </li>
-        </div> -->
+        </div>
       </div>
     </ul>
   </div>
@@ -215,11 +215,11 @@ const isMember = computed((): boolean => {
   )
 })
 
-// const isBanned = computed((): boolean => {
-//   return props.channel.bannedMembers.some(
-//     (bannedMember) => bannedMember.username === props.user.username
-//   )
-// })
+const isBanned = computed((): boolean => {
+  return props.channel.bannedMembers.some(
+    (bannedMember) => bannedMember.username === props.user.username
+  )
+})
 
 const revokeAdminRights = async (): Promise<void> => {
   try {

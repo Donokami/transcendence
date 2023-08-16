@@ -87,7 +87,6 @@ class Fetcher {
         error.method
       )
     }
-    console.log(`[Fetcher] - post : `, res)
     return await res.json()
   }
 
@@ -169,8 +168,6 @@ class Fetcher {
       body: JSON.stringify(body),
       ...config
     })
-
-    console.log(`[Fetcher] - patch : `, res)
 
     if (!res.ok) {
       const error = await res.json()

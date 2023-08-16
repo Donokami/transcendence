@@ -34,12 +34,10 @@ watch(loggedUser, (user) => {
     return
   }
 
-  console.log('attempting to connect to social socket')
-
   socialSocket.connect()
 
   socialSocket.on('connect', () => {
-    console.log('connected to social socket')
+    console.log('[SocialSocket] - Connected to the /social socket')
   })
 
   socialSocket.on('social:block', (data: { blockerId: string }) => {

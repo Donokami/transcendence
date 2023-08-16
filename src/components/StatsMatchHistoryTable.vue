@@ -40,7 +40,6 @@ const matchHistoryData = ref<Match[]>([])
 
 const getMatchHistoryData = async (): Promise<void> => {
   const data = await fetcher.get(`/games/matchs/${props.userId}`)
-  console.log(data)
   matchHistoryData.value = data
 }
 

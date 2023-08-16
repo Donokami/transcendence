@@ -238,10 +238,6 @@ chatSocket.connect()
 chatSocket.on(
   'chat:ban',
   async ({ user, channelId }: { user: User; channelId: string }) => {
-    console.log(
-      `[ChatView] - ${user.username} banned from channel ${channelId}`
-    )
-
     const channel = channelStore.getChannel(channelId)
 
     if (channel) {
@@ -275,7 +271,7 @@ chatSocket.on('chat:channel-created', async (channel: Channel) => {
 // ********** //
 
 chatSocket.on('disconnect', async () => {
-  console.log('[ChatView] - Disconnected from the chat.')
+  console.log('[ChatView] - Disconnected from the /chat socket')
 })
 
 // ***** //
@@ -283,7 +279,7 @@ chatSocket.on('disconnect', async () => {
 // ***** //
 
 chatSocket.on('error', (error) => {
-  console.error('[ChatView] - Error : ', error)
+  console.error('[ChatView] - Socket error : ', error)
 })
 
 // **** //
@@ -293,8 +289,6 @@ chatSocket.on('error', (error) => {
 chatSocket.on(
   'chat:join',
   async ({ user, channelId }: { user: User; channelId: string }) => {
-    console.log(`[ChatView] - ${user.username} joined ${channelId}`)
-
     channelStore.addMember(user, channelId)
 
     if (loggedUser && loggedUser.id === user.id) {
@@ -315,10 +309,6 @@ chatSocket.on(
 chatSocket.on(
   'chat:kick',
   async ({ user, channelId }: { user: User; channelId: string }) => {
-    console.log(
-      `[ChatView] - User ${user.username} kicked from channel ${channelId}`
-    )
-
     const channel = channelStore.getChannel(channelId)
 
     if (channel) {
@@ -343,7 +333,6 @@ chatSocket.on(
 chatSocket.on(
   'chat:leave',
   async ({ user, channelId }: { user: User; channelId: string }) => {
-    console.log(`[ChatView] - ${user.username} left channel ${channelId}`)
     channelStore.removeMember(user.id, channelId)
     toast.success(`${user.username} left the channel`)
   }
@@ -367,8 +356,6 @@ chatSocket.on('chat:message', async (message: Message) => {
 chatSocket.on(
   'chat:mute',
   async ({ user, channelId }: { user: User; channelId: string }) => {
-    console.log(`[ChatView] - ${user.username} muted in channel ${channelId}`)
-
     const channel = channelStore.getChannel(channelId)
 
     if (channel) {
@@ -382,8 +369,6 @@ chatSocket.on(
 chatSocket.on(
   'chat:unmute',
   async ({ user, channelId }: { user: User; channelId: string }) => {
-    console.log(`[ChatView] - ${user.username} unmuted in channel ${channelId}`)
-
     const channel = channelStore.getChannel(channelId)
 
     if (channel) {
@@ -401,10 +386,6 @@ chatSocket.on(
 chatSocket.on(
   'chat:set-admin',
   async ({ user, channelId }: { user: User; channelId: string }) => {
-    console.log(
-      `[ChatView] - ${user.username} promoted admin of channel ${channelId}`
-    )
-
     const channel = channelStore.getChannel(channelId)
 
     if (channel) {
@@ -428,10 +409,6 @@ chatSocket.on(
 chatSocket.on(
   'chat:unban',
   async ({ user, channelId }: { user: User; channelId: string }) => {
-    console.log(
-      `[ChatView] - ${user.username} unbanned from channel ${channelId}`
-    )
-
     const channel = channelStore.getChannel(channelId)
 
     if (channel) {
@@ -454,10 +431,6 @@ chatSocket.on(
 chatSocket.on(
   'chat:unset-admin',
   async ({ user, channelId }: { user: User; channelId: string }) => {
-    console.log(
-      `[ChatView] - ${user.username} promoted admin of channel ${channelId}`
-    )
-
     const channel = channelStore.getChannel(channelId)
 
     if (channel) {
@@ -485,7 +458,7 @@ onBeforeMount(async () => {
   }
 
   chatSocket.on('chat:connect', () => {
-    console.log('[ChatView] - Connected to the chat.')
+    console.log('[ChatView] - Connected to the /chat socket')
   })
 
   if (selectedChannel.value) {

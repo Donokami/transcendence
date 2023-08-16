@@ -8,7 +8,7 @@ import type { Channel, Message, User } from '@/types'
 import fetcher, {
   useFetcher,
   type FetcherResponse,
-  ApiError,
+  ApiError
 } from '@/utils/fetcher'
 
 function parseUrl(message: Message): {
@@ -159,7 +159,6 @@ export const useChannelStore = defineStore('channels', {
 
     async banMember(userId: string, channelId: string): Promise<void> {
       await fetcher.put(`/channels/${channelId}/ban`, { userId })
-      console.log(`User with ID : ${userId} successfully banned from channel`)
     },
 
     // **************** //
@@ -171,8 +170,6 @@ export const useChannelStore = defineStore('channels', {
       try {
         const urlRoom = parseUrl(message)
         if (urlRoom !== null) {
-          console.log('url : ', urlRoom)
-
           newMessage.room = useFetcher({
             queryFn: fetcher.get(`/games/${urlRoom.roomId}`)
           })
@@ -194,7 +191,6 @@ export const useChannelStore = defineStore('channels', {
       await fetcher.put(`/channels/${channelId}/password/change`, {
         newPassword
       })
-      console.log(`Password successfully changed in channel ${channelId}`)
     },
 
     // *************** //
@@ -214,12 +210,6 @@ export const useChannelStore = defineStore('channels', {
         `/channels/create`,
         channelParam
       )
-
-      console.log('New DM channel created ! ID : ', response.id)
-      console.log(
-        'New DM channel pushed to channelsList in store : ',
-        this.channelsList
-      )
     },
 
     // ****************** //
@@ -234,25 +224,17 @@ export const useChannelStore = defineStore('channels', {
     ): Promise<Channel> {
       const { loggedUser } = useUserStore()
 
-      const response: Channel = await fetcher.post(
-        `/channels/create`,
-        {
-          name: channelName,
-          type: (() => {
-            if (isPrivate) return 'private'
-            if (password) return 'protected'
-            return 'public'
-          })(),
-          membersIds: [loggedUser?.id, ...receiversId],
-          password
-        }
-      )
+      const response: Channel = await fetcher.post(`/channels/create`, {
+        name: channelName,
+        type: (() => {
+          if (isPrivate) return 'private'
+          if (password) return 'protected'
+          return 'public'
+        })(),
+        membersIds: [loggedUser?.id, ...receiversId],
+        password
+      })
 
-      console.log('New group channel created ! ID : ', response.id)
-      console.log(
-        'New group channel pushed to channelsList in store : ',
-        this.channelsList
-      )
       return response
     },
 
@@ -262,7 +244,6 @@ export const useChannelStore = defineStore('channels', {
 
     async deleteGroupPassword(channelId: string): Promise<void> {
       await fetcher.delete(`/channels/${channelId}/password/delete`)
-      console.log(`Password successfully deleted in channel ${channelId}`)
     },
 
     // **************** //
@@ -426,7 +407,6 @@ export const useChannelStore = defineStore('channels', {
 
     async makeAdmin(userId: string, channelId: string): Promise<void> {
       // await fetcher.put(`/channels/${channelId}/set-admin`, { userId })
-      console.log(`User with ID : ${userId} successfully promoted admin`)
     },
 
     // ********* //
@@ -438,8 +418,6 @@ export const useChannelStore = defineStore('channels', {
         channelName,
         password
       })
-
-      console.log(response)
     },
 
     // ********** //
@@ -448,7 +426,6 @@ export const useChannelStore = defineStore('channels', {
 
     async kickMember(userId: string, channelId: string): Promise<void> {
       await fetcher.put(`/channels/${channelId}/kick`, { userId })
-      console.log(`User with ID : ${userId} successfully kicked from channel`)
     },
 
     // ********** //
@@ -466,7 +443,6 @@ export const useChannelStore = defineStore('channels', {
           toast.success(`You left the channel`)
           return await router.push('/chat')
         })
-      console.log(`User with ID : ${userId} successfully left channel`)
     },
 
     // ********** //
@@ -476,7 +452,6 @@ export const useChannelStore = defineStore('channels', {
     async muteMember(userId: string, channelId: string): Promise<void> {
       try {
         await fetcher.put(`/channels/${channelId}/mute`, { userId })
-        console.log(`User with ID : ${userId} successfully muted`)
       } catch (error) {
         console.error(error)
         alert(`Failed to mute user with ID : ${userId}`)
@@ -600,7 +575,6 @@ export const useChannelStore = defineStore('channels', {
 
     async unbanMember(userId: string, channelId: string): Promise<void> {
       await fetcher.delete(`/channels/${channelId}/unban`, { userId })
-      console.log(`User with ID : ${userId} successfully unbanned from channel`)
     }
   }
 })

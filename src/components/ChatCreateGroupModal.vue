@@ -179,8 +179,6 @@ const cancelUserToAdd = (user: User): void => {
   if (userIndex > -1) {
     usersToAdd.value.splice(userIndex, 1)
   }
-
-  console.log(`usersToAdd : `, usersToAdd.value)
 }
 
 // ********** //
@@ -254,8 +252,6 @@ const pushUserToAdd = (user: User): void => {
   if (!usersToAdd.value.includes(user)) {
     usersToAdd.value.push(user)
   }
-
-  console.log(`usersToAdd : `, usersToAdd.value)
 }
 
 // ********************** //

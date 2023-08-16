@@ -65,12 +65,12 @@ export function resetGame(): void {
 }
 
 socket.on('connect', () => {
-  console.log('connected to the /game socket')
+  console.log('[GameSocket] - Connected to the /game socket')
 })
 
 socket.on('disconnect', async () => {
   resetGame()
-  console.log('disconnected from the /game socket')
+  console.log('[GameSocket] - Disconnected from the /game socket')
 })
 
 socket.on(

@@ -47,6 +47,4 @@ function fetchRooms(): void {
 onMounted(() => {
   fetchRooms()
 })
-
-console.log(rooms)
 </script>

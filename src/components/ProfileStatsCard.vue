@@ -304,7 +304,6 @@ const searchInFriendList = async (user: User): Promise<boolean> => {
       (friend: User) => friend.id === props.user.id
     )
     isFriend.value = !(friend == null)
-    console.log(`[ProfileStatsCard] - isFriend : `, isFriend.value)
     return true
   } catch (error) {
     toast.error('Failed to get friend requests number !')

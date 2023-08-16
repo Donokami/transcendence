@@ -90,9 +90,6 @@ const getFriendRequests = async (): Promise<number> => {
   try {
     const response = await userStore.fetchFriendRequests()
     friendRequests.value = response
-    console.log(
-      `[ProfileFriendRequestListModal] - Friend request fetched successfully`
-    )
     return response.length
   } catch (error) {
     toast.error('Failed to fetch friend requests !')
@@ -107,9 +104,6 @@ const getFriendRequests = async (): Promise<number> => {
 const acceptRequest = async (requestId: string): Promise<void> => {
   try {
     await userStore.acceptFriendRequest(requestId)
-    console.log(
-      `[ProfileFriendRequestListModal] - Friend request accepted successfully`
-    )
     toast.success('Friend request accepted !')
     await getFriendRequests()
     emit('closeModal', 'accept')

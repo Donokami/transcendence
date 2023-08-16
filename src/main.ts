@@ -18,7 +18,6 @@ import './assets/base.css'
 
 const app = createApp(App)
 
-// Plug-in registration
 app.use(createPinia())
 app.use(router)
 app.use(VeeValidatePlugin)

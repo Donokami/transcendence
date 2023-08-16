@@ -212,7 +212,6 @@ const MovePaddle = (e: MouseEvent): void => {
   if (isSpectator.value) return
   if (!canvasRef.value) return
   const canvasWidth = canvasRef.value.clientWidth
-  console.log(canvasWidth)
   const normalize = (val: number, min: number, max: number): number =>
     (val - min) / (max - min)
   const posX = normalize(

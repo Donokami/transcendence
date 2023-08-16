@@ -96,8 +96,8 @@ const statusBadge = (): string => {
   if (!props.statusMode) return ''
 
   if (user.value === null || loggedUser.value === null) return 'offline'
-  if (user.value.id === loggedUser.value.id) return 'online'
-  switch (user.value.status) {
+  if (user.value && user.value.id === loggedUser.value.id) return 'online'
+  switch (user.value && user.value.status) {
     case 'online':
       return 'online'
     case 'away':
@@ -112,7 +112,7 @@ const statusBadge = (): string => {
 socialSocket.on('user:connect', (userId) => {
   if (user.value === null) return
 
-  if (userId === user.value.id) {
+  if (user.value && userId === user.value.id) {
     user.value.status = 'online'
   }
 })
@@ -120,7 +120,7 @@ socialSocket.on('user:connect', (userId) => {
 socialSocket.on('user:disconnect', (userId) => {
   if (user.value === null) return
 
-  if (userId === user.value.id) {
+  if (user.value && userId === user.value.id) {
     user.value.status = 'offline'
   }
 })

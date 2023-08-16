@@ -141,7 +141,6 @@ export const useUserStore = defineStore('users', {
       }
       const response = await this.fetchFriendList()
       this.friendList = response
-      console.log(`[UserStore] - friendList : `, this.friendList)
 
       return this.friendList
     },
@@ -188,9 +187,7 @@ export const useUserStore = defineStore('users', {
         `/social/friendship/request`,
         { receiverId }
       )
-      console.log(
-        `[UserStore] - Friend request successfully sent to ${receiverId} !`
-      )
+
       return response
     },
 
@@ -200,8 +197,6 @@ export const useUserStore = defineStore('users', {
 
     async signIn(values: Record<string, any>): Promise<User> {
       const response: User = await fetcher.post(`/auth/signIn`, values)
-
-      console.log(`[UserStore] - signIn response : `, response)
 
       if (!response.isTwoFactorEnabled) {
         this.loggedUser = response

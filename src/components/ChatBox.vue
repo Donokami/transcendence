@@ -126,8 +126,6 @@ const textClass = computed(() => (message: Message) => {
 // *********** //
 
 async function initChannel(): Promise<void> {
-  console.log('selectedChannel :', selectedChannel.value)
-
   if (!loggedUser.value || !selectedChannel.value) {
     return
   }
