@@ -35,8 +35,8 @@ export class GameController {
     description: 'Join the matchmaking queue',
     tags: ['game']
   })
-  joinQueue(@Session() session: ISession): Promise<RoomObject> {
-    return this.gameService.joinQueue(session.userId)
+  joinQueue(): Promise<RoomObject[]> {
+    return this.gameService.joinQueue()
   }
 
   @Get(':id')

@@ -76,16 +76,13 @@ export class GameService {
       .map((room) => room.get())
   }
 
-  public async joinQueue(userId: string): Promise<RoomObject> {
+  public async joinQueue(): Promise<RoomObject[]> {
     const rooms = this.findPublic()
 
-    console.log(rooms)
-
-    if (!rooms.length) {
-      return this.create(userId)
+    if (rooms.length === 0) {
+      return []
     }
-
-    return rooms[0]
+    return [rooms[0]]
   }
 
   public async create(ownerId: string): Promise<RoomObject> {
