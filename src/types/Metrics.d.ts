@@ -1,6 +1,4 @@
 export interface Metrics {
-  canvasHeight: number
-  canvasWidth: number
   fieldWidth: number
   fieldHeight: number
   fieldDepth: number

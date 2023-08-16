@@ -33,7 +33,9 @@
               {{ user.username }}
             </router-link>
           </th>
-          <td class="text-center">{{ user.winRate * 100 }} %</td>
+          <td class="text-center">
+            {{ Math.round(user.winRate * 10000) / 100 }} %
+          </td>
           <td class="text-center">{{ user.win }}</td>
           <td class="text-center">{{ user.loss }}</td>
           <td class="text-center">{{ user.gamesPlayed }}</td>

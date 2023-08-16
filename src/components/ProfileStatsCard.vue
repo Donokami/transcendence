@@ -59,7 +59,7 @@
       </div>
       <div class="flex items-center h-24">
         <div v-if="props.user" class="stat-value text-primary">
-          {{ props.user.winRate * 100 }} %
+          {{ Math.round(props.user.winRate * 10000) / 100 }} %
         </div>
       </div>
     </div>

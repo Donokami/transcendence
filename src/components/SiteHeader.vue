@@ -12,15 +12,15 @@
             tabindex="0"
             class="z-40 mt-[12.25rem] ml-2 shadow menu menu-compact dropdown-content bg-base-100 w-fit p-0 border-2 border-black">
             <li class="w-full">
-              <router-link to="/" class="rounded-none px-8">Home</router-link>
+              <router-link to="/" class="px-8 rounded-none">Home</router-link>
             </li>
             <li class="w-full">
-              <router-link to="/chat" class="rounded-none px-8"
+              <router-link to="/chat" class="px-8 rounded-none"
                 >Chat</router-link
               >
             </li>
             <li class="w-full">
-              <router-link to="/stats" class="rounded-none px-8"
+              <router-link to="/stats" class="px-8 rounded-none"
                 >Stats</router-link
               >
             </li>
@@ -56,7 +56,7 @@
         </ul>
       </div>
       <div class="text-white bg-black border-black navbar-center border-x-2">
-        <router-link to="/" class="p-2 px-6 text-sm sm:text-xl font-bold">
+        <router-link to="/" class="p-2 px-6 text-sm font-bold sm:text-xl">
           __TRANSCENDENCE__
         </router-link>
       </div>
@@ -92,12 +92,12 @@
                   name: 'profile',
                   params: { id: userStore.loggedUser.id }
                 }"
-                class="rounded-none px-8"
+                class="px-8 rounded-none"
                 >Profile</router-link
               >
             </li>
             <li class="w-fit">
-              <a class="rounded-none w-full px-8" @click="logout">Logout</a>
+              <a class="w-full px-8 rounded-none" @click="logout">Logout</a>
             </li>
           </ul>
         </div>

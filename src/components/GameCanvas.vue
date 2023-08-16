@@ -1,13 +1,15 @@
 <template>
-  <div class="w-[720px] h-[480px] relative mx-auto border-black border-2">
+  <div
+    class="max-w-[720px] aspect-video relative mx-auto border-black border-2">
     <div
-      class="absolute z-10 flex items-center w-full m-auto text-2xl text-white">
+      class="absolute z-10 flex items-center w-full m-auto text-white sm:text-2xl">
       <span class="m-auto">{{ calculatedRemainingTime }}</span>
     </div>
+    <span class="block w-full" ref="canvasRef"></span>
     <div
       class="absolute z-10 flex items-center w-full h-full bg-black bg-opacity-30"
       v-if="gameState.ended">
-      <span class="m-auto text-5xl font-semibold text-white">
+      <span class="m-auto text-2xl font-semibold text-white sm:text-5xl">
         {{ winnerMessage }}
       </span>
     </div>
@@ -189,8 +191,6 @@ const scoreText: Ref<string> = ref('0 - 0')
 // const envRef: ShallowRef = shallowRef(null)
 
 const gameMetrics: Metrics = {
-  canvasHeight: 480,
-  canvasWidth: 720,
   fieldWidth: 30,
   fieldHeight: 1,
   fieldDepth: 60,
@@ -205,14 +205,24 @@ const cameraRef: ShallowRef<Object3D | null> = shallowRef(null)
 const ballRef: ShallowRef<Object3D | null> = shallowRef(null)
 const paddle1Ref: ShallowRef<Object3D | null> = shallowRef(null)
 const paddle2Ref: ShallowRef<Object3D | null> = shallowRef(null)
-
+const canvasRef: Ref<HTMLElement | null> = ref(null)
 const { onLoop } = useRenderLoop()
 
 const MovePaddle = (e: MouseEvent): void => {
   if (isSpectator.value) return
+  if (!canvasRef.value) return
+  const canvasWidth = canvasRef.value.clientWidth
+  console.log(canvasWidth)
+  const normalize = (val: number, min: number, max: number): number =>
+    (val - min) / (max - min)
+  const posX = normalize(
+    Math.max(0.1 * canvasWidth, Math.min(e.offsetX, 0.9 * canvasWidth)),
+    canvasWidth * 0.1,
+    canvasWidth * 0.9
+  )
   socket.emit('game:move', {
     roomId: room.value.id,
-    posX: e.offsetX / gameMetrics.canvasWidth
+    posX
   })
 }
 
