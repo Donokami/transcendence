@@ -29,3 +29,9 @@ export class UserNotAuthorized extends HttpException {
     super('User not authorized', HttpStatus.FORBIDDEN)
   }
 }
+
+export class UnsupportedFileType extends HttpException {
+  constructor() {
+    super('Unsupported file type', HttpStatus.BAD_REQUEST)
+  }
+}

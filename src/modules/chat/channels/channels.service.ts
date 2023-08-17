@@ -142,6 +142,7 @@ export class ChannelsService {
     channel: Channel
   ): Promise<OperationResult> {
     channel.password = newPassword
+    channel.type = ChannelTypes.PROTECTED
 
     await this.channelsRepository.save(channel)
 

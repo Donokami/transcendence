@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Logger,
-  BadRequestException,
   Param,
   Patch,
   Post,
@@ -36,7 +35,7 @@ import { FileInterceptor } from '@nestjs/platform-express'
 import { memoryStorage } from 'multer'
 import * as sharp from 'sharp'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
-import { UserNotFound } from '@/core/exceptions'
+import { UserNotFound, UnsupportedFileType } from '@/core/exceptions'
 import { ChannelsService } from '@/modules/chat/channels/channels.service'
 import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { ISession } from '@/core/types'
@@ -128,11 +127,19 @@ export class UsersController {
   async uploadFile(
     @CurrentUser() user: User,
     @UploadedFile() file: Express.Multer.File
-  ): Promise<{ status: string }> {
+  ) {
+    const content = file.buffer.toString('utf-8').trim().toLowerCase()
+    if (
+      content.startsWith('<svg') ||
+      content.includes('http://www.w3.org/2000/svg')
+    ) {
+      throw new UnsupportedFileType()
+    }
+
     try {
       await sharp(file.buffer).metadata()
     } catch (error) {
-      throw new BadRequestException('Invalid file type')
+      throw new UnsupportedFileType()
     }
 
     if (user.profilePicture?.includes('uploads/')) {
