@@ -5,9 +5,7 @@ import { defineStore } from 'pinia'
 
 import { useUserStore } from '@/stores/UserStore'
 import type { Channel, Message, User } from '@/types'
-import fetcher, {
-  ApiError
-} from '@/utils/fetcher'
+import fetcher, { ApiError } from '@/utils/fetcher'
 
 function parseUrl(message: Message): {
   roomId: string
@@ -52,7 +50,6 @@ export const useChannelStore = defineStore('channels', {
       if (!channel) return
 
       channel.admins.push(user)
-      await fetcher.put(`/channels/${channelId}/set-admin`, { userId: user.id })
     },
 
     // ********* //
@@ -190,10 +187,7 @@ export const useChannelStore = defineStore('channels', {
         membersIds: [loggedUser.id, receiverId]
       }
 
-      await fetcher.post(
-        `/channels/create`,
-        channelParam
-      )
+      await fetcher.post(`/channels/create`, channelParam)
     },
 
     // ****************** //
@@ -269,7 +263,9 @@ export const useChannelStore = defineStore('channels', {
       const channel = this.getChannel(channelId)
 
       if (channel != null) {
-        const messageFetch = messages.map(async (message: Message) => await this.bindRoomToInvite(message))
+        const messageFetch = messages.map(
+          async (message: Message) => await this.bindRoomToInvite(message)
+        )
         channel.messages = await Promise.all(messageFetch)
       }
     },
@@ -299,9 +295,9 @@ export const useChannelStore = defineStore('channels', {
         channelId = this.selectedChannel as string
       }
 
-      return this.channelsList?.find(
-        (channel) => channel.id === channelId
-      ) ?? null
+      return (
+        this.channelsList?.find((channel) => channel.id === channelId) ?? null
+      )
     },
 
     // ****************** //
@@ -321,9 +317,7 @@ export const useChannelStore = defineStore('channels', {
     // ****** //
 
     getDms(): Channel[] {
-      return this.channelsList?.filter(
-        (channel) => channel.isDm
-      ) ?? []
+      return this.channelsList?.filter((channel) => channel.isDm) ?? []
     },
 
     // ********* //
@@ -331,9 +325,7 @@ export const useChannelStore = defineStore('channels', {
     // ********* //
 
     getGroups(): Channel[] {
-      return this.channelsList?.filter(
-        (channel) => !channel.isDm
-      ) ?? []
+      return this.channelsList?.filter((channel) => !channel.isDm) ?? []
     },
 
     // ******* //
@@ -375,14 +367,6 @@ export const useChannelStore = defineStore('channels', {
     },
 
     // ********* //
-    // makeAdmin //
-    // ********* //
-
-    async makeAdmin(userId: string, channelId: string): Promise<void> {
-      // await fetcher.put(`/channels/${channelId}/set-admin`, { userId })
-    },
-
-    // ********* //
     // joinGroup //
     // ********* //
 
@@ -416,6 +400,14 @@ export const useChannelStore = defineStore('channels', {
           toast.success(`You left the channel`)
           return await router.push('/chat')
         })
+    },
+
+    // ********* //
+    // makeAdmin //
+    // ********* //
+
+    async makeAdmin(userId: string, channelId: string): Promise<void> {
+      await fetcher.put(`/channels/${channelId}/set-admin`, { userId })
     },
 
     // ********** //
@@ -458,22 +450,6 @@ export const useChannelStore = defineStore('channels', {
       if (!userIndex) return
 
       channel.admins.splice(userIndex, 1)
-      await fetcher.delete(`/channels/${channelId}/unset-admin`, { userId })
-    },
-
-    // ************ //
-    // removeMember //
-    // ************ //
-
-    removeMember(userId: string, channelId: string): void {
-      const channel = this.getChannel(channelId)
-
-      if (channel != null) {
-        const index = channel.members.findIndex((user) => user.id === userId)
-        if (index != null) {
-          channel.members.splice(index, 1)
-        }
-      }
     },
 
     // ****************** //
@@ -482,15 +458,36 @@ export const useChannelStore = defineStore('channels', {
 
     removeBannedMember(userId: string, channelId: string): void {
       const channel = this.getChannel(channelId)
+      if (!channel) return
 
-      if (channel != null) {
-        const index = channel.bannedMembers.findIndex(
-          (user) => user.id === userId
-        )
-        if (index != null) {
-          channel.bannedMembers.splice(index, 1)
-        }
-      }
+      const userIndex = channel.bannedMembers.findIndex(
+        (user) => user.id === userId
+      )
+      if (!userIndex) return
+
+      channel.bannedMembers.splice(userIndex, 1)
+    },
+
+    // ************ //
+    // removeMember //
+    // ************ //
+
+    removeMember(userId: string, channelId: string): void {
+      const channel = this.getChannel(channelId)
+      if (!channel) return
+
+      const userIndex = channel.members.findIndex((user) => user.id === userId)
+      if (!userIndex) return
+
+      channel.members.splice(userIndex, 1)
+    },
+
+    // *********** //
+    // revokeAdmin //
+    // *********** //
+
+    async revokeAdmin(userId: string, channelId: string): Promise<void> {
+      await fetcher.delete(`/channels/${channelId}/unset-admin`, { userId })
     },
 
     // *************** //

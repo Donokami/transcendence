@@ -154,7 +154,7 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
       } else if (err.code === 'ChannelNotFound') {
         toast.error('Channel not found.')
       } else if (err.code === 'UserAlreadyInChannel') {
-        toast.error('You are already in this channel.')
+        toast.error('You are already a member of this channel.')
       } else {
         toast.error('Something went wrong')
       }

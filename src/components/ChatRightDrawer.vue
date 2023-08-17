@@ -57,7 +57,7 @@
                     <li
                       class="rounded-none"
                       v-if="showMakeAdmin(user)"
-                      @click="giveAdminRights(user)">
+                      @click="makeAdmin(user)">
                       <div class="flex gap-3 rounded-none">
                         <iconify-icon
                           icon="lucide:crown"
@@ -156,13 +156,14 @@
 import { storeToRefs } from 'pinia'
 import { onBeforeMount, ref } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
+import { useToast } from 'vue-toastification'
 
-import UserAvatar from './UserAvatar.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
 import ChatManagePasswordModal from '@/components/ChatManagePasswordModal.vue'
-
 import { useChannelStore } from '@/stores/ChannelStore.js'
 import { useUserStore } from '@/stores/UserStore.js'
 import type { Channel, User } from '@/types'
+import { ApiError } from '@/utils/fetcher'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -177,6 +178,7 @@ const showModal = ref(false)
 const { loggedUser } = storeToRefs(userStore)
 const { selectedChannel, channelsList } = storeToRefs(channelStore)
 const channel = ref<Channel | null>(null)
+const toast = useToast()
 
 function showAdminActions(target: User): boolean {
   if (!channel.value || !loggedUser.value) return false
@@ -216,9 +218,17 @@ async function getChannel(): Promise<void> {
   }
 }
 
-const giveAdminRights = async (target: User): Promise<void> => {
+const makeAdmin = async (target: User): Promise<void> => {
   if (!channel.value) return
-  await channelStore.makeAdmin(target.id, channel.value.id)
+  try {
+    await channelStore.makeAdmin(target.id, channel.value.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to give admin right to this user.')
+      }
+    }
+  }
 }
 
 const kickMember = async (target: User): Promise<void> => {

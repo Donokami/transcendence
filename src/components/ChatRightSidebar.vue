@@ -1,7 +1,7 @@
 <template>
   <div class="flex-auto overflow-auto w-fit h-full">
     <!-- LOADER FOR CHANNEL LIST -->
-    <div v-if="channelsList.length === 0">
+    <div v-if="channelsList && channelsList.length === 0">
       <div class="flex justify-center items-center h-fit">
         <span class="loading loading-spinner loading-lg"></span>
       </div>
@@ -9,7 +9,7 @@
 
     <!-- USER LIST -->
     <ul
-      v-else-if="loggedUser && channelsList.length > 0"
+      v-else-if="loggedUser && channelsList && channelsList.length > 0"
       class="bg-base-100 w-full">
       <li v-for="user in channel?.members" :key="user.id">
         <div class="dropdown dropdown-bottom">
@@ -44,7 +44,7 @@
               <li
                 class="rounded-none"
                 v-if="showMakeAdmin(user)"
-                @click="giveAdminRights(user)">
+                @click="makeAdmin(user)">
                 <div class="flex gap-3 rounded-none">
                   <iconify-icon
                     icon="lucide:crown"
@@ -72,7 +72,7 @@
                 <li
                   class="rounded-none"
                   v-if="showRevokeAdmin(user)"
-                  @click="revokeAdminRights(user)">
+                  @click="revokeAdmin(user)">
                   <div
                     class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
                     <iconify-icon
@@ -117,12 +117,13 @@
 import { storeToRefs } from 'pinia'
 import { onBeforeMount, ref } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
+import { useToast } from 'vue-toastification'
 
-import UserAvatar from './UserAvatar.vue'
-
+import UserAvatar from '@/components/UserAvatar.vue'
 import { useChannelStore } from '@/stores/ChannelStore.js'
 import { useUserStore } from '@/stores/UserStore.js'
 import type { Channel, User } from '@/types'
+import { ApiError } from '@/utils/fetcher'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -135,6 +136,7 @@ const userStore = useUserStore()
 const { loggedUser } = storeToRefs(userStore)
 const { selectedChannel, channelsList } = storeToRefs(channelStore)
 const channel = ref<Channel | null>(null)
+const toast = useToast()
 
 // ********************* //
 // FUNCTIONS DEFINITIONS //
@@ -189,14 +191,32 @@ async function getChannel(): Promise<void> {
   }
 }
 
-async function revokeAdminRights(target: User): Promise<void> {
+const revokeAdmin = async (target: User): Promise<void> => {
   if (!channel.value) return
-  await channelStore.removeAdmin(target.id, channel.value.id)
+  try {
+    await channelStore.revokeAdmin(target.id, channel.value.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error(
+          'You are not allowed to revoke the admin rights of this user.'
+        )
+      }
+    }
+  }
 }
 
-async function giveAdminRights(target: User): Promise<void> {
+const makeAdmin = async (target: User): Promise<void> => {
   if (!channel.value) return
-  await channelStore.addAdmin(target, channel.value.id)
+  try {
+    await channelStore.makeAdmin(target.id, channel.value.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to give admin right to this user.')
+      }
+    }
+  }
 }
 
 async function kickMember(target: User): Promise<void> {

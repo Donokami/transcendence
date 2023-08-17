@@ -66,7 +66,7 @@
           <li
             class="rounded-none"
             v-if="showRevokeAdmin()"
-            @click="revokeAdminRights()">
+            @click="revokeAdmin()">
             <div
               class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
               <iconify-icon
@@ -205,10 +205,6 @@ function showMakeAdmin(): boolean {
   return (isUserAdmin || isUserOwner) && !isTargetAdmin && !isTargetOwner
 }
 
-// ********************* //
-// FUNCTIONS DEFINITIONS //
-// ********************* //
-
 const isMember = computed((): boolean => {
   return props.channel.members.some(
     (member) => member.username === props.user.username
@@ -221,9 +217,9 @@ const isBanned = computed((): boolean => {
   )
 })
 
-const revokeAdminRights = async (): Promise<void> => {
+const revokeAdmin = async (): Promise<void> => {
   try {
-    await channelStore.removeAdmin(props.user.id, props.channel.id)
+    await channelStore.revokeAdmin(props.user.id, props.channel.id)
   } catch (err: any) {
     if (err instanceof ApiError) {
       if (err.code === 'ForbiddenException') {
@@ -234,10 +230,6 @@ const revokeAdminRights = async (): Promise<void> => {
     }
   }
 }
-
-// ********* //
-// banMember //
-// ********* //
 
 const banMember = async (): Promise<void> => {
   try {
@@ -251,13 +243,9 @@ const banMember = async (): Promise<void> => {
   }
 }
 
-// ********* //
-// makeAdmin //
-// ********* //
-
 const makeAdmin = async (): Promise<void> => {
   try {
-    await channelStore.addAdmin(props.user, props.channel.id)
+    await channelStore.makeAdmin(props.user.id, props.channel.id)
   } catch (err: any) {
     if (err instanceof ApiError) {
       if (err.code === 'ForbiddenException') {
@@ -266,10 +254,6 @@ const makeAdmin = async (): Promise<void> => {
     }
   }
 }
-
-// ****************** //
-// handleClickOutside //
-// ****************** //
 
 const handleClickOutside = (event: MouseEvent): void => {
   const { target } = event
@@ -281,10 +265,6 @@ const handleClickOutside = (event: MouseEvent): void => {
     toggleDropdown()
   }
 }
-
-// ********** //
-// kickMember //
-// ********** //
 
 const kickMember = async (): Promise<void> => {
   try {
@@ -298,17 +278,9 @@ const kickMember = async (): Promise<void> => {
   }
 }
 
-// ************** //
-// toggleDropdown //
-// ************** //
-
 const toggleDropdown = (): void => {
   isOpen.value = !isOpen.value
 }
-
-// *********** //
-// unbanMember //
-// *********** //
 
 const unbanMember = async (): Promise<void> => {
   try {
@@ -333,10 +305,6 @@ const muteMember = async (): Promise<void> => {
     }
   }
 }
-
-// ********************* //
-// VueJs LIFECYCLE HOOKS //
-// ********************* //
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
