@@ -31,12 +31,10 @@ import { computed, ref, type PropType, type Ref } from 'vue'
 import { useUserStore } from '@/stores/UserStore'
 import { storeToRefs } from 'pinia'
 import { socialSocket } from '@/includes/socialSocket'
-import { useToast } from 'vue-toastification'
 
 const userStore = useUserStore()
 const { loggedUser } = storeToRefs(userStore)
 const fileInput = ref(null) as Ref<HTMLElement | null>
-const toast = useToast()
 
 const props = defineProps({
   userProps: {
@@ -65,13 +63,9 @@ const onFileChange = async (event: Event): Promise<void> => {
   const target = event.target as HTMLInputElement
   if (target.files != null) {
     const file = target.files[0]
-    try {
-      if (loggedUser === null) return
-      await userStore.uploadProfilePicture(loggedUser.value.id, file)
-      location.reload()
-    } catch (error) {
-      toast.error('Failed to upload profile picture !')
-    }
+    if (loggedUser === null) return
+    await userStore.uploadProfilePicture(loggedUser.value.id, file)
+    location.reload()
   }
 }
 

@@ -44,14 +44,6 @@
             <span class="w-full">Make Admin</span>
           </div>
         </li>
-        <!-- MUTE -->
-        <li class="rounded-none" v-if="isMember" @click="muteMember">
-          <div class="flex gap-3 rounded-none">
-            <iconify-icon icon="lucide:volume-x" class="h-4 w-4 shrink-0">
-            </iconify-icon>
-            <span>Mute</span>
-          </div>
-        </li>
         <!-- BLOCK -->
         <li class="rounded-none">
           <div class="flex gap-3 rounded-none">
@@ -66,7 +58,7 @@
           <li
             class="rounded-none"
             v-if="showRevokeAdmin()"
-            @click="revokeAdmin()">
+            @click="revokeAdminRights()">
             <div
               class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
               <iconify-icon
@@ -74,6 +66,15 @@
                 class="h-4 w-4 shrink-0 self-start mt-0.5">
               </iconify-icon>
               <span class="w-full">Revoke Admin</span>
+            </div>
+          </li>
+          <!-- MUTE -->
+          <li class="rounded-none" v-if="isMember" @click="muteMember">
+            <div
+              class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+              <iconify-icon icon="lucide:volume-x" class="h-4 w-4 shrink-0">
+              </iconify-icon>
+              <span>Mute</span>
             </div>
           </li>
           <!-- KICK -->
@@ -205,6 +206,10 @@ function showMakeAdmin(): boolean {
   return (isUserAdmin || isUserOwner) && !isTargetAdmin && !isTargetOwner
 }
 
+// ********************* //
+// FUNCTIONS DEFINITIONS //
+// ********************* //
+
 const isMember = computed((): boolean => {
   return props.channel.members.some(
     (member) => member.username === props.user.username
@@ -217,9 +222,9 @@ const isBanned = computed((): boolean => {
   )
 })
 
-const revokeAdmin = async (): Promise<void> => {
+const revokeAdminRights = async (): Promise<void> => {
   try {
-    await channelStore.revokeAdmin(props.user.id, props.channel.id)
+    await channelStore.removeAdmin(props.user.id, props.channel.id)
   } catch (err: any) {
     if (err instanceof ApiError) {
       if (err.code === 'ForbiddenException') {
@@ -230,6 +235,10 @@ const revokeAdmin = async (): Promise<void> => {
     }
   }
 }
+
+// ********* //
+// banMember //
+// ********* //
 
 const banMember = async (): Promise<void> => {
   try {
@@ -243,6 +252,10 @@ const banMember = async (): Promise<void> => {
   }
 }
 
+// ********* //
+// makeAdmin //
+// ********* //
+
 const makeAdmin = async (): Promise<void> => {
   try {
     await channelStore.makeAdmin(props.user.id, props.channel.id)
@@ -255,6 +268,10 @@ const makeAdmin = async (): Promise<void> => {
   }
 }
 
+// ****************** //
+// handleClickOutside //
+// ****************** //
+
 const handleClickOutside = (event: MouseEvent): void => {
   const { target } = event
   if (
@@ -265,6 +282,10 @@ const handleClickOutside = (event: MouseEvent): void => {
     toggleDropdown()
   }
 }
+
+// ********** //
+// kickMember //
+// ********** //
 
 const kickMember = async (): Promise<void> => {
   try {
@@ -278,9 +299,17 @@ const kickMember = async (): Promise<void> => {
   }
 }
 
+// ************** //
+// toggleDropdown //
+// ************** //
+
 const toggleDropdown = (): void => {
   isOpen.value = !isOpen.value
 }
+
+// *********** //
+// unbanMember //
+// *********** //
 
 const unbanMember = async (): Promise<void> => {
   try {
@@ -305,6 +334,10 @@ const muteMember = async (): Promise<void> => {
     }
   }
 }
+
+// ********************* //
+// VueJs LIFECYCLE HOOKS //
+// ********************* //
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)

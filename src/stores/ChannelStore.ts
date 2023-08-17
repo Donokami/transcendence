@@ -438,20 +438,6 @@ export const useChannelStore = defineStore('channels', {
       }
     },
 
-    // ************ //
-    // removeAdmin //
-    // ************ //
-
-    async removeAdmin(userId: string, channelId: string): Promise<void> {
-      const channel = this.getChannel(channelId)
-      if (!channel) return
-
-      const userIndex = channel.admins.findIndex((user) => user.id === userId)
-      if (!userIndex) return
-
-      channel.admins.splice(userIndex, 1)
-    },
-
     // ****************** //
     // removeBannedMember //
     // ****************** //
@@ -488,6 +474,20 @@ export const useChannelStore = defineStore('channels', {
 
     async revokeAdmin(userId: string, channelId: string): Promise<void> {
       await fetcher.delete(`/channels/${channelId}/unset-admin`, { userId })
+    },
+
+    // ************ //
+    // removeAdmin //
+    // ************ //
+
+    async removeAdmin(userId: string, channelId: string): Promise<void> {
+      const channel = this.getChannel(channelId)
+      if (!channel) return
+
+      const userIndex = channel.admins.findIndex((user) => user.id === userId)
+      if (!userIndex) return
+
+      channel.admins.splice(userIndex, 1)
     },
 
     // *************** //

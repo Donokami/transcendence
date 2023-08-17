@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 
 import type { User, Friendship, Paginated } from '@/types'
-import fetcher from '@/utils/fetcher'
+import fetcher, { ApiError } from '../utils/fetcher'
 import { useChannelStore } from './ChannelStore'
 
 // interface UserData {
@@ -287,27 +287,27 @@ export const useUserStore = defineStore('users', {
     // UploadProfilePicture //
     // ******************** //
 
-    async uploadProfilePicture(
-      userId: string,
-      file: File
-    ): Promise<UploadData> {
+    async uploadProfilePicture(id: string, file: File): Promise<void> {
       const formData = new FormData()
       formData.append('file', file)
 
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/user/upload`,
-        {
-          method: 'POST',
-          credentials: 'include',
-          body: formData
-        }
-      )
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/user/upload`, {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      })
 
-      if (!response.ok) {
-        throw new Error(`HTTP error status: ${response.status}`)
+      if (!res.ok) {
+        const data = await res.json()
+        throw new ApiError(
+          data.error || res.statusText,
+          data.statusCode,
+          data.code,
+          new Date(Date.now()),
+          '/user/upload',
+          'POST'
+        )
       }
-
-      return await response.json()
     }
   }
 })

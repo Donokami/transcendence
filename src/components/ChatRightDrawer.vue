@@ -35,7 +35,7 @@
                           :uploadMode="false">
                         </user-avatar>
                       </div>
-                      <span class="pl-3 text-sm truncate w-28">{{
+                      <span class="pl-3 text-sm truncate w-32">{{
                         user.username
                       }}</span>
                     </div>
@@ -69,15 +69,6 @@
                     <li class="rounded-none">
                       <div class="flex gap-3 rounded-none">
                         <iconify-icon
-                          icon="lucide:volume-x"
-                          class="w-4 h-4 shrink-0">
-                        </iconify-icon>
-                        <span>Mute</span>
-                      </div>
-                    </li>
-                    <li class="rounded-none">
-                      <div class="flex gap-3 rounded-none">
-                        <iconify-icon
                           icon="lucide:ban"
                           class="w-4 h-4 shrink-0">
                         </iconify-icon>
@@ -86,6 +77,29 @@
                     </li>
                     <div v-if="showAdminActions(user)">
                       <div class="divider p-0 m-0 h-[6px]"></div>
+                      <li
+                        class="rounded-none"
+                        v-if="showRevokeAdmin(user)"
+                        @click="revokeAdmin(user)">
+                        <div
+                          class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+                          <iconify-icon
+                            icon="lucide:x"
+                            class="h-4 w-4 shrink-0 self-start mt-0.5">
+                          </iconify-icon>
+                          <span class="w-full">Revoke Admin</span>
+                        </div>
+                      </li>
+                      <li class="rounded-none">
+                        <div
+                          class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+                          <iconify-icon
+                            icon="lucide:volume-x"
+                            class="w-4 h-4 shrink-0">
+                          </iconify-icon>
+                          <span>Mute</span>
+                        </div>
+                      </li>
                       <li class="rounded-none" @click="kickMember(user)">
                         <div
                           class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
@@ -117,6 +131,7 @@
         <div>
           <label
             for="my-modal-13"
+            v-if="channel?.owner.id === loggedUser?.id"
             class="relative w-full text-black bg-white border-t-2 border-b-0 border-black btn border-x-0 hover:bg-black hover:border-black hover:text-white"
             type="button">
             <iconify-icon
@@ -143,6 +158,7 @@
     <!-- MANAGE PASSWORD MODAL -->
     <chat-manage-password-modal
       :showModal="showModal"
+      :channel="channel"
       @update:showModal="showModal = $event">
     </chat-manage-password-modal>
   </div>
@@ -180,6 +196,17 @@ const { selectedChannel, channelsList } = storeToRefs(channelStore)
 const channel = ref<Channel | null>(null)
 const toast = useToast()
 
+function showRevokeAdmin(target: User): boolean {
+  if (!channel.value || !loggedUser.value) return false
+
+  const isTargetAdmin = channelStore.isAdmin(target.id, channel.value.id)
+  const isUserOwner = channelStore.isOwner(
+    loggedUser.value.id,
+    channel.value.id
+  )
+  return isUserOwner && isTargetAdmin
+}
+
 function showAdminActions(target: User): boolean {
   if (!channel.value || !loggedUser.value) return false
 
@@ -215,6 +242,21 @@ function showMakeAdmin(target: User): boolean {
 async function getChannel(): Promise<void> {
   if (selectedChannel.value !== null) {
     channel.value = channelStore.getChannel(selectedChannel.value)
+  }
+}
+
+const revokeAdmin = async (target: User): Promise<void> => {
+  if (!channel.value) return
+  try {
+    await channelStore.revokeAdmin(target.id, channel.value.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error(
+          'You are not allowed to revoke the admin rights of this user.'
+        )
+      }
+    }
   }
 }
 

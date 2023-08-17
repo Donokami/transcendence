@@ -55,13 +55,6 @@
               </li>
               <li class="rounded-none">
                 <div class="flex gap-3 rounded-none">
-                  <iconify-icon icon="lucide:volume-x" class="h-4 w-4 shrink-0">
-                  </iconify-icon>
-                  <span>Mute</span>
-                </div>
-              </li>
-              <li class="rounded-none">
-                <div class="flex gap-3 rounded-none">
                   <iconify-icon icon="lucide:ban" class="h-4 w-4 shrink-0">
                   </iconify-icon>
                   <span>Block</span>
@@ -80,6 +73,16 @@
                       class="h-4 w-4 shrink-0 self-start mt-0.5">
                     </iconify-icon>
                     <span class="w-full">Revoke Admin</span>
+                  </div>
+                </li>
+                <li class="rounded-none">
+                  <div
+                    class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+                    <iconify-icon
+                      icon="lucide:volume-x"
+                      class="h-4 w-4 shrink-0">
+                    </iconify-icon>
+                    <span>Mute</span>
                   </div>
                 </li>
                 <li class="rounded-none" @click="kickMember(user)">

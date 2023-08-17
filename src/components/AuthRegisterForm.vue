@@ -107,7 +107,7 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
     await userStore.register(values)
     alertColor.value = 'bg-green-500'
     alertMsg.value = 'Account created!'
-    setTimeout(() => toggleForm(), 2000)
+    setTimeout(() => toggleForm(), 1000)
   } catch (error: any) {
     if (error.message === 'User already exists') {
       alertColor.value = 'bg-red-500'

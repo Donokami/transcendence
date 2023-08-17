@@ -1,4 +1,5 @@
 <template>
+  {{ channel?.admins }}
   <div v-if="loggedUser && channel" class="p-5">
     <div
       class="w-fit flex mb-4"
@@ -80,7 +81,7 @@ import { storeToRefs } from 'pinia'
 import { useChannelStore } from '@/stores/ChannelStore.js'
 import { useUserStore } from '@/stores/UserStore.js'
 
-import type { Message, Channel, User } from '@/types'
+import type { Message, Channel } from '@/types'
 
 import ChatDropdown from '@/components/ChatDropdown.vue'
 
@@ -97,14 +98,6 @@ const userStore = useUserStore()
 const { loggedUser } = storeToRefs(userStore)
 const { selectedChannel } = storeToRefs(channelStore)
 const channel = ref<Channel | null>(null)
-
-const showMessage = computed(() => (user: User) => {
-  if (!loggedUser.value) return false
-
-  return !loggedUser.value.blockedUsers.some(
-    (blockedUser) => blockedUser.id === user.id
-  )
-})
 
 const messageClass = computed(() => (message: Message) => {
   if (message.user.id === loggedUser.value?.id) {

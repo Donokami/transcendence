@@ -46,8 +46,8 @@
             </button>
             <!-- DELETE PASSWORD BUTTON -->
             <button
-              v-if="passwordRequired === false"
-              class="btn bg-red-400 border-2 border-black my-4 mb-2 text-black hover:bg-black hover:border-black hover:text-white"
+              v-if="passwordRequired === false && channel?.type === 'protected'"
+              class="btn bg-red-400 border-2 border-black hover:border-black my-4 mb-2 hover:bg-black text-white"
               type="submit"
               @click="deleteGroupPassword">
               Delete Password
@@ -64,11 +64,13 @@
 // IMPORTS //
 // ******* //
 
-import { ref, toRefs, watch } from 'vue'
+import { ref, toRefs, watch, type PropType } from 'vue'
 import { Form } from 'vee-validate'
 import { useToast } from 'vue-toastification'
 
 import { storeToRefs } from 'pinia'
+
+import type { Channel } from '@/types'
 
 import { useChannelStore } from '@/stores/ChannelStore'
 
@@ -82,12 +84,13 @@ const password = ref<string | null>(null)
 const passwordError = ref<string | null>(null)
 const passwordRequired = ref<boolean>(false)
 const props = defineProps({
-  showModal: { type: Boolean }
+  showModal: { type: Boolean },
+  channel: { type: Object as PropType<Channel | null> }
 })
 const toast = useToast()
 
 const { selectedChannel } = storeToRefs(channelStore)
-const { showModal } = toRefs(props)
+const { showModal, channel } = toRefs(props)
 
 // ******************** //
 // FUNCTION DEFINITIONS //
