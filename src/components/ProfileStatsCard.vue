@@ -3,13 +3,15 @@
     <div class="-ml-6 border-black lg:border-r-2 stat lg:-ml-2 h-52">
       <div class="flex justify-between items-top h-14">
         <!-- USERNAME -->
-        <div v-if="user" class="text-xl text-black stat-value">
+        <div
+          v-if="user"
+          class="flex items-center text-xl font-bold leading-4 text-black">
           {{ user.username }}
         </div>
         <label
           v-if="user && loggedUser && props.user.id === loggedUser?.id"
           for="my-modal-4"
-          class="mb-2 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white"
+          class="text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white"
           type="button"
           @click="showUsernameModal = true">
           Change username
@@ -38,12 +40,11 @@
         <div class="text-xl stat-value">Rank</div>
         <iconify-icon
           class="w-8 h-8"
-          icon="icon-park-outline:ranking"
-          style="color: #5d4df8"></iconify-icon>
+          icon="icon-park-outline:ranking"></iconify-icon>
       </div>
       <div class="flex items-center h-24">
-        <div v-if="user" class="stat-value text-primary">
-          {{ props.user.rank ?? '-' }}
+        <div v-if="user" class="text-black stat-value">
+          {{ userRank ?? '-' }}
         </div>
       </div>
     </div>
@@ -52,13 +53,10 @@
       class="stat border-black -ml-6 lg:-ml-0 !border-t-2 lg:!border-t-0 lg:!border-l-2">
       <div class="flex justify-between items-top h-14">
         <div class="text-xl stat-value">Win Rate</div>
-        <iconify-icon
-          class="w-8 h-8"
-          icon="mdi:target-arrow"
-          style="color: #5d4df8"></iconify-icon>
+        <iconify-icon class="w-8 h-8" icon="mdi:target-arrow"></iconify-icon>
       </div>
       <div class="flex items-center h-24">
-        <div v-if="props.user" class="stat-value text-primary">
+        <div v-if="props.user" class="text-black stat-value">
           {{ Math.round(props.user.winRate * 10000) / 100 }} %
         </div>
       </div>
@@ -70,38 +68,44 @@
       <div class="text-xl stat-value h-14">Friends</div>
       <div class="flex items-center justify-between h-24">
         <!-- NUMBER OF FRIENDS -->
-        <div class="stat-value text-primary">{{ props.user.nFriends }}</div>
+        <div class="text-black stat-value">{{ props.user.nFriends }}</div>
         <!-- SEND REQUEST -->
-        <button
-          v-if="
-            isFriend === false &&
-            !isUserBlockedByProfile &&
-            !isProfileBlockedByUser
-          "
-          class="items-center text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white h-14 no-animation"
-          type="button"
-          @click="sendFriendRequest">
-          <iconify-icon class="w-8 h-8" :icon="iconSendRequest"></iconify-icon>
-          <div>Add friend</div>
-        </button>
-        <!-- BLOCK USER -->
-        <button
-          v-else-if="isFriend === true && !isUserBlockedByProfile"
-          class="items-center text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white h-14 no-animation"
-          type="button"
-          @click="blockUser">
-          <iconify-icon class="w-8 h-8" :icon="iconBlockUser"></iconify-icon>
-          <div>Block user</div>
-        </button>
-        <!-- UNBLOCK USER -->
-        <button
-          v-else-if="isFriend === false && isProfileBlockedByUser"
-          class="items-center text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white h-14 no-animation"
-          type="button"
-          @click="unblockUser">
-          <iconify-icon class="w-8 h-8" :icon="iconUnblockUser"></iconify-icon>
-          <div>Unblock user</div>
-        </button>
+        <div class="flex flex-col gap-4">
+          <button
+            v-if="
+              isFriend === false &&
+              !isUserBlockedByProfile &&
+              !isProfileBlockedByUser
+            "
+            class="items-center text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white h-14 no-animation"
+            type="button"
+            @click="sendFriendRequest">
+            <div>Add friend</div>
+            <iconify-icon
+              class="w-8 h-8"
+              :icon="iconSendRequest"></iconify-icon>
+          </button>
+          <!-- BLOCK USER -->
+          <button
+            v-if="!isProfileBlockedByUser && !isUserBlockedByProfile"
+            class="items-center text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white h-14 no-animation"
+            type="button"
+            @click="blockUser">
+            <div>Block user</div>
+            <iconify-icon class="w-8 h-8" :icon="iconBlockUser"></iconify-icon>
+          </button>
+          <!-- UNBLOCK USER -->
+          <button
+            v-else-if="isProfileBlockedByUser"
+            class="items-center text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white h-14 no-animation"
+            type="button"
+            @click="unblockUser">
+            <div>Unblock user</div>
+            <iconify-icon
+              class="w-8 h-8"
+              :icon="iconUnblockUser"></iconify-icon>
+          </button>
+        </div>
       </div>
     </div>
     <!-- FRIEND REQUEST NOTIFICATION -->
@@ -120,22 +124,22 @@
         </label>
       </div>
       <div class="flex items-center justify-between h-24">
-        <div class="stat-value text-primary">{{ props.user.nFriends }}</div>
+        <div class="text-black stat-value">{{ props.user.nFriends }}</div>
         <label
           v-if="nFriendRequests > 0"
           for="my-modal-3"
           class="items-center h-16 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white no-animation"
           type="button"
           @click="showFriendRequestModal = true">
-          <div class="indicator">
-            <span
-              class="text-white text-xs badge badge-secondary indicator-start indicator-item animate-pulse"
-              >{{ nFriendRequests }}</span
-            >
-            <iconify-icon class="w-8 h-8" :icon="iconRequestNotification">
-            </iconify-icon>
-          </div>
           <div>Handle requests</div>
+          <div class="indicator">
+            <span class="text-white badge badge-secondary indicator-item">{{
+              nFriendRequests
+            }}</span>
+            <iconify-icon
+              class="w-8 h-8"
+              :icon="iconRequestNotification"></iconify-icon>
+          </div>
         </label>
       </div>
     </div>
@@ -174,6 +178,7 @@ import { socialSocket } from '@/includes/socialSocket'
 import { useUserStore } from '@/stores/UserStore'
 import type { User } from '@/types'
 import { ApiError } from '@/utils/fetcher'
+import { watch } from 'vue'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -191,6 +196,7 @@ const nFriendRequests = ref(0)
 const showFriendListModal = ref(false)
 const showFriendRequestModal = ref(false)
 const showUsernameModal = ref(false)
+const userRank = ref<number | null>(null)
 const userStore = useUserStore()
 
 const { loggedUser } = storeToRefs(userStore)
@@ -208,14 +214,6 @@ const statusColor = computed(() => {
   if (props.user.status === 'offline') return 'text-red-500'
   return 'text-gray-500'
 })
-
-// ******************** //
-// FUNCTION DEFINITIONS //
-// ******************** //
-
-// ********* //
-// blockUser //
-// ********* //
 
 const blockUser = async (): Promise<void> => {
   try {
@@ -239,21 +237,18 @@ const checkBlockedStatus = async (): Promise<void> => {
     const response = await userStore.fetchBlockerId(props.user.id)
     if (response === loggedUser.value.id) {
       isProfileBlockedByUser.value = true
+      console.log('isProfileBlockedByUser')
     } else if (response === props.user.id) {
       isUserBlockedByProfile.value = true
+      console.log('isUserBlockedByProfile')
+    } else {
+      isProfileBlockedByUser.value = false
+      isUserBlockedByProfile.value = false
     }
   } catch (error) {
     toast.error('Failed to fetch blocked user and check friendship!')
   }
 }
-
-// ******************** //
-// closeFriendListModal //
-// ******************** //
-
-// const closeFriendListModal = (): void => {
-//   showFriendListModal.value = false
-// }
 
 // *********************** //
 // closeFriendRequestModal //
@@ -339,12 +334,11 @@ const unblockUser = async (): Promise<void> => {
   try {
     await userStore.unblockUser(props.user.id)
     await checkBlockedStatus()
-    // todo: check if the blocker and userToUnblock are already friend or not
     isFriend.value = true
     emit('updateUser')
-    toast.success('User unblocked !')
+    toast.success(`${props.user.username} has been unblocked!`)
   } catch (error) {
-    toast.error('Failed to unblock user !')
+    toast.error('Failed to unblock user!')
   }
 }
 
@@ -357,11 +351,9 @@ socialSocket.on('social:accept', (user: Ref<User>) => {
   isFriend.value = true
 })
 
-// ********************* //
-// VueJs LIFECYCLE HOOKS //
-// ********************* //
-
-onMounted(async () => {
+async function fetchData(): Promise<void> {
+  console.log('fetchData')
+  userRank.value = await userStore.fetchUserRank(props.user.id)
   if (loggedUser.value == null) return
   try {
     await userStore.refreshFriendList()
@@ -369,54 +361,18 @@ onMounted(async () => {
     await checkBlockedStatus()
     nFriendRequests.value = await getFriendRequestsNumber()
   } catch (error: any) {
-    toast.error('Something went wrong !')
+    toast.error('Something went wrong!')
   }
+}
+
+onMounted(async () => {
+  await fetchData()
 })
 
-// onBeforeMount(async () => {
-//   let id = route.params.id
-//   if (Array.isArray(id)) {
-//     id = id[0]
-//   }
-//   try {
-//     await fetchUser(id)
-
-//     await userStore.refreshFriendList()
-
-//     if (
-//       loggedUser.value != null &&
-//       user !== null &&
-//       props.user.id !== loggedUser.value.id
-//     ) {
-//       await searchInFriendList(user)
-//       await checkBlockedStatus()
-//     }
-
-//     await getFriendRequestsNumber()
-//   } catch (error: any) {
-//     toast.error('Something went wrong !')
-//   }
-// })
-
-// onBeforeRouteUpdate(async (to, from) => {
-//   const id = to.path.split('/').pop()
-//   try {
-//     await fetchUser(id)
-
-//     await userStore.refreshFriendList()
-
-//     if (
-//       loggedUser.value &&
-//       user &&
-//       props.user.id !== loggedUser.value.id
-//     ) {
-//       await searchInFriendList(user)
-//       await checkBlockedStatus()
-//     }
-
-//     await getFriendRequestsNumber()
-//   } catch (error: any) {
-//     toast.error('Something went wrong !')
-//   }
-// })
+watch(
+  () => props.user,
+  async () => {
+    await fetchData()
+  }
+)
 </script>

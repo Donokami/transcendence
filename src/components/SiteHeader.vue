@@ -64,7 +64,7 @@
         <div class="flex items-center border-black dropdown">
           <label
             tabindex="0"
-            class="flex items-center h-full cursor-pointer hover:bg-gray-300">
+            class="flex items-center h-full cursor-pointer hover:bg-base-200">
             <div class="flex items-center justify-center">
               <div class="flex items-center justify-center w-20">
                 <img

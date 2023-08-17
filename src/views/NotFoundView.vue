@@ -1,14 +1,22 @@
 <template>
   <div class="mx-auto text-black">
     <div
-      class="border-2 border-black items-center my-2 mx-2 sm:m-4 px-4 py-7 sm:p-11 text-justify relative">
-      <p class="text-2xl m-30">404</p>
-      <br />
-      <p class="text-2xl m-30">Not Found</p>
+      class="relative flex flex-col items-center gap-5 px-4 mx-2 my-2 text-justify bg-white border-2 border-black sm:m-4 py-7 sm:p-11">
+      <p class="text-6xl font-bold text-center m-30">404 :/</p>
       <br />
       <p class="text-2xl m-30">
-        The page you are looking for does not exist on this server !
+        The page you are looking for <br />
+        does not exist on this server !
       </p>
+      <button
+        class="p-2 m-auto text-center neobrutalist-box"
+        @click="router.back()">
+        Go back to last page
+      </button>
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import router from '@/router'
+</script>

@@ -14,7 +14,7 @@
         <div class="flex justify-center">
           <button
             @click="handleOauth"
-            class="btn bg-zinc-900 text-white"
+            class="btn bg-black text-white"
             type="submit"
             :disabled="inSubmission">
             Continue with

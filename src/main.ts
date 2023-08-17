@@ -1,4 +1,4 @@
-import { ApiError, HttpError } from './utils/fetcher'
+import { ApiError } from './utils/fetcher'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 import { Icon } from '@iconify/vue'

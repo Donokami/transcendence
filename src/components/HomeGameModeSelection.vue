@@ -1,28 +1,28 @@
 <template>
   <div
-    class="border-black border-2 mt-2 sm:mt-4 sm:mx-4 mx-2 px-4 py-7 sm:p-11">
+    class="px-4 mx-2 mt-2 bg-white border-2 border-black sm:mt-4 sm:mx-4 py-7 sm:p-11">
     <div class="flex items-center justify-between mb-2">
       <!-- TITLE -->
-      <h2 class="text-xl sm:text-2xl font-bold text-black">
+      <h2 class="text-xl font-bold text-black sm:text-2xl">
         Welcome, {{ loggedUser?.username ?? 'player' }}!
       </h2>
       <!-- GO TO LOBBY BUTTON -->
     </div>
     <!-- MODE TITLE -->
-    <div class="flex flex-grow items-center justify-center mt-8">
+    <div class="flex items-center justify-center flex-grow mt-8">
       <p class="font-bold text-l">PLAY A GAME!</p>
       <iconify-icon
         icon="fa6-solid:table-tennis-paddle-ball"
         class="mx-2"></iconify-icon>
     </div>
     <!-- MODE BUTTONS -->
-    <div class="flex flex-grow justify-center gap-5 mt-3">
+    <div class="flex justify-center flex-grow gap-5 mt-3">
       <!-- PLAY VS RANDOM BUTTON -->
       <div
         class="tooltip tooltip-bottom sm:tooltip-right"
         data-tip="Play vs random">
         <button
-          class="neobrutalist-box flex px-2 py-2"
+          class="flex px-4 py-2 neobrutalist-box"
           @click="selectRandomGame">
           <span class="icon">
             <iconify-icon icon="tabler:user"></iconify-icon>
@@ -35,7 +35,7 @@
       </div>
       <button
         @click="createGameRoom"
-        class="neobrutalist-box flex p-2 text-base sm:text-lg">
+        class="flex px-4 py-2 text-base neobrutalist-box sm:text-lg">
         <iconify-icon icon="tabler:plus" class="mr-2"></iconify-icon>
         <span class="text-base sm:text-lg">Create a room</span>
       </button>
@@ -83,8 +83,8 @@ async function selectRandomGame(): Promise<void> {
   if (room.length > 0) {
     await router.push(`/room/${room[0].id}`)
   } else {
-    toast.error(
-      'There is no room available at the moment. You can wait for someone to join your room.'
+    toast.info(
+      'There is no room available at the moment.\n You can wait for someone to join your room.'
     )
     await createGameRoom()
   }

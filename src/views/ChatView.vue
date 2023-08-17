@@ -1,9 +1,9 @@
 <template>
-  <div class="mx-auto w-full max-w-7xl">
+  <div class="w-full mx-auto max-w-7xl">
     <div
       class="flex flex-col sm:flex-row sm:max-h-[calc(100vh-164px)] text-black m-4">
       <!-- LEFT SIDEBAR -->
-      <div :class="sidebarClasses">
+      <div class="bg-white" :class="sidebarClasses">
         <chat-left-sidebar
           :list-state="listState"
           @list-state-changed="listState = $event">
@@ -11,11 +11,11 @@
       </div>
       <!-- CHAT -->
       <div
-        class="flex flex-col justify-between text-justify w-full overflow-auto min-h-[calc(100vh-164px)] sm:mx-3"
+        class="flex flex-col justify-between text-justify bg-white w-full overflow-auto min-h-[calc(100vh-164px)] sm:mx-3"
         v-if="selectedChannel && channelsList">
         <div
-          class="flex gap-2 border-x-2 border-t-2 border-black items-center justify-between px-5 py-4 sm:px-5 sm:py-5">
-          <div class="flex gap-2 items-center">
+          class="flex items-center justify-between gap-2 px-5 py-4 border-t-2 border-black border-x-2 sm:px-5 sm:py-5">
+          <div class="flex items-center gap-2">
             <!-- CHANNEL MOBILE BUTTON -->
             <chat-left-drawer
               :list-state="listState"
@@ -24,10 +24,10 @@
             <label
               type="submit"
               for="my-drawer"
-              class="my-auto sm:hidden flex self-end btn m-0 p-0 min-h-0 h-8 px-0 mx-0 w-0 relative bg-base-100 border-base-100 hover:bg-base-100 hover:border-base-100 hover:text-zinc-600 -ml-3">
+              class="relative flex self-end w-0 h-8 min-h-0 p-0 px-0 m-0 mx-0 my-auto -ml-3 sm:hidden btn bg-base-100 border-base-100 hover:bg-base-100 hover:border-base-100 hover:text-zinc-600">
               <iconify-icon
                 icon="lucide:chevron-left"
-                class="h-7 w-7 self-center text-black absolute">
+                class="absolute self-center text-black h-7 w-7">
               </iconify-icon>
             </label>
             <!-- CHANNEL PICTURE -->
@@ -48,12 +48,12 @@
                 <img
                   v-else
                   :src="channelImageUrl"
-                  class="object-cover rounded-full w-10 h-10 sm:h-11 sm:w-11" />
+                  class="object-cover w-10 h-10 rounded-full sm:h-11 sm:w-11" />
               </div>
             </router-link>
             <div v-else class="flex items-center mx-auto">
               <div
-                class="avatar-group -space-x-6 -mx-1 sm:-mx-0"
+                class="-mx-1 -space-x-6 avatar-group sm:-mx-0"
                 v-if="channelStore.getChannel(selectedChannel)?.isDm === false">
                 <div
                   v-for="user in (
@@ -71,7 +71,7 @@
             </div>
             <!-- CHANNEL NAME -->
             <h2
-              class="text-lg sm:text-xl font-bold text-black truncate sm:w-fit">
+              class="text-lg font-bold text-black truncate sm:text-xl sm:w-fit">
               {{ channelStore.getChannel(selectedChannel)?.name }}
             </h2>
           </div>
@@ -79,12 +79,12 @@
           <button
             v-if="channelStore.getChannel(selectedChannel)?.isDm === true"
             @click="createGame"
-            class="btn bg-white border-2 shrink border-black text-black hover:bg-black hover:border-black hover:text-white">
+            class="text-black bg-white border-2 border-black btn shrink hover:bg-black hover:border-black hover:text-white">
             <iconify-icon
               icon="material-symbols:mail-outline"
               class="hidden lg:block w-7 h-7"></iconify-icon>
             <span class="hidden lg:block">Send game invite</span>
-            <span class="lg:hidden block">Invite</span>
+            <span class="block lg:hidden">Invite</span>
           </button>
           <!-- MANAGE CHANNEL MOBILE BUTTON -->
           <chat-right-drawer />
@@ -92,17 +92,17 @@
             v-if="channelStore.getChannel(selectedChannel)?.isDm === false"
             for="my-drawer-4"
             type="submit"
-            class="my-auto flex self-end btn m-0 p-0 min-h-0 h-8 px-0 mx-0 w-0 relative bg-base-100 border-base-100 hover:bg-base-100 hover:border-base-100 hover:text-zinc-600 -mr-1">
+            class="relative flex self-end w-0 h-8 min-h-0 p-0 px-0 m-0 mx-0 my-auto -mr-1 btn bg-base-100 border-base-100 hover:bg-base-100 hover:border-base-100 hover:text-zinc-600">
             <iconify-icon
               icon="lucide:settings"
-              class="h-7 w-7 self-center text-black absolute">
+              class="absolute self-center text-black h-7 w-7">
             </iconify-icon>
           </label>
         </div>
         <!-- CHAT BOX -->
         <div
           ref="chatbox"
-          class="border-black border-2 flex-auto overflow-auto">
+          class="flex-auto overflow-auto border-2 border-black">
           <chat-box @scroll-to-bottom="scrollToBottom"></chat-box>
         </div>
         <!-- MESSAGE INPUT -->

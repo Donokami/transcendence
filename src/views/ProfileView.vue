@@ -1,7 +1,7 @@
 <template>
   <div class="w-full mx-auto text-black">
     <div
-      class="flex flex-col px-4 mx-2 mt-2 text-justify border-2 border-black sm:mt-4 sm:mx-4 py-7 sm:p-11">
+      class="flex flex-col px-4 mx-2 mt-2 text-justify bg-white border-2 border-black sm:mt-4 sm:mx-4 py-7 sm:p-11">
       <!-- TITLE -->
       <h2 class="mb-8 text-2xl font-bold text-black">Profile</h2>
       <!-- STATS CARD -->
@@ -14,7 +14,7 @@
     </div>
     <!-- STATS -->
     <div
-      class="relative items-center px-4 mx-2 my-2 text-justify border-2 border-black py-7 sm:p-11 sm:my-4 sm:mx-4">
+      class="relative items-center px-4 mx-2 my-2 text-justify bg-white border-2 border-black py-7 sm:p-11 sm:my-4 sm:mx-4">
       <h2 class="mb-8 text-2xl font-bold text-black">Stats</h2>
       <StatsSwitcher :user-id="user.id" v-if="user" />
     </div>

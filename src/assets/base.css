@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+html,
+body {
+  @apply bg-pink-100;
+  background-image: url('/src/assets/hero-pattern-white.svg');
+}
+
 .btn {
   border-radius: 0;
   font-size: 1rem;
@@ -35,4 +41,45 @@
 
 .tooltip-left {
   color: 'white';
+}
+
+.Vue-Toastification__toast {
+  background-color: white !important;
+  border: 2px solid black !important;
+  color: black !important;
+  border-radius: 0% !important;
+}
+
+.Vue-Toastification__progress-bar {
+  background-color: black !important;
+}
+
+/* .v-enter-active {
+  transition: opacity 0.5s ease-in;
+}
+
+.v-enter-active {
+  transition: opacity 0.5s ease-out;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+} */
+
+
+.v-enter-active {
+  transition: all 0.4s ease-in-out;
+}
+
+.v-enter-active {
+  transition: all 0.4s ease-in;
+}
+.v-enter-from {
+  transform: translateY(20px);
+  opacity: 0;
+}
+
+.v-leave-to {
+  opacity: 0;
 }

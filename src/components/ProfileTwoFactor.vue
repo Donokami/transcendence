@@ -10,9 +10,11 @@
         @click="switchAuthMessage" />
     </span>
     <!-- QR CODE -->
-    <div v-if="qrCodeUrl" class="-ml-4">
-      <img :src="qrCodeUrl" alt="QR Code" />
-    </div>
+    <Transition>
+      <div v-if="qrCodeUrl" class="-ml-4">
+        <img :src="qrCodeUrl" alt="QR Code" />
+      </div>
+    </Transition>
   </div>
 </template>
 

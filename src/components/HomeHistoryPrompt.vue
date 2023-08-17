@@ -1,12 +1,13 @@
 <template>
-  <div class="border-black border-2 mt-2 sm:mt-4 mx-2 sm:mx-4 px-4 py-7 sm:p-11">
+  <div
+    class="px-4 mx-2 mt-2 bg-white border-2 border-black sm:mt-4 sm:mx-4 py-7 sm:p-11">
     <!-- TITLE -->
-    <h2 class="mb-8 font-bold text-xl sm:text-2xl text-black">History</h2>
+    <h2 class="mb-8 text-xl font-bold text-black sm:text-2xl">History</h2>
     <p>
       <!-- TEXT -->
       <span class="text-sm sm:text-base">{{ consoleText }}</span>
       <!-- PROMPT -->
-      <span class="align-middle inline-block w-2 h-4 bg-black"></span>
+      <span class="inline-block w-2 h-4 align-middle bg-black"></span>
     </p>
   </div>
 </template>

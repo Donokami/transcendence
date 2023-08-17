@@ -14,8 +14,8 @@
       </span>
     </div>
     <TresCanvas
+      :useLegacyLights="false"
       clear-color="#7dd3fc"
-      shadows
       @mousemove="MovePaddle"
       class="absolute">
       <TresScene>
@@ -23,7 +23,11 @@
           color="#ffffff"
           :position="[0, 3, 0]"
           :intensity="1" />
-        <TresDirectionalLight color="#ffffff" :intensity="2" />
+        <TresDirectionalLight
+          color="#ffffff"
+          cast-shadow
+          :position="[-15, 25, 0]"
+          :intensity="2" />
         <!-- <TresDirectionalLight color="#ffaaaa" :position="[0, 5, 3]" :intensity="0.5" /> -->
         <TresPerspectiveCamera
           ref="cameraRef"
@@ -34,14 +38,14 @@
           :near="0.1"
           :far="1000" />
         <TresGroup>
-          <TresMesh>
+          <TresMesh receive-shadow>
             <TresBoxGeometry
               :args="[
                 gameMetrics.fieldWidth,
                 gameMetrics.fieldHeight,
                 gameMetrics.fieldDepth
               ]" />
-            <TresMeshToonMaterial color="#f80" />
+            <TresMeshToonMaterial color="#fce7f3" />
           </TresMesh>
           <TresMesh
             :rotate-x="-Math.PI * 0.5"
@@ -50,6 +54,7 @@
             <TresMeshToonMaterial color="#fff" />
           </TresMesh>
         </TresGroup>
+
         <TresMesh ref="paddle1Ref">
           <TresBoxGeometry
             :args="[
@@ -68,9 +73,9 @@
             ]" />
           <TresMeshToonMaterial color="#fff" />
         </TresMesh>
-        <TresMesh ref="ballRef">
+        <TresMesh cast-shadow ref="ballRef">
           <TresSphereGeometry :args="[gameMetrics.ballRadius]" />
-          <TresMeshToonMaterial color="yellow" />
+          <TresMeshToonMaterial color="#ff0" />
         </TresMesh>
         <Suspense>
           <Text3D
@@ -85,15 +90,12 @@
             :rotation-y="Math.PI * 0.5"
             center
             need-updates
+            cast-shadow
             font="https://raw.githubusercontent.com/Tresjs/assets/main/fonts/FiraCodeRegular.json">
             <TresMeshToonMaterial color="#fff" />
           </Text3D>
         </Suspense>
-        <!-- <Suspense>
-            <Environment ref="envRef" :files="'game/environment.hdr'" />
-          </Suspense> -->
       </TresScene>
-      <!-- <OrbitControls v-if="isSpectator" /> -->
     </TresCanvas>
   </div>
 </template>
@@ -106,7 +108,6 @@ import type { Room, Game, Metrics } from '@/types'
 import { Vector3, type Object3D } from 'three'
 import { socket } from '@/includes/gameSocket'
 import { useUserStore } from '@/stores/UserStore'
-
 const { loggedUser } = useUserStore()
 
 const calculatedRemainingTime = computed(() => {

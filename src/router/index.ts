@@ -62,7 +62,7 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  linkExactActiveClass: 'bg-zinc-900 text-white'
+  linkExactActiveClass: 'bg-black text-white'
 })
 
 router.beforeEach(async (to, from) => {

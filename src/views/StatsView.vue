@@ -1,7 +1,7 @@
 <template>
   <div class="w-full mx-auto text-black">
     <div
-      class="border-2 border-black my-2 sm:my-4 mx-2 sm:mx-4 px-4 py-7 sm:p-11">
+      class="px-4 mx-2 my-2 bg-white border-2 border-black sm:my-4 sm:mx-4 py-7 sm:p-11">
       <StatsSwitcher :user-id="loggedUser.id" v-if="loggedUser" />
     </div>
   </div>

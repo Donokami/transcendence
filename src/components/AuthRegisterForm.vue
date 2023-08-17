@@ -58,7 +58,7 @@
       </div>
       <div class="flex items-center gap-2 justify-between mt-8">
         <button
-          class="btn bg-zinc-900 text-white"
+          class="btn bg-black text-white"
           type="submit"
           :disabled="inSubmission">
           Create account

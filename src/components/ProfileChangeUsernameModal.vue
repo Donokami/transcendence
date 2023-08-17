@@ -1,32 +1,32 @@
 <template>
   <input type="checkbox" id="my-modal-4" class="modal-toggle" />
   <div class="modal">
-    <div class="modal-box rounded-none border-2 border-black">
+    <div class="border-2 border-black rounded-none modal-box">
       <!-- TITLE -->
-      <div class="text-xl flex justify-between">
+      <div class="flex justify-between text-xl">
         <h1>Change Your Username</h1>
         <label
           for="my-modal-4"
-          class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
-          <iconify-icon icon="material-symbols:close" class="h-6 w-6 absolute">
+          class="relative border-2 border-black btn btn-square hover:border-2 hover:border-black btn-sm">
+          <iconify-icon icon="material-symbols:close" class="absolute w-6 h-6">
           </iconify-icon>
         </label>
       </div>
 
       <!-- FORM INPUT -->
       <Form :validation-schema="usernameSchema" @submit="submitForm">
-        <span class="text-base text-black flex mt-4">New username</span>
+        <span class="flex mt-4 text-base text-black">New username</span>
         <Field
-          class="neobrutalist-input w-full text-black mt-2"
+          class="w-full mt-2 text-black neobrutalist-input"
           name="username"
           type="text"
           placeholder="Enter new username" />
         <ErrorMessage
-          class="font-normal text-base text-red-600 flex mt-2"
+          class="flex mt-2 text-base font-normal text-red-600"
           name="username" />
         <!-- BUTTON -->
         <button
-          class="btn bg-white border-2 border-black mt-6 text-black hover:bg-primary hover:border-primary hover:text-white"
+          class="mt-6 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white"
           type="submit">
           CHANGE USERNAME
         </button>

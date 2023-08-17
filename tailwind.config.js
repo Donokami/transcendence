@@ -23,8 +23,10 @@ module.exports = {
   daisyui: {
     themes: [
       {
-        light: {
-          ...require('daisyui/src/theming/themes')['[data-theme=light]']
+        transcendence: {
+          ...require('daisyui/src/theming/themes')['[data-theme=light]'],
+          primary: '#000',
+          'primary-content': '#fff',
         }
       }
     ]

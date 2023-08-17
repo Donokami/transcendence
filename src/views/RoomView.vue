@@ -1,7 +1,7 @@
 <template>
   <div class="w-full mx-auto my-4">
     <template v-if="room">
-      <div class="border-2 border-black min-h-[800px]">
+      <div class="border-2 border-black bg-white min-h-[800px]">
         <h1 class="p-8 mx-auto text-xl font-semibold text-center sm:text-2xl">
           {{ room.name }}
         </h1>

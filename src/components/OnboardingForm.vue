@@ -35,7 +35,7 @@
       </div>
       <div class="mt-8">
         <button
-          class="btn border-zinc-900 bg-zinc-900 text-white sm:w-fit w-full"
+          class="btn border-zinc-900 bg-black text-white sm:w-fit w-full"
           type="submit"
           :disabled="inSubmission">
           Update profile

@@ -4,7 +4,11 @@
   <auth-header v-else></auth-header>
   <div
     class="max-w-screen-xl mx-auto min-h-[calc(100vh-164px)] sm:min-h-[calc(100vh-135px)] flex flex-col">
-    <router-view></router-view>
+    <router-view v-slot="{ Component }">
+      <transition>
+        <component :is="Component" />
+      </transition>
+    </router-view>
   </div>
   <app-footer></app-footer>
 </template>
@@ -51,17 +55,3 @@ watch(loggedUser, (user) => {
   })
 })
 </script>
-
-<style>
-.Vue-Toastification__toast {
-  background-color: white !important;
-  border: 2px solid black !important;
-  color: black !important;
-  border-radius: 0% !important;
-}
-
-.Vue-Toastification__progress-bar {
-  background-color: black !important;
-}
-</style>
-@/includes/socialSocket
