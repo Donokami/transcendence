@@ -231,6 +231,21 @@ export class UsersController {
     return user
   }
 
+  @Get('/:id/rank')
+  @UseGuards(AuthGuard)
+  @UseGuards(UsernameGuard)
+  @ApiOperation({
+    summary: 'Get user by ID with stats',
+    operationId: 'findUserByIdWithStats',
+    description: 'Get user by ID with stats',
+    tags: ['users']
+  })
+  async getUserRank(@Param() params: UserIdParams): Promise<number> {
+    const rank = await this.usersService.getUserRankByWinRate(params.id)
+
+    return rank
+  }
+
   // ********** //
   // updateUser //
   // ********** //

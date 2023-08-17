@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  Logger,
-} from '@nestjs/common'
+import { Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 
@@ -39,7 +36,7 @@ export class SocialService {
     @InjectRepository(Friendship)
     private readonly friendshipRepository: Repository<Friendship>,
     private readonly socialGateway: SocialGateway
-  ) { }
+  ) {}
 
   // ****** //
   // LOGGER //
@@ -486,26 +483,18 @@ export class SocialService {
     )
 
     if (!friendship) {
-      this.logger.warn(`Friendship to unblock not found.`)
       throw new FriendshipNotFound()
     }
 
     if (friendship.status !== FriendshipStatus.BLOCKED) {
-      this.logger.warn(`The friendship is not blocked.`)
       throw new FriendshipNotBlocked()
     }
 
     if (unblockerId !== friendship.blockerId) {
-      this.logger.warn(
-        `Only user with ID : ${friendship.blockerId} can unblock the friendship.`
-      )
       throw new OnlyBlockerCanUnblock()
     }
 
-    friendship.blockerId = null
-    friendship.status = FriendshipStatus.ACCEPTED
-
-    await this.friendshipRepository.save(friendship)
+    await this.friendshipRepository.delete(friendship.id)
 
     this.logger.verbose(
       `${userToUnblockId} has been successfully unblocked by ${unblockerId}`

@@ -1,5 +1,5 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common'
-import { In, Repository } from 'typeorm'
+import { In, MoreThan, Repository } from 'typeorm'
 import { InjectRepository } from '@nestjs/typeorm'
 import { ConfigService } from '@nestjs/config'
 import {
@@ -321,6 +321,27 @@ export class UsersService {
     })
 
     return user
+  }
+
+  async getUserRankByWinRate(userId: string): Promise<number> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      select: ['id', 'winRate'],
+      order: { winRate: 'DESC' }
+    })
+
+    if (!user) {
+      throw new UserNotFound()
+    }
+
+    const usersWithHigherWinRate = await this.userRepository.count({
+      where: {
+        winRate: MoreThan(user.winRate)
+      }
+    })
+
+    const userRank = usersWithHigherWinRate + 1
+    return userRank
   }
 
   // ****** //

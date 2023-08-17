@@ -46,7 +46,6 @@ export class GameController {
     description: 'Get a game by id',
     tags: ['game']
   })
-  // @ApiOkResponse({ type })
   findOne(@Param('id') id: string) {
     const room = this.gameService.findOne(id)
 
@@ -104,16 +103,4 @@ export class GameController {
   async update(@Param('id') id: string, @Body() updateGameDto: UpdateGameDto) {
     return this.gameService.update(id, updateGameDto)
   }
-
-  //   @Delete(':id')
-  //   @UseGuards(OwnershipGuard)
-  //   @ApiOperation({
-  //     summary: 'Delete a game with given id',
-  //     operationId: 'remove',
-  //     description: 'Delete a game with given id',
-  //     tags: ['game']
-  //   })
-  //   async remove(@Param('id') id: string) {
-  //     return await this.gameService.delete(id)
-  //   }
 }
