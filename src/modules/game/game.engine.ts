@@ -20,7 +20,7 @@ const metrics: Metrics = {
   ballRadius: 0.8,
   ballSpeed: 1,
   gameDuration: 30000,
-  tps: 20
+  tps: 30
 }
 
 export type gameState = {

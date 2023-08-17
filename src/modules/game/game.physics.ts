@@ -174,7 +174,6 @@ export class PhysicsEngine {
       ball.velocity === undefined ||
       (ball.velocity.x === 0 && ball.velocity.y === 0 && ball.velocity.z === 0)
     ) {
-      // this.logger.log('ball.velocity is undefined')
       this.startBallMov(ball)
     }
 
@@ -220,10 +219,10 @@ export class PhysicsEngine {
     const velocity = Math.min(
       normalize(
         ballPos.z,
-        -this.metrics.fieldDepth * 0.5,
-        this.metrics.fieldDepth * 0.5
+        this.metrics.fieldDepth * 0.5,
+        -this.metrics.fieldDepth * 0.5
       ),
-      0.4 // This set the difficulty of the bot
+      0.3 // This set the difficulty of the bot
     )
 
     const cpuPos = this.gameState.players[1].paddle.position
