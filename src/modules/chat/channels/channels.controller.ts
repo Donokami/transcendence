@@ -342,28 +342,6 @@ export class ChannelsController {
     return await this.channelsService.unbanMember(memberToUnbanId, channel)
   }
 
-  // ************ //
-  // unmuteMember //
-  // ************ //
-
-  @Delete('/:channelId/unmute')
-  @ApiOperation({
-    summary: 'Unmute a member from a group',
-    operationId: 'unmuteMember',
-    description: 'Unmute a member from a group',
-    tags: ['chat']
-  })
-  @UseGuards(GroupGuard)
-  @UseGuards(MembershipGuard)
-  @UseGuards(AdminshipGuard)
-  async unmuteMember(
-    @Body() body: HandleChannelDto,
-    @CurrentChannel() channel: Channel
-  ): Promise<Channel> {
-    const memberToUnmuteId: string = body.userId
-    return await this.channelsService.unMuteMember(channel, memberToUnmuteId)
-  }
-
   // ********** //
   // unsetAdmin //
   // ********** //

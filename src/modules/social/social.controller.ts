@@ -197,7 +197,6 @@ export class SocialController {
   // unblockUser //
   // *********** //
 
-  // DONE
   @Put('/friendship/unblock')
   @ApiOperation({
     summary: 'Unblock a user',
