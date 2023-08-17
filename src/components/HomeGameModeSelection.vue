@@ -18,9 +18,7 @@
     <!-- MODE BUTTONS -->
     <div class="flex justify-center flex-grow gap-5 mt-3">
       <!-- PLAY VS RANDOM BUTTON -->
-      <div
-        class="tooltip tooltip-bottom sm:tooltip-right"
-        data-tip="Play vs random">
+      <div class="tooltip tooltip-bottom" data-tip="Play vs random">
         <button
           class="flex px-4 py-2 neobrutalist-box"
           @click="selectRandomGame">
@@ -36,7 +34,7 @@
       <button
         @click="createGameRoom"
         class="flex px-4 py-2 text-base neobrutalist-box sm:text-lg">
-        <iconify-icon icon="tabler:plus" class="mr-2"></iconify-icon>
+        <iconify-icon icon="tabler:plus" class="mr-2 w-5 h-5"></iconify-icon>
         <span class="text-base sm:text-lg">Create a room</span>
       </button>
     </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-auto overflow-auto w-fit h-full">
+  <div class="flex-auto overflow-auto w-fit h-full bg-white">
     <!-- LOADER FOR CHANNEL LIST -->
     <div v-if="channelsList && channelsList.length === 0">
       <div class="flex justify-center items-center h-fit">

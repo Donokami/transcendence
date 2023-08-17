@@ -80,10 +80,10 @@
             class="items-center text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white h-14 no-animation"
             type="button"
             @click="sendFriendRequest">
-            <div>Add friend</div>
             <iconify-icon
               class="w-8 h-8"
               :icon="iconSendRequest"></iconify-icon>
+            <div>Add friend</div>
           </button>
           <!-- BLOCK USER -->
           <button
@@ -91,8 +91,8 @@
             class="items-center text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white h-14 no-animation"
             type="button"
             @click="blockUser">
-            <div>Block user</div>
             <iconify-icon class="w-8 h-8" :icon="iconBlockUser"></iconify-icon>
+            <div>Block user</div>
           </button>
           <!-- UNBLOCK USER -->
           <button
@@ -100,10 +100,10 @@
             class="items-center text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white h-14 no-animation"
             type="button"
             @click="unblockUser">
-            <div>Unblock user</div>
             <iconify-icon
               class="w-8 h-8"
               :icon="iconUnblockUser"></iconify-icon>
+            <div>Unblock user</div>
           </button>
         </div>
       </div>
@@ -131,15 +131,16 @@
           class="items-center h-16 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white no-animation"
           type="button"
           @click="showFriendRequestModal = true">
-          <div>Handle requests</div>
           <div class="indicator">
-            <span class="text-white badge badge-secondary indicator-item">{{
-              nFriendRequests
-            }}</span>
+            <span
+              class="text-white text-xs badge badge-secondary indicator-start indicator-item animation-pulse"
+              >{{ nFriendRequests }}</span
+            >
             <iconify-icon
               class="w-8 h-8"
               :icon="iconRequestNotification"></iconify-icon>
           </div>
+          <div>Handle requests</div>
         </label>
       </div>
     </div>
