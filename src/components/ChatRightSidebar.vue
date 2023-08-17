@@ -1,7 +1,7 @@
 <template>
   <div class="flex-auto overflow-auto w-fit h-full">
     <!-- LOADER FOR CHANNEL LIST -->
-    <div v-if="channelStore.channelsList?.loading === true">
+    <div v-if="channelsList.length === 0">
       <div class="flex justify-center items-center h-fit">
         <span class="loading loading-spinner loading-lg"></span>
       </div>
@@ -9,7 +9,7 @@
 
     <!-- USER LIST -->
     <ul
-      v-else-if="loggedUser && channelStore.channelsList?.loading === false"
+      v-else-if="loggedUser && channelsList.length > 0"
       class="bg-base-100 w-full">
       <li v-for="user in channel?.members" :key="user.id">
         <div class="dropdown dropdown-bottom">
@@ -133,8 +133,8 @@ const channelStore = useChannelStore()
 const userStore = useUserStore()
 
 const { loggedUser } = storeToRefs(userStore)
-const { selectedChannel } = storeToRefs(channelStore)
-const channel = ref<Channel>()
+const { selectedChannel, channelsList } = storeToRefs(channelStore)
+const channel = ref<Channel | null>(null)
 
 // ********************* //
 // FUNCTIONS DEFINITIONS //

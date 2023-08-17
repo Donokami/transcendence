@@ -12,7 +12,7 @@
         class="flex flex-col min-h-full p-0 border-2 border-black w-72 bg-base-100 text-base-content">
         <div class="flex-auto w-full overflow-auto">
           <!-- LOADER FOR CHANNEL LIST -->
-          <div v-if="channelStore.channelsList?.loading === true">
+          <div v-if="channelsList === null">
             <div class="flex items-center justify-center h-fit">
               <span class="loading loading-spinner loading-lg"></span>
             </div>
@@ -20,9 +20,7 @@
 
           <!-- USER LIST -->
           <ul
-            v-else-if="
-              loggedUser && channelStore.channelsList?.loading === false
-            "
+            v-else-if="loggedUser && loggedUser && channelsList.length > 0"
             class="w-full bg-base-100">
             <li v-for="user in channel?.members" :key="user.id">
               <div class="w-full rounded-none dropdown dropdown-bottom">
@@ -177,8 +175,8 @@ const userStore = useUserStore()
 const showModal = ref(false)
 
 const { loggedUser } = storeToRefs(userStore)
-const { selectedChannel } = storeToRefs(channelStore)
-const channel = ref<Channel>()
+const { selectedChannel, channelsList } = storeToRefs(channelStore)
+const channel = ref<Channel | null>(null)
 
 function showAdminActions(target: User): boolean {
   if (!channel.value || !loggedUser.value) return false

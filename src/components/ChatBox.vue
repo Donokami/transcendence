@@ -27,10 +27,10 @@
         <div
           :class="bubbleClass(message)"
           class="flex flex-col max-w-[10rem] md:max-w-sm w-fit p-2 text-justify border-black border-2 h-fit mt-0.5">
-          <div v-if="message.room && message.room.loading === false">
+          <div v-if="message.isInvite">
             <div class="text-sm" :class="textClass(message)">
-              <h1 v-if="!message.room.data">Invite link expired</h1>
-              <div v-if="!message.room.error" class="">
+              <h1 v-if="!message.room">Invite link expired</h1>
+              <div v-else>
                 <p>
                   <span>{{ message.user.username }}</span>
                   invited you to play!
@@ -39,7 +39,7 @@
                   class="btn border-2 bg-white border-black text-black hover:bg-black hover:border-white hover:text-white mt-2 block w-full"
                   :class="{ invert: message.user.id === loggedUser.id }">
                   <router-link
-                    :to="`/room/${message.room.data.id}`"
+                    :to="`/room/${message.room.id}`"
                     class="flex gap-2 w-fit mx-auto">
                     <iconify-icon
                       icon="ri:ping-pong-line"
@@ -96,7 +96,7 @@ const userStore = useUserStore()
 
 const { loggedUser } = storeToRefs(userStore)
 const { selectedChannel } = storeToRefs(channelStore)
-const channel = ref<Channel>()
+const channel = ref<Channel | null>(null)
 
 const showMessage = computed(() => (user: User) => {
   if (!loggedUser.value) return false

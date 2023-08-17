@@ -1,5 +1,3 @@
-import { ref, type Ref, type UnwrapRef } from 'vue'
-
 export class ApiError extends Error {
   statusCode: number
   code: string
@@ -184,49 +182,6 @@ class Fetcher {
       )
     }
     return await res.json()
-  }
-}
-
-export interface FetcherResponse<T> {
-  data: Ref<UnwrapRef<T | null>>
-  error: Ref<UnwrapRef<ApiError | HttpError | null>>
-  loading: Ref<UnwrapRef<boolean>>
-}
-
-export function useFetcher<T>({
-  queryFn,
-  onSuccess
-}: {
-  queryFn: Promise<any>
-  onSuccess?: (data: T) => any
-}): FetcherResponse<T> {
-  const data = ref<T | null>(null)
-  const error = ref<ApiError | HttpError | null>(null)
-  const loading = ref(true)
-
-  queryFn
-    .then((res) => {
-      data.value = res
-
-      if (onSuccess != null) {
-        onSuccess(res)
-      }
-    })
-    .catch((err) => {
-      if (err instanceof ApiError) {
-        error.value = err as unknown as ApiError
-      } else {
-        error.value = new HttpError(err.message, 500)
-      }
-    })
-    .finally(() => {
-      loading.value = false
-    })
-
-  return {
-    data,
-    error,
-    loading
   }
 }
 

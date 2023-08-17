@@ -24,9 +24,7 @@
   </div>
   <div class="flex-auto overflow-auto py-[2px]">
     <!-- LOADER FOR CHANNEL LIST -->
-    <div
-      v-if="channelStore.channelsList?.loading === true"
-      class="h-full overflow-hidden">
+    <div v-if="channelsList === null" class="h-full overflow-hidden">
       <div v-for="i in 15" class="flex p-0 rounded-none" :key="i">
         <div class="flex items-center mx-auto md:mx-0 pl-4 w-18 py-2">
           <div
@@ -38,7 +36,7 @@
     </div>
     <!-- CHANNELS LIST -->
     <ul
-      v-else-if="loggedUser && channelStore.channelsList?.loading === false"
+      v-else-if="loggedUser && channelsList.length > 0"
       class="bg-base-100 w-full p-0">
       <li v-for="channel in getChannels()" :key="channel.id">
         <router-link
@@ -196,6 +194,7 @@ const activeModal = ref('')
 const userStore = useUserStore()
 
 const { loggedUser } = storeToRefs(userStore)
+const { channelsList } = storeToRefs(channelStore)
 const channels = ref<Channel[]>([])
 
 // ******************** //

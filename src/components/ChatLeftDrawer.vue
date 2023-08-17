@@ -35,9 +35,7 @@
         </div>
         <div class="flex-auto py-[2px]">
           <!-- LOADER FOR CHANNEL LIST -->
-          <div
-            v-if="channelStore.channelsList?.loading === true"
-            class="h-full overflow-hidden">
+          <div v-if="channelsList === null" class="h-full overflow-hidden">
             <div v-for="i in 15" class="flex p-0 rounded-none" :key="i">
               <div class="flex items-center py-2 pl-4 mx-auto md:mx-0 w-18">
                 <div
@@ -50,10 +48,8 @@
 
           <!-- CHANNELS LIST -->
           <ul
-            v-else-if="
-              loggedUser && channelStore.channelsList?.loading === false
-            "
-            class="w-full p-0 bg-base-100">
+            v-else-if="loggedUser && channelsList.length > 0"
+            class="bg-base-100 w-full p-0">
             <li
               v-for="channel in getChannels()"
               :key="channel.id"
@@ -184,7 +180,7 @@
 // ******* //
 
 import { storeToRefs } from 'pinia'
-import { onBeforeMount, ref, computed } from 'vue'
+import { onBeforeMount, ref } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 
 import ChatCreateDirectMessageModal from '@/components/ChatCreateDirectMessageModal.vue'
@@ -217,6 +213,7 @@ const drawerToggle = ref<HTMLInputElement | null>(null)
 
 const { loggedUser } = storeToRefs(userStore)
 const channels = ref<Channel[] | null>(null)
+const { channelsList } = storeToRefs(channelStore)
 
 // ******************** //
 // FUNCTION DEFINITIONS //

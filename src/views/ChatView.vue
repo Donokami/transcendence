@@ -12,7 +12,7 @@
       <!-- CHAT -->
       <div
         class="flex flex-col justify-between text-justify w-full overflow-auto min-h-[calc(100vh-164px)] sm:mx-3"
-        v-if="selectedChannel && channelsList?.loading === false">
+        v-if="selectedChannel && channelsList">
         <div
           class="flex gap-2 border-x-2 border-t-2 border-black items-center justify-between px-5 py-4 sm:px-5 sm:py-5">
           <div class="flex gap-2 items-center">
@@ -151,7 +151,7 @@ import ChatLeftDrawer from '@/components/ChatLeftDrawer.vue'
 import ChatRightDrawer from '@/components/ChatRightDrawer.vue'
 
 import type { Channel, Message, Room, User } from '@/types'
-import { useFetcher, fetcher } from '@/utils/fetcher'
+import { fetcher } from '@/utils/fetcher'
 import { useUserStore } from '@/stores/UserStore'
 
 // ******************** //
@@ -193,16 +193,12 @@ const { selectedChannel, channelsList } = storeToRefs(channelStore)
 // createGame //
 // ********** //
 
-function createGame(): void {
-  useFetcher({
-    queryFn: fetcher.post('/games'),
-    onSuccess: async (data: Room) => {
-      await router.push(`/room/${data.id}`)
-      await channelStore.sendMessage(
-        `${import.meta.env.VITE_APP_URL + '/room/' + data.id}`
-      )
-    }
-  })
+async function createGame(): Promise<void> {
+  const room: Room = await fetcher.post('/games')
+  await router.push(`/room/${room.id}`)
+  await channelStore.sendMessage(
+    `${import.meta.env.VITE_APP_URL + '/room/' + room.id}`
+  )
 }
 
 // ************ //
@@ -263,7 +259,7 @@ chatSocket.on(
 chatSocket.on('chat:channel-created', async (channel: Channel) => {
   if (loggedUser === null) return
   channelStore.setChannelInfos(loggedUser, channel)
-  channelStore.channelsList?.data?.push(channel)
+  channelStore.addToChannelList(channel)
 })
 
 // ********** //
@@ -450,11 +446,8 @@ chatSocket.on(
 // ********************* //
 
 onBeforeMount(async () => {
-  if (
-    channelsList.value === undefined ||
-    channelsList.value?.data?.length === 0
-  ) {
-    channelStore.fetchChannelList()
+  if (channelsList.value === null) {
+    channelsList.value = await channelStore.fetchChannels()
   }
 
   chatSocket.on('chat:connect', () => {

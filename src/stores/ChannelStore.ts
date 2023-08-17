@@ -6,8 +6,6 @@ import { defineStore } from 'pinia'
 import { useUserStore } from '@/stores/UserStore'
 import type { Channel, Message, User } from '@/types'
 import fetcher, {
-  useFetcher,
-  type FetcherResponse,
   ApiError
 } from '@/utils/fetcher'
 
@@ -32,11 +30,16 @@ function parseUrl(message: Message): {
   }
 }
 
+interface State {
+  channelsList: Channel[] | null
+  selectedChannel: string | null
+}
+
 export const useChannelStore = defineStore('channels', {
-  state: () => {
+  state: (): State => {
     return {
-      channelsList: undefined as FetcherResponse<Channel[]> | undefined,
-      selectedChannel: null as string | null
+      channelsList: null,
+      selectedChannel: null
     }
   },
   actions: {
@@ -95,7 +98,7 @@ export const useChannelStore = defineStore('channels', {
           }
           return
         }
-        channel.messages.push(this.bindRoomToInvite(message))
+        channel.messages.push(await this.bindRoomToInvite(message))
         if (this.selectedChannel !== channel.id) {
           channel.unreadMessages++
         }
@@ -105,7 +108,7 @@ export const useChannelStore = defineStore('channels', {
         )
         if (newChannel !== null) {
           this.setChannelInfos(loggedUser, newChannel)
-          this.channelsList?.data?.push(newChannel)
+          this.addToChannelList(newChannel)
 
           if (this.selectedChannel !== newChannel.id) {
             newChannel.unreadMessages++
@@ -131,26 +134,7 @@ export const useChannelStore = defineStore('channels', {
     // **************** //
 
     addToChannelList(channel: Channel): void {
-      this.channelsList?.data?.push(channel)
-    },
-
-    // ****************** //
-    // asyncFetchChannels //
-    // ****************** //
-
-    // to do : remove if not used anymore
-    async asyncFetchChannels(): Promise<Channel[]> {
-      const { loggedUser } = useUserStore()
-      if (loggedUser == null) return []
-
-      const response: Channel[] = await fetcher.get(`/user/me/channels`)
-
-      response.forEach((channel: Channel) => {
-        this.setChannelInfos(loggedUser, channel)
-        return channel
-      })
-
-      return response
+      this.channelsList?.push(channel)
     },
 
     // ********* //
@@ -165,14 +149,14 @@ export const useChannelStore = defineStore('channels', {
     // bindRoomToInvite //
     // **************** //
 
-    bindRoomToInvite(message: Message) {
+    async bindRoomToInvite(message: Message) {
+      message.isInvite = false
       const newMessage = message
       try {
         const urlRoom = parseUrl(message)
         if (urlRoom !== null) {
-          newMessage.room = useFetcher({
-            queryFn: fetcher.get(`/games/${urlRoom.roomId}`)
-          })
+          newMessage.isInvite = true
+          newMessage.room = await fetcher.get(`/games/${urlRoom.roomId}`)
         }
       } catch (_) {
         newMessage.room = null
@@ -206,7 +190,7 @@ export const useChannelStore = defineStore('channels', {
         membersIds: [loggedUser.id, receiverId]
       }
 
-      const response: Channel = await fetcher.post(
+      await fetcher.post(
         `/channels/create`,
         channelParam
       )
@@ -246,23 +230,18 @@ export const useChannelStore = defineStore('channels', {
       await fetcher.delete(`/channels/${channelId}/password/delete`)
     },
 
-    // **************** //
-    // fetchChannelList //
-    // **************** //
-
-    fetchChannelList() {
+    async fetchChannels(): Promise<Channel[]> {
       const { loggedUser } = useUserStore()
-      if (loggedUser == null) return
+      if (loggedUser == null) return []
 
-      this.channelsList = useFetcher({
-        queryFn: fetcher.get(`/user/me/channels`),
-        onSuccess: (data: Channel[]) => {
-          data.forEach((channel: Channel) => {
-            this.setChannelInfos(loggedUser, channel)
-          })
-          return data
-        }
+      const response: Channel[] = await fetcher.get(`/user/me/channels`)
+
+      response.forEach((channel: Channel) => {
+        this.setChannelInfos(loggedUser, channel)
+        return channel
       })
+
+      return response
     },
 
     // ************ //
@@ -276,7 +255,7 @@ export const useChannelStore = defineStore('channels', {
       const channel = await fetcher.get(`/channels/${channelId}`)
       if (channel != null) {
         this.setChannelInfos(loggedUser, channel)
-        this.channelsList?.data?.push(channel)
+        this.addToChannelList(channel)
         await this.fetchChannelMessages(channelId)
       }
     },
@@ -286,17 +265,12 @@ export const useChannelStore = defineStore('channels', {
     // ******************** //
 
     async fetchChannelMessages(channelId: string): Promise<void> {
-      try {
-        const messages = await fetcher.get(`/channels/${channelId}/messages`)
-        const channel = this.getChannel(channelId)
+      const messages = await fetcher.get(`/channels/${channelId}/messages`)
+      const channel = this.getChannel(channelId)
 
-        const messageFetch = messages.map((message: Message) => {
-          return this.bindRoomToInvite(message)
-        })
-
-        if (channel != null) channel.messages = messageFetch
-      } catch (error) {
-        console.error(error)
+      if (channel != null) {
+        const messageFetch = messages.map(async (message: Message) => await this.bindRoomToInvite(message))
+        channel.messages = await Promise.all(messageFetch)
       }
     },
 
@@ -320,25 +294,26 @@ export const useChannelStore = defineStore('channels', {
     // getChannel //
     // ********** //
 
-    getChannel(channelId?: string): Channel | undefined {
+    getChannel(channelId?: string): Channel | null {
       if (channelId == null) {
         channelId = this.selectedChannel as string
       }
 
-      return this.channelsList?.data?.find(
+      return this.channelsList?.find(
         (channel) => channel.id === channelId
-      )
+      ) ?? null
     },
 
     // ****************** //
     // getChannelMessages //
     // ****************** //
 
-    getChannelMessages(channelId?: string): Message[] | undefined {
+    getChannelMessages(channelId?: string): Message[] {
       const channel = this.getChannel(channelId)
       if (channel != null) {
         return channel.messages
       }
+      return []
     },
 
     // ****** //
@@ -346,10 +321,9 @@ export const useChannelStore = defineStore('channels', {
     // ****** //
 
     getDms(): Channel[] {
-      const channels = this.channelsList?.data?.filter(
+      return this.channelsList?.filter(
         (channel) => channel.isDm
-      )
-      return channels ?? []
+      ) ?? []
     },
 
     // ********* //
@@ -357,10 +331,9 @@ export const useChannelStore = defineStore('channels', {
     // ********* //
 
     getGroups(): Channel[] {
-      const channels = this.channelsList?.data?.filter(
+      return this.channelsList?.filter(
         (channel) => !channel.isDm
-      )
-      return channels ?? []
+      ) ?? []
     },
 
     // ******* //
@@ -414,7 +387,7 @@ export const useChannelStore = defineStore('channels', {
     // ********* //
 
     async joinGroup(channelName: string, password?: string): Promise<void> {
-      const response = await fetcher.post(`/channels/group/join`, {
+      await fetcher.post(`/channels/group/join`, {
         channelName,
         password
       })
@@ -466,9 +439,9 @@ export const useChannelStore = defineStore('channels', {
       const channel = this.getChannel(channelId)
 
       if (channel != null) {
-        const index = this.channelsList?.data?.indexOf(channel)
+        const index = this.channelsList?.indexOf(channel)
         if (index != null) {
-          this.channelsList?.data?.splice(index, 1)
+          this.channelsList?.splice(index, 1)
         }
       }
     },
