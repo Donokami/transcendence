@@ -66,9 +66,7 @@ export const useUserStore = defineStore('users', {
     // *************** //
 
     async enableTwoFactor(): Promise<TwoFactorData> {
-      const response: TwoFactorData = await fetcher.post(
-        '/auth/enableTwoFactor'
-      )
+      const response: TwoFactorData = await fetcher.post('/auth/2fa')
       return response
     },
 

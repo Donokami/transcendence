@@ -26,7 +26,7 @@
           <td class="text-center">-</td>
           <td class="text-center">-</td>
         </tr>
-        <tr v-for="user in users.data" :key="user.rank" v-else>
+        <tr v-for="user in sortedUsers" :key="user.rank" v-else>
           <th class="text-center">{{ user.rank }}</th>
           <th>
             <router-link :to="{ name: 'profile', params: { id: user.id } }">
@@ -49,17 +49,26 @@
 </template>
 
 <script setup lang="ts">
-import type { User, Paginated } from '@/types'
+import type { User } from '@/types'
 import { useUserStore } from '@/stores/UserStore'
-import { ref, onBeforeMount } from 'vue'
+import { ref, onBeforeMount, computed } from 'vue'
 
 const userStore = useUserStore()
 
-const users = ref<Paginated<User>>()
+const users = ref<User[]>()
 
 onBeforeMount(async () => {
-  users.value = await userStore.fetchAllUsers()
-  users.value.data.sort((a, b) => b.winRate - a.winRate)
-  users.value.data.forEach((user, index) => (user.rank = index + 1))
+  const fetchedUsers = await userStore.fetchAllUsers()
+  const fetchRankPromises = fetchedUsers.data.map(async (user) => {
+    const rank = await userStore.fetchUserRank(user.id)
+    return { ...user, rank }
+  })
+
+  users.value = await Promise.all(fetchRankPromises)
+})
+
+const sortedUsers = computed(() => {
+  if (!users.value) return []
+  return users.value.slice().sort((a, b) => a.rank - b.rank)
 })
 </script>
