@@ -109,7 +109,6 @@ export class UsersController {
 
   @Post('/upload')
   @UseGuards(AuthGuard)
-  @UseGuards(UsernameGuard)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(),

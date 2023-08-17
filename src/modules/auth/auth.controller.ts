@@ -2,12 +2,12 @@ import {
   Body,
   Controller,
   Post,
+  Put,
   Get,
   Session,
   UseGuards,
   Req,
-  UseFilters,
-  HttpException
+  UseFilters
 } from '@nestjs/common'
 
 import { AuthGuard } from '@nestjs/passport'
@@ -126,7 +126,7 @@ export class AuthController {
     return user
   }
 
-  @Post('/set-username')
+  @Put('/set-username')
   @ApiOperation({
     summary: 'Set username',
     operationId: 'setUsername',
