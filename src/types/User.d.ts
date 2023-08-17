@@ -27,6 +27,7 @@ export interface User {
   sentRequest: Friendship[]
   receivedRequest: Friendship[]
   isBlockedBy: boolean
+  blockedUsers: User[]
 
   // ************************* //
   // CHAT RELATED INFORMATIONS //

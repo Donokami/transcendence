@@ -3,7 +3,12 @@
     <div
       class="w-fit flex mb-4"
       :class="messageClass(message)"
-      v-for="message in channel.messages"
+      v-for="message in channel.messages.filter(
+        (message) =>
+          !loggedUser?.blockedUsers.some(
+            (blockedUser) => blockedUser.id === message.user.id
+          )
+      )"
       :key="message.id">
       <chat-dropdown
         v-if="message.user.id !== loggedUser?.id && !channel.isDm"
@@ -45,9 +50,9 @@
               </div>
             </div>
           </div>
-          <p v-else class="text-sm break-words" :class="textClass(message)">
+          <div v-else class="text-sm break-words" :class="textClass(message)">
             {{ message.messageBody }}
-          </p>
+          </div>
         </div>
       </div>
 
@@ -75,7 +80,7 @@ import { storeToRefs } from 'pinia'
 import { useChannelStore } from '@/stores/ChannelStore.js'
 import { useUserStore } from '@/stores/UserStore.js'
 
-import type { Message, Channel } from '@/types'
+import type { Message, Channel, User } from '@/types'
 
 import ChatDropdown from '@/components/ChatDropdown.vue'
 
@@ -92,6 +97,14 @@ const userStore = useUserStore()
 const { loggedUser } = storeToRefs(userStore)
 const { selectedChannel } = storeToRefs(channelStore)
 const channel = ref<Channel>()
+
+const showMessage = computed(() => (user: User) => {
+  if (!loggedUser.value) return false
+
+  return !loggedUser.value.blockedUsers.some(
+    (blockedUser) => blockedUser.id === user.id
+  )
+})
 
 const messageClass = computed(() => (message: Message) => {
   if (message.user.id === loggedUser.value?.id) {

@@ -84,9 +84,9 @@ router.beforeEach(async (to, from) => {
   ) {
     return { name: 'auth' }
   }
-  // if (to.name === 'onboarding' && userStore.loggedUser?.username) {
-  //   return { name: 'home' }
-  // }
+  if (to.name === 'onboarding' && userStore.loggedUser?.username) {
+    return { name: 'home' }
+  }
 })
 
 export default router
