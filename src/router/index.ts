@@ -9,7 +9,7 @@ import NotFoundView from '../views/NotFoundView.vue'
 import ProfileView from '../views/ProfileView.vue'
 import StatsView from '../views/StatsView.vue'
 import RoomView from '../views/RoomView.vue'
-import UsernameView from '../views/UsernameView.vue'
+import OnboardingView from '../views/OnboardingView.vue'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -23,9 +23,9 @@ const routes: RouteRecordRaw[] = [
     name: 'mfa'
   },
   {
-    component: UsernameView,
-    path: '/username',
-    name: 'username'
+    component: OnboardingView,
+    path: '/onboarding',
+    name: 'onboarding'
   },
   {
     component: HomeView,
@@ -71,11 +71,11 @@ router.beforeEach(async (to, from) => {
     await userStore.refreshUser()
   }
   if (
-    to.name !== 'username' &&
+    to.name !== 'onboarding' &&
     userStore.loggedUser &&
     !userStore.loggedUser?.username
   ) {
-    return { name: 'username' }
+    return { name: 'onboarding' }
   }
   if (
     to.name !== 'auth' &&
@@ -84,9 +84,9 @@ router.beforeEach(async (to, from) => {
   ) {
     return { name: 'auth' }
   }
-  if (to.name === 'username' && userStore.loggedUser?.username) {
-    return { name: 'home' }
-  }
+  // if (to.name === 'onboarding' && userStore.loggedUser?.username) {
+  //   return { name: 'home' }
+  // }
 })
 
 export default router

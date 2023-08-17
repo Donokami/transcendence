@@ -1,10 +1,17 @@
 <template>
   <div class="neobrutalist-box sm:w-[30rem] px-4 py-7 sm:p-11">
     <h2 class="text-xl sm:text-2xl font-bold mb-8 text-black">
-      Choose your username
+      Personalize Your Account
     </h2>
+    <div class="w-24 mx-auto">
+      <user-avatar
+        :userProps="(userStore.loggedUser as User)"
+        :uploadMode="true"
+        :statusMode="false">
+      </user-avatar>
+    </div>
     <Form :validation-schema="usernameSchema" @submit="submitForm">
-      <div class="mb-6">
+      <div class="my-6">
         <label
           class="block font-medium mb-1 text-md text-lg sm:text-xl"
           for="username"
@@ -41,9 +48,13 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Form, Field, ErrorMessage } from 'vee-validate'
-import { useUserStore } from '../stores/UserStore'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
+import { useUserStore } from '../stores/UserStore'
+
+import type { User } from '@/types'
+
+import UserAvatar from '@/components/UserAvatar.vue'
 
 const alertMsg = ref('Your account is being created...')
 const alertColor = ref('bg-blue-500')
@@ -77,6 +88,8 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
       alertColor.value = 'bg-red-500'
       alertMsg.value = 'Username is already taken!'
     } else {
+      alertMsg.value = ''
+      showAlert.value = false
       toast.error('Something went wrong!')
     }
   } finally {
