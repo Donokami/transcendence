@@ -7,8 +7,8 @@
         <div class="relative font-semibold rounded-full">
           <template v-if="room.players[0]">
             <div
-              class="absolute w-20 text-center truncate -translate-x-1/2 -top-3/4 left-1/2 sm:w-28">
-              <span class="text-base font-semibold">
+              class="absolute text-center truncate -translate-x-1/2 w-28 -top-3/4 left-1/2 sm:w-40">
+              <span class="w-40 text-base font-semibold">
                 {{ room.players[0].username }}
               </span>
             </div>
@@ -29,11 +29,11 @@
         <span class="font-semibold">VS</span>
 
         <!-- Player 2 -->
-        <div class="relative font-semibold rounded-full">
+        <div class="relative font-semibold">
           <template v-if="room.players[1]">
             <div
-              class="absolute w-20 text-center truncate -translate-x-1/2 -top-3/4 left-1/2 sm:w-28">
-              <span class="text-base font-semibold">
+              class="absolute text-center truncate -translate-x-1/2 w-28 -top-3/4 left-1/2 sm:w-40">
+              <span class="w-40 text-base font-semibold">
                 {{ room.players[1].username }}
               </span>
             </div>
@@ -90,16 +90,4 @@ const { loggedUser } = useUserStore()
 function startGame(): void {
   socket.emit('game:start', room.value.id)
 }
-
-// const pictureSrc = computed(() => {
-//   const profilePicture = userStore.loggedUser?.profilePicture
-//   if (!profilePicture) return null
-
-//   return profilePicture
-//   // if (profilePicture.includes('cdn.intra.42')) {
-//   //   return profilePicture
-//   // } else {
-//   //   return `http://localhost:3000/${profilePicture}`
-//   // }
-// })
 </script>

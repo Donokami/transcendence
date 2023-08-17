@@ -124,8 +124,8 @@ export const useUserStore = defineStore('users', {
     // fetchUserByID //
     // ************* //
 
-    async fetchUserById(id: string): Promise<User> {
-      const response: User = await fetcher.get(`/user/${id}`)
+    async fetchUserById(userId: string): Promise<User> {
+      const response: User = await fetcher.get(`/user/${userId}`)
       return response
     },
 
@@ -133,8 +133,13 @@ export const useUserStore = defineStore('users', {
     // fetchUserByIDWithStats //
     // ********************** //
 
-    async fetchUserByIdWithStats(id: string): Promise<User> {
-      const response: User = await fetcher.get(`/user/${id}/stats`)
+    async fetchUserByIdWithStats(userId: string): Promise<User> {
+      const response: User = await fetcher.get(`/user/${userId}/stats`)
+      return response
+    },
+
+    async fetchUserRank(userId: string): Promise<number> {
+      const response: number = await fetcher.get(`/user/${userId}/rank`)
       return response
     },
 
@@ -275,8 +280,8 @@ export const useUserStore = defineStore('users', {
     // updateUser //
     // ********** //
 
-    async updateUser(id: string, userData: Partial<User>): Promise<User> {
-      const response: User = await fetcher.patch(`/user/${id}`, userData)
+    async updateUser(userId: string, userData: Partial<User>): Promise<User> {
+      const response: User = await fetcher.patch(`/user/${userId}`, userData)
       return response
     },
 
@@ -284,7 +289,10 @@ export const useUserStore = defineStore('users', {
     // UploadProfilePicture //
     // ******************** //
 
-    async uploadProfilePicture(id: string, file: File): Promise<UploadData> {
+    async uploadProfilePicture(
+      userId: string,
+      file: File
+    ): Promise<UploadData> {
       const formData = new FormData()
       formData.append('file', file)
 
