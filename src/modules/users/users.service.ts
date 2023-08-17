@@ -235,13 +235,7 @@ export class UsersService {
 
     const user = await this.userRepository.findOne({
       where: { id },
-      select: [
-        'id',
-        'username',
-        'password',
-        'twoFactorSecret',
-        'isTwoFactorEnabled'
-      ]
+      select: ['id', 'username', 'twoFactorSecret', 'isTwoFactorEnabled']
     })
 
     return user

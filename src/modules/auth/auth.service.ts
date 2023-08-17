@@ -13,6 +13,7 @@ import {
   TwoFaDisabled,
   UserNotFound
 } from '@/core/exceptions'
+import { User } from '../users/user.entity'
 
 const scrypt = promisify(_scrypt)
 
@@ -32,6 +33,15 @@ export class AuthService {
     }
 
     return user
+  }
+
+  async buildTwoFactorQrCode(user: User): Promise<string> {
+    const otpauth = authenticator.keyuri(
+      user.username,
+      'ft_transcendence',
+      user.twoFactorSecret
+    )
+    return await qrcode.toDataURL(otpauth)
   }
 
   // *************** //
@@ -56,14 +66,10 @@ export class AuthService {
       user.isTwoFactorEnabled = true
       await this.usersService.update(user.id, user)
 
-      const otpauth = authenticator.keyuri(
-        user.username,
-        'ft_transcendence',
-        secret
-      )
-      const dataUrl = await qrcode.toDataURL(otpauth)
-
-      return { isTwoFactorEnabled: true, dataUrl }
+      return {
+        isTwoFactorEnabled: true,
+        dataUrl: await this.buildTwoFactorQrCode(user)
+      }
     }
   }
 

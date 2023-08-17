@@ -27,7 +27,8 @@ import { IRequestWithUser, ISession } from '@/core/types'
 import {
   MissingUsername,
   UsernameExists,
-  UserHasUsername
+  UserHasUsername,
+  UserNotFound
 } from '@/core/exceptions'
 
 @Controller('auth')
@@ -46,7 +47,7 @@ export class AuthController {
     description: 'Sign in with 42',
     tags: ['auth']
   })
-  fortyTwoAuth(): { msg: string } {
+  async fortyTwoAuth(): Promise<{ msg: string }> {
     return { msg: '42 Authentification' }
   }
 
@@ -58,10 +59,10 @@ export class AuthController {
     description: 'Callback URI for 42 auth',
     tags: ['auth']
   })
-  fortyTwoAuthCallback(
+  async fortyTwoAuthCallback(
     @Req() request: IRequestWithUser,
     @Session() session: ISession
-  ): void {
+  ): Promise<void> {
     if (request.user && request.user.id) {
       if (request.user.isTwoFactorEnabled) {
         session.twoFactorUserId = request.user.id
@@ -78,7 +79,7 @@ export class AuthController {
     description: 'Get auth status',
     tags: ['auth']
   })
-  authStatus(@Session() session: ISession): { status: string } {
+  async authStatus(@Session() session: ISession): Promise<{ status: string }> {
     if (session.userId) {
       return { status: 'authenticated' }
     } else if (session.twoFactorUserId) {
@@ -158,7 +159,28 @@ export class AuthController {
     return user
   }
 
-  @Post('/enableTwoFactor')
+  @Get('/2fa')
+  @ApiOperation({
+    summary: 'Get the 2FA QR Code',
+    tags: ['auth']
+  })
+  async twoFactor(
+    @Session() session: ISession
+  ): Promise<Record<string, string | boolean>> {
+    const user = await this.usersService.findOneByIdWithAuthInfos(
+      session.userId
+    )
+    if (!user) {
+      throw new UserNotFound()
+    }
+
+    let dataUrl = null
+    if (user.isTwoFactorEnabled) {
+      dataUrl = await this.authService.buildTwoFactorQrCode(user)
+      return { isTwoFactorEnabled: user.isTwoFactorEnabled, dataUrl: dataUrl }
+    }
+  }
+  @Post('/2fa')
   @ApiOperation({
     summary: 'Enable 2FA',
     operationId: 'enableTwoFactor',
