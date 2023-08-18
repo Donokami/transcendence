@@ -75,7 +75,7 @@ export class Channel {
     logger.verbose(`Channel with id ${this.id} removed`)
   }
 
-  addMuteMember(user: User, muteEndDate: Date) {
+  addMutedMember(user: User, muteEndDate: Date) {
     if (!this.mutedMembers) this.mutedMembers = []
 
     const mutedMember = new MutedUser()

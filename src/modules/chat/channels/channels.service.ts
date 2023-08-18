@@ -463,7 +463,7 @@ export class ChannelsService {
 
     const muteEndDate = parseMuteTime('5s')
 
-    channel.addMuteMember(userToMute, muteEndDate)
+    channel.addMutedMember(userToMute, muteEndDate)
 
     const updatePayload = { user: userToMute, channelId: channel.id }
 
