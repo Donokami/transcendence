@@ -31,7 +31,7 @@
       :class="messageClass(message)"
       v-for="message in channel.messages.filter(
         (message) =>
-          !loggedUser?.blockedUsers.some(
+          !loggedUser?.blockedUsers?.some(
             (blockedUser) => blockedUser.id === message.user.id
           )
       )"
