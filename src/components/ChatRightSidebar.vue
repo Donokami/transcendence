@@ -53,7 +53,11 @@
                   <span class="w-full">Make Admin</span>
                 </div>
               </li>
-              <li class="rounded-none">
+              <!-- BLOCK -->
+              <li
+                class="rounded-none"
+                v-if="isTargetBlocked(user) === false"
+                @click="blockUser(user)">
                 <div class="flex gap-3 rounded-none">
                   <iconify-icon icon="lucide:ban" class="h-4 w-4 shrink-0">
                   </iconify-icon>
@@ -113,10 +117,6 @@
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
-
 import { storeToRefs } from 'pinia'
 import { onBeforeMount, ref } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
@@ -128,32 +128,77 @@ import { useUserStore } from '@/stores/UserStore.js'
 import type { Channel, User } from '@/types'
 import { ApiError } from '@/utils/fetcher'
 
-// ******************** //
-// VARIABLE DEFINITIONS //
-// ******************** //
-
+const channel = ref<Channel | null>(null)
 const channelStore = useChannelStore()
-
+const toast = useToast()
 const userStore = useUserStore()
-
 const { loggedUser } = storeToRefs(userStore)
 const { selectedChannel, channelsList } = storeToRefs(channelStore)
-const channel = ref<Channel | null>(null)
-const toast = useToast()
 
-// ********************* //
-// FUNCTIONS DEFINITIONS //
-// ********************* //
+async function banMember(target: User): Promise<void> {
+  if (!channel.value) return
+  await channelStore.banMember(target.id, channel.value.id)
+}
 
-function showRevokeAdmin(target: User): boolean {
+async function blockUser(target: User): Promise<void> {
+  if (!channel.value) return
+  try {
+    await userStore.blockUser(target.id)
+    toast.success(`${target.username} has been blocked.`)
+  } catch (error) {
+    toast.error('An error occured while blocking user.')
+  }
+}
+
+async function getChannel(): Promise<void> {
+  if (selectedChannel.value !== null) {
+    channel.value = channelStore.getChannel(selectedChannel.value)
+  }
+}
+
+function isTargetBlocked(target: User): boolean {
   if (!channel.value || !loggedUser.value) return false
 
-  const isTargetAdmin = channelStore.isAdmin(target.id, channel.value.id)
-  const isUserOwner = channelStore.isOwner(
-    loggedUser.value.id,
-    channel.value.id
+  const isTargetBlocked = loggedUser.value.blockedUsers.some(
+    (user) => user.id === target.id
   )
-  return isUserOwner && isTargetAdmin
+
+  if (isTargetBlocked) return true
+
+  return false
+}
+
+async function kickMember(target: User): Promise<void> {
+  if (!channel.value) return
+  await channelStore.kickMember(target.id, channel.value.id)
+}
+
+const makeAdmin = async (target: User): Promise<void> => {
+  if (!channel.value) return
+  try {
+    await channelStore.makeAdmin(target.id, channel.value.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to give admin right to this user.')
+      }
+    }
+  }
+}
+
+const revokeAdmin = async (target: User): Promise<void> => {
+  if (!channel.value) return
+  try {
+    await channelStore.revokeAdmin(target.id, channel.value.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error(
+          'You are not allowed to revoke the admin rights of this user.'
+        )
+      }
+    }
+  }
 }
 
 function showAdminActions(target: User): boolean {
@@ -175,6 +220,8 @@ function showAdminActions(target: User): boolean {
 function showMakeAdmin(target: User): boolean {
   if (!channel.value || !loggedUser.value) return false
 
+  if (isTargetBlocked(target)) return false
+
   const isTargetOwner = channelStore.isOwner(target.id, channel.value.id)
   const isTargetAdmin = channelStore.isAdmin(target.id, channel.value.id)
   const isUserOwner = channelStore.isOwner(
@@ -188,53 +235,16 @@ function showMakeAdmin(target: User): boolean {
   return (isUserAdmin || isUserOwner) && !isTargetAdmin && !isTargetOwner
 }
 
-async function getChannel(): Promise<void> {
-  if (selectedChannel.value !== null) {
-    channel.value = channelStore.getChannel(selectedChannel.value)
-  }
-}
+function showRevokeAdmin(target: User): boolean {
+  if (!channel.value || !loggedUser.value) return false
 
-const revokeAdmin = async (target: User): Promise<void> => {
-  if (!channel.value) return
-  try {
-    await channelStore.revokeAdmin(target.id, channel.value.id)
-  } catch (err: any) {
-    if (err instanceof ApiError) {
-      if (err.code === 'ForbiddenException') {
-        toast.error(
-          'You are not allowed to revoke the admin rights of this user.'
-        )
-      }
-    }
-  }
+  const isTargetAdmin = channelStore.isAdmin(target.id, channel.value.id)
+  const isUserOwner = channelStore.isOwner(
+    loggedUser.value.id,
+    channel.value.id
+  )
+  return isUserOwner && isTargetAdmin
 }
-
-const makeAdmin = async (target: User): Promise<void> => {
-  if (!channel.value) return
-  try {
-    await channelStore.makeAdmin(target.id, channel.value.id)
-  } catch (err: any) {
-    if (err instanceof ApiError) {
-      if (err.code === 'ForbiddenException') {
-        toast.error('You are not allowed to give admin right to this user.')
-      }
-    }
-  }
-}
-
-async function kickMember(target: User): Promise<void> {
-  if (!channel.value) return
-  await channelStore.kickMember(target.id, channel.value.id)
-}
-
-async function banMember(target: User): Promise<void> {
-  if (!channel.value) return
-  await channelStore.banMember(target.id, channel.value.id)
-}
-
-// ********************* //
-// VueJs LIFECYCLE HOOKS //
-// ********************* //
 
 onBeforeMount(async () => {
   await getChannel()
