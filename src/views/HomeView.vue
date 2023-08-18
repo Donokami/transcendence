@@ -1,5 +1,6 @@
 <template>
-  <div class="w-full mx-auto text-black text-justify sm:min-h-[calc(100vh-130px)]">
+  <div
+    class="w-full mx-auto text-black text-justify sm:min-h-[calc(100vh-130px)]">
     <!-- HISTORY PROMPT -->
     <home-history-prompt></home-history-prompt>
     <!-- PLAY GAME -->

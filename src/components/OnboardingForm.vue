@@ -5,7 +5,7 @@
     </h2>
     <div class="w-24 mx-auto">
       <user-avatar
-        :userProps="(userStore.loggedUser as User)"
+        :userProps="userStore.loggedUser as User"
         :uploadMode="true"
         :statusMode="false">
       </user-avatar>

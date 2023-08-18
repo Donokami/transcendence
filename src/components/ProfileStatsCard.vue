@@ -21,7 +21,7 @@
       <div class="flex-col h-24">
         <div class="w-16 text-black">
           <user-avatar
-            :userProps="(user as User)"
+            :userProps="user as User"
             :uploadMode="loggedUser?.id === user?.id"></user-avatar>
         </div>
         <div class="flex items-baseline">

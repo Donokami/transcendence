@@ -47,7 +47,7 @@
             <div class="flex items-center mx-auto px-2 sm:px-4 w-18">
               <div class="h-8 w-8 sm:h-11 sm:w-11" v-if="channel.isDm">
                 <user-avatar
-                  :userProps="(channel.dmUser as User)"
+                  :userProps="channel.dmUser as User"
                   :uploadMode="false"></user-avatar>
               </div>
               <div v-else>
@@ -85,7 +85,7 @@
                   :key="user.id">
                   <div class="w-10 h-10 sm:w-12 sm:h-12">
                     <user-avatar
-                      :userProps="(user as User)"
+                      :userProps="user as User"
                       :uploadMode="false"
                       :status-mode="false"></user-avatar>
                   </div>

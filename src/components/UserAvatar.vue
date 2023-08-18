@@ -1,15 +1,15 @@
 <template>
-  <div class="stat-figure w-full aspect-square">
-    <div class="avatar w-full h-full" :class="statusBadge()">
+  <div class="w-full stat-figure aspect-square">
+    <div class="w-full h-full avatar" :class="statusBadge()">
       <input
         v-if="props.uploadMode"
         type="file"
         ref="fileInput"
         @change="onFileChange"
         style="display: none" />
-      <div class="w-full h-full aspect-square rounded-full">
+      <div class="w-full h-full rounded-full aspect-square">
         <div
-          class="absolute w-full h-full object-cover rounded-full cursor-pointer"
+          class="absolute object-cover w-full h-full rounded-full cursor-pointer"
           v-if="props.uploadMode"
           @click="triggerFileInput"></div>
         <div
@@ -19,7 +19,7 @@
         <iconify-icon
           v-else
           icon="ri:account-circle-line"
-          class="w-full h-full object-fill"></iconify-icon>
+          class="object-fill w-full h-full"></iconify-icon>
       </div>
     </div>
   </div>
@@ -91,7 +91,7 @@ const statusBadge = (): string => {
 
   if (user.value === null || loggedUser.value === null) return 'offline'
   if (user.value && user.value.id === loggedUser.value.id) return 'online'
-  switch (user.value && user.value.status) {
+  switch (user?.value?.status) {
     case 'online':
       return 'online'
     case 'away':

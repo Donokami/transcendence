@@ -31,7 +31,7 @@
                     <div class="flex items-center px-4 mx-auto">
                       <div class="w-10 h-10">
                         <user-avatar
-                          :userProps="(user as User)"
+                          :userProps="user as User"
                           :uploadMode="false">
                         </user-avatar>
                       </div>

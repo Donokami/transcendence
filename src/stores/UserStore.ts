@@ -19,10 +19,6 @@ interface StatusData {
   status: string
 }
 
-interface UploadData {
-  status: string
-}
-
 interface State {
   loggedUser: User | null
   twoFactorEnabled: boolean

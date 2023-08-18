@@ -42,7 +42,9 @@
                   v-if="channelStore.getChannel(selectedChannel)?.isDm"
                   class="w-10 h-10 sm:w-11 sm:h-11">
                   <user-avatar
-                    :userProps="(channelStore.getChannel(selectedChannel)?.dmUser as User)"
+                    :userProps="
+                      channelStore.getChannel(selectedChannel)?.dmUser as User
+                    "
                     :uploadMode="false"></user-avatar>
                 </div>
                 <img
@@ -62,7 +64,7 @@
                   :key="user.id">
                   <div class="w-11 h-11 sm:w-12 sm:h-12">
                     <user-avatar
-                      :userProps="(user as User)"
+                      :userProps="user as User"
                       :uploadMode="false"
                       :status-mode="false"></user-avatar>
                   </div>

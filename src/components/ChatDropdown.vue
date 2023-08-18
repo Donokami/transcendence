@@ -13,7 +13,7 @@
       @click="toggleDropdown">
       <div class="h-11 w-11 mt-1">
         <user-avatar
-          :userProps="(user as User)"
+          :userProps="user as User"
           :uploadMode="false"
           :status-mode="false"></user-avatar>
       </div>

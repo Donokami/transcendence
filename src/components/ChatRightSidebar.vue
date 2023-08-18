@@ -19,7 +19,7 @@
             <div class="py-3">
               <div class="flex items-center mx-auto px-4 w-18">
                 <div class="w-10 h-10">
-                  <user-avatar :userProps="(user as User)" :uploadMode="false">
+                  <user-avatar :userProps="user as User" :uploadMode="false">
                   </user-avatar>
                 </div>
                 <span class="pl-3 truncate w-28 text-sm">{{

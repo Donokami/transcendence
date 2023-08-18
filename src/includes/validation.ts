@@ -16,7 +16,7 @@ import {
 } from '@vee-validate/rules'
 
 export default {
-  install(app) {
+  install(app: any) {
     app.component('VeeForm', VeeForm)
     app.component('VeeField', VeeField)
     app.component('ErrorMessage', ErrorMessage)
@@ -30,7 +30,7 @@ export default {
 
     configure({
       generateMessage: (ctx) => {
-        const messages = {
+        const messages: any = {
           required: `The ${ctx.field} field is required.`,
           min: `The ${ctx.field} is too short.`,
           max: `The ${ctx.field} is too long.`,
@@ -39,7 +39,8 @@ export default {
           numeric: `The ${ctx.field} field may only contain numeric characters.`
         }
 
-        const message = messages[ctx.rule.name]
+        if (!ctx.rule) return `The ${ctx.field} field is invalid`
+        const message: any = messages[ctx.rule.name]
           ? messages[ctx.rule.name]
           : `The field ${ctx.field} is invalid`
 

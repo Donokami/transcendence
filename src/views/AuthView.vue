@@ -1,25 +1,25 @@
 <template>
   <div
-    class="flex border-2 border-black items-center my-2 sm:my-4 mx-2 sm:mx-4 px-4 py-7 sm:p-11 text-justify relative w-full min-h-[calc(100vh-135px)] sm:min-h-[calc(100vh-160px)]">
+    class="flex items-center my-2 sm:my-4 mx-2 sm:mx-4 px-4 py-7 sm:p-11 text-justify relative w-full min-h-[calc(100vh-135px)] sm:min-h-[calc(100vh-160px)]">
     <auth-ball-canvas></auth-ball-canvas>
-    <div class="flex-grow flex items-center justify-center z-10">
-      <div class="neobrutalist-box p-7 sm:p-11 flex flex-col">
+    <div class="z-10 flex items-center justify-center flex-grow">
+      <div class="flex flex-col neobrutalist-box p-7 sm:p-11">
         <auth-signIn-form
           @form-state-changed="formState = $event"
           v-show="formState === 'signIn'"></auth-signIn-form>
         <auth-register-form
           @form-state-changed="formState = $event"
           v-show="formState === 'register'"></auth-register-form>
-        <div class="divider before:bg-gray-400 after:bg-gray-400 m-8">or</div>
+        <div class="m-8 divider before:bg-gray-400 after:bg-gray-400">or</div>
         <div class="flex justify-center">
           <button
             @click="handleOauth"
-            class="btn bg-black text-white"
+            class="text-white bg-black btn"
             type="submit"
             :disabled="inSubmission">
             Continue with
             <img
-              class="icon mx-3 h-2/4"
+              class="mx-3 icon h-2/4"
               src="../assets/42-logo.svg"
               alt="42 Logo" />
           </button>

@@ -11,7 +11,7 @@ import 'vue-toastification/dist/index.css'
 
 import App from './App.vue'
 import router from './router'
-import VeeValidatePlugin from './includes/validation.js'
+import VeeValidatePlugin from './includes/validation'
 import Tres from '@tresjs/core'
 
 import './assets/base.css'
