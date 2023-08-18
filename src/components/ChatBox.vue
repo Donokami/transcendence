@@ -5,7 +5,7 @@
         icon="lucide:crown"
         class="h-4 w-4 shrink-0 self-start mt-0.5">
       </iconify-icon>
-      <span class="px-2">
+      <span class="text-sm px-2">
         {{ channel?.owner.username }}
       </span>
     </div>
@@ -15,7 +15,7 @@
         class="h-4 w-4 shrink-0 self-start mt-0.5">
       </iconify-icon>
       <span
-        class="px-2"
+        class="text-sm px-2"
         v-for="(admin, index) in channel?.admins"
         :key="admin.id">
         {{ admin.username

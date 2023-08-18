@@ -247,9 +247,9 @@ chatSocket.on(
       channelStore.removeFromChannelList(channelId)
       toast.success(`You have been banned from ${channel.name}`)
       return await router.push('/chat')
+    } else {
+      toast.success(`${user.username} have been banned from ${channel.name}`)
     }
-
-    toast.success(`${user.username} have been banned from ${channel.name}`)
   }
 )
 
@@ -298,9 +298,9 @@ chatSocket.on(
       channelStore.selectedChannel = channelId
       toast.success(`You joined the channel`)
       return await router.push(`/chat/${channelId}`)
+    } else {
+      toast.success(`${user.username} joined the channel`)
     }
-
-    toast.success(`${user.username} joined the channel`)
   }
 )
 
@@ -321,9 +321,9 @@ chatSocket.on(
       channelStore.removeFromChannelList(channelId)
       toast.success(`You have been kicked from ${channel.name}`)
       return await router.push('/chat')
+    } else {
+      toast.success(`${user.username} successfully kicked from ${channel.name}`)
     }
-
-    toast.success(`${user.username} successfully kicked from ${channel.name}`)
   }
 )
 
@@ -362,6 +362,9 @@ chatSocket.on(
 
     if (loggedUser && loggedUser.id === user.id) {
       channel.isMuted = true
+      toast.success(`You have been muted in ${channel.name}`)
+    } else {
+      toast.success(`${user.username} successfully muted`)
     }
   }
 )
@@ -374,6 +377,7 @@ chatSocket.on(
 
     if (loggedUser && loggedUser.id === user.id) {
       channel.isMuted = false
+      toast.success(`You are unmuted in ${channel.name}`)
     }
   }
 )
@@ -392,11 +396,11 @@ chatSocket.on(
 
     if (loggedUser && loggedUser.id === user.id) {
       toast.success(`You have been promoted admin of ${channel.name}`)
+    } else {
+      toast.success(
+        `${user.username} have been promoted admin of ${channel.name}`
+      )
     }
-
-    toast.success(
-      `${user.username} have been promoted admin of ${channel.name}`
-    )
   }
 )
 
@@ -415,9 +419,9 @@ chatSocket.on(
     if (loggedUser && loggedUser.id === user.id) {
       channelStore.addToChannelList(channel)
       toast.success(`You have been unbanned from ${channel.name}`)
+    } else {
+      toast.success(`${user.username} have been unbanned from ${channel.name}`)
     }
-
-    toast.success(`${user.username} have been unbanned from ${channel.name}`)
   }
 )
 
@@ -435,9 +439,9 @@ chatSocket.on(
 
     if (loggedUser && loggedUser.id === user.id) {
       toast.success(`You are not admin of ${channel.name} anymore`)
+    } else {
+      toast.success(`${user.username} is not admin of ${channel.name} anymore`)
     }
-
-    toast.success(`${user.username} is not admin of ${channel.name} anymore`)
   }
 )
 
@@ -446,10 +450,13 @@ chatSocket.on(
 // ********************* //
 
 onBeforeMount(async () => {
-  channelsList.value = await channelStore.fetchChannels()
+  if (channelsList.value === null) {
+    channelsList.value = await channelStore.fetchChannels()
+  }
 
-  chatSocket.on('chat:connect', () => {
+  chatSocket.on('chat:connect', async () => {
     console.log('[ChatView] - Connected to the /chat socket')
+    channelsList.value = await channelStore.fetchChannels()
   })
 
   if (selectedChannel.value) {
