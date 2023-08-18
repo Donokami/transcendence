@@ -50,7 +50,7 @@ export const useUserStore = defineStore('users', {
     // blockUser //
     // ********* //
 
-    // todo: check this updated function 
+    // todo: check the return cases (Lucas) 
     async blockUser(targetId: string): Promise<string> {
       if (!this.loggedUser)
         return ''
@@ -62,6 +62,7 @@ export const useUserStore = defineStore('users', {
       const target: User = await this.fetchUserById(targetId)
       if (!target)
        return ''
+      
       this.loggedUser.blockedUsers.push(target)
 
       return response
@@ -240,7 +241,7 @@ export const useUserStore = defineStore('users', {
     // unblockUser //
     // *********** //
 
-    // todo: check this updated function 
+    // todo: check the return cases (Lucas) 
     async unblockUser(targetId: string): Promise<Friendship> {
       if (!this.loggedUser)
         return null as unknown as Friendship

@@ -114,18 +114,6 @@ export const useChannelStore = defineStore('channels', {
       }
     },
 
-    // ************** //
-    // addMutedMember //
-    // ************** //
-
-    // addMutedMember(user: User, channelId: string): void {
-    //   const channel = this.getChannel(channelId)
-
-    //   if (channel != null) {
-    //     channel.mutedMembers.push(user)
-    //   }
-    // },
-
     // **************** //
     // addToChannelList //
     // **************** //
@@ -342,6 +330,13 @@ export const useChannelStore = defineStore('channels', {
       )
     },
 
+    isMember(userId: string, channelId: string): boolean {
+      const channel = this.getChannel(channelId)
+      if (!channel?.members?.length) return false
+
+      return !!(channel.members.some((user) => user.id === userId))
+    },
+
     // ******* //
     // isOwner //
     // ******* //
@@ -392,6 +387,7 @@ export const useChannelStore = defineStore('channels', {
     async leaveGroup(userId: string, channelId: string): Promise<void> {
       const router = useRouter()
       const toast = useToast()
+
       await fetcher
         .delete(`/channels/${channelId}/leave`, { userId })
         .then(async () => {

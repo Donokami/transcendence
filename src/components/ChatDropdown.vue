@@ -195,6 +195,9 @@ function showAdminActions(): boolean {
 function showMakeAdmin(): boolean {
   if (!props.channel || !loggedUser.value) return false
 
+  const isTargetMember = channelStore.isMember(props.user.id, props.channel.id)
+  if (!isTargetMember) return false
+
   const isTargetOwner = channelStore.isOwner(props.user.id, props.channel.id)
   const isTargetAdmin = channelStore.isAdmin(props.user.id, props.channel.id)
   const isUserOwner = channelStore.isOwner(
