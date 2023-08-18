@@ -50,10 +50,20 @@ export const useUserStore = defineStore('users', {
     // blockUser //
     // ********* //
 
+    // todo: check this updated function 
     async blockUser(targetId: string): Promise<string> {
+      if (!this.loggedUser)
+        return ''
+
       const response: string = await fetcher.put(`/social/friendship/block`, {
         targetId
       })
+
+      const target: User = await this.fetchUserById(targetId)
+      if (!target)
+       return ''
+      this.loggedUser.blockedUsers.push(target)
+
       return response
     },
 
@@ -230,13 +240,26 @@ export const useUserStore = defineStore('users', {
     // unblockUser //
     // *********** //
 
+    // todo: check this updated function 
     async unblockUser(targetId: string): Promise<Friendship> {
+      if (!this.loggedUser)
+        return null as unknown as Friendship
+
       const response: Friendship = await fetcher.put(
         `/social/friendship/unblock`,
         {
           targetId
         }
       )
+
+      const target: User = await this.fetchUserById(targetId)
+      
+      const index = this.loggedUser.blockedUsers.findIndex(user => user.id === target.id);
+      if (index === -1)
+        return null as unknown as Friendship
+
+      this.loggedUser.blockedUsers.splice(index, 1)
+    
       return response
     },
 

@@ -45,7 +45,7 @@
           </div>
         </li>
         <!-- BLOCK -->
-        <li class="rounded-none">
+        <li class="rounded-none" @click="blockUser">
           <div class="flex gap-3 rounded-none">
             <iconify-icon icon="lucide:ban" class="h-4 w-4 shrink-0">
             </iconify-icon>
@@ -158,6 +158,8 @@ const props = defineProps({
 const channelStore = useChannelStore()
 const dropdownRef = ref<HTMLElement | null>(null)
 const isOpen = ref(props.openDropdown === parseInt(props.user.id))
+const isProfileBlockedByUser = ref(false)
+const isUserBlockedByProfile = ref(false)
 const toast = useToast()
 const userStore = useUserStore()
 
@@ -165,13 +167,6 @@ const { loggedUser } = storeToRefs(userStore)
 
 function showRevokeAdmin(): boolean {
   if (!props.channel || !loggedUser.value) return false
-
-  console.log('showRevokeAdmin :')
-
-  console.log(
-    'isTargetAdmin :',
-    channelStore.isAdmin(props.user.id, props.channel.id)
-  )
 
   const isTargetAdmin = channelStore.isAdmin(props.user.id, props.channel.id)
   const isUserOwner = channelStore.isOwner(
@@ -256,6 +251,37 @@ const banMember = async (): Promise<void> => {
         toast.error('You are not allowed to ban this member.')
       }
     }
+  }
+}
+
+// ********* //
+// blockUser //
+// ********* //
+
+const blockUser = async (): Promise<void> => {
+  try {
+    await userStore.blockUser(props.user.id)
+    await checkBlockedStatus()
+    toast.success(`${props.user.username} has been blocked.`)
+  } catch (error) {
+    toast.error('An error occured while blocking user.')
+  }
+}
+
+const checkBlockedStatus = async (): Promise<void> => {
+  if (!loggedUser.value) return
+  try {
+    const response = await userStore.fetchBlockerId(props.user.id)
+    if (response === loggedUser.value.id) {
+      isProfileBlockedByUser.value = true
+    } else if (response === props.user.id) {
+      isUserBlockedByProfile.value = true
+    } else {
+      isProfileBlockedByUser.value = false
+      isUserBlockedByProfile.value = false
+    }
+  } catch (error) {
+    toast.error('Failed to fetch blocked user and check friendship!')
   }
 }
 

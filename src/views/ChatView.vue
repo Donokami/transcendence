@@ -293,14 +293,16 @@ chatSocket.on(
   async ({ user, channelId }: { user: User; channelId: string }) => {
     channelStore.addMember(user, channelId)
 
+    await channelStore.fetchChannel(channelId)
+    channelStore.selectedChannel = channelId
+
     if (loggedUser && loggedUser.id === user.id) {
-      await channelStore.fetchChannel(channelId)
-      channelStore.selectedChannel = channelId
       toast.success(`You joined the channel`)
-      return await router.push(`/chat/${channelId}`)
     } else {
       toast.success(`${user.username} joined the channel`)
     }
+
+    return await router.push(`/chat/${channelId}`)
   }
 )
 

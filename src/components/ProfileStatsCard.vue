@@ -238,10 +238,8 @@ const checkBlockedStatus = async (): Promise<void> => {
     const response = await userStore.fetchBlockerId(props.user.id)
     if (response === loggedUser.value.id) {
       isProfileBlockedByUser.value = true
-      console.log('isProfileBlockedByUser')
     } else if (response === props.user.id) {
       isUserBlockedByProfile.value = true
-      console.log('isUserBlockedByProfile')
     } else {
       isProfileBlockedByUser.value = false
       isUserBlockedByProfile.value = false
