@@ -60,7 +60,7 @@
                       @click="makeAdmin(user)">
                       <div class="flex gap-3 rounded-none">
                         <iconify-icon
-                          icon="lucide:crown"
+                          icon="lucide:user-cog"
                           class="h-4 w-4 shrink-0 self-start mt-0.5">
                         </iconify-icon>
                         <span class="w-full">Make Admin</span>

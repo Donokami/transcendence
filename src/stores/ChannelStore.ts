@@ -449,7 +449,7 @@ export const useChannelStore = defineStore('channels', {
       const userIndex = channel.bannedMembers.findIndex(
         (user) => user.id === userId
       )
-      if (!userIndex) return
+      if (userIndex === -1) return
 
       channel.bannedMembers.splice(userIndex, 1)
     },
@@ -463,7 +463,7 @@ export const useChannelStore = defineStore('channels', {
       if (!channel) return
 
       const userIndex = channel.members.findIndex((user) => user.id === userId)
-      if (!userIndex) return
+      if (userIndex === -1) return
 
       channel.members.splice(userIndex, 1)
     },
@@ -485,7 +485,7 @@ export const useChannelStore = defineStore('channels', {
       if (!channel) return
 
       const userIndex = channel.admins.findIndex((user) => user.id === userId)
-      if (!userIndex) return
+      if (userIndex === -1) return
 
       channel.admins.splice(userIndex, 1)
     },

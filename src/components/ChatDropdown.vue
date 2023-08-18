@@ -38,7 +38,7 @@
         <li class="rounded-none" v-if="showMakeAdmin()" @click="makeAdmin">
           <div class="flex gap-3 rounded-none">
             <iconify-icon
-              icon="lucide:crown"
+              icon="lucide:user-cog"
               class="h-4 w-4 shrink-0 self-start mt-0.5">
             </iconify-icon>
             <span class="w-full">Make Admin</span>
@@ -58,7 +58,7 @@
           <li
             class="rounded-none"
             v-if="showRevokeAdmin()"
-            @click="revokeAdminRights()">
+            @click="revokeAdmin()">
             <div
               class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
               <iconify-icon
@@ -166,6 +166,13 @@ const { loggedUser } = storeToRefs(userStore)
 function showRevokeAdmin(): boolean {
   if (!props.channel || !loggedUser.value) return false
 
+  console.log('showRevokeAdmin :')
+
+  console.log(
+    'isTargetAdmin :',
+    channelStore.isAdmin(props.user.id, props.channel.id)
+  )
+
   const isTargetAdmin = channelStore.isAdmin(props.user.id, props.channel.id)
   const isUserOwner = channelStore.isOwner(
     loggedUser.value.id,
@@ -222,9 +229,9 @@ const isBanned = computed((): boolean => {
   )
 })
 
-const revokeAdminRights = async (): Promise<void> => {
+const revokeAdmin = async (): Promise<void> => {
   try {
-    await channelStore.removeAdmin(props.user.id, props.channel.id)
+    await channelStore.revokeAdmin(props.user.id, props.channel.id)
   } catch (err: any) {
     if (err instanceof ApiError) {
       if (err.code === 'ForbiddenException') {

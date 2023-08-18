@@ -1,5 +1,30 @@
 <template>
-  {{ channel?.admins }}
+  <div class="p-5">
+    <div class="flex">
+      <iconify-icon
+        icon="lucide:crown"
+        class="h-4 w-4 shrink-0 self-start mt-0.5">
+      </iconify-icon>
+      <span class="px-2">
+        {{ channel?.owner.username }}
+      </span>
+    </div>
+    <div class="flex">
+      <iconify-icon
+        icon="lucide:user-cog"
+        class="h-4 w-4 shrink-0 self-start mt-0.5">
+      </iconify-icon>
+      <span
+        class="px-2"
+        v-for="(admin, index) in channel?.admins"
+        :key="admin.id">
+        {{ admin.username
+        }}<span v-if="channel?.admins && index !== channel?.admins.length - 1"
+          >,
+        </span>
+      </span>
+    </div>
+  </div>
   <div v-if="loggedUser && channel" class="p-5">
     <div
       class="w-fit flex mb-4"
