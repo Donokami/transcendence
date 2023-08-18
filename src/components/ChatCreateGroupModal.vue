@@ -228,7 +228,6 @@ const createGroupChannel = async (): Promise<void> => {
       password.value,
       isPrivate.value
     )
-    toast.success(`Group created successfully`)
     channelStore.selectedChannel = channel.id
     await router.push(`/chat/${channel.id}`)
   } catch (error) {

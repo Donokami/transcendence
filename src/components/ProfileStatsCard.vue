@@ -258,10 +258,9 @@ const checkBlockedStatus = async (): Promise<void> => {
 const closeFriendRequestModal = (event: string): void => {
   showFriendRequestModal.value = false
 
-  if (event === 'accept') {
-    nFriendRequests.value -= 1
-    emit('updateUser')
-  }
+  if (event === 'accept' || event === 'reject') nFriendRequests.value -= 1
+
+  emit('updateUser')
 }
 
 // *********************** //
@@ -345,15 +344,21 @@ const unblockUser = async (): Promise<void> => {
 
 socialSocket.on('social:new', () => {
   nFriendRequests.value += 1
+  toast.success('Friend request received!')
 })
 
-socialSocket.on('social:accept', (user: Ref<User>) => {
+socialSocket.on('social:accept', () => {
   emit('updateUser')
   isFriend.value = true
+  toast.success('One of your friend request has been accepted!')
+})
+
+socialSocket.on('social:rejected', () => {
+  emit('updateUser')
+  toast.success('One of your friend request has been rejected!')
 })
 
 async function fetchData(): Promise<void> {
-  console.log('fetchData')
   userRank.value = await userStore.fetchUserRank(props.user.id)
   if (loggedUser.value == null) return
   try {

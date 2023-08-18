@@ -261,6 +261,11 @@ chatSocket.on('chat:channel-created', async (channel: Channel) => {
   if (loggedUser === null) return
   channelStore.setChannelInfos(loggedUser, channel)
   channelStore.addToChannelList(channel)
+  if (channel.isDm) {
+    toast.success(`DM created with ${channel.dmUser?.username}`)
+  } else {
+    toast.success(`You joined the ${channel.name} group`)
+  }
 })
 
 // ********** //
@@ -441,9 +446,7 @@ chatSocket.on(
 // ********************* //
 
 onBeforeMount(async () => {
-  if (channelsList.value === null) {
-    channelsList.value = await channelStore.fetchChannels()
-  }
+  channelsList.value = await channelStore.fetchChannels()
 
   chatSocket.on('chat:connect', () => {
     console.log('[ChatView] - Connected to the /chat socket')
@@ -476,12 +479,5 @@ onBeforeRouteUpdate((to, from) => {
 
 onBeforeRouteLeave(async () => {
   chatSocket.disconnect()
-})
-
-onBeforeUnmount(() => {
-  chatSocket.off('connect')
-  chatSocket.off('disconnect')
-  chatSocket.off('error')
-  chatSocket.off('message')
 })
 </script>

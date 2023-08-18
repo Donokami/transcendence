@@ -518,6 +518,7 @@ export const useChannelStore = defineStore('channels', {
 
     async sendMessage(message: string): Promise<void> {
       const { loggedUser } = useUserStore()
+      const toast = useToast()
       if (loggedUser == null || this.selectedChannel == null) return
       try {
         await fetcher.post(`/channels/${this.selectedChannel}/messages`, {
@@ -533,6 +534,9 @@ export const useChannelStore = defineStore('channels', {
             if (channel != null) {
               channel.isMuted = true
             }
+          }
+          else if (err.code === 'MessageTooLong') {
+            toast.error(`Your message exceed 1000 characters limit`)
           }
         }
         console.error(err)
