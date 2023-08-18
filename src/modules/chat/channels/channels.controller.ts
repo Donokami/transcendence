@@ -38,15 +38,7 @@ import { UsernameGuard } from '@/core/guards/username.guard'
 export class ChannelsController {
   constructor(private readonly channelsService: ChannelsService) {}
 
-  // ****** //
-  // LOGGER //
-  // ****** //
-
   private logger = new Logger(ChannelsController.name)
-
-  // ********* //
-  // banMember //
-  // ********* //
 
   @Put('/:channelId/ban')
   @ApiOperation({
@@ -68,10 +60,6 @@ export class ChannelsController {
     return await this.channelsService.banMember(userId, memberToBanId, channel)
   }
 
-  // ************** //
-  // changePassword //
-  // ************** //
-
   @Put('/:channelId/password/change')
   @ApiOperation({
     summary: 'Change the password of a group',
@@ -89,10 +77,6 @@ export class ChannelsController {
     const newPassword: string = body.newPassword
     return await this.channelsService.changeGroupPassword(newPassword, channel)
   }
-
-  // ************* //
-  // createChannel //
-  // ************* //
 
   @Post('/create')
   @ApiOperation({
@@ -112,10 +96,6 @@ export class ChannelsController {
     return channel
   }
 
-  // ******************* //
-  // deleteGroupPassword //
-  // ******************* //
-
   @Delete('/:channelId/password/delete')
   @ApiOperation({
     summary: 'Delete the password of a group',
@@ -132,10 +112,6 @@ export class ChannelsController {
     return await this.channelsService.deleteGroupPassword(channel)
   }
 
-  // **************** //
-  // getBannedMembers //
-  // **************** //
-
   @Get('/:channelId/bannedMembers')
   @ApiOperation({
     summary: 'Get channel banned members',
@@ -151,10 +127,6 @@ export class ChannelsController {
     return bannedMembers
   }
 
-  // *********** //
-  // getChannel //
-  // *********** //
-
   @Get('/:channelId')
   @ApiOperation({
     summary: 'Get a channel (via channel id)',
@@ -166,10 +138,6 @@ export class ChannelsController {
   async getChannel(@CurrentChannel() channel: Channel) {
     return channel
   }
-
-  // *********** //
-  // getMessages //
-  // *********** //
 
   @Get('/:channelId/messages')
   @ApiOperation({
@@ -183,10 +151,6 @@ export class ChannelsController {
     return await this.channelsService.getMessages(channel)
   }
 
-  // ********* //
-  // joinGroup //
-  // ********* //
-
   @Post('/group/join')
   @ApiOperation({
     summary: 'Join a group',
@@ -198,10 +162,6 @@ export class ChannelsController {
     const userId = session.userId
     return await this.channelsService.joinGroup(userId, body)
   }
-
-  // ********** //
-  // kickMember //
-  // ********** //
 
   @Put('/:channelId/kick')
   @ApiOperation({
@@ -223,10 +183,6 @@ export class ChannelsController {
     return this.channelsService.kickMember(userId, userToKickId, channel)
   }
 
-  // ********* //
-  // leaveGroup //
-  // ********* //
-
   @Delete(':channelId/leave')
   @ApiOperation({
     summary: 'Leave a group',
@@ -243,10 +199,6 @@ export class ChannelsController {
     const userId: string = session.userId
     return await this.channelsService.leaveGroup(userId, channel)
   }
-
-  // ********** //
-  // muteMember //
-  // ********** //
 
   @Put('/:channelId/mute')
   @ApiOperation({
@@ -267,10 +219,6 @@ export class ChannelsController {
     const userToMuteId: string = body.userId
     return await this.channelsService.muteMember(userId, userToMuteId, channel)
   }
-
-  // ************ //
-  // postMessages //
-  // ************ //
 
   @Post('/:channelId/messages')
   @ApiOperation({
@@ -298,10 +246,6 @@ export class ChannelsController {
     return message
   }
 
-  // ******** //
-  // setAdmin //
-  // ********* //
-
   @Put('/:channelId/set-admin')
   @ApiOperation({
     summary: 'Set a user as an admin of a group',
@@ -319,10 +263,6 @@ export class ChannelsController {
     const userToPromoteId: string = body.userId
     return await this.channelsService.setAdmin(userToPromoteId, channel)
   }
-
-  // *********** //
-  // unbanMember //
-  // *********** //
 
   @Delete('/:channelId/unban')
   @ApiOperation({
@@ -342,10 +282,6 @@ export class ChannelsController {
     return await this.channelsService.unbanMember(memberToUnbanId, channel)
   }
 
-  // ************ //
-  // unmuteMember //
-  // ************ //
-
   @Delete('/:channelId/unmute')
   @ApiOperation({
     summary: 'Unmute a member from a group',
@@ -361,12 +297,8 @@ export class ChannelsController {
     @CurrentChannel() channel: Channel
   ): Promise<Channel> {
     const memberToUnmuteId: string = body.userId
-    return await this.channelsService.unMuteMember(channel, memberToUnmuteId)
+    return await this.channelsService.unmuteMember(channel, memberToUnmuteId)
   }
-
-  // ********** //
-  // unsetAdmin //
-  // ********** //
 
   @Delete('/:channelId/unset-admin')
   @ApiOperation({

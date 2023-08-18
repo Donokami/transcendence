@@ -1,3 +1,5 @@
+import { Logger } from '@nestjs/common'
+
 import {
   AfterInsert,
   AfterRemove,
@@ -7,19 +9,13 @@ import {
   ManyToOne
 } from 'typeorm'
 
-import { Logger } from '@nestjs/common'
-
-import { User } from '@/modules/users/user.entity'
-
 import { Channel } from '@/modules/chat/channels/entities/channel.entity'
+import { User } from '@/modules/users/user.entity'
 
 const logger = new Logger('message')
 
 @Entity()
 export class Message {
-  // ************* //
-  // ENTITY FIELDS //
-  // ************* //
 
   @PrimaryGeneratedColumn('uuid')
   id: string

@@ -7,10 +7,6 @@ import { type Message } from '@/modules/chat/channels/entities/message.entity'
 import { type User } from '@/modules/users/user.entity'
 
 export class UserDto {
-  // ******************* //
-  // USER AUTHENTICATION //
-  // ******************* //
-
   @ApiProperty()
   @Expose()
   id: string
@@ -34,17 +30,9 @@ export class UserDto {
   @ApiProperty()
   dataUrl?: string
 
-  // ****************** //
-  // OTHER INFORMATIONS //
-  // ****************** //
-
   @ApiProperty()
   @Expose()
   status: string
-
-  // ******************************* //
-  // FRIENDSHIP RELATED INFORMATIONS //
-  // ******************************* //
 
   @ApiProperty()
   @Expose()
@@ -62,10 +50,6 @@ export class UserDto {
   @ApiProperty()
   receivedRequests: Friendship[]
 
-  // ************************* //
-  // CHAT RELATED INFORMATIONS //
-  // ************************* //
-
   @ApiProperty()
   channel: Channel
 
@@ -75,9 +59,6 @@ export class UserDto {
   @ApiProperty()
   messages: Message[]
 
-  // ************************** //
-  // STATS RELATED INFORMATIONS //
-  // ************************** //
   @ApiProperty()
   @Expose()
   gamesPlayed: number

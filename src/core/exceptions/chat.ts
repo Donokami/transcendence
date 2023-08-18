@@ -6,6 +6,12 @@ export class CannotActOnSelf extends HttpException {
   }
 }
 
+export class ChannelAlreadyExists extends HttpException {
+  constructor() {
+    super('Channel already exists.', HttpStatus.BAD_REQUEST)
+  }
+}
+
 export class CannotKickBanMuteAdmin extends HttpException {
   constructor() {
     super(
@@ -24,6 +30,12 @@ export class ChannelMembersNotFound extends HttpException {
   }
 }
 
+export class ChannelNotFound extends HttpException {
+  constructor() {
+    super('Channel not found.', HttpStatus.NOT_FOUND)
+  }
+}
+
 export class DmChannelMembersLimit extends HttpException {
   constructor() {
     super(
@@ -33,21 +45,15 @@ export class DmChannelMembersLimit extends HttpException {
   }
 }
 
-export class ChannelAlreadyExists extends HttpException {
-  constructor() {
-    super('Channel already exists.', HttpStatus.BAD_REQUEST)
-  }
-}
-
-export class ChannelNotFound extends HttpException {
-  constructor() {
-    super('Channel not found.', HttpStatus.NOT_FOUND)
-  }
-}
-
 export class InvalidGroupPassword extends HttpException {
   constructor() {
     super('Invalid group password.', HttpStatus.UNAUTHORIZED)
+  }
+}
+
+export class MessageTooLong extends HttpException {
+  constructor() {
+    super('Message is too long.', HttpStatus.BAD_REQUEST)
   }
 }
 
@@ -75,6 +81,12 @@ export class UserAlreadyBanned extends HttpException {
   }
 }
 
+export class UserAlreadyInChannel extends HttpException {
+  constructor() {
+    super('User is already a member of this channel.', HttpStatus.BAD_REQUEST)
+  }
+}
+
 export class UserAlreadyKicked extends HttpException {
   constructor() {
     super('User is already kicked.', HttpStatus.BAD_REQUEST)
@@ -87,15 +99,15 @@ export class UserAlreadyMuted extends HttpException {
   }
 }
 
-export class UserAlreadyInChannel extends HttpException {
-  constructor() {
-    super('User is already a member of this channel.', HttpStatus.BAD_REQUEST)
-  }
-}
-
 export class UserIsBanned extends HttpException {
   constructor() {
     super('User is banned.', HttpStatus.UNAUTHORIZED)
+  }
+}
+
+export class UserIsMuted extends HttpException {
+  constructor() {
+    super('User is muted.', HttpStatus.BAD_REQUEST)
   }
 }
 
@@ -114,11 +126,5 @@ export class UserIsNotBanned extends HttpException {
 export class UserNotInChannel extends HttpException {
   constructor() {
     super('User not in channel.', HttpStatus.BAD_REQUEST)
-  }
-}
-
-export class UserIsMuted extends HttpException {
-  constructor() {
-    super('User is muted.', HttpStatus.BAD_REQUEST)
   }
 }

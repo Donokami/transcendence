@@ -16,10 +16,10 @@ import { AuthGuard } from '@/core/guards/auth.guard'
 import { UsernameGuard } from '@/core/guards/username.guard'
 import { ISession } from '@/core/types'
 import { SocialService } from '@/modules/social/social.service'
+import { BlockerIdParams } from '@/modules/social/dtos/blocker-id.dto'
 import { HandleBlockDto } from '@/modules/social/dtos/handle-block-dto'
 import { HandleFriendRequestDto } from '@/modules/social/dtos/handle-friend-request.dto'
 import { SendFriendRequestDto } from '@/modules/social/dtos/send-friend-request.dto'
-import { BlockerIdParams } from '@/modules/social/dtos/blocker-id.dto'
 import { Friendship } from '@/modules/social/entities/friendship.entity'
 import { User } from '@/modules/users/user.entity'
 
@@ -27,15 +27,8 @@ import { User } from '@/modules/users/user.entity'
 @Controller('social')
 @UseFilters(new GlobalExceptionFilter())
 export class SocialController {
-  // *********** //
-  // CONSTRUCTOR //
-  // *********** //
 
   constructor(private readonly socialService: SocialService) {}
-
-  // ******************* //
-  // acceptFriendRequest //
-  // ******************* //
 
   @Put('/friendship/request/accept')
   @ApiOperation({
@@ -58,10 +51,6 @@ export class SocialController {
     )
   }
 
-  // ********* //
-  // blockUser //
-  // ********* //
-
   @Put('/friendship/block')
   @ApiOperation({
     summary: 'Block a user',
@@ -77,10 +66,6 @@ export class SocialController {
     const userToBlockId = handleBlockDto.targetId
     return this.socialService.blockUser(userId, userToBlockId)
   }
-
-  // ************ //
-  // getBlockerId //
-  // ************ //
 
   @Get('/blocker-id/:observedUser')
   @ApiOperation({
@@ -114,10 +99,6 @@ export class SocialController {
     return blockedUsers
   }
 
-  // ************* //
-  // getFriendList //
-  // ************* //
-
   @Get('/friend-list')
   @ApiOperation({
     summary: 'Get friend list',
@@ -129,10 +110,6 @@ export class SocialController {
     const friendList = await this.socialService.getFriendList(session.userId)
     return friendList
   }
-
-  // ***************** //
-  // getFriendRequests //
-  // ***************** //
 
   @Get('/friend-requests')
   @ApiOperation({
@@ -147,10 +124,6 @@ export class SocialController {
     )
     return friendRequests
   }
-
-  // ******************* //
-  // rejectFriendRequest //
-  // ******************* //
 
   @Put('/friendship/request/reject')
   @ApiOperation({
@@ -173,10 +146,6 @@ export class SocialController {
     )
   }
 
-  // ***************** //
-  // sendFriendRequest //
-  // ***************** //
-
   @Post('/friendship/request')
   @ApiOperation({
     summary: 'Send a friend request',
@@ -192,10 +161,6 @@ export class SocialController {
     const receiverId = sendFriendRequestDto.receiverId
     return await this.socialService.sendFriendRequest(senderId, receiverId)
   }
-
-  // *********** //
-  // unblockUser //
-  // *********** //
 
   @Put('/friendship/unblock')
   @ApiOperation({

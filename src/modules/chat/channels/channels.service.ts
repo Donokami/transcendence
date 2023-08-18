@@ -5,23 +5,24 @@ import { DeleteResult, Not, Repository } from 'typeorm'
 import {
   CannotActOnSelf,
   CannotKickBanMuteAdmin,
-  ChannelNotFound,
-  ChannelMembersNotFound,
   ChannelAlreadyExists,
+  ChannelMembersNotFound,
+  ChannelNotFound,
   DmChannelMembersLimit,
   InvalidGroupPassword,
+  MessageTooLong,
   MissingGroupPassword,
   MissingUserId,
   UserAlreadyAdmin,
   UserAlreadyBanned,
   UserAlreadyInChannel,
-  UserIsBanned,
-  UserNotFound,
-  UserNotInChannel,
   UserAlreadyMuted,
+  UserIsBanned,
   UserIsMuted,
   UserIsNotAdmin,
-  UserIsNotBanned
+  UserIsNotBanned,
+  UserNotFound,
+  UserNotInChannel,
 } from '@/core/exceptions'
 import { parseMuteTime } from '@/core/utils/parseMuteTime'
 import { ChatGateway } from '@/modules/chat/chat.gateway'
@@ -57,19 +58,7 @@ export class ChannelsService {
     private readonly chatGateway: ChatGateway
   ) {}
 
-  // ****** //
-  // LOGGER //
-  // ****** //
-
   private logger = new Logger(ChannelsService.name)
-
-  // ******************** //
-  // FUNCTION DEFINITIONS //
-  // ******************** //
-
-  // ************* //
-  // addUserToList //
-  // ************* //
 
   private addUserToList(
     listName: string,
@@ -93,10 +82,6 @@ export class ChannelsService {
 
     return userList
   }
-
-  // ********* //
-  // banMember //
-  // ********* //
 
   async banMember(
     banningUserId: string,
@@ -133,10 +118,6 @@ export class ChannelsService {
     return updatedChannel
   }
 
-  // ************** //
-  // changePassword //
-  // ************** //
-
   async changeGroupPassword(
     newPassword: string,
     channel: Channel
@@ -148,24 +129,6 @@ export class ChannelsService {
 
     return { success: true }
   }
-
-  // ************** //
-  // deletePassword //
-  // ************** //
-
-  // todo: check if socket required here ?
-  async deleteGroupPassword(channel: Channel): Promise<OperationResult> {
-    channel.password = null
-    channel.type = ChannelTypes.PUBLIC
-
-    await this.channelsRepository.save(channel)
-
-    return { success: true }
-  }
-
-  // ***************** //
-  // checkExistingUser //
-  // ***************** //
 
   async checkExistingUser(userId: string): Promise<User> {
     if (!userId) {
@@ -181,10 +144,6 @@ export class ChannelsService {
 
     return user
   }
-
-  // ************* //
-  // createChannel //
-  // ************* //
 
   async createChannel(
     createChannelDto: CreateChannelDto,
@@ -256,9 +215,26 @@ export class ChannelsService {
     return channel
   }
 
-  // *********** //
-  // findOneById //
-  // *********** //
+  // todo: check if socket required here ?
+  async deleteGroupPassword(channel: Channel): Promise<OperationResult> {
+    channel.password = null
+    channel.type = ChannelTypes.PUBLIC
+
+    await this.channelsRepository.save(channel)
+
+    return { success: true }
+  }
+
+  async findAllWithMutedMembers(): Promise<Channel[]> {
+    const currentDate = new Date()
+
+    return await this.channelsRepository
+      .createQueryBuilder('channel')
+      .leftJoinAndSelect('channel.mutedMembers', 'mutedMembers')
+      .leftJoinAndSelect('mutedMembers.user', 'mutedUser')
+      .where('mutedMembers.muteEndDate <= :currentDate', { currentDate })
+      .getMany()
+  }
 
   async findOneById(id: string): Promise<Channel> {
     const channel: Channel = await this.channelsRepository.findOne({
@@ -273,10 +249,6 @@ export class ChannelsService {
 
     return channel
   }
-
-  // ************* //
-  // findOneByName //
-  // ************* //
 
   async findOneByName(name: string): Promise<Channel> {
     const channel: Channel = await this.channelsRepository.findOne({
@@ -293,30 +265,11 @@ export class ChannelsService {
     return channel
   }
 
-  async findAllWithMutedMembers(): Promise<Channel[]> {
-    const currentDate = new Date()
-
-    return await this.channelsRepository
-      .createQueryBuilder('channel')
-      .leftJoinAndSelect('channel.mutedMembers', 'mutedMembers')
-      .leftJoinAndSelect('mutedMembers.user', 'mutedUser')
-      .where('mutedMembers.muteEndDate <= :currentDate', { currentDate })
-      .getMany()
-  }
-
-  // **************** //
-  // getBannedMembers //
-  // **************** //
-
   async getBannedMembers(channel: Channel): Promise<User[]> {
     const chan = await this.findOneById(channel.id)
 
     return chan.bannedMembers ?? []
   }
-
-  // *********** //
-  // getChannels //
-  // *********** //
 
   async getChannels(userId: string): Promise<Channel[]> {
     const user: User = await this.checkExistingUser(userId)
@@ -343,10 +296,6 @@ export class ChannelsService {
     return channels
   }
 
-  // *********** //
-  // getMessages //
-  // *********** //
-
   async getMessages(channel: Channel): Promise<Message[]> {
     const messages: Message[] = await this.messagesRepository.find({
       where: { channel: { id: channel.id } },
@@ -359,10 +308,6 @@ export class ChannelsService {
 
     return messages
   }
-
-  // ********* //
-  // joinGroup //
-  // ********* //
 
   async joinGroup(
     newMemberId: string,
@@ -414,10 +359,6 @@ export class ChannelsService {
     return { success: true }
   }
 
-  // ********** //
-  // kickMember //
-  // ********** //
-
   async kickMember(
     kickingUserId: string,
     userToKickId: string,
@@ -446,10 +387,6 @@ export class ChannelsService {
 
     return updatedChannel
   }
-
-  // ********** //
-  // leaveGroup //
-  // ********** //
 
   async leaveGroup(
     leavingUserId: string,
@@ -511,10 +448,6 @@ export class ChannelsService {
     return updatedChannel
   }
 
-  // ********** //
-  // muteMember //
-  // ********** //
-
   async muteMember(
     mutingUserId: string,
     userToMuteId: string,
@@ -538,10 +471,6 @@ export class ChannelsService {
 
     return { success: true }
   }
-
-  // ***************** //
-  // permissionChecker //
-  // ***************** //
 
   async permissionChecker(
     action: string,
@@ -572,10 +501,6 @@ export class ChannelsService {
     return true
   }
 
-  // *********** //
-  // postMessage //
-  // *********** //
-
   async postMessage(
     userId: string,
     messageBody: string,
@@ -586,6 +511,10 @@ export class ChannelsService {
 
     if (channel.isMuted(user)) {
       throw new UserIsMuted()
+    }
+
+    if (messageBody.length > 1000) {
+      throw new MessageTooLong()
     }
 
     const newMessage = this.messagesRepository.create({
@@ -601,23 +530,6 @@ export class ChannelsService {
 
     return message
   }
-
-  // *********** //
-  // removeAdmin //
-  // *********** //
-
-  // todo: implement this (Lucas)
-  async removeAdmin(channel: Channel, userId: string): Promise<Channel> {
-    const user: User = await this.checkExistingUser(userId)
-
-    channel.admins = this.removeUserFromList('admins', user, channel.admins)
-
-    return this.channelsRepository.save(channel)
-  }
-
-  // ****************** //
-  // removeUserFromList //
-  // ****************** //
 
   private removeUserFromList(
     listName: string,
@@ -640,10 +552,6 @@ export class ChannelsService {
     return userList.filter((item) => item.id !== user.id)
   }
 
-  // ******** //
-  // setAdmin //
-  // ******** //
-
   async setAdmin(userToPromoteId: string, channel: Channel): Promise<Channel> {
     const userToPromote: User = await this.checkExistingUser(userToPromoteId)
 
@@ -659,10 +567,6 @@ export class ChannelsService {
 
     return updatedChannel
   }
-
-  // *********** //
-  // unbanMember //
-  // *********** //
 
   async unbanMember(userToUnbanId: string, channel: Channel): Promise<Channel> {
     const userToUnban: User = await this.checkExistingUser(userToUnbanId)
@@ -684,11 +588,7 @@ export class ChannelsService {
     return updatedChannel
   }
 
-  // ************ //
-  // unMuteMember //
-  // ************ //
-
-  async unMuteMember(channel: Channel, userId: string): Promise<Channel> {
+  async unmuteMember(channel: Channel, userId: string): Promise<Channel> {
     const user: User = await this.checkExistingUser(userId)
 
     channel.removeMuteMember(user)
@@ -698,10 +598,6 @@ export class ChannelsService {
       channelId: channel.id
     })
   }
-
-  // ********** //
-  // unsetAdmin //
-  // ********** //
 
   async unsetAdmin(userToDemoteId: string, channel: Channel): Promise<Channel> {
     const userToDemote: User = await this.checkExistingUser(userToDemoteId)
@@ -722,10 +618,6 @@ export class ChannelsService {
 
     return updatedChannel
   }
-
-  // ************* //
-  // updateChannel //
-  // ************* //
 
   private async updateChannel(
     event: string,

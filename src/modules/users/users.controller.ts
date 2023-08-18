@@ -1,9 +1,11 @@
+import { memoryStorage } from 'multer'
+import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate'
+import * as sharp from 'sharp'
 import {
   Body,
   Controller,
   Delete,
   Get,
-  Logger,
   Param,
   Patch,
   Post,
@@ -13,39 +15,30 @@ import {
   UseFilters,
   Session
 } from '@nestjs/common'
-
-import { AuthGuard } from '@/core/guards/auth.guard'
-import { Serialize } from '@/core/interceptors/serialize.interceptor'
-import { SocialService } from '@/modules/social/social.service'
-import { FileUploadExceptionFilter } from '@/core/filters/file-upload-exception.filter'
-
-import { User } from './user.entity'
-import { UsersService } from './users.service'
-import { UpdateUserDto } from './dtos/update-user.dto'
-import { CurrentUser } from './decorators/current-user.decorator'
-import { UserIdParams } from './dtos/user-id.dto'
-
-import { UsernameGuard } from '@/core/guards/username.guard'
-import { OwnershipGuard } from './guards/ownership.guard'
-import { Paginate, PaginateQuery, Paginated } from 'nestjs-paginate'
-import { ApiOkResponse, ApiOperation } from '@nestjs/swagger'
-import { PaginateQueryOptions } from '@/core/decorators/pagination'
-
 import { FileInterceptor } from '@nestjs/platform-express'
-import { memoryStorage } from 'multer'
-import * as sharp from 'sharp'
-import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
+import { ApiOkResponse, ApiOperation } from '@nestjs/swagger'
+
+import { PaginateQueryOptions } from '@/core/decorators/pagination'
 import { UserNotFound, UnsupportedFileType } from '@/core/exceptions'
-import { ChannelsService } from '@/modules/chat/channels/channels.service'
-import { Channel } from '@/modules/chat/channels/entities/channel.entity'
+import { FileUploadExceptionFilter } from '@/core/filters/file-upload-exception.filter'
+import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
+import { AuthGuard } from '@/core/guards/auth.guard'
+import { UsernameGuard } from '@/core/guards/username.guard'
+import { Serialize } from '@/core/interceptors/serialize.interceptor'
 import { ISession } from '@/core/types'
+import { Channel } from '@/modules/chat/channels/entities/channel.entity'
+import { ChannelsService } from '@/modules/chat/channels/channels.service'
+import { SocialService } from '@/modules/social/social.service'
+import { User } from '@/modules/users/user.entity'
+import { UsersService } from '@/modules/users/users.service'
+import { CurrentUser } from '@/modules/users/decorators/current-user.decorator'
+import { UpdateUserDto } from '@/modules/users/dtos/update-user.dto'
+import { UserIdParams } from '@/modules/users/dtos/user-id.dto'
+import { OwnershipGuard } from '@/modules/users/guards/ownership.guard'
 
 @Controller('user')
 @UseFilters(new GlobalExceptionFilter())
 export class UsersController {
-  // *********** //
-  // CONSTRUCTOR //
-  // *********** //
 
   constructor(
     private readonly usersService: UsersService,
@@ -53,19 +46,43 @@ export class UsersController {
     private readonly channelsService: ChannelsService
   ) {}
 
-  // ****** //
-  // LOGGER //
-  // ****** //
+  @Get('/:id')
+  @UseGuards(AuthGuard)
+  @UseGuards(UsernameGuard)
+  @ApiOkResponse({
+    description: 'The user corresponding on the passed id',
+    type: User
+  })
+  @ApiOperation({
+    summary: 'Get user by ID',
+    operationId: 'findUserById',
+    description: 'Get user by ID',
+    tags: ['users']
+  })
+  async findUserById(@Param() params: UserIdParams): Promise<User> {
+    const user = await this.usersService.findOneById(params.id)
+    if (!user) {
+      throw new UserNotFound()
+    }
+    return user
+  }
 
-  private logger = new Logger(UsersController.name)
-
-  // ***************** //
-  // ROUTE DEFINITIONS //
-  // ***************** //
-
-  // *********** //
-  // getAllUsers //
-  // *********** //
+  @Get('/:id/stats')
+  @UseGuards(AuthGuard)
+  @UseGuards(UsernameGuard)
+  @ApiOperation({
+    summary: 'Get user by ID with stats',
+    operationId: 'findUserByIdWithStats',
+    description: 'Get user by ID with stats',
+    tags: ['users']
+  })
+  async findUserByIdWithStats(@Param() params: UserIdParams): Promise<User> {
+    const user = await this.usersService.findOneByIdWithStats(params.id)
+    if (!user) {
+      throw new UserNotFound()
+    }
+    return user
+  }
 
   @Get()
   @UseGuards(AuthGuard)
@@ -80,10 +97,6 @@ export class UsersController {
   getAllUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
     return this.usersService.findAll(query)
   }
-
-  // **************** //
-  // getAllUsersStats //
-  // **************** //
 
   @Get('/stats')
   @UseGuards(AuthGuard)
@@ -102,9 +115,65 @@ export class UsersController {
     return users
   }
 
-  // *********** //
-  // upload file //
-  // *********** //
+  @Get('/me/channels')
+  @UseGuards(AuthGuard)
+  @UseGuards(UsernameGuard)
+  @ApiOperation({
+    summary: 'Get current user channels',
+    operationId: 'getUserChannels',
+    description: 'Get current user channels',
+    tags: ['users']
+  })
+  async getUserChannels(@Session() session: ISession): Promise<Channel[]> {
+    const channels = await this.channelsService.getChannels(session.userId)
+
+    return channels
+  }
+
+  @Get('/:id/rank')
+  @UseGuards(AuthGuard)
+  @UseGuards(UsernameGuard)
+  @ApiOperation({
+    summary: 'Get user by ID with stats',
+    operationId: 'findUserByIdWithStats',
+    description: 'Get user by ID with stats',
+    tags: ['users']
+  })
+  async getUserRank(@Param() params: UserIdParams): Promise<number> {
+    const rank = await this.usersService.getUserRankByWinRate(params.id)
+
+    return rank
+  }
+
+  @Delete('/:id')
+  @UseGuards(AuthGuard)
+  @UseGuards(OwnershipGuard)
+  @ApiOperation({
+    summary: 'Remove user',
+    operationId: 'removeUser',
+    description: 'Remove user',
+    tags: ['users']
+  })
+  async removeUser(@Param() params: UserIdParams): Promise<User> {
+    return await this.usersService.remove(params.id)
+  }
+
+  @Patch('/:id')
+  @UseGuards(AuthGuard)
+  @UseGuards(OwnershipGuard)
+  @Serialize(User)
+  @ApiOperation({
+    summary: 'Update user',
+    operationId: 'updateUser',
+    description: 'Update user',
+    tags: ['users']
+  })
+  async updateUser(
+    @Param() params: UserIdParams,
+    @Body() body: UpdateUserDto
+  ): Promise<User> {
+    return await this.usersService.update(params.id, body)
+  }
 
   @Post('/upload')
   @UseGuards(AuthGuard)
@@ -152,10 +221,6 @@ export class UsersController {
     return { status: 'success' }
   }
 
-  // ****** //
-  // whoAmI //
-  // ****** //
-
   @Get('/me')
   @UseGuards(AuthGuard)
   @ApiOkResponse({
@@ -175,119 +240,5 @@ export class UsersController {
 
     user.blockedUsers = await this.socialService.getBlockedUsers(user.id)
     return user
-  }
-
-  @Get('/me/channels')
-  @UseGuards(AuthGuard)
-  @UseGuards(UsernameGuard)
-  @ApiOperation({
-    summary: 'Get current user channels',
-    operationId: 'getUserChannels',
-    description: 'Get current user channels',
-    tags: ['users']
-  })
-  async getUserChannels(@Session() session: ISession): Promise<Channel[]> {
-    const channels = await this.channelsService.getChannels(session.userId)
-
-    return channels
-  }
-
-  // ************ //
-  // findUserById //
-  // ************ //
-
-  @Get('/:id')
-  @UseGuards(AuthGuard)
-  @UseGuards(UsernameGuard)
-  @ApiOkResponse({
-    description: 'The user corresponding on the passed id',
-    type: User
-  })
-  @ApiOperation({
-    summary: 'Get user by ID',
-    operationId: 'findUserById',
-    description: 'Get user by ID',
-    tags: ['users']
-  })
-  async findUserById(@Param() params: UserIdParams): Promise<User> {
-    const user = await this.usersService.findOneById(params.id)
-    if (!user) {
-      throw new UserNotFound()
-    }
-    return user
-  }
-
-  // ********************* //
-  // findUserByIdWithStats //
-  // ********************* //
-
-  @Get('/:id/stats')
-  @UseGuards(AuthGuard)
-  @UseGuards(UsernameGuard)
-  @ApiOperation({
-    summary: 'Get user by ID with stats',
-    operationId: 'findUserByIdWithStats',
-    description: 'Get user by ID with stats',
-    tags: ['users']
-  })
-  async findUserByIdWithStats(@Param() params: UserIdParams): Promise<User> {
-    const user = await this.usersService.findOneByIdWithStats(params.id)
-    if (!user) {
-      throw new UserNotFound()
-    }
-    return user
-  }
-
-  @Get('/:id/rank')
-  @UseGuards(AuthGuard)
-  @UseGuards(UsernameGuard)
-  @ApiOperation({
-    summary: 'Get user by ID with stats',
-    operationId: 'findUserByIdWithStats',
-    description: 'Get user by ID with stats',
-    tags: ['users']
-  })
-  async getUserRank(@Param() params: UserIdParams): Promise<number> {
-    const rank = await this.usersService.getUserRankByWinRate(params.id)
-
-    return rank
-  }
-
-  // ********** //
-  // updateUser //
-  // ********** //
-
-  @Patch('/:id')
-  @UseGuards(AuthGuard)
-  @UseGuards(OwnershipGuard)
-  @Serialize(User)
-  @ApiOperation({
-    summary: 'Update user',
-    operationId: 'updateUser',
-    description: 'Update user',
-    tags: ['users']
-  })
-  async updateUser(
-    @Param() params: UserIdParams,
-    @Body() body: UpdateUserDto
-  ): Promise<User> {
-    return await this.usersService.update(params.id, body)
-  }
-
-  // ********** //
-  // removeUser //
-  // ********** //
-
-  @Delete('/:id')
-  @UseGuards(AuthGuard)
-  @UseGuards(OwnershipGuard)
-  @ApiOperation({
-    summary: 'Remove user',
-    operationId: 'removeUser',
-    description: 'Remove user',
-    tags: ['users']
-  })
-  async removeUser(@Param() params: UserIdParams): Promise<User> {
-    return await this.usersService.remove(params.id)
   }
 }

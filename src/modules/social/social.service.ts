@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
+
 import { Repository } from 'typeorm'
 
 import {
@@ -16,19 +17,15 @@ import {
   FriendRequestNotFound,
   OnlyReceiverCanHandleFriendRequest
 } from '@/core/exceptions'
-
+import { SocialGateway } from '@/modules/social/social.gateway'
 import {
   Friendship,
   FriendshipStatus
 } from '@/modules/social/entities/friendship.entity'
 import { User } from '@/modules/users/user.entity'
-import { SocialGateway } from './social.gateway'
 
 @Injectable()
 export class SocialService {
-  // *********** //
-  // CONSTRUCTOR //
-  // *********** //
 
   constructor(
     @InjectRepository(User)
@@ -38,19 +35,7 @@ export class SocialService {
     private readonly socialGateway: SocialGateway
   ) {}
 
-  // ****** //
-  // LOGGER //
-  // ****** //
-
   private logger = new Logger(SocialService.name)
-
-  // ******************** //
-  // FUNCTION DEFINITIONS //
-  // ******************** //
-
-  // ********* //
-  // blockUser //
-  // ********* //
 
   async blockUser(
     blockerId: string,
@@ -117,10 +102,6 @@ export class SocialService {
     }
   }
 
-  // ***************** //
-  // checkExistingUser //
-  // ***************** //
-
   private async checkExistingUser(userId: string): Promise<number> {
     const userCount: number = await this.usersRepository.count({
       where: { id: userId }
@@ -133,10 +114,6 @@ export class SocialService {
     return userCount
   }
 
-  // **************** //
-  // createFriendship //
-  // *************** //
-
   private async createFriendship(
     sender: User,
     receiver: User
@@ -147,10 +124,6 @@ export class SocialService {
     })
     return friendship
   }
-
-  // ************ //
-  // getBlockerId //
-  // ************ //
 
   async getBlockerId(
     loggedUserId: string,
@@ -207,10 +180,6 @@ export class SocialService {
     return blockedUsers
   }
 
-  // *************** //
-  // getExistingUser //
-  // *************** //
-
   private async getExistingUser(userId: string): Promise<User> {
     const user: User = await this.usersRepository.findOne({
       where: { id: userId }
@@ -221,10 +190,6 @@ export class SocialService {
     }
     return user
   }
-
-  // ************* //
-  // getFriendList //
-  // ************* //
 
   async getFriendList(userId: string): Promise<User[]> {
     await this.checkExistingUser(userId)
@@ -247,9 +212,25 @@ export class SocialService {
     }
   }
 
-  // ******************************** //
-  // getPendingRequestBetweenTwoUsers //
-  // ******************************** //
+  private async getFriendshipBetweenTwoUsers(
+    senderId: string,
+    receiverId: string
+  ): Promise<Friendship> {
+    const friendship: Friendship = await this.friendshipRepository.findOne({
+      where: [
+        {
+          sender: { id: senderId },
+          receiver: { id: receiverId }
+        },
+        {
+          sender: { id: receiverId },
+          receiver: { id: senderId }
+        }
+      ]
+    })
+
+    return friendship
+  }
 
   private async getPendingRequestBetweenTwoUsers(
     senderId: string,
@@ -274,34 +255,6 @@ export class SocialService {
     return friendRequest
   }
 
-  // **************************** //
-  // getFriendshipBetweenTwoUsers //
-  // **************************** //
-
-  private async getFriendshipBetweenTwoUsers(
-    senderId: string,
-    receiverId: string
-  ): Promise<Friendship> {
-    const friendship: Friendship = await this.friendshipRepository.findOne({
-      where: [
-        {
-          sender: { id: senderId },
-          receiver: { id: receiverId }
-        },
-        {
-          sender: { id: receiverId },
-          receiver: { id: senderId }
-        }
-      ]
-    })
-
-    return friendship
-  }
-
-  // ************************** //
-  // getUserAccetpedFriendships //
-  // ************************** //
-
   private async getUserAccetpedFriendships(
     userId: string
   ): Promise<Friendship[]> {
@@ -317,10 +270,6 @@ export class SocialService {
     }
     return friendships
   }
-
-  // ********************* //
-  // getUserFriendRequests //
-  // ********************* //
 
   async getUserFriendRequests(userId: string): Promise<Friendship[]> {
     await this.checkExistingUser(userId)
@@ -338,10 +287,6 @@ export class SocialService {
 
     return friendRequests
   }
-
-  // ******************* //
-  // handleFriendRequest //
-  // ******************* //
 
   async handleFriendRequest(
     action: string,
@@ -366,33 +311,37 @@ export class SocialService {
       throw new OnlyReceiverCanHandleFriendRequest()
     }
 
+    const client = this.socialGateway.findClient(senderId)
+
     if (action === 'accept') {
       request.status = FriendshipStatus.ACCEPTED
       this.logger.verbose(
         `Friend request sent by : ${senderId} to : ${receiverId} accepted.`
       )
-      const client = this.socialGateway.findClient(senderId)
 
       if (client) {
         this.socialGateway.server
           .to(client.clientId)
           .emit('social:accept', request.receiver)
       }
+
     } else if (action === 'reject') {
       request.status = FriendshipStatus.REJECTED
       this.logger.verbose(
         `Friend request sent by : ${senderId} to : ${receiverId} rejected.`
       )
+      
+      if (client) {
+        this.socialGateway.server
+          .to(client.clientId)
+          .emit('social:rejected', request.receiver)
+      }
     }
 
     await this.friendshipRepository.save(request)
 
     return request
   }
-
-  // ***************** //
-  // sendFriendRequest //
-  // ***************** //
 
   async sendFriendRequest(
     senderId: string,
@@ -460,10 +409,6 @@ export class SocialService {
       return newFriendship
     }
   }
-
-  // *********** //
-  // unblockUser //
-  // *********** //
 
   async unblockUser(
     unblockerId: string,

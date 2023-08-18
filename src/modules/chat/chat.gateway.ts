@@ -5,10 +5,7 @@ import {
   ValidationPipe,
   forwardRef
 } from '@nestjs/common'
-
-import { Server, Socket } from 'socket.io'
 import { Cron, CronExpression } from '@nestjs/schedule'
-
 import {
   ConnectedSocket,
   OnGatewayConnection,
@@ -17,11 +14,12 @@ import {
   WebSocketServer
 } from '@nestjs/websockets'
 
-import { IUserSocket } from '@/core/types/socket'
+import { Server, Socket } from 'socket.io'
+import { DefaultEventsMap } from 'socket.io/dist/typed-events'
 
+import { IUserSocket } from '@/core/types/socket'
 import { ChannelsService } from '@/modules/chat/channels/channels.service'
 import { UsersService } from '@/modules/users/users.service'
-import { DefaultEventsMap } from 'socket.io/dist/typed-events'
 
 @UsePipes(new ValidationPipe())
 @WebSocketGateway({
@@ -35,32 +33,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // todo: try to switch to Map<string, Socket>
   connectedUsers: Map<string, string> = new Map()
 
-  // ************ //
-  // CONSTRUCTORS //
-  // ************ //
-
   constructor(
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChannelsService))
     private readonly channelService: ChannelsService
   ) { }
 
-  // ****** //
-  // LOGGER //
-  // ****** //
-
   private logger = new Logger(ChatGateway.name)
-
-  // ***************** //
-  // GATEWAY FUNCTIONS //
-  // ***************** //
 
   @Cron(CronExpression.EVERY_10_SECONDS)
   async checkMuteTimers(): Promise<void> {
     const channels = await this.channelService.findAllWithMutedMembers()
     channels.forEach(async (channel) => {
       channel.mutedMembers.forEach(async (mutedMember) => {
-        await this.channelService.unMuteMember(channel, mutedMember.user.id)
+        await this.channelService.unmuteMember(channel, mutedMember.user.id)
 
         this.logger.debug(
           `User ${mutedMember.user.username} has been unmuted in channel ${channel.name}.`
@@ -83,10 +69,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return null
   }
 
-  // **************** //
-  // handleConnection //
-  // **************** //
-
   async handleConnection(
     @ConnectedSocket() client: IUserSocket
   ): Promise<void> {
@@ -104,10 +86,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     client.emit('chat:connect', 'Successfully connected to chat server.')
   }
-
-  // **************** //
-  // handleDisconnect //
-  // **************** //
 
   async handleDisconnect(
     @ConnectedSocket() client: IUserSocket

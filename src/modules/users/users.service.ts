@@ -1,7 +1,5 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common'
-import { In, MoreThan, Repository } from 'typeorm'
-import { InjectRepository } from '@nestjs/typeorm'
-import { ConfigService } from '@nestjs/config'
+import { randomUUID } from 'crypto'
+import * as fs from 'fs'
 import {
   FilterOperator,
   FilterSuffix,
@@ -9,21 +7,21 @@ import {
   paginate,
   Paginated
 } from 'nestjs-paginate'
+import * as path from 'path'
+import { Subject } from 'rxjs'
+import { In, MoreThan, Repository } from 'typeorm'
+import { Injectable, Logger, BadRequestException } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import { InjectRepository } from '@nestjs/typeorm'
 
-import { type Channel } from '@/modules/chat/channels/entities/channel.entity'
+import { UserNotFound, UserNotInChannel } from '@/core/exceptions'
 import { type IUserDetails } from '@/core/types/user-details'
+import { type Channel } from '@/modules/chat/channels/entities/channel.entity'
 import {
   Friendship,
   FriendshipStatus
 } from '@/modules/social/entities/friendship.entity'
-
-import { randomUUID } from 'crypto'
-import * as path from 'path'
-import * as fs from 'fs'
-
-import { User } from './user.entity'
-import { UserNotFound, UserNotInChannel } from '@/core/exceptions'
-import { Subject } from 'rxjs'
+import { User } from '@/modules/users/user.entity'
 
 @Injectable()
 export class UsersService {
@@ -35,16 +33,8 @@ export class UsersService {
     private readonly configService: ConfigService
   ) {}
 
-  // ****** //
-  // LOGGER //
-  // ****** //
-
   private logger: Logger = new Logger(UsersService.name)
   private shutdownListener$: Subject<void> = new Subject()
-
-  // ******************** //
-  // FUNCTION DEFINITIONS //
-  // ******************** //
 
   // onModuleDestroy() {
   //   this.logger.log('Shutting down...')
@@ -58,28 +48,29 @@ export class UsersService {
   //   this.shutdownListener$.next()
   // }
 
-  // ****** //
-  // create //
-  // ****** //
-
   async create(username: string, password: string): Promise<User> {
     const user = this.userRepository.create({ password, username })
     return await this.userRepository.save(user)
   }
-
-  // *********** //
-  // createOauth //
-  // *********** //
 
   createOauth(details: IUserDetails) {
     const user = this.userRepository.create(details)
     return this.userRepository.save(user)
   }
 
-  // ******* //
-  // findAll //
-  // ******* //
+  async deleteFile(filePath: string) {
+    try {
+      await fs.promises.unlink(filePath)
+    } catch (error) {
+      throw new BadRequestException('Invalid file path')
+    }
+    return
+  }
 
+  async disconnectAll() {
+    await this.userRepository.update({}, { status: 'offline' })
+  }
+  
   async findAll(query: PaginateQuery): Promise<Paginated<User>> {
     return paginate(query, this.userRepository, {
       sortableColumns: ['id'],
@@ -92,10 +83,6 @@ export class UsersService {
       }
     })
   }
-
-  // **************** //
-  // findAllWithStats //
-  // **************** //
 
   async findAllWithStats(query: PaginateQuery): Promise<Paginated<User>> {
     return paginate(query, this.userRepository, {
@@ -151,10 +138,6 @@ export class UsersService {
     })
   }
 
-  // ********* //
-  // findByIds //
-  // ********* //
-
   async findByIds(userIds: string[]): Promise<User[]> {
     return this.userRepository.find({
       where: {
@@ -162,10 +145,6 @@ export class UsersService {
       }
     })
   }
-
-  // ***************** //
-  // findOneByUsername //
-  // ***************** //
 
   async findOneByUsername(username: string): Promise<User> {
     if (!username) {
@@ -176,10 +155,6 @@ export class UsersService {
 
     return user
   }
-
-  // ************************** //
-  // findOneByUserWithAuthInfos //
-  // ************************** //
 
   async findOneByUsernameWithAuthInfos(username: string): Promise<User> {
     if (!username) {
@@ -199,10 +174,6 @@ export class UsersService {
 
     return user
   }
-
-  // ************************ //
-  // findOneByIdWithAuthInfos //
-  // ************************ //
 
   async findOneByFortyTwoIdWithAuthInfos(fortyTwoId: string): Promise<User> {
     if (!fortyTwoId) {
@@ -224,9 +195,23 @@ export class UsersService {
     return user
   }
 
-  // ************************ //
-  // findOneByIdWithAuthInfos //
-  // ************************ //
+  async findOneById(id: string): Promise<User> {
+    if (!id) {
+      return null
+    }
+    const user = await this.userRepository.findOneBy({
+      id
+    })
+    if (user) {
+      user.nFriends = await this.friendshipRepository.count({
+        where: [
+          { sender: { id }, status: FriendshipStatus.ACCEPTED },
+          { receiver: { id }, status: FriendshipStatus.ACCEPTED }
+        ]
+      })
+    }
+    return user
+  }
 
   async findOneByIdWithAuthInfos(id: string): Promise<User> {
     if (!id) {
@@ -241,9 +226,19 @@ export class UsersService {
     return user
   }
 
-  // ******************** //
-  // findOneByIdWithStats //
-  // ******************** //
+  async findOneByIdWithChannels(id: string): Promise<User> {
+    if (!id) {
+      return null
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: ['id', 'username', 'channels', 'bannedChannels', 'messages'],
+      relations: ['channels', 'bannedChannels']
+    })
+
+    return user
+  }
 
   async findOneByIdWithStats(id: string): Promise<User> {
     if (!id) {
@@ -277,46 +272,6 @@ export class UsersService {
     return user
   }
 
-  // *********** //
-  // findOneById //
-  // *********** //
-
-  async findOneById(id: string): Promise<User> {
-    if (!id) {
-      return null
-    }
-    const user = await this.userRepository.findOneBy({
-      id
-    })
-    if (user) {
-      user.nFriends = await this.friendshipRepository.count({
-        where: [
-          { sender: { id }, status: FriendshipStatus.ACCEPTED },
-          { receiver: { id }, status: FriendshipStatus.ACCEPTED }
-        ]
-      })
-    }
-    return user
-  }
-
-  // *********************** //
-  // findOneByIdWithChannels //
-  // *********************** //
-
-  async findOneByIdWithChannels(id: string): Promise<User> {
-    if (!id) {
-      return null
-    }
-
-    const user = await this.userRepository.findOne({
-      where: { id },
-      select: ['id', 'username', 'channels', 'bannedChannels', 'messages'],
-      relations: ['channels', 'bannedChannels']
-    })
-
-    return user
-  }
-
   async getUserRankByWinRate(userId: string): Promise<number> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
@@ -338,10 +293,6 @@ export class UsersService {
     return userRank
   }
 
-  // ****** //
-  // remove //
-  // ****** //
-
   async remove(id: string): Promise<User> {
     const user = await this.findOneById(id)
     if (!user) {
@@ -350,9 +301,13 @@ export class UsersService {
     return await this.userRepository.remove(user)
   }
 
-  // ****** //
-  // update //
-  // ****** //
+  async saveFile(file: Express.Multer.File): Promise<string> {
+    const filename = randomUUID() + path.extname(file.originalname)
+    const filePath = path.join(this.configService.get('UPLOAD_DIR'), filename)
+    await fs.promises.writeFile(filePath, file.buffer)
+
+    return filePath
+  }
 
   async update(id: string, attrs: Partial<User>): Promise<User> {
     const user = await this.findOneById(id)
@@ -362,10 +317,6 @@ export class UsersService {
     Object.assign(user, attrs)
     return await this.userRepository.save(user)
   }
-
-  // ***************** //
-  // updateUserChannel //
-  // ***************** //
 
   async updateUserChannel(id: string, channel: Channel): Promise<User> {
     const user = await this.userRepository.preload({
@@ -386,34 +337,5 @@ export class UsersService {
     }
 
     return await this.userRepository.save(user)
-  }
-
-  // ******** //
-  // SaveFile //
-  // ******** //
-
-  async saveFile(file: Express.Multer.File): Promise<string> {
-    const filename = randomUUID() + path.extname(file.originalname)
-    const filePath = path.join(this.configService.get('UPLOAD_DIR'), filename)
-    await fs.promises.writeFile(filePath, file.buffer)
-
-    return filePath
-  }
-
-  // ********** //
-  // DeleteFile //
-  // ********** //
-
-  async deleteFile(filePath: string) {
-    try {
-      await fs.promises.unlink(filePath)
-    } catch (error) {
-      throw new BadRequestException('Invalid file path')
-    }
-    return
-  }
-
-  async disconnectAll() {
-    await this.userRepository.update({}, { status: 'offline' })
   }
 }

@@ -1,3 +1,6 @@
+import { Logger } from '@nestjs/common'
+import { ApiProperty } from '@nestjs/swagger'
+
 import {
   AfterInsert,
   AfterRemove,
@@ -10,12 +13,10 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 
-import { Logger } from '@nestjs/common'
 
 import { Channel } from '@/modules/chat/channels/entities/channel.entity'
-import { Friendship } from '@/modules/social/entities/friendship.entity'
 import { type Message } from '@/modules/chat/channels/entities/message.entity'
-import { ApiProperty } from '@nestjs/swagger'
+import { Friendship } from '@/modules/social/entities/friendship.entity'
 
 export enum UserStatus {
   ONLINE = 'online',
@@ -24,21 +25,10 @@ export enum UserStatus {
   INGAME = 'ingame'
 }
 
-// ****** //
-// LOGGER //
-// ****** //
-
 const logger = new Logger('user')
 
 @Entity()
 export class User {
-  // ************* //
-  // ENTITY FIELDS //
-  // ************* //
-
-  // ******************* //
-  // USER AUTHENTICATION //
-  // ******************* //
 
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty()
@@ -65,17 +55,9 @@ export class User {
   @Column({ default: false })
   isTwoFactorEnabled: boolean
 
-  // ****************** //
-  // OTHER INFORMATIONS //
-  // ****************** //
-
   @Column({ default: 'offline' })
   @ApiProperty()
   status: string
-
-  // ******************************* //
-  // FRIENDSHIP RELATED INFORMATIONS //
-  // ******************************* //
 
   nFriends: number
   blockedUsers: User[]
@@ -85,10 +67,6 @@ export class User {
 
   @OneToMany(() => Friendship, (friendship) => friendship.receiver)
   receivedRequests: Friendship[]
-
-  // ************************* //
-  // CHAT RELATED INFORMATIONS //
-  // ************************* //
 
   @JoinTable()
   @ManyToMany(() => Channel, (channel: Channel) => channel.members)
@@ -108,10 +86,6 @@ export class User {
 
   @OneToMany(() => Channel, (channel: Channel) => channel.messages)
   messages: Message[]
-
-  // ************************** //
-  // STATS RELATED INFORMATIONS //
-  // ************************** //
 
   @Column({ default: 0, select: false })
   gamesPlayed: number
@@ -141,10 +115,6 @@ export class User {
   @Column(process.env.NODE_ENV === 'production' ? { type: "timestamptz", default: () => "CURRENT_TIMESTAMP" } : { default: Date.now() })
   @ApiProperty()
   updatedAt: Date;
-
-  // ***** //
-  // UTILS //
-  // ***** //
 
   @AfterInsert()
   logInsert() {

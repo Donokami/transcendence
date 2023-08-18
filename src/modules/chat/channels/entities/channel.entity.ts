@@ -1,3 +1,5 @@
+import { Logger } from '@nestjs/common'
+
 import {
   AfterInsert,
   AfterRemove,
@@ -10,15 +12,9 @@ import {
   Index
 } from 'typeorm'
 
+import { Message } from '@/modules/chat/channels/entities/message.entity'
+import { MutedUser } from '@/modules/chat/channels/entities/muted-user.entity'
 import { User } from '@/modules/users/user.entity'
-
-import { Message } from './message.entity'
-import { Logger } from '@nestjs/common'
-import { MutedUser } from './muted-user.entity'
-
-// ****** //
-// LOGGER //
-// ****** //
 
 export enum ChannelTypes {
   PUBLIC = 'public',
@@ -31,13 +27,6 @@ const logger = new Logger('channel')
 
 @Entity()
 export class Channel {
-  // ************* //
-  // ENTITY FIELDS //
-  // ************* //
-
-  // **************************** //
-  // GENERAL CHANNEL INFORMATIONS //
-  // **************************** //
 
   @PrimaryGeneratedColumn('uuid')
   id: string
@@ -45,10 +34,6 @@ export class Channel {
   @Column({ nullable: true })
   @Index({ unique: true, where: 'name IS NOT NULL' })
   name: string
-
-  // **************************** //
-  // MEMBERS RELATED INFORMATIONS //
-  // **************************** //
 
   @ManyToOne(() => User)
   owner: User
@@ -67,10 +52,6 @@ export class Channel {
   })
   mutedMembers: MutedUser[]
 
-  // **************************** //
-  // PRIVACY RELATED INFORMATIONS //
-  // **************************** //
-
   @Column({
     type: process.env.NODE_ENV === 'production' ? 'enum' : 'text',
     enum: ChannelTypes,
@@ -80,10 +61,6 @@ export class Channel {
 
   @Column({ nullable: true, select: false })
   password: string
-
-  // ***************************** //
-  // MESSAGES RELATED INFORMATIONS //
-  // ***************************** //
 
   @OneToMany(() => Message, (message: Message) => message.channel)
   messages: Message[]

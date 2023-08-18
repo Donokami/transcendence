@@ -1,19 +1,19 @@
 import { Injectable, Logger } from '@nestjs/common'
 
-import * as qrcode from 'qrcode'
-import { authenticator } from 'otplib'
-import { promisify } from 'util'
 import { randomBytes, scrypt as _scrypt } from 'crypto'
+import { authenticator } from 'otplib'
+import * as qrcode from 'qrcode'
+import { promisify } from 'util'
 
-import { UsersService } from '@/modules/users/users.service'
-import { type IUserDetails } from '@/core/types/user-details'
 import {
   InvalidPassword,
   InvalidTwoFaToken,
   TwoFaDisabled,
   UserNotFound
 } from '@/core/exceptions'
-import { User } from '../users/user.entity'
+import { type IUserDetails } from '@/core/types/user-details'
+import { User } from '@/modules/users/user.entity'
+import { UsersService } from '@/modules/users/users.service'
 
 const scrypt = promisify(_scrypt)
 
@@ -22,18 +22,6 @@ export class AuthService {
   constructor(private readonly usersService: UsersService) {}
 
   private logger = new Logger(AuthService.name)
-
-  async validateUser(details: IUserDetails) {
-    const user = await this.usersService.findOneByFortyTwoIdWithAuthInfos(
-      details.fortyTwoId
-    )
-    if (!user) {
-      const newUser = await this.usersService.createOauth(details)
-      return newUser
-    }
-
-    return user
-  }
 
   async buildTwoFactorQrCode(user: User): Promise<string> {
     const otpauth = authenticator.keyuri(
@@ -44,9 +32,35 @@ export class AuthService {
     return await qrcode.toDataURL(otpauth)
   }
 
-  // *************** //
-  // toggleTwoFactor //
-  // *************** //
+  async register(username: string, password: string) {
+    const salt = randomBytes(8).toString('hex')
+    const hash = (await scrypt(password, salt, 32)) as Buffer
+    const hashedPassword = salt + '.' + hash.toString('hex')
+
+    const newUser = await this.usersService.create(username, hashedPassword)
+    return newUser
+  }
+
+  async signIn(username: string, password: string) {
+    const user = await this.usersService.findOneByUsernameWithAuthInfos(
+      username
+    )
+    if (!user) {
+      this.logger.warn('User not found')
+      throw new UserNotFound()
+    }
+
+    const [salt, storedHash] = user.password.split('.')
+
+    const hash = (await scrypt(password, salt, 32)) as Buffer
+
+    if (storedHash !== hash.toString('hex')) {
+      this.logger.warn('Authentication failed')
+      throw new InvalidPassword()
+    }
+
+    return user
+  }
 
   async toggleTwoFactor(userId: string) {
     const user = await this.usersService.findOneByIdWithAuthInfos(userId)
@@ -72,10 +86,18 @@ export class AuthService {
       }
     }
   }
+  
+  async validateUser(details: IUserDetails) {
+    const user = await this.usersService.findOneByFortyTwoIdWithAuthInfos(
+      details.fortyTwoId
+    )
+    if (!user) {
+      const newUser = await this.usersService.createOauth(details)
+      return newUser
+    }
 
-  // ******************** //
-  // verifyTwoFactorToken //
-  // ******************** //
+    return user
+  }
 
   async verifyTwoFactorToken(userId: string, token: string) {
     const user = await this.usersService.findOneByIdWithAuthInfos(userId)
@@ -96,44 +118,6 @@ export class AuthService {
     if (!isValid) {
       this.logger.warn('Invalid 2FA token')
       throw new InvalidTwoFaToken()
-    }
-
-    return user
-  }
-
-  // ******** //
-  // register //
-  // ******** //
-
-  async register(username: string, password: string) {
-    const salt = randomBytes(8).toString('hex')
-    const hash = (await scrypt(password, salt, 32)) as Buffer
-    const hashedPassword = salt + '.' + hash.toString('hex')
-
-    const newUser = await this.usersService.create(username, hashedPassword)
-    return newUser
-  }
-
-  // ****** //
-  // signIn //
-  // ****** //
-
-  async signIn(username: string, password: string) {
-    const user = await this.usersService.findOneByUsernameWithAuthInfos(
-      username
-    )
-    if (!user) {
-      this.logger.warn('User not found')
-      throw new UserNotFound()
-    }
-
-    const [salt, storedHash] = user.password.split('.')
-
-    const hash = (await scrypt(password, salt, 32)) as Buffer
-
-    if (storedHash !== hash.toString('hex')) {
-      this.logger.warn('Authentication failed')
-      throw new InvalidPassword()
     }
 
     return user
