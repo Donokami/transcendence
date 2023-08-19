@@ -9,7 +9,7 @@
         does not exist on this server !
       </p>
       <button
-        class="p-2 m-auto text-center neobrutalist-box"
+        class="px-4 py-2 m-auto text-center neobrutalist-box"
         @click="router.back()">
         Go back to last page
       </button>

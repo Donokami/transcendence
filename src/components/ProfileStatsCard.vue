@@ -166,7 +166,7 @@
 // IMPORTS //
 // ******* //
 
-import { computed, ref, type Ref, onMounted } from 'vue'
+import { computed, ref, onMounted, watch } from 'vue'
 import { useToast } from 'vue-toastification'
 
 import { storeToRefs } from 'pinia'
@@ -179,7 +179,6 @@ import { socialSocket } from '@/includes/socialSocket'
 import { useUserStore } from '@/stores/UserStore'
 import type { User } from '@/types'
 import { ApiError } from '@/utils/fetcher'
-import { watch } from 'vue'
 
 // ******************** //
 // VARIABLE DEFINITIONS //

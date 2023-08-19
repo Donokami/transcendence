@@ -274,6 +274,9 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
   if (channelName.value.length === 0) {
     channelNameError.value = 'Group name is required for group creation'
     return
+  } else if (channelName.value.length < 4) {
+    channelNameError.value = 'Group name must be at least 4 characters long'
+    return
   } else {
     channelNameError.value = null
   }
