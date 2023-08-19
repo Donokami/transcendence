@@ -42,10 +42,9 @@ export class AuthService {
   }
 
   async signIn(username: string, password: string) {
-    const user = await this.usersService.findOneByUsernameWithAuthInfos(
-      username
-    )
-    if (!user) {
+    const user =
+      await this.usersService.findOneByUsernameWithAuthInfos(username)
+    if (!user || !user.password) {
       this.logger.warn('User not found')
       throw new UserNotFound()
     }
@@ -86,7 +85,7 @@ export class AuthService {
       }
     }
   }
-  
+
   async validateUser(details: IUserDetails) {
     const user = await this.usersService.findOneByFortyTwoIdWithAuthInfos(
       details.fortyTwoId
