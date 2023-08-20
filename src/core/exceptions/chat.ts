@@ -119,7 +119,7 @@ export class UserIsNotAdmin extends HttpException {
 
 export class UserIsNotBanned extends HttpException {
   constructor() {
-    super('User is not banned admin.', HttpStatus.BAD_REQUEST)
+    super('User is not banned.', HttpStatus.BAD_REQUEST)
   }
 }
 
