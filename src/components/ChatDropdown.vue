@@ -33,9 +33,12 @@
           <span>Profile</span>
         </router-link>
       </li>
-      <!-- MAKE ADMIN -->
       <div v-if="!isSender">
-        <li class="rounded-none" v-if="showMakeAdmin()" @click="makeAdmin">
+        <!-- MAKE ADMIN -->
+        <li
+          class="rounded-none"
+          v-if="isMember && showMakeAdmin()"
+          @click="makeAdmin">
           <div class="flex gap-3 rounded-none">
             <iconify-icon
               icon="lucide:user-cog"
@@ -52,12 +55,13 @@
             <span>Block</span>
           </div>
         </li>
-        <div v-if="isMember && showAdminActions()">
+        <!-- ADMIN ACTIONS -->
+        <div v-if="showAdminActions()">
           <div class="divider p-0 m-0 h-[6px]"></div>
           <!-- REVOKE ADMIN -->
           <li
             class="rounded-none"
-            v-if="showRevokeAdmin()"
+            v-if="isMember && showRevokeAdmin()"
             @click="revokeAdmin()">
             <div
               class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
@@ -78,7 +82,7 @@
             </div>
           </li>
           <!-- KICK -->
-          <li class="rounded-none" @click="kickMember">
+          <li class="rounded-none" v-if="isMember" @click="kickMember">
             <div
               class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
               <iconify-icon icon="lucide:door-open" class="h-4 w-4 shrink-0">
@@ -87,7 +91,7 @@
             </div>
           </li>
           <!-- BAN -->
-          <li class="rounded-none" @click="banMember">
+          <li class="rounded-none" v-if="isMember" @click="banMember">
             <div
               class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
               <iconify-icon icon="lucide:gavel" class="h-4 w-4 shrink-0">
@@ -95,10 +99,8 @@
               <span>Ban</span>
             </div>
           </li>
-        </div>
-        <!-- UNBAN -->
-        <div v-if="isBanned">
-          <li class="rounded-none" @click="unbanMember">
+          <!-- UNBAN -->
+          <li class="rounded-none" v-if="isBanned" @click="unbanMember">
             <div
               class="flex gap-3 rounded-none text-green-500 hover:text-green-500">
               <iconify-icon icon="lucide:gavel" class="h-4 w-4 shrink-0">
@@ -113,10 +115,6 @@
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
-
 import { storeToRefs } from 'pinia'
 
 import {
@@ -156,24 +154,102 @@ const props = defineProps({
 })
 
 const channelStore = useChannelStore()
-const dropdownRef = ref<HTMLElement | null>(null)
-const isOpen = ref(props.openDropdown === parseInt(props.user.id))
-const isProfileBlockedByUser = ref(false)
-const isUserBlockedByProfile = ref(false)
-const toast = useToast()
-const userStore = useUserStore()
 
+const userStore = useUserStore()
 const { loggedUser } = storeToRefs(userStore)
 
-function showRevokeAdmin(): boolean {
-  if (!props.channel || !loggedUser.value) return false
+const dropdownRef = ref<HTMLElement | null>(null)
+const isOpen = ref(props.openDropdown === parseInt(props.user.id))
+const toast = useToast()
 
-  const isTargetAdmin = channelStore.isAdmin(props.user.id, props.channel.id)
-  const isUserOwner = channelStore.isOwner(
-    loggedUser.value.id,
-    props.channel.id
-  )
-  return isUserOwner && isTargetAdmin
+const banMember = async (): Promise<void> => {
+  try {
+    await channelStore.banMember(props.user.id, props.channel.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to ban this member.')
+      }
+    }
+  }
+}
+
+const blockUser = async (): Promise<void> => {
+  try {
+    await userStore.blockUser(props.user.id)
+    toast.success(`${props.user.username} has been blocked.`)
+  } catch (error) {
+    toast.error('An error occured while blocking user.')
+  }
+}
+
+const handleClickOutside = (event: MouseEvent): void => {
+  const { target } = event
+  if (
+    dropdownRef.value &&
+    !dropdownRef.value.contains(target as Node) &&
+    isOpen.value
+  ) {
+    toggleDropdown()
+  }
+}
+
+const isBanned = computed((): boolean => {
+  return channelStore.isBanned(props.user.id, props.channel.id)
+})
+
+const isMember = computed((): boolean => {
+  return channelStore.isMember(props.user.id, props.channel.id)
+})
+
+const kickMember = async (): Promise<void> => {
+  try {
+    await channelStore.kickMember(props.user.id, props.channel.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to kick this member.')
+      }
+    }
+  }
+}
+
+const makeAdmin = async (): Promise<void> => {
+  try {
+    await channelStore.makeAdmin(props.user.id, props.channel.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to give admin right to this user.')
+      }
+    }
+  }
+}
+
+const muteMember = async (): Promise<void> => {
+  try {
+    await channelStore.muteMember(props.user.id, props.channel.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to mute this member.')
+      }
+    }
+  }
+}
+
+const revokeAdmin = async (): Promise<void> => {
+  try {
+    await channelStore.revokeAdmin(props.user.id, props.channel.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error(
+          'You are not allowed to revoke the admin rights of this user.'
+        )
+      }
+    }
+  }
 }
 
 function showAdminActions(): boolean {
@@ -195,9 +271,6 @@ function showAdminActions(): boolean {
 function showMakeAdmin(): boolean {
   if (!props.channel || !loggedUser.value) return false
 
-  const isTargetMember = channelStore.isMember(props.user.id, props.channel.id)
-  if (!isTargetMember) return false
-
   const isTargetOwner = channelStore.isOwner(props.user.id, props.channel.id)
   const isTargetAdmin = channelStore.isAdmin(props.user.id, props.channel.id)
   const isUserOwner = channelStore.isOwner(
@@ -211,141 +284,20 @@ function showMakeAdmin(): boolean {
   return (isUserAdmin || isUserOwner) && !isTargetAdmin && !isTargetOwner
 }
 
-// ********************* //
-// FUNCTIONS DEFINITIONS //
-// ********************* //
+function showRevokeAdmin(): boolean {
+  if (!props.channel || !loggedUser.value) return false
 
-const isMember = computed((): boolean => {
-  return props.channel.members.some(
-    (member) => member.username === props.user.username
+  const isTargetAdmin = channelStore.isAdmin(props.user.id, props.channel.id)
+  const isUserOwner = channelStore.isOwner(
+    loggedUser.value.id,
+    props.channel.id
   )
-})
-
-const isBanned = computed((): boolean => {
-  return props.channel.bannedMembers.some(
-    (bannedMember) => bannedMember.username === props.user.username
-  )
-})
-
-const revokeAdmin = async (): Promise<void> => {
-  try {
-    await channelStore.revokeAdmin(props.user.id, props.channel.id)
-  } catch (err: any) {
-    if (err instanceof ApiError) {
-      if (err.code === 'ForbiddenException') {
-        toast.error(
-          'You are not allowed to revoke the admin rights of this user.'
-        )
-      }
-    }
-  }
+  return isUserOwner && isTargetAdmin
 }
-
-// ********* //
-// banMember //
-// ********* //
-
-const banMember = async (): Promise<void> => {
-  try {
-    await channelStore.banMember(props.user.id, props.channel.id)
-  } catch (err: any) {
-    if (err instanceof ApiError) {
-      if (err.code === 'ForbiddenException') {
-        toast.error('You are not allowed to ban this member.')
-      }
-    }
-  }
-}
-
-// ********* //
-// blockUser //
-// ********* //
-
-const blockUser = async (): Promise<void> => {
-  try {
-    await userStore.blockUser(props.user.id)
-    await checkBlockedStatus()
-    toast.success(`${props.user.username} has been blocked.`)
-  } catch (error) {
-    toast.error('An error occured while blocking user.')
-  }
-}
-
-const checkBlockedStatus = async (): Promise<void> => {
-  if (!loggedUser.value) return
-  try {
-    const response = await userStore.fetchBlockerId(props.user.id)
-    if (response === loggedUser.value.id) {
-      isProfileBlockedByUser.value = true
-    } else if (response === props.user.id) {
-      isUserBlockedByProfile.value = true
-    } else {
-      isProfileBlockedByUser.value = false
-      isUserBlockedByProfile.value = false
-    }
-  } catch (error) {
-    toast.error('Failed to fetch blocked user and check friendship!')
-  }
-}
-
-// ********* //
-// makeAdmin //
-// ********* //
-
-const makeAdmin = async (): Promise<void> => {
-  try {
-    await channelStore.makeAdmin(props.user.id, props.channel.id)
-  } catch (err: any) {
-    if (err instanceof ApiError) {
-      if (err.code === 'ForbiddenException') {
-        toast.error('You are not allowed to give admin right to this user.')
-      }
-    }
-  }
-}
-
-// ****************** //
-// handleClickOutside //
-// ****************** //
-
-const handleClickOutside = (event: MouseEvent): void => {
-  const { target } = event
-  if (
-    dropdownRef.value &&
-    !dropdownRef.value.contains(target as Node) &&
-    isOpen.value
-  ) {
-    toggleDropdown()
-  }
-}
-
-// ********** //
-// kickMember //
-// ********** //
-
-const kickMember = async (): Promise<void> => {
-  try {
-    await channelStore.kickMember(props.user.id, props.channel.id)
-  } catch (err: any) {
-    if (err instanceof ApiError) {
-      if (err.code === 'ForbiddenException') {
-        toast.error('You are not allowed to kick this member.')
-      }
-    }
-  }
-}
-
-// ************** //
-// toggleDropdown //
-// ************** //
 
 const toggleDropdown = (): void => {
   isOpen.value = !isOpen.value
 }
-
-// *********** //
-// unbanMember //
-// *********** //
 
 const unbanMember = async (): Promise<void> => {
   try {
@@ -358,22 +310,6 @@ const unbanMember = async (): Promise<void> => {
     }
   }
 }
-
-const muteMember = async (): Promise<void> => {
-  try {
-    await channelStore.muteMember(props.user.id, props.channel.id)
-  } catch (err: any) {
-    if (err instanceof ApiError) {
-      if (err.code === 'ForbiddenException') {
-        toast.error('You are not allowed to mute this member.')
-      }
-    }
-  }
-}
-
-// ********************* //
-// VueJs LIFECYCLE HOOKS //
-// ********************* //
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)

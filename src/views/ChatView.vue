@@ -124,11 +124,9 @@
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
+import { storeToRefs } from 'pinia'
 
-import { ref, onBeforeMount, onBeforeUnmount, computed } from 'vue'
+import { ref, onBeforeMount, computed } from 'vue'
 import {
   onBeforeRouteLeave,
   onBeforeRouteUpdate,
@@ -137,28 +135,35 @@ import {
 } from 'vue-router'
 import { useToast } from 'vue-toastification'
 
-import { storeToRefs } from 'pinia'
 // import InfiniteLoading from 'v3-infinite-loading'
 
-import { chatSocket } from '@/includes/chatSocket'
-
-import { useChannelStore } from '@/stores/ChannelStore.js'
-
-import ChatLeftSidebar from '@/components/ChatLeftSidebar.vue'
-import ChatRightSidebar from '@/components/ChatRightSidebar.vue'
 import ChatBox from '@/components/ChatBox.vue'
 import ChatInput from '@/components/ChatInput.vue'
-import UserAvatar from '@/components/UserAvatar.vue'
 import ChatLeftDrawer from '@/components/ChatLeftDrawer.vue'
+import ChatLeftSidebar from '@/components/ChatLeftSidebar.vue'
 import ChatRightDrawer from '@/components/ChatRightDrawer.vue'
-
+import ChatRightSidebar from '@/components/ChatRightSidebar.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
+import { chatSocket } from '@/includes/chatSocket'
+import { useChannelStore } from '@/stores/ChannelStore.js'
+import { useUserStore } from '@/stores/UserStore'
 import type { Channel, Message, Room, User } from '@/types'
 import { fetcher } from '@/utils/fetcher'
-import { useUserStore } from '@/stores/UserStore'
 
-// ******************** //
-// VARIABLE DEFINITIONS //
-// ******************** //
+const channelStore = useChannelStore()
+const { channelsList, selectedChannel } = storeToRefs(channelStore)
+
+const { loggedUser } = useUserStore()
+
+const chatbox = ref<HTMLElement | null>(null)
+const listState = ref('dms')
+const router = useRouter()
+const route = useRoute()
+const toast = useToast()
+
+const channelImageUrl = (imagePath: string): string => {
+  return `${import.meta.env.VITE_APP_BASE_URL}/${imagePath}`
+}
 
 const sidebarClasses = computed(() => {
   const baseClasses =
@@ -173,28 +178,6 @@ const sidebarClasses = computed(() => {
   return baseClasses
 })
 
-const channelImageUrl = (imagePath: string): string => {
-  return `${import.meta.env.VITE_APP_BASE_URL}/${imagePath}`
-}
-
-const channelStore = useChannelStore()
-const { loggedUser } = useUserStore()
-const chatbox = ref<HTMLElement | null>(null)
-const listState = ref('dms')
-const router = useRouter()
-const route = useRoute()
-const toast = useToast()
-
-const { selectedChannel, channelsList } = storeToRefs(channelStore)
-
-// ********************* //
-// FUNCTIONS DEFINITIONS //
-// ********************* //
-
-// ********** //
-// createGame //
-// ********** //
-
 async function createGame(): Promise<void> {
   const room: Room = await fetcher.post('/games')
   await router.push(`/room/${room.id}`)
@@ -203,35 +186,19 @@ async function createGame(): Promise<void> {
   )
 }
 
-// ************ //
-// getChannelId //
-// ************ //
-
-const getChannelId = (observedRoute: any): string | null => {
+function getChannelId(observedRoute: any): string | null {
   if (observedRoute.params.catchAll !== '') {
     return observedRoute.params.catchAll.slice(1)
   }
   return null
 }
 
-// ************** //
-// scrollToBottom //
-// ************** //
-
 function scrollToBottom(): void {
   if (chatbox.value != null)
     chatbox.value.scrollTop = chatbox.value.scrollHeight
 }
 
-// ****** //
-// SOCKET //
-// ****** //
-
 chatSocket.connect()
-
-// *** //
-// ban //
-// *** //
 
 chatSocket.on(
   'chat:ban',
@@ -253,10 +220,6 @@ chatSocket.on(
   }
 )
 
-// ************** //
-// channelCreated //
-// ************** //
-
 chatSocket.on('chat:channel-created', async (channel: Channel) => {
   if (loggedUser === null) return
   channelStore.setChannelInfos(loggedUser, channel)
@@ -268,25 +231,13 @@ chatSocket.on('chat:channel-created', async (channel: Channel) => {
   }
 })
 
-// ********** //
-// disconnect //
-// ********** //
-
 chatSocket.on('disconnect', async () => {
   console.log('[ChatView] - Disconnected from the /chat socket')
 })
 
-// ***** //
-// error //
-// ***** //
-
 chatSocket.on('error', (error) => {
   console.error('[ChatView] - Socket error : ', error)
 })
-
-// **** //
-// join //
-// **** //
 
 chatSocket.on(
   'chat:join',
@@ -305,10 +256,6 @@ chatSocket.on(
     return await router.push(`/chat/${channelId}`)
   }
 )
-
-// **** //
-// kick //
-// **** //
 
 chatSocket.on(
   'chat:kick',
@@ -329,10 +276,6 @@ chatSocket.on(
   }
 )
 
-// ***** //
-// leave //
-// ***** //
-
 chatSocket.on(
   'chat:leave',
   async ({ user, channelId }: { user: User; channelId: string }) => {
@@ -341,20 +284,12 @@ chatSocket.on(
   }
 )
 
-// ******* //
-// message //
-// ******* //
-
 chatSocket.on('chat:message', async (message: Message) => {
   await channelStore.addMessage(message, message.channel.id)
   if (chatbox.value != null) {
     scrollToBottom()
   }
 })
-
-// **** //
-// mute //
-// **** //
 
 chatSocket.on(
   'chat:mute',
@@ -384,10 +319,6 @@ chatSocket.on(
   }
 )
 
-// ******** //
-// setAdmin //
-// ******** //
-
 chatSocket.on(
   'chat:set-admin',
   async ({ user, channelId }: { user: User; channelId: string }) => {
@@ -406,10 +337,6 @@ chatSocket.on(
   }
 )
 
-// ***** //
-// unban //
-// ***** //
-
 chatSocket.on(
   'chat:unban',
   async ({ user, channelId }: { user: User; channelId: string }) => {
@@ -427,17 +354,13 @@ chatSocket.on(
   }
 )
 
-// ********** //
-// unsetAdmin //
-// ********** //
-
 chatSocket.on(
   'chat:unset-admin',
   async ({ user, channelId }: { user: User; channelId: string }) => {
     const channel = channelStore.getChannel(channelId)
     if (!channel) return
 
-    await channelStore.removeAdmin(user.id, channelId)
+    channelStore.removeAdmin(user.id, channelId)
 
     if (loggedUser && loggedUser.id === user.id) {
       toast.success(`You are not admin of ${channel.name} anymore`)
@@ -447,19 +370,10 @@ chatSocket.on(
   }
 )
 
-// ********************* //
-// VueJs LIFECYCLE HOOKS //
-// ********************* //
-
 onBeforeMount(async () => {
   if (channelsList.value === null) {
     channelsList.value = await channelStore.fetchChannels()
   }
-
-  chatSocket.on('chat:connect', async () => {
-    console.log('[ChatView] - Connected to the /chat socket')
-    channelsList.value = await channelStore.fetchChannels()
-  })
 
   if (selectedChannel.value) {
     await router.push(`/chat/${selectedChannel.value}`)

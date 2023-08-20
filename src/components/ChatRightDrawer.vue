@@ -24,6 +24,7 @@
             class="w-full bg-base-100">
             <li v-for="user in channel?.members" :key="user.id">
               <div class="w-full rounded-none dropdown dropdown-bottom">
+                <!-- AVATAR DROPDOWN BUTTON -->
                 <label
                   tabindex="0"
                   class="flex rounded-none cursor-pointer hover:bg-base-300">
@@ -41,9 +42,11 @@
                     </div>
                   </div>
                 </label>
+                <!-- DROPDOWN CONTENT -->
                 <ul
                   tabindex="0"
                   class="dropdown-content menu shadow bg-base-100 z-[1000] p-0 border-2 border-black rounded-none mx-2 w-40 top-100">
+                  <!-- GO TO PROFILE -->
                   <li class="rounded-none">
                     <router-link
                       :to="`/profile/${user.id}`"
@@ -54,9 +57,10 @@
                     </router-link>
                   </li>
                   <div v-if="user.id !== loggedUser?.id">
+                    <!-- MAKE ADMIN -->
                     <li
                       class="rounded-none"
-                      v-if="showMakeAdmin(user)"
+                      v-if="isMember(user) && showMakeAdmin(user)"
                       @click="makeAdmin(user)">
                       <div class="flex gap-3 rounded-none">
                         <iconify-icon
@@ -66,9 +70,10 @@
                         <span class="w-full">Make Admin</span>
                       </div>
                     </li>
+                    <!-- BLOCK -->
                     <li
                       class="rounded-none"
-                      v-if="isTargetBlocked(user) === false"
+                      v-if="isBlocked(user) === false"
                       @click="blockUser(user)">
                       <div class="flex gap-3 rounded-none">
                         <iconify-icon
@@ -78,11 +83,26 @@
                         <span>Block</span>
                       </div>
                     </li>
+                    <!-- UNBLOCK -->
+                    <li
+                      class="rounded-none"
+                      v-if="isBlocked(user) === true"
+                      @click="unblockUser(user)">
+                      <div class="flex gap-3 rounded-none">
+                        <iconify-icon
+                          icon="lucide:ban"
+                          class="h-4 w-4 shrink-0">
+                        </iconify-icon>
+                        <span>Unblock</span>
+                      </div>
+                    </li>
+                    <!-- ADMIN ACTIONS -->
                     <div v-if="showAdminActions(user)">
                       <div class="divider p-0 m-0 h-[6px]"></div>
+                      <!-- REVOKE ADMIN -->
                       <li
                         class="rounded-none"
-                        v-if="showRevokeAdmin(user)"
+                        v-if="isMember(user) && showRevokeAdmin(user)"
                         @click="revokeAdmin(user)">
                         <div
                           class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
@@ -93,7 +113,11 @@
                           <span class="w-full">Revoke Admin</span>
                         </div>
                       </li>
-                      <li class="rounded-none">
+                      <!-- MUTE -->
+                      <li
+                        class="rounded-none"
+                        v-if="isMember(user)"
+                        @click="muteMember(user)">
                         <div
                           class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
                           <iconify-icon
@@ -103,7 +127,11 @@
                           <span>Mute</span>
                         </div>
                       </li>
-                      <li class="rounded-none" @click="kickMember(user)">
+                      <!-- KICK -->
+                      <li
+                        class="rounded-none"
+                        v-if="isMember(user)"
+                        @click="kickMember(user)">
                         <div
                           class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
                           <iconify-icon
@@ -113,7 +141,11 @@
                           <span>Kick</span>
                         </div>
                       </li>
-                      <li class="rounded-none" @click="banMember(user)">
+                      <!-- BAN -->
+                      <li
+                        class="rounded-none"
+                        v-if="isMember(user)"
+                        @click="banMember(user)">
                         <div
                           class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
                           <iconify-icon
@@ -121,6 +153,20 @@
                             class="w-4 h-4 shrink-0">
                           </iconify-icon>
                           <span>Ban</span>
+                        </div>
+                      </li>
+                      <!-- UNBAN -->
+                      <li
+                        class="rounded-none"
+                        v-if="isBanned(user)"
+                        @click="unbanMember(user)">
+                        <div
+                          class="flex gap-3 rounded-none text-green-500 hover:text-green-500">
+                          <iconify-icon
+                            icon="lucide:gavel"
+                            class="h-4 w-4 shrink-0">
+                          </iconify-icon>
+                          <span>Unban</span>
                         </div>
                       </li>
                     </div>
@@ -188,7 +234,7 @@ const toast = useToast()
 const { loggedUser } = storeToRefs(userStore)
 const { selectedChannel, channelsList } = storeToRefs(channelStore)
 
-const banMember = async (target: User): Promise<void> => {
+async function banMember(target: User): Promise<void> {
   if (!channel.value) return
   await channelStore.banMember(target.id, channel.value.id)
 }
@@ -209,29 +255,17 @@ async function getChannel(): Promise<void> {
   }
 }
 
-function isTargetBlocked(target: User): boolean {
-  if (!channel.value || !loggedUser.value) return false
-
-  const isTargetBlocked = loggedUser.value.blockedUsers.some(
-    (user) => user.id === target.id
-  )
-
-  if (isTargetBlocked) return true
-
-  return false
-}
-
-const kickMember = async (target: User): Promise<void> => {
+async function kickMember(target: User): Promise<void> {
   if (!channel.value) return
   await channelStore.kickMember(target.id, channel.value.id)
 }
 
-const leaveGroup = async (): Promise<void> => {
+async function leaveGroup(): Promise<void> {
   if (!loggedUser.value || !channel.value) return
   await channelStore.leaveGroup(loggedUser.value.id, channel.value.id)
 }
 
-const makeAdmin = async (target: User): Promise<void> => {
+async function makeAdmin(target: User): Promise<void> {
   if (!channel.value) return
   try {
     await channelStore.makeAdmin(target.id, channel.value.id)
@@ -244,7 +278,21 @@ const makeAdmin = async (target: User): Promise<void> => {
   }
 }
 
-const revokeAdmin = async (target: User): Promise<void> => {
+async function muteMember(target: User): Promise<void> {
+  if (!channel.value) return
+
+  try {
+    await channelStore.muteMember(target.id, channel.value.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to mute this member.')
+      }
+    }
+  }
+}
+
+async function revokeAdmin(target: User): Promise<void> {
   if (!channel.value) return
   try {
     await channelStore.revokeAdmin(target.id, channel.value.id)
@@ -257,6 +305,46 @@ const revokeAdmin = async (target: User): Promise<void> => {
       }
     }
   }
+}
+
+async function unbanMember(target: User): Promise<void> {
+  if (!channel.value) return
+  try {
+    await channelStore.unbanMember(target.id, channel.value.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to unban this member.')
+      }
+    }
+  }
+}
+
+async function unblockUser(target: User): Promise<void> {
+  try {
+    await userStore.unblockUser(target.id)
+    toast.success(`${target.username} has been unblocked.`)
+  } catch (error) {
+    toast.error('An error occured while unblocking user.')
+  }
+}
+
+function isBanned(target: User): boolean {
+  if (!channel.value || !loggedUser.value) return false
+
+  return channelStore.isBanned(target.id, channel.value.id)
+}
+
+function isBlocked(target: User): boolean {
+  if (!channel.value || !loggedUser.value) return false
+
+  return loggedUser.value.blockedUsers.some((user) => user.id === target.id)
+}
+
+function isMember(target: User): boolean {
+  if (!channel.value || !loggedUser.value) return false
+
+  return channelStore.isMember(target.id, channel.value.id)
 }
 
 function showAdminActions(target: User): boolean {
@@ -278,10 +366,9 @@ function showAdminActions(target: User): boolean {
 function showMakeAdmin(target: User): boolean {
   if (!channel.value || !loggedUser.value) return false
 
-  if (isTargetBlocked(target)) return false
-
   const isTargetOwner = channelStore.isOwner(target.id, channel.value.id)
   const isTargetAdmin = channelStore.isAdmin(target.id, channel.value.id)
+
   const isUserOwner = channelStore.isOwner(
     loggedUser.value.id,
     channel.value.id
@@ -290,6 +377,7 @@ function showMakeAdmin(target: User): boolean {
     loggedUser.value.id,
     channel.value.id
   )
+
   return (isUserAdmin || isUserOwner) && !isTargetAdmin && !isTargetOwner
 }
 
