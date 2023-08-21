@@ -32,19 +32,19 @@ export class FriendshipAlreadyPending extends HttpException {
 
 export class FriendshipBlocked extends HttpException {
   constructor() {
-    super('Friendship is blocked', HttpStatus.UNAUTHORIZED)
+    super('Friendship status is blocked', HttpStatus.UNAUTHORIZED)
   }
 }
 
 export class FriendshipNotBlocked extends HttpException {
   constructor() {
-    super('Friend request not blocked', HttpStatus.BAD_REQUEST)
+    super('Friendship status is not blocked', HttpStatus.BAD_REQUEST)
   }
 }
 
 export class FriendshipNotFound extends HttpException {
   constructor() {
-    super('Friend request not found', HttpStatus.NOT_FOUND)
+    super('Friendship is not found', HttpStatus.NOT_FOUND)
   }
 }
 

@@ -255,7 +255,6 @@ export class ChannelsController {
   })
   @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
-  @UseGuards(OwnershipGuard)
   async setAdmin(
     @Body() body: HandleChannelDto,
     @CurrentChannel() channel: Channel

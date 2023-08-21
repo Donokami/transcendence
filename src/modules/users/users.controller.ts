@@ -144,6 +144,7 @@ export class UsersController {
     }
 
     user.blockedUsers = await this.socialService.getBlockedUsers(user.id)
+    
     return user
   }
 
