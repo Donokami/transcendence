@@ -14,100 +14,95 @@
       </span>
     </div>
     <TresCanvas
-      :useLegacyLights="false"
       clear-color="#7dd3fc"
       @mousemove="MovePaddle"
+      :camera="camera"
       class="absolute">
-      <TresScene>
-        <TresAmbientLight
-          color="#ffffff"
-          :position="[0, 3, 0]"
-          :intensity="1" />
-        <TresDirectionalLight
-          color="#ffffff"
-          cast-shadow
-          :position="[-15, 25, 0]"
-          :intensity="2" />
-        <!-- <TresDirectionalLight color="#ffaaaa" :position="[0, 5, 3]" :intensity="0.5" /> -->
-        <TresPerspectiveCamera
-          ref="cameraRef"
-          :rotation-y="cameraRotation"
-          :position="[0, 5, 0]"
-          :fov="isSpectator ? 80 : 25"
-          :aspect="1"
-          :near="0.1"
-          :far="1000" />
-        <TresGroup>
-          <TresMesh receive-shadow>
-            <TresBoxGeometry
-              :args="[
-                gameMetrics.fieldWidth,
-                gameMetrics.fieldHeight,
-                gameMetrics.fieldDepth
-              ]" />
-            <TresMeshToonMaterial color="#fce7f3" />
-          </TresMesh>
-          <TresMesh
-            :rotate-x="-Math.PI * 0.5"
-            :position-y="gameMetrics.fieldHeight * 0.5 + 0.01">
-            <TresPlaneGeometry :args="[gameMetrics.fieldWidth, 1]" />
-            <TresMeshToonMaterial color="#fff" />
-          </TresMesh>
-        </TresGroup>
+      <TresPerspectiveCamera
+        :rotation-y="cameraRotation"
+        :position="camera.position"
+        :fov="isSpectator ? 80 : 25"
+        :aspect="1"
+        :near="0.1"
+        :far="1000"
+        ref="camera" />
+      <TresAmbientLight color="#ffffff" :position="[0, 3, 0]" :intensity="1" />
+      <TresDirectionalLight
+        color="#ffffff"
+        cast-shadow
+        :position="[-15, 25, 0]"
+        :intensity="2" />
+      <TresGroup>
+        <TresMesh receive-shadow>
+          <TresBoxGeometry
+            :args="[
+              gameMetrics.fieldWidth,
+              gameMetrics.fieldHeight,
+              gameMetrics.fieldDepth
+            ]" />
+          <TresMeshStandardMaterial color="#fb923c" />
+        </TresMesh>
+        <TresMesh
+          :rotate-x="-Math.PI * 0.5"
+          :position-y="gameMetrics.fieldHeight * 0.5 + 0.01">
+          <TresPlaneGeometry :args="[gameMetrics.fieldWidth, 1]" />
+          <TresMeshToonMaterial color="#fff" />
+        </TresMesh>
+      </TresGroup>
 
-        <TresMesh ref="paddle1Ref">
-          <TresBoxGeometry
-            :args="[
-              room.paddleRatio * gameMetrics.fieldWidth,
-              gameMetrics.paddleHeight,
-              gameMetrics.paddleDepth
-            ]" />
+      <TresMesh ref="paddle1Ref">
+        <TresBoxGeometry
+          :args="[
+            room.paddleRatio * gameMetrics.fieldWidth,
+            gameMetrics.paddleHeight,
+            gameMetrics.paddleDepth
+          ]" />
+        <TresMeshToonMaterial color="#fff" />
+      </TresMesh>
+      <TresMesh ref="paddle2Ref">
+        <TresBoxGeometry
+          :args="[
+            room.paddleRatio * gameMetrics.fieldWidth,
+            gameMetrics.paddleHeight,
+            gameMetrics.paddleDepth
+          ]" />
+        <TresMeshToonMaterial color="#fff" />
+      </TresMesh>
+      <TresMesh cast-shadow ref="ballRef">
+        <TresSphereGeometry :args="[gameMetrics.ballRadius]" />
+        <TresMeshToonMaterial color="#ff0" />
+      </TresMesh>
+      <Suspense>
+        <Text3D
+          :size="8"
+          :height="0.01"
+          :position="[
+            -gameMetrics.fieldWidth * 0.5 - 1,
+            gameMetrics.fieldHeight + 3.3,
+            0
+          ]"
+          :text="scoreText"
+          :rotation-y="Math.PI * 0.5"
+          center
+          need-updates
+          cast-shadow
+          font="https://raw.githubusercontent.com/Tresjs/assets/main/fonts/FiraCodeRegular.json">
           <TresMeshToonMaterial color="#fff" />
-        </TresMesh>
-        <TresMesh ref="paddle2Ref">
-          <TresBoxGeometry
-            :args="[
-              room.paddleRatio * gameMetrics.fieldWidth,
-              gameMetrics.paddleHeight,
-              gameMetrics.paddleDepth
-            ]" />
-          <TresMeshToonMaterial color="#fff" />
-        </TresMesh>
-        <TresMesh cast-shadow ref="ballRef">
-          <TresSphereGeometry :args="[gameMetrics.ballRadius]" />
-          <TresMeshToonMaterial color="#ff0" />
-        </TresMesh>
-        <Suspense>
-          <Text3D
-            :size="8"
-            :height="0.01"
-            :position="[
-              -gameMetrics.fieldWidth * 0.5 - 1,
-              gameMetrics.fieldHeight + 3.3,
-              0
-            ]"
-            :text="scoreText"
-            :rotation-y="Math.PI * 0.5"
-            center
-            need-updates
-            cast-shadow
-            font="https://raw.githubusercontent.com/Tresjs/assets/main/fonts/FiraCodeRegular.json">
-            <TresMeshToonMaterial color="#fff" />
-          </Text3D>
-        </Suspense>
-      </TresScene>
+        </Text3D>
+      </Suspense>
     </TresCanvas>
   </div>
 </template>
 
 <script setup lang="ts">
 import { type ShallowRef, shallowRef, ref, type Ref, computed } from 'vue'
-import { useRenderLoop } from '@tresjs/core'
+import { useRenderLoop, TresCanvas, type TresCamera } from '@tresjs/core'
 import { Text3D } from '@tresjs/cientos'
 import type { Room, Game, Metrics } from '@/types'
-import { Vector3, type Object3D } from 'three'
+import { Vector3, type Object3D, Camera, PerspectiveCamera } from 'three'
 import { socket } from '@/includes/gameSocket'
 import { useUserStore } from '@/stores/UserStore'
+
 const { loggedUser } = useUserStore()
 
 const calculatedRemainingTime = computed(() => {
@@ -193,7 +188,7 @@ const props = defineProps<{
 const room: Ref<Room> = ref(props.room)
 const gameState: Ref<Game> = ref(props.game)
 const scoreText: Ref<string> = ref('0 - 0')
-// const envRef: ShallowRef = shallowRef(null)
+const camera: Ref<TresCamera> = ref(new PerspectiveCamera(0, 5, 0))
 
 const gameMetrics: Metrics = {
   fieldWidth: 30,
@@ -206,7 +201,7 @@ const gameMetrics: Metrics = {
   tps: 20
 }
 
-const cameraRef: ShallowRef<Object3D | null> = shallowRef(null)
+// const cameraRef: ShallowRef<Object3D | null> = shallowRef(null)
 const ballRef: ShallowRef<Object3D | null> = shallowRef(null)
 const paddle1Ref: ShallowRef<Object3D | null> = shallowRef(null)
 const paddle2Ref: ShallowRef<Object3D | null> = shallowRef(null)
@@ -236,16 +231,15 @@ onLoop(({ delta }) => {
     ballRef.value != null &&
     paddle1Ref.value != null &&
     paddle2Ref.value != null &&
-    cameraRef.value != null
+    camera.value != null
   ) {
     renderPong(
       delta,
       gameMetrics,
-      // gameState.value,
       ballRef.value,
       paddle1Ref.value,
       paddle2Ref.value,
-      cameraRef.value,
+      camera.value,
       scoreText
     )
   }
@@ -254,11 +248,10 @@ onLoop(({ delta }) => {
 function renderPong(
   delta: number,
   gameMetrics: Metrics,
-  // gameState: Game,
   ball: Object3D,
   paddle1: Object3D,
   paddle2: Object3D,
-  camera: Object3D,
+  camera: Camera,
   scoreText: Ref<string>
 ): void {
   const animationTime = delta / (1 / gameMetrics.tps)

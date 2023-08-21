@@ -5,7 +5,7 @@
         icon="lucide:crown"
         class="h-4 w-4 shrink-0 self-start mt-0.5">
       </iconify-icon>
-      <span class="text-sm px-2">
+      <span class="px-2 text-sm">
         {{ channel?.owner.username }}
       </span>
     </div>
@@ -15,7 +15,7 @@
         class="h-4 w-4 shrink-0 self-start mt-0.5">
       </iconify-icon>
       <span
-        class="text-sm px-2"
+        class="px-2 text-sm"
         v-for="(admin, index) in channel?.admins"
         :key="admin.id">
         {{ admin.username
@@ -27,7 +27,7 @@
   </div>
   <div v-if="loggedUser && channel" class="p-5">
     <div
-      class="w-fit flex mb-4"
+      class="flex mb-4 w-fit"
       :class="messageClass(message)"
       v-for="message in channel.messages.filter(
         (message) =>
@@ -62,11 +62,11 @@
                   invited you to play!
                 </p>
                 <button
-                  class="btn border-2 bg-white border-black text-black hover:bg-black hover:border-white hover:text-white mt-2 block w-full"
+                  class="block w-full mt-2 text-black bg-white border-2 border-black btn hover:bg-black hover:border-white hover:text-white"
                   :class="{ invert: message.user.id === loggedUser.id }">
                   <router-link
                     :to="`/room/${message.room.id}`"
-                    class="flex gap-2 w-fit mx-auto">
+                    class="flex gap-2 mx-auto w-fit">
                     <iconify-icon
                       icon="ri:ping-pong-line"
                       class="hidden sm:block w-7 h-7"></iconify-icon>

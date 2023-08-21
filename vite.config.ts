@@ -11,7 +11,13 @@ export default defineConfig({
   },
   plugins: [
     vue({
-      ...templateCompilerOptions
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) =>
+            tag.startsWith('Tres') && tag !== 'TresCanvas'
+        },
+        ...templateCompilerOptions
+      }
     })
   ],
   resolve: {
