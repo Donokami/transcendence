@@ -21,8 +21,7 @@ export interface User {
   // ******************************* //
   // FRIENDSHIP RELATED INFORMATIONS //
   // ******************************* //
-
-  friends: User[]
+  
   nFriends: number
   sentRequest: Friendship[]
   receivedRequest: Friendship[]

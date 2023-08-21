@@ -14,8 +14,9 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from 'vue'
+import { onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useToast } from 'vue-toastification'
 
 import { storeToRefs } from 'pinia'
 
@@ -27,7 +28,7 @@ import { useUserStore } from '@/stores/UserStore'
 import type { User } from '@/types'
 
 const route = useRoute()
-
+const toast = useToast()
 const userStore = useUserStore()
 
 const { loggedUser, friendList } = storeToRefs(userStore)
@@ -44,14 +45,8 @@ watch(loggedUser, (user) => {
     console.log('[SocialSocket] - Connected to the /social socket')
   })
 
-  socialSocket.on('social:block', (data: { blockerId: string }) => {
-    friendList.value = friendList.value.filter(
-      (friend: User) => data.blockerId === friend.id
-    )
-  })
-
-  socialSocket.on('social:accept', (user: User) => {
-    friendList.value.push(user)
+  onBeforeUnmount(() => {
+    socialSocket.off(`connect`)
   })
 })
 </script>

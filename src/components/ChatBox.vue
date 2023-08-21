@@ -94,10 +94,6 @@
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
-
 import { computed, onBeforeMount, ref, watch } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 
@@ -109,10 +105,6 @@ import { useUserStore } from '@/stores/UserStore.js'
 import type { Message, Channel } from '@/types'
 
 import ChatDropdown from '@/components/ChatDropdown.vue'
-
-// ******************** //
-// VARIABLE DEFINITIONS //
-// ******************** //
 
 const openDropdown = ref<number | null>(null)
 
@@ -148,14 +140,6 @@ const textClass = computed(() => (message: Message) => {
   }
 })
 
-// ******************** //
-// FUNCTION DEFINITIONS //
-// ******************** //
-
-// *********** //
-// initChannel //
-// *********** //
-
 async function initChannel(): Promise<void> {
   if (!loggedUser.value || !selectedChannel.value) {
     return
@@ -176,10 +160,6 @@ async function initChannel(): Promise<void> {
 
   emit('scroll-to-bottom')
 }
-
-// ********************* //
-// VueJs LIFECYCLE HOOKS //
-// ********************* //
 
 onBeforeMount(async () => {
   await initChannel()

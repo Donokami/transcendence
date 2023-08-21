@@ -126,7 +126,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 
-import { ref, onBeforeMount, computed } from 'vue'
+import { ref, onBeforeMount, computed, onBeforeUnmount } from 'vue'
 import {
   onBeforeRouteLeave,
   onBeforeRouteUpdate,
@@ -267,8 +267,10 @@ chatSocket.on(
 
     if (loggedUser && loggedUser.id === user.id) {
       channelStore.selectedChannel = null
-      channelStore.removeFromChannelList(channelId)
+      channelsList.value = await channelStore.fetchChannels()
+
       toast.success(`You have been kicked from ${channel.name}`)
+
       return await router.push('/chat')
     } else {
       toast.success(`${user.username} successfully kicked from ${channel.name}`)
@@ -279,8 +281,13 @@ chatSocket.on(
 chatSocket.on(
   'chat:leave',
   async ({ user, channelId }: { user: User; channelId: string }) => {
+    selectedChannel.value = null
     channelStore.removeMember(user.id, channelId)
-    toast.success(`${user.username} left the channel`)
+    channelsList.value = await channelStore.fetchChannels()
+
+    toast.success(`You left the channel`)
+
+    return await router.push('/chat')
   }
 )
 
@@ -325,7 +332,7 @@ chatSocket.on(
     const channel = channelStore.getChannel(channelId)
     if (!channel) return
 
-    await channelStore.addAdmin(user, channelId)
+    channelStore.addAdmin(user, channelId)
 
     if (loggedUser && loggedUser.id === user.id) {
       toast.success(`You have been promoted admin of ${channel.name}`)
@@ -402,5 +409,21 @@ onBeforeRouteUpdate((to, from) => {
 
 onBeforeRouteLeave(async () => {
   chatSocket.disconnect()
+})
+
+onBeforeUnmount(() => {
+  chatSocket.off(`chat:ban`)
+  chatSocket.off(`chat:channel-created`)
+  chatSocket.off(`chat:join`)
+  chatSocket.off(`chat:kick`)
+  chatSocket.off(`chat:leave`)
+  chatSocket.off(`chat:message`)
+  chatSocket.off(`chat:mute`)
+  chatSocket.off(`chat:unmute`)
+  chatSocket.off(`chat:set-admin`)
+  chatSocket.off(`chat:unban`)
+  chatSocket.off(`chat:unset-admin`)
+  chatSocket.off(`disconnect`)
+  chatSocket.off(`error`)
 })
 </script>

@@ -162,27 +162,6 @@ const dropdownRef = ref<HTMLElement | null>(null)
 const isOpen = ref(props.openDropdown === parseInt(props.user.id))
 const toast = useToast()
 
-const banMember = async (): Promise<void> => {
-  try {
-    await channelStore.banMember(props.user.id, props.channel.id)
-  } catch (err: any) {
-    if (err instanceof ApiError) {
-      if (err.code === 'ForbiddenException') {
-        toast.error('You are not allowed to ban this member.')
-      }
-    }
-  }
-}
-
-const blockUser = async (): Promise<void> => {
-  try {
-    await userStore.blockUser(props.user.id)
-    toast.success(`${props.user.username} has been blocked.`)
-  } catch (error) {
-    toast.error('An error occured while blocking user.')
-  }
-}
-
 const handleClickOutside = (event: MouseEvent): void => {
   const { target } = event
   if (
@@ -202,7 +181,34 @@ const isMember = computed((): boolean => {
   return channelStore.isMember(props.user.id, props.channel.id)
 })
 
-const kickMember = async (): Promise<void> => {
+async function banMember(): Promise<void> {
+  try {
+    await channelStore.banMember(props.user.id, props.channel.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to ban this member.')
+      }
+    }
+  }
+}
+
+async function blockUser(): Promise<void> {
+  try {
+    await userStore.blockUser(props.user.id)
+    toast.success(`${props.user.username} has been blocked.`)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'SameIdsError') {
+        toast.error('You cannot block yourself.')
+      } else if (err.code === 'FriendshipAlreadyBlocked') {
+        toast.error('Friendship status is already blocked.')
+      }
+    }
+  }
+}
+
+async function kickMember() {
   try {
     await channelStore.kickMember(props.user.id, props.channel.id)
   } catch (err: any) {
@@ -214,7 +220,7 @@ const kickMember = async (): Promise<void> => {
   }
 }
 
-const makeAdmin = async (): Promise<void> => {
+async function makeAdmin() {
   try {
     await channelStore.makeAdmin(props.user.id, props.channel.id)
   } catch (err: any) {
@@ -226,7 +232,7 @@ const makeAdmin = async (): Promise<void> => {
   }
 }
 
-const muteMember = async (): Promise<void> => {
+async function muteMember() {
   try {
     await channelStore.muteMember(props.user.id, props.channel.id)
   } catch (err: any) {
@@ -238,7 +244,7 @@ const muteMember = async (): Promise<void> => {
   }
 }
 
-const revokeAdmin = async (): Promise<void> => {
+async function revokeAdmin() {
   try {
     await channelStore.revokeAdmin(props.user.id, props.channel.id)
   } catch (err: any) {
@@ -247,6 +253,18 @@ const revokeAdmin = async (): Promise<void> => {
         toast.error(
           'You are not allowed to revoke the admin rights of this user.'
         )
+      }
+    }
+  }
+}
+
+async function unbanMember(): Promise<void> {
+  try {
+    await channelStore.unbanMember(props.user.id, props.channel.id)
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'ForbiddenException') {
+        toast.error('You are not allowed to unban this member.')
       }
     }
   }
@@ -297,18 +315,6 @@ function showRevokeAdmin(): boolean {
 
 const toggleDropdown = (): void => {
   isOpen.value = !isOpen.value
-}
-
-const unbanMember = async (): Promise<void> => {
-  try {
-    await channelStore.unbanMember(props.user.id, props.channel.id)
-  } catch (err: any) {
-    if (err instanceof ApiError) {
-      if (err.code === 'ForbiddenException') {
-        toast.error('You are not allowed to unban this member.')
-      }
-    }
-  }
 }
 
 onMounted(() => {

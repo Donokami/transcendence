@@ -162,11 +162,7 @@
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
-
-import { computed, ref, onMounted, watch } from 'vue'
+import { computed, ref, onMounted, watch, onBeforeUnmount } from 'vue'
 import { useToast } from 'vue-toastification'
 
 import { storeToRefs } from 'pinia'
@@ -180,9 +176,6 @@ import { useUserStore } from '@/stores/UserStore'
 import type { User } from '@/types'
 import { ApiError } from '@/utils/fetcher'
 
-// ******************** //
-// VARIABLE DEFINITIONS //
-// ******************** //
 const toast = useToast()
 
 const iconBlockUser = ref('mdi:account-cancel-outline')
@@ -199,7 +192,7 @@ const showUsernameModal = ref(false)
 const userRank = ref<number | null>(null)
 const userStore = useUserStore()
 
-const { loggedUser } = storeToRefs(userStore)
+const { loggedUser, friendList } = storeToRefs(userStore)
 
 const props = defineProps<{
   user: User
@@ -220,16 +213,20 @@ const blockUser = async (): Promise<void> => {
     await userStore.blockUser(props.user.id)
     await checkBlockedStatus()
     isFriend.value = false
-    emit('updateUser')
     toast.success(`${props.user.username} has been blocked.`)
-  } catch (error) {
-    toast.error('An error occured while blocking user.')
+    emit('updateUser')
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'FriendshipAlreadyBlocked') {
+        toast.error('Friendship status is already blocked.')
+      } else if (err.code === 'SameIdsError') {
+        toast.error('You cannot block yourself.')
+      }
+    } else {
+      toast.error('Something went wrong')
+    }
   }
 }
-
-// ****************** //
-// checkBlockedStatus //
-// ****************** //
 
 const checkBlockedStatus = async (): Promise<void> => {
   if (!loggedUser.value) return
@@ -248,10 +245,6 @@ const checkBlockedStatus = async (): Promise<void> => {
   }
 }
 
-// *********************** //
-// closeFriendRequestModal //
-// *********************** //
-
 const closeFriendRequestModal = (event: string): void => {
   showFriendRequestModal.value = false
 
@@ -259,10 +252,6 @@ const closeFriendRequestModal = (event: string): void => {
 
   emit('updateUser')
 }
-
-// *********************** //
-// getFriendRequestsNumber //
-// *********************** //
 
 const getFriendRequestsNumber = async (): Promise<number> => {
   if (loggedUser.value == null) return 0
@@ -276,18 +265,10 @@ const getFriendRequestsNumber = async (): Promise<number> => {
   }
 }
 
-// ************************ //
-// handleCloseUsernameModal //
-// ************************ //
-
 const handleCloseUsernameModal = (): void => {
   showUsernameModal.value = false
   location.reload()
 }
-
-// ****************** //
-// searchInFriendList //
-// ****************** //
 
 const searchInFriendList = async (user: User): Promise<boolean> => {
   if (!user) return false
@@ -302,10 +283,6 @@ const searchInFriendList = async (user: User): Promise<boolean> => {
     return false
   }
 }
-
-// ***************** //
-// sendFriendRequest //
-// ***************** //
 
 const sendFriendRequest = async (): Promise<void> => {
   if (props.user === null) return
@@ -323,19 +300,27 @@ const sendFriendRequest = async (): Promise<void> => {
   }
 }
 
-// *********** //
-// unblockUser //
-// *********** //
-
 const unblockUser = async (): Promise<void> => {
   try {
     await userStore.unblockUser(props.user.id)
     await checkBlockedStatus()
     isFriend.value = true
+    toast.success(`${props.user.username} has been unblocked.`)
     emit('updateUser')
-    toast.success(`${props.user.username} has been unblocked!`)
-  } catch (error) {
-    toast.error('Failed to unblock user!')
+  } catch (err: any) {
+    if (err instanceof ApiError) {
+      if (err.code === 'FriendshipNotBlocked') {
+        toast.error('Friendship status is not blocked')
+      } else if (err.code === 'FriendshipNotFound') {
+        toast.error('Friendship is not found')
+      } else if (err.code === 'SameIdsError') {
+        toast.error('You cannot unblock yourself')
+      } else if (err.code === 'OnlyBlockerCanUnblock') {
+        toast.error('Only the blocker can unblock the friendship')
+      }
+    } else {
+      toast.error('Something went wrong')
+    }
   }
 }
 
@@ -344,16 +329,52 @@ socialSocket.on('social:new', () => {
   toast.success('Friend request received!')
 })
 
-socialSocket.on('social:accept', () => {
-  emit('updateUser')
+socialSocket.on('social:accept', async (sender: User, receiver: User) => {
+  if (!loggedUser.value) return
+
+  if (loggedUser.value.id === sender.id) {
+    friendList.value.push(receiver)
+    toast.success(
+      `Friend request sent to ${receiver.username} has been accepted!`
+    )
+  } else if (loggedUser.value.id === receiver.id) {
+    friendList.value.push(sender)
+    toast.success(`Friend request from ${sender.username} accepted!`)
+  }
   isFriend.value = true
-  toast.success('One of your friend request has been accepted!')
+  emit('updateUser')
 })
 
 socialSocket.on('social:rejected', () => {
   emit('updateUser')
   toast.success('One of your friend request has been rejected!')
 })
+
+socialSocket.on(
+  'social:block',
+  async ({ blocker, toBlock }: { blocker: User; toBlock: User }) => {
+    if (!loggedUser.value || !blocker) return
+
+    userStore.removeFriend(blocker)
+
+    if (loggedUser.value.id === toBlock.id) {
+      toast.success(`You have been blocked by ${blocker.username}`)
+    }
+    emit('updateUser')
+  }
+)
+
+socialSocket.on(
+  'social:unblock',
+  async ({ unblocker, toUnblock }: { unblocker: User; toUnblock: User }) => {
+    if (!loggedUser.value || !unblocker || !toUnblock) return
+
+    if (loggedUser.value.id === toUnblock.id) {
+      toast.success(`You have been unblocked by ${unblocker.username}`)
+    }
+    emit('updateUser')
+  }
+)
 
 async function fetchData(): Promise<void> {
   userRank.value = await userStore.fetchUserRank(props.user.id)
@@ -378,4 +399,12 @@ watch(
     await fetchData()
   }
 )
+
+onBeforeUnmount(() => {
+  socialSocket.off(`social:new`)
+  socialSocket.off(`social:accept`)
+  socialSocket.off(`social:rejected`)
+  socialSocket.off(`social:block`)
+  socialSocket.off(`social:unblock`)
+})
 </script>

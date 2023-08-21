@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import type { User } from '@/types'
-import { computed, ref, type PropType, type Ref } from 'vue'
+import { computed, ref, type PropType, type Ref, onBeforeUnmount } from 'vue'
 import { useUserStore } from '@/stores/UserStore'
 import { storeToRefs } from 'pinia'
 import { socialSocket } from '@/includes/socialSocket'
@@ -117,5 +117,10 @@ socialSocket.on('user:disconnect', (userId) => {
   if (user.value && userId === user.value.id) {
     user.value.status = 'offline'
   }
+})
+
+onBeforeUnmount(() => {
+  socialSocket.off(`user:connect`)
+  socialSocket.off(`user:disconnect`)
 })
 </script>

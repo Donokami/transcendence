@@ -134,8 +134,8 @@ const rejectRequest = async (requestId: string): Promise<void> => {
 const blockUser = async (userToBlockId: string): Promise<void> => {
   try {
     await userStore.blockUser(userToBlockId)
-    toast.success('User blocked !')
     await getFriendRequests()
+    toast.success('User blocked !')
     emit('closeModal')
   } catch (error) {
     toast.error('Failed to block user !')

@@ -34,10 +34,6 @@ export const useUserStore = defineStore('users', {
     tempUserId: null as unknown as string | null
   }),
   actions: {
-    // ******************* //
-    // acceptFriendRequest //
-    // ******************* //
-
     async acceptFriendRequest(senderId: string): Promise<Friendship> {
       const response: Friendship = await fetcher.put(
         `/social/friendship/request/accept`,
@@ -46,49 +42,60 @@ export const useUserStore = defineStore('users', {
       return response
     },
 
-    // ********* //
-    // blockUser //
-    // ********* //
+    addBlockedUser(blocker: User, userToBlock: User): void {
+      if (!blocker.blockedUsers) blocker.blockedUsers = [] as User[]
 
-    // todo: check the return cases (Lucas) 
-    async blockUser(targetId: string): Promise<string> {
-      if (!this.loggedUser)
-        return ''
-
-      const response: string = await fetcher.put(`/social/friendship/block`, {
-        targetId
-      })
-
-      const target: User = await this.fetchUserById(targetId)
-      if (!target)
-       return ''
-      
-      this.loggedUser.blockedUsers.push(target)
-
-      return response
+      blocker.blockedUsers.push(userToBlock)
     },
 
-    // *************** //
-    // enableTwoFactor //
-    // *************** //
+    addFriend(newFriend: User): void {
+      if (!this.friendList) this.friendList = [] as User[]
+
+      this.friendList.push(newFriend)
+    },
+
+    removeBlockedUser(unblocker: User, userToUnblock: User): void {
+      if (!unblocker.blockedUsers) unblocker.blockedUsers = [] as User[]
+
+      const index = unblocker.blockedUsers.findIndex((blockedUser) => blockedUser.id === userToUnblock.id)
+      if (index === -1) return
+
+      unblocker.blockedUsers.splice(index, 1)
+    },
+
+    removeFriend(oldFriend: User): void {
+      if (!this.friendList) this.friendList = [] as User[]
+
+      const index = this.friendList.findIndex((friend) => friend.id === oldFriend.id)
+      if (index === -1) return
+
+      this.friendList.splice(index, 1)
+
+    },
+
+    async blockUser(targetId: string): Promise<void> {
+      
+      await fetcher.put(`/social/friendship/block`, {
+        targetId
+      }).then(async () => {
+        if (this.loggedUser === null)
+          return
+        
+        const toBlock = await this.fetchUserById(targetId)
+        this.addBlockedUser(this.loggedUser, toBlock)
+        this.removeFriend(toBlock)
+      })
+    },
 
     async enableTwoFactor(): Promise<TwoFactorData> {
       const response: TwoFactorData = await fetcher.post('/auth/2fa')
       return response
     },
 
-    // ************* //
-    // fetchAllUsers //
-    // ************* //
-
     async fetchAllUsers(): Promise<Paginated<User>> {
       const response: Paginated<User> = await fetcher.get(`/user/stats`)
       return response
     },
-
-    // ************** //
-    // fetchBlockerId //
-    // ************** //
 
     async fetchBlockerId(userId: string): Promise<string> {
       const response = await fetcher.get(`/social/blocker-id/${userId}`)
@@ -96,18 +103,10 @@ export const useUserStore = defineStore('users', {
       return response.blockerId
     },
 
-    // *************** //
-    // fetchFriendList //
-    // *************** //
-
     async fetchFriendList(): Promise<User[]> {
       const response: User[] = await fetcher.get(`/social/friend-list`)
       return response
     },
-
-    // ******************* //
-    // fetchFriendRequests //
-    // ******************* //
 
     async fetchFriendRequests(): Promise<Friendship[]> {
       const response: Friendship[] = await fetcher.get(
@@ -116,27 +115,15 @@ export const useUserStore = defineStore('users', {
       return response
     },
 
-    // ********* //
-    // fetchUser //
-    // ********* //
-
     async fetchUser(): Promise<User> {
       const response: User = await fetcher.get(`/user/me`)
       return response
     },
 
-    // ************* //
-    // fetchUserByID //
-    // ************* //
-
     async fetchUserById(userId: string): Promise<User> {
       const response: User = await fetcher.get(`/user/${userId}`)
       return response
     },
-
-    // ********************** //
-    // fetchUserByIDWithStats //
-    // ********************** //
 
     async fetchUserByIdWithStats(userId: string): Promise<User> {
       const response: User = await fetcher.get(`/user/${userId}/stats`)
@@ -148,10 +135,6 @@ export const useUserStore = defineStore('users', {
       return response
     },
 
-    // ***************** //
-    // refreshFriendList //
-    // ***************** //
-
     async refreshFriendList(): Promise<User[]> {
       if (this.loggedUser == null) {
         return []
@@ -161,10 +144,6 @@ export const useUserStore = defineStore('users', {
       return this.friendList
     },
 
-    // *********** //
-    // refreshUser //
-    // *********** //
-
     async refreshUser(): Promise<void> {
       try {
         const user = await this.fetchUser()
@@ -173,18 +152,10 @@ export const useUserStore = defineStore('users', {
       } catch (error) {}
     },
 
-    // ******** //
-    // register //
-    // ******** //
-
     async register(values: Record<string, any>): Promise<User> {
       const response: User = await fetcher.post(`/auth/register`, values)
       return response
     },
-
-    // ******************* //
-    // rejectFriendRequest //
-    // ******************* //
 
     async rejectFriendRequest(senderId: string): Promise<Friendship> {
       const response: Friendship = await fetcher.put(
@@ -194,10 +165,6 @@ export const useUserStore = defineStore('users', {
       return response
     },
 
-    // ***************** //
-    // sendFriendRequest //
-    // ***************** //
-
     async sendFriendRequest(receiverId: string): Promise<Friendship> {
       const response: Friendship = await fetcher.post(
         `/social/friendship/request`,
@@ -206,10 +173,6 @@ export const useUserStore = defineStore('users', {
 
       return response
     },
-
-    // ****** //
-    // signIn //
-    // ****** //
 
     async signIn(values: Record<string, any>): Promise<User> {
       const response: User = await fetcher.post(`/auth/signIn`, values)
@@ -223,10 +186,6 @@ export const useUserStore = defineStore('users', {
       return response
     },
 
-    // ******* //
-    // signOut //
-    // ******* //
-
     async signOut(): Promise<void> {
       const response = await fetcher.post('/auth/signout')
       this.loggedUser = null
@@ -237,46 +196,22 @@ export const useUserStore = defineStore('users', {
       return response
     },
 
-    // *********** //
-    // unblockUser //
-    // *********** //
-
-    // todo: check the return cases (Lucas) 
-    async unblockUser(targetId: string): Promise<Friendship> {
-      if (!this.loggedUser)
-        return null as unknown as Friendship
-
-      const response: Friendship = await fetcher.put(
-        `/social/friendship/unblock`,
-        {
-          targetId
-        }
-      )
-
-      const target: User = await this.fetchUserById(targetId)
-      
-      const index = this.loggedUser.blockedUsers.findIndex(user => user.id === target.id);
-      if (index === -1)
-        return null as unknown as Friendship
-
-      this.loggedUser.blockedUsers.splice(index, 1)
-    
-      return response
+    async unblockUser(targetId: string): Promise<void> {
+      await fetcher.put(`/social/friendship/unblock`,{ targetId }).then(async () => {
+        if (this.loggedUser === null) return
+        
+        const toUnblock = await this.fetchUserById(targetId)
+        
+        this.removeBlockedUser(this.loggedUser, toUnblock)
+        this.addFriend(toUnblock)
+      })
     },
-
-    // *************** //
-    // verifyTwoFactor //
-    // *************** //
 
     async verifyTwoFactor(values: Record<string, string>): Promise<User> {
       const response: User = await fetcher.post('/auth/verifyToken', values)
       this.loggedUser = response
       return response
     },
-
-    // *********** //
-    // setUsername //
-    // *********** //
 
     async setUsername(username: string): Promise<User> {
       const response: User = await fetcher.put('/auth/set-username', {
@@ -285,27 +220,15 @@ export const useUserStore = defineStore('users', {
       return response
     },
 
-    // ************* //
-    // getAuthStatus //
-    // ************* //
-
     async getAuthStatus(): Promise<StatusData> {
       const response: StatusData = await fetcher.get('/auth/status')
       return response
     },
 
-    // ********** //
-    // updateUser //
-    // ********** //
-
     async updateUser(userId: string, userData: Partial<User>): Promise<User> {
       const response: User = await fetcher.patch(`/user/${userId}`, userData)
       return response
     },
-
-    // ******************** //
-    // UploadProfilePicture //
-    // ******************** //
 
     async uploadProfilePicture(id: string, file: File): Promise<void> {
       const formData = new FormData()
