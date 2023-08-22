@@ -176,16 +176,15 @@ export const useChannelStore = defineStore('channels', {
       }
     },
 
-    async getBannedMembers(channelId: string) {
+    async getBannedMembers(channelId: string): Promise<User[]> {
       const channel = this.getChannel(channelId)
+      if (!channel) return []
 
-      if (channel != null) {
-        const bannedMembers = await fetcher.get(
+      channel.bannedMembers = await fetcher.get(
           `/channels/${channelId}/bannedMembers`
-        )
+      )
 
-        channel.bannedMembers = bannedMembers
-      }
+      return channel.bannedMembers
     },
 
     async joinGroup(channelName: string, password?: string): Promise<Channel> {
@@ -307,6 +306,7 @@ export const useChannelStore = defineStore('channels', {
       if (!channel.bannedMembers) channel.bannedMembers = [] as User[]
 
       channel.bannedMembers.push(user)
+
     },
 
     addToChannelList(channel: Channel): void {

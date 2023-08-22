@@ -155,7 +155,9 @@ async function initChannel(): Promise<void> {
     channel.value?.bannedMembers.length === 0 &&
     channelStore.isAdmin(loggedUser.value.id, channel.value.id)
   ) {
-    await channelStore.getBannedMembers(selectedChannel.value)
+    channel.value.bannedMembers = await channelStore.getBannedMembers(
+      selectedChannel.value
+    )
   }
 
   emit('scroll-to-bottom')

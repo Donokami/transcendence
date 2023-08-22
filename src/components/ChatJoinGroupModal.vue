@@ -143,8 +143,6 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
 
     const channel = await channelStore.joinGroup(channelName, password)
 
-    console.log(`DEBUG : `, channel)
-
     passwordError.value = null
     passwordRequired.value = false
     await router.push(`/chat/${channel.id}`)

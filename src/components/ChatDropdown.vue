@@ -91,7 +91,10 @@
             </div>
           </li>
           <!-- BAN -->
-          <li class="rounded-none" v-if="isMember" @click="banMember">
+          <li
+            class="rounded-none"
+            v-if="isMember && !isBanned"
+            @click="banMember">
             <div
               class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
               <iconify-icon icon="lucide:gavel" class="w-4 h-4 shrink-0">
@@ -273,6 +276,7 @@ function showAdminActions(): boolean {
     loggedUser.value.id,
     props.channel.id
   )
+
   return isUserOwner || (isUserAdmin && !isTargetAdmin && !isTargetOwner)
 }
 
@@ -307,8 +311,19 @@ const toggleDropdown = (): void => {
   isOpen.value = !isOpen.value
 }
 
-onMounted(() => {
+async function getBannedMembers(): Promise<void> {
+  props.channel.bannedMembers = await channelStore.getBannedMembers(
+    props.channel.id
+  )
+}
+
+onMounted(async () => {
   document.addEventListener('click', handleClickOutside)
+  if (loggedUser.value) {
+    const isOwner = channelStore.isOwner(loggedUser.value.id, props.channel.id)
+    const isAdmin = channelStore.isAdmin(loggedUser.value.id, props.channel.id)
+    if (isOwner || isAdmin) await getBannedMembers()
+  }
 })
 
 onUnmounted(() => {
