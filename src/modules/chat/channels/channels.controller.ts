@@ -3,7 +3,6 @@ import {
   Controller,
   Delete,
   Get,
-  Logger,
   NotFoundException,
   Post,
   Put,
@@ -13,8 +12,11 @@ import {
 } from '@nestjs/common'
 import { ApiOperation } from '@nestjs/swagger'
 
+import { DeleteResult } from 'typeorm'
+
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { AuthGuard } from '@/core/guards/auth.guard'
+import { UsernameGuard } from '@/core/guards/username.guard'
 import { ISession } from '@/core/types'
 import { ChannelsService } from '@/modules/chat/channels/channels.service'
 import { OperationResult } from '@/modules/chat/channels/channels.service'
@@ -30,16 +32,14 @@ import { AdminshipGuard } from '@/modules/chat/channels/guards/adminship.guard'
 import { GroupGuard } from '@/modules/chat/channels/guards/group.guard'
 import { MembershipGuard } from '@/modules/chat/channels/guards/membership.guard'
 import { OwnershipGuard } from '@/modules/chat/channels/guards/ownership.guard'
-import { UsernameGuard } from '@/core/guards/username.guard'
+import { User } from '@/modules/users/user.entity'
 
 @UseGuards(AuthGuard, UsernameGuard)
 @Controller('channels')
 @UseFilters(new GlobalExceptionFilter())
 export class ChannelsController {
   constructor(private readonly channelsService: ChannelsService) {}
-
-  private logger = new Logger(ChannelsController.name)
-
+  
   @Put('/:channelId/ban')
   @ApiOperation({
     summary: 'Ban a member from a group',
@@ -122,7 +122,7 @@ export class ChannelsController {
   @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
   @UseGuards(AdminshipGuard)
-  async getBannedMembers(@CurrentChannel() channel: Channel) {
+  async getBannedMembers(@CurrentChannel() channel: Channel): Promise<User[]> {
     const bannedMembers = await this.channelsService.getBannedMembers(channel)
     return bannedMembers
   }
@@ -135,7 +135,7 @@ export class ChannelsController {
     tags: ['chat']
   })
   @UseGuards(MembershipGuard)
-  async getChannel(@CurrentChannel() channel: Channel) {
+  async getChannel(@CurrentChannel() channel: Channel): Promise<Channel> {
     return channel
   }
 
@@ -158,7 +158,7 @@ export class ChannelsController {
     description: 'Join a group',
     tags: ['chat']
   })
-  async joinGroup(@Body() body: JoinGroupDto, @Session() session: ISession) {
+  async joinGroup(@Body() body: JoinGroupDto, @Session() session: ISession): Promise<Partial<Channel>> {
     const userId = session.userId
     return await this.channelsService.joinGroup(userId, body)
   }
@@ -195,7 +195,7 @@ export class ChannelsController {
   async leaveGroup(
     @Session() session: ISession,
     @CurrentChannel() channel: Channel
-  ) {
+  ): Promise<Channel | DeleteResult> {
     const userId: string = session.userId
     return await this.channelsService.leaveGroup(userId, channel)
   }
@@ -232,7 +232,7 @@ export class ChannelsController {
     @CurrentChannel() channel: Channel,
     @Session() session: ISession,
     @Body() body: MessageDto
-  ) {
+  ): Promise<Message> {
     const userId: string = session.userId
     const messageBody: string = body.messageBody
     const date: any = body.date
