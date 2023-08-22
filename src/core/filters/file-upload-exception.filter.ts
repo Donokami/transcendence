@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common'
 import { Response } from 'express'
 import { UnsupportedFileType } from '@/core/exceptions'
+import { stat } from 'fs'
 
 @Catch()
 export class FileUploadExceptionFilter implements ExceptionFilter {
@@ -14,6 +15,15 @@ export class FileUploadExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>()
     const status =
       exception instanceof HttpException ? exception.getStatus() : 500
+
+    if (status === 500) {
+      response.status(400).json({
+        statusCode: 400,
+        code: 'INVALID_FILE',
+        error: 'Invalid file'
+      })
+      return
+    }
 
     if (exception instanceof UnsupportedFileType) {
       response.status(400).json({
