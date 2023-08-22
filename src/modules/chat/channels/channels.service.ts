@@ -325,7 +325,7 @@ export class ChannelsService {
   async joinGroup(
     newMemberId: string,
     joinGroupDto: JoinGroupDto
-  ): Promise<Channel> {
+  ): Promise<Partial<Channel>> {
     const { channelName, password } = joinGroupDto
 
     const newMember: User = await this.checkExistingUser(newMemberId)
@@ -355,6 +355,8 @@ export class ChannelsService {
         throw new InvalidGroupPassword()
       }
     }
+
+    delete channel.password
 
     channel.members = this.addUserToList(
       'members',
@@ -448,6 +450,7 @@ export class ChannelsService {
 
       const newOwner = channel.admins[0]
       channel.owner = newOwner
+
       channel.admins = this.removeUserFromList(
         'admins',
         newOwner,
