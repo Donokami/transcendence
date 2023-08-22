@@ -70,7 +70,7 @@
 
 import { Form, Field } from 'vee-validate'
 import { onBeforeMount, ref, toRefs, watch } from 'vue'
-import { onBeforeRouteUpdate } from 'vue-router'
+import { onBeforeRouteUpdate, useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 
 import { useChannelStore } from '@/stores/ChannelStore'
@@ -89,6 +89,7 @@ const passwordError = ref<string | null>(null)
 const props = defineProps({
   showModal: { type: Boolean }
 })
+const router = useRouter()
 const toast = useToast()
 
 const { showModal } = toRefs(props)
@@ -140,9 +141,10 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
       return
     }
 
-    await channelStore.joinGroup(channelName, password)
+    const channel = await channelStore.joinGroup(channelName, password)
     passwordError.value = null
     passwordRequired.value = false
+    await router.push(`/chat/${channel.id}`)
   } catch (err: any) {
     if (err instanceof ApiError) {
       if (err.code === 'MissingGroupPassword') {
@@ -159,7 +161,6 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
         toast.error('Something went wrong')
       }
     }
-    return
   }
 
   channelNameError.value = null

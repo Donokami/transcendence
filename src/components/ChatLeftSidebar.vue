@@ -158,10 +158,6 @@
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
-
 import { storeToRefs } from 'pinia'
 import { onBeforeMount, ref } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
@@ -173,10 +169,6 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import { useChannelStore } from '@/stores/ChannelStore.js'
 import { useUserStore } from '@/stores/UserStore.js'
 import type { Channel, User } from '@/types'
-
-// ******************** //
-// VARIABLE DEFINITIONS //
-// ******************** //
 
 const props = defineProps({
   listState: String
@@ -197,14 +189,6 @@ const { loggedUser } = storeToRefs(userStore)
 const { channelsList } = storeToRefs(channelStore)
 const channels = ref<Channel[]>([])
 
-// ******************** //
-// FUNCTION DEFINITIONS //
-// ******************** //
-
-// ************* //
-// activateModal //
-// ************* //
-
 function activateModal(modalName: string): void {
   activeModal.value = modalName
   setTimeout(() => {
@@ -212,23 +196,21 @@ function activateModal(modalName: string): void {
   }, 0)
 }
 
-// *********** //
-// getChannels //
-// *********** //
+// const getChannels = (): Channel[] => {
+//   const channels =
+//     props.listState === 'dms' ? channelStore.getDms() : channelStore.getGroups()
+
+//   return channels.filter(
+//     (channel, index, self) =>
+//       index === self.findIndex((c) => c.id === channel.id)
+//   )
+// }
 
 const getChannels = (): Channel[] => {
-  const channels =
-    props.listState === 'dms' ? channelStore.getDms() : channelStore.getGroups()
-
-  return channels.filter(
-    (channel, index, self) =>
-      index === self.findIndex((c) => c.id === channel.id)
-  )
+  return props.listState === 'dms'
+    ? channelStore.getDms()
+    : channelStore.getGroups()
 }
-
-// ********************* //
-// VueJs LIFECYCLE HOOKS //
-// ********************* //
 
 onBeforeMount(() => {
   channels.value = getChannels() as typeof channels.value

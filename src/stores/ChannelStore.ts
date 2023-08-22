@@ -189,11 +189,23 @@ export const useChannelStore = defineStore('channels', {
       }
     },
 
-    async joinGroup(channelName: string, password?: string): Promise<void> {
-      await fetcher.post(`/channels/group/join`, {
+    async joinGroup(channelName: string, password?: string): Promise<Channel> {
+      const channel: Channel = await fetcher.post(`/channels/group/join`, {
         channelName,
         password
       })
+      
+      const { loggedUser } = useUserStore()
+      if (loggedUser == null) return channel
+
+      this.addMember(loggedUser, channel.id)
+      this.selectedChannel = channel.id
+      await this.fetchChannel(channel.id)
+
+      const toast = useToast()
+      toast.success(`You joined ${channel.name} channel`)
+
+      return channel
     },
 
     async kickMember(userId: string, channelId: string): Promise<void> {

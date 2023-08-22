@@ -211,8 +211,11 @@ chatSocket.on(
 
     if (loggedUser && loggedUser.id === user.id) {
       channelStore.selectedChannel = null
-      channelStore.removeFromChannelList(channelId)
+      // channelStore.removeFromChannelList(channelId)
+      channelsList.value = await channelStore.fetchChannels()
+
       toast.success(`You have been banned from ${channel.name}`)
+
       return await router.push('/chat')
     } else {
       toast.success(`${user.username} have been banned from ${channel.name}`)
@@ -222,12 +225,12 @@ chatSocket.on(
 
 chatSocket.on('chat:channel-created', async (channel: Channel) => {
   if (loggedUser === null) return
+
   channelStore.setChannelInfos(loggedUser, channel)
   channelStore.addToChannelList(channel)
-  if (channel.isDm) {
-    if (channel.dmUser) {
-      toast.success(`DM created with ${channel.dmUser.username}`)
-    }
+
+  if (channel.isDm && channel.dmUser) {
+    toast.success(`DM created with ${channel.dmUser.username}`)
   } else {
     toast.success(`You joined the ${channel.name} group`)
   }
@@ -244,18 +247,12 @@ chatSocket.on('error', (error) => {
 chatSocket.on(
   'chat:join',
   async ({ user, channelId }: { user: User; channelId: string }) => {
+    const channel = channelStore.getChannel(channelId)
+    if (!channel) return
+
     channelStore.addMember(user, channelId)
 
-    await channelStore.fetchChannel(channelId)
-    channelStore.selectedChannel = channelId
-
-    if (loggedUser && loggedUser.id === user.id) {
-      toast.success(`You joined the channel`)
-    } else {
-      toast.success(`${user.username} joined the channel`)
-    }
-
-    return await router.push(`/chat/${channelId}`)
+    toast.success(`${user.username} joined ${channel.name} channel`)
   }
 )
 
@@ -269,6 +266,7 @@ chatSocket.on(
 
     if (loggedUser && loggedUser.id === user.id) {
       channelStore.selectedChannel = null
+      // channelStore.removeFromChannelList(channelId)
       channelsList.value = await channelStore.fetchChannels()
 
       toast.success(`You have been kicked from ${channel.name}`)
@@ -283,13 +281,20 @@ chatSocket.on(
 chatSocket.on(
   'chat:leave',
   async ({ user, channelId }: { user: User; channelId: string }) => {
-    selectedChannel.value = null
+    const channel = channelStore.getChannel(channelId)
+    if (!channel) return
+
     channelStore.removeMember(user.id, channelId)
-    channelsList.value = await channelStore.fetchChannels()
 
-    toast.success(`You left the channel`)
-
-    return await router.push('/chat')
+    if (loggedUser && loggedUser.id === user.id) {
+      selectedChannel.value = null
+      channelStore.removeFromChannelList(channelId)
+      channelsList.value = await channelStore.fetchChannels()
+      toast.success(`You left ${channel.name} channel`)
+      return await router.push('/chat')
+    } else {
+      toast.success(`${user.username} left ${channel.name} channel`)
+    }
   }
 )
 

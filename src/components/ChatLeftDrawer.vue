@@ -175,10 +175,6 @@
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
-
 import { storeToRefs } from 'pinia'
 import { onBeforeMount, ref } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
@@ -190,10 +186,6 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import { useChannelStore } from '@/stores/ChannelStore.js'
 import { useUserStore } from '@/stores/UserStore.js'
 import type { Channel, User } from '@/types'
-
-// ******************** //
-// VARIABLE DEFINITIONS //
-// ******************** //
 
 const channelImageUrl = (imagePath: string): string => {
   return `${import.meta.env.VITE_APP_BASE_URL}/${imagePath}`
@@ -215,19 +207,11 @@ const { loggedUser } = storeToRefs(userStore)
 const channels = ref<Channel[] | null>(null)
 const { channelsList } = storeToRefs(channelStore)
 
-// ******************** //
-// FUNCTION DEFINITIONS //
-// ******************** //
-
 function toggleDrawer(): void {
   if (drawerToggle.value) {
     drawerToggle.value.checked = !drawerToggle.value.checked
   }
 }
-
-// ************* //
-// activateModal //
-// ************* //
 
 function activateModal(modalName: string): void {
   activeModal.value = modalName
@@ -237,23 +221,11 @@ function activateModal(modalName: string): void {
   }, 0)
 }
 
-// *********** //
-// getChannels //
-// *********** //
-
 const getChannels = (): Channel[] => {
-  const channels =
-    props.listState === 'dms' ? channelStore.getDms() : channelStore.getGroups()
-
-  return channels.filter(
-    (channel, index, self) =>
-      index === self.findIndex((c) => c.id === channel.id)
-  )
+  return props.listState === 'dms'
+    ? channelStore.getDms()
+    : channelStore.getGroups()
 }
-
-// ********************* //
-// VueJs LIFECYCLE HOOKS //
-// ********************* //
 
 onBeforeMount(() => {
   channels.value = getChannels()

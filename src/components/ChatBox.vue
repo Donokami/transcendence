@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeMount, ref, watch } from 'vue'
+import { computed, onBeforeMount, onMounted, ref, watch } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 
 import { storeToRefs } from 'pinia'
@@ -161,7 +161,7 @@ async function initChannel(): Promise<void> {
   emit('scroll-to-bottom')
 }
 
-onBeforeMount(async () => {
+onMounted(async () => {
   await initChannel()
 })
 
