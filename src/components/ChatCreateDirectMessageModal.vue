@@ -49,10 +49,6 @@
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
-
 import { storeToRefs } from 'pinia'
 import { computed, onBeforeMount, toRefs, watch, type Ref } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
