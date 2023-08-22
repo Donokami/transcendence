@@ -201,7 +201,6 @@ export const useChannelStore = defineStore('channels', {
     },
 
     async leaveGroup(userId: string, channelId: string): Promise<void> {
-      const router = useRouter()
       const toast = useToast()
 
       await fetcher
@@ -209,9 +208,9 @@ export const useChannelStore = defineStore('channels', {
         .then(async () => {
           this.selectedChannel = null
           this.removeFromChannelList(channelId)
-          toast.success(`You left the channel`)
-          return await router.push('/chat')
         })
+
+      toast.success(`You left the channel`)
     },
 
     async makeAdmin(userId: string, channelId: string): Promise<void> {
@@ -249,8 +248,7 @@ export const useChannelStore = defineStore('channels', {
             if (channel != null) {
               channel.isMuted = true
             }
-          }
-          else if (err.code === 'MessageTooLong') {
+          } else if (err.code === 'MessageTooLong') {
             toast.error(`Your message exceed 1000 characters limit`)
           }
         }
@@ -274,7 +272,7 @@ export const useChannelStore = defineStore('channels', {
     addMember(user: User, channelId: string): void {
       const channel = this.getChannel(channelId)
       if (!channel) return
-      
+
       if (!channel.members) channel.members = [] as User[]
 
       channel.members.push(user)
@@ -292,7 +290,7 @@ export const useChannelStore = defineStore('channels', {
     addToChannelList(channel: Channel): void {
       this.channelsList?.push(channel)
     },
-    
+
     getChannel(channelId?: string): Channel | null {
       if (channelId == null) {
         channelId = this.selectedChannel as string
@@ -345,10 +343,10 @@ export const useChannelStore = defineStore('channels', {
     isMember(userId: string, channelId: string): boolean {
       const channel = this.getChannel(channelId)
       if (!channel) return false
-      
+
       if (!channel?.members?.length) return false
 
-      return !!(channel.members.some((user) => user.id === userId))
+      return !!channel.members.some((user) => user.id === userId)
     },
 
     isOwner(userId: string, channelId: string): boolean {
@@ -370,11 +368,11 @@ export const useChannelStore = defineStore('channels', {
 
     removeFromChannelList(channelId: string): void {
       const channel = this.getChannel(channelId)
-      if (!channel) return 
-      
+      if (!channel) return
+
       const index = this.channelsList?.indexOf(channel)
-      if (!index) return 
- 
+      if (!index) return
+
       this.channelsList?.splice(index, 1)
     },
 
@@ -416,6 +414,6 @@ export const useChannelStore = defineStore('channels', {
           channel.unreadMessages = 0
         }
       }
-    },
+    }
   }
 })

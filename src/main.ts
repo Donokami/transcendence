@@ -26,7 +26,8 @@ app.use(Tres)
 app.component('iconify-icon', Icon)
 
 const options: PluginOptions = {
-  position: POSITION.TOP_CENTER
+  position: POSITION.TOP_CENTER,
+  maxToasts: 3
 }
 
 app.use(Toast, options)

@@ -225,7 +225,9 @@ chatSocket.on('chat:channel-created', async (channel: Channel) => {
   channelStore.setChannelInfos(loggedUser, channel)
   channelStore.addToChannelList(channel)
   if (channel.isDm) {
-    toast.success(`DM created with ${channel.dmUser?.username}`)
+    if (channel.dmUser) {
+      toast.success(`DM created with ${channel.dmUser.username}`)
+    }
   } else {
     toast.success(`You joined the ${channel.name} group`)
   }

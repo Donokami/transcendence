@@ -16,7 +16,6 @@
 <script setup lang="ts">
 import { onBeforeUnmount, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useToast } from 'vue-toastification'
 
 import { storeToRefs } from 'pinia'
 
@@ -25,13 +24,11 @@ import AuthHeader from '@/components/AuthHeader.vue'
 import SiteHeader from '@/components/SiteHeader.vue'
 import { socialSocket } from '@/includes/socialSocket'
 import { useUserStore } from '@/stores/UserStore'
-import type { User } from '@/types'
 
 const route = useRoute()
-const toast = useToast()
 const userStore = useUserStore()
 
-const { loggedUser, friendList } = storeToRefs(userStore)
+const { loggedUser } = storeToRefs(userStore)
 
 watch(loggedUser, (user) => {
   if (!user) {
@@ -44,9 +41,9 @@ watch(loggedUser, (user) => {
   socialSocket.on('connect', () => {
     console.log('[SocialSocket] - Connected to the /social socket')
   })
+})
 
-  onBeforeUnmount(() => {
-    socialSocket.off(`connect`)
-  })
+onBeforeUnmount(() => {
+  socialSocket.off(`connect`)
 })
 </script>

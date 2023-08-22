@@ -208,7 +208,7 @@ async function blockUser(): Promise<void> {
   }
 }
 
-async function kickMember() {
+async function kickMember(): void {
   try {
     await channelStore.kickMember(props.user.id, props.channel.id)
   } catch (err: any) {
@@ -220,7 +220,7 @@ async function kickMember() {
   }
 }
 
-async function makeAdmin() {
+async function makeAdmin(): void {
   try {
     await channelStore.makeAdmin(props.user.id, props.channel.id)
   } catch (err: any) {
@@ -232,7 +232,7 @@ async function makeAdmin() {
   }
 }
 
-async function muteMember() {
+async function muteMember(): void {
   try {
     await channelStore.muteMember(props.user.id, props.channel.id)
   } catch (err: any) {
@@ -244,7 +244,7 @@ async function muteMember() {
   }
 }
 
-async function revokeAdmin() {
+async function revokeAdmin(): void {
   try {
     await channelStore.revokeAdmin(props.user.id, props.channel.id)
   } catch (err: any) {

@@ -300,7 +300,8 @@ function isBanned(target: User): boolean {
 }
 
 function isBlocked(target: User): boolean {
-  if (!channel.value || !loggedUser.value) return false
+  if (!channel.value || !loggedUser.value || !loggedUser.value.blockedUsers)
+    return false
 
   return loggedUser.value.blockedUsers.some((user) => user.id === target.id)
 }
