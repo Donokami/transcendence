@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import type { User, Friendship, Paginated } from '@/types'
 import fetcher, { ApiError } from '../utils/fetcher'
 import { useChannelStore } from './ChannelStore'
+import { useToast } from 'vue-toastification'
 
 // interface UserData {
 //   username?: string
@@ -57,7 +58,9 @@ export const useUserStore = defineStore('users', {
     removeBlockedUser(unblocker: User, userToUnblock: User): void {
       if (!unblocker.blockedUsers) unblocker.blockedUsers = [] as User[]
 
-      const index = unblocker.blockedUsers.findIndex((blockedUser) => blockedUser.id === userToUnblock.id)
+      const index = unblocker.blockedUsers.findIndex(
+        (blockedUser) => blockedUser.id === userToUnblock.id
+      )
       if (index === -1) return
 
       unblocker.blockedUsers.splice(index, 1)
@@ -66,25 +69,26 @@ export const useUserStore = defineStore('users', {
     removeFriend(oldFriend: User): void {
       if (!this.friendList) this.friendList = [] as User[]
 
-      const index = this.friendList.findIndex((friend) => friend.id === oldFriend.id)
+      const index = this.friendList.findIndex(
+        (friend) => friend.id === oldFriend.id
+      )
       if (index === -1) return
 
       this.friendList.splice(index, 1)
-
     },
 
     async blockUser(targetId: string): Promise<void> {
-      
-      await fetcher.put(`/social/friendship/block`, {
-        targetId
-      }).then(async () => {
-        if (this.loggedUser === null)
-          return
-        
-        const toBlock = await this.fetchUserById(targetId)
-        this.addBlockedUser(this.loggedUser, toBlock)
-        this.removeFriend(toBlock)
-      })
+      await fetcher
+        .put(`/social/friendship/block`, {
+          targetId
+        })
+        .then(async () => {
+          if (this.loggedUser === null) return
+
+          const toBlock = await this.fetchUserById(targetId)
+          this.addBlockedUser(this.loggedUser, toBlock)
+          this.removeFriend(toBlock)
+        })
     },
 
     async enableTwoFactor(): Promise<TwoFactorData> {
@@ -197,14 +201,16 @@ export const useUserStore = defineStore('users', {
     },
 
     async unblockUser(targetId: string): Promise<void> {
-      await fetcher.put(`/social/friendship/unblock`,{ targetId }).then(async () => {
-        if (this.loggedUser === null) return
-        
-        const toUnblock = await this.fetchUserById(targetId)
-        
-        this.removeBlockedUser(this.loggedUser, toUnblock)
-        this.addFriend(toUnblock)
-      })
+      await fetcher
+        .put(`/social/friendship/unblock`, { targetId })
+        .then(async () => {
+          if (this.loggedUser === null) return
+
+          const toUnblock = await this.fetchUserById(targetId)
+
+          this.removeBlockedUser(this.loggedUser, toUnblock)
+          this.addFriend(toUnblock)
+        })
     },
 
     async verifyTwoFactor(values: Record<string, string>): Promise<User> {
@@ -231,25 +237,51 @@ export const useUserStore = defineStore('users', {
     },
 
     async uploadProfilePicture(id: string, file: File): Promise<void> {
+      const toast = useToast()
       const formData = new FormData()
       formData.append('file', file)
 
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/user/upload`, {
-        method: 'POST',
-        credentials: 'include',
-        body: formData
-      })
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/user/upload`, {
+          method: 'POST',
+          credentials: 'include',
+          body: formData
+        })
 
-      if (!res.ok) {
-        const data = await res.json()
-        throw new ApiError(
-          data.error || res.statusText,
-          data.statusCode,
-          data.code,
-          new Date(Date.now()),
-          '/user/upload',
-          'POST'
-        )
+        if (!res.ok) {
+          let data
+          const contentType = res.headers.get('content-type')
+
+          if (contentType?.includes('application/json')) {
+            try {
+              data = await res.json()
+            } catch (jsonError) {
+              toast.error(
+                'Something went wrong while uploading your profile picture'
+              )
+            }
+          } else {
+            data = {
+              error: res.statusText,
+              statusCode: res.status,
+              code: 'UNKNOWN'
+            }
+          }
+
+          throw new ApiError(
+            data.error || res.statusText,
+            data.statusCode,
+            data.code,
+            new Date(Date.now()),
+            '/user/upload',
+            'POST'
+          )
+        }
+      } catch (error) {
+        if (error instanceof ApiError) {
+          throw error
+        }
+        toast.error('Something went wrong while uploading your profile picture')
       }
     }
   }
