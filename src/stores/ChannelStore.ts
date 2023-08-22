@@ -211,22 +211,6 @@ export const useChannelStore = defineStore('channels', {
 
     async kickMember(userId: string, channelId: string): Promise<void> {
       await fetcher.put(`/channels/${channelId}/kick`, { userId })
-
-      // const channel = this.getChannel(channelId)
-      // if (!channel) return
-
-      // const { loggedUser } = useUserStore()
-      // if (loggedUser == null) return 
-      
-      // this.removeMember(loggedUser.id, channel.id)
-      // this.removeAdmin(loggedUser.id, channel.id)
-
-      // this.channelsList = await this.fetchChannels()
-      // this.selectedChannel = null
-
-      // const toast = useToast()
-      // toast.success(`You have been kicked from ${channel.name}`)
-
     },
 
     async leaveGroup(userId: string, channelId: string): Promise<Channel> {
@@ -396,6 +380,8 @@ export const useChannelStore = defineStore('channels', {
       const channel = this.getChannel(channelId)
       if (!channel) return
 
+      if (!channel.admins) return
+
       const userIndex = channel.admins?.findIndex((user) => user.id === userId)
       if (userIndex === -1) return
 
@@ -406,6 +392,8 @@ export const useChannelStore = defineStore('channels', {
       const channel = this.getChannel(channelId)
       if (!channel) return
 
+      if (!this.channelsList) return
+
       const index = this.channelsList?.indexOf(channel)
       if (!index) return
 
@@ -415,6 +403,8 @@ export const useChannelStore = defineStore('channels', {
     removeBannedMember(userId: string, channelId: string): void {
       const channel = this.getChannel(channelId)
       if (!channel) return
+
+      if (!channel.bannedMembers) return
 
       const userIndex = channel.bannedMembers?.findIndex(
         (user) => user.id === userId
@@ -428,6 +418,8 @@ export const useChannelStore = defineStore('channels', {
       const channel = this.getChannel(channelId)
       if (!channel) return
 
+      if (!channel.members) return
+      
       const userIndex = channel.members?.findIndex((user) => user.id === userId)
       if (userIndex === -1) return
 

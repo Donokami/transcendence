@@ -201,6 +201,7 @@ chatSocket.on(
     if (!channel) return
 
     channelStore.addBannedMember(user, channelId)
+    channelStore.removeAdmin(user.id, channelId)
     channelStore.removeMember(user.id, channelId)
 
     if (loggedUser && loggedUser.id === user.id) {
