@@ -9,7 +9,7 @@
         {{ channel?.owner.username }}
       </span>
     </div>
-    <div class="flex">
+    <div class="flex" v-if="channel?.isDm === false">
       <iconify-icon
         icon="lucide:user-cog"
         class="h-4 w-4 shrink-0 self-start mt-0.5">

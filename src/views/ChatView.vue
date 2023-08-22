@@ -255,6 +255,7 @@ chatSocket.on(
     const channel = channelStore.getChannel(channelId)
     if (!channel) return
 
+    channelStore.removeAdmin(user.id, channelId)
     channelStore.removeMember(user.id, channelId)
 
     if (loggedUser && loggedUser.id === user.id) {
@@ -276,6 +277,7 @@ chatSocket.on(
     const channel = channelStore.getChannel(channelId)
     if (!channel) return
 
+    channelStore.removeAdmin(user.id, channelId)
     channelStore.removeMember(user.id, channelId)
 
     toast.success(`${user.username} left ${channel.name} channel`)

@@ -245,17 +245,7 @@ async function muteMember(): Promise<void> {
 }
 
 async function revokeAdmin(): Promise<void> {
-  try {
-    await channelStore.revokeAdmin(props.user.id, props.channel.id)
-  } catch (err: any) {
-    if (err instanceof ApiError) {
-      if (err.code === 'ForbiddenException') {
-        toast.error(
-          'You are not allowed to revoke the admin rights of this user.'
-        )
-      }
-    }
-  }
+  await channelStore.revokeAdmin(props.user.id, props.channel.id)
 }
 
 async function unbanMember(): Promise<void> {

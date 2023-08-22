@@ -211,6 +211,22 @@ export const useChannelStore = defineStore('channels', {
 
     async kickMember(userId: string, channelId: string): Promise<void> {
       await fetcher.put(`/channels/${channelId}/kick`, { userId })
+
+      // const channel = this.getChannel(channelId)
+      // if (!channel) return
+
+      // const { loggedUser } = useUserStore()
+      // if (loggedUser == null) return 
+      
+      // this.removeMember(loggedUser.id, channel.id)
+      // this.removeAdmin(loggedUser.id, channel.id)
+
+      // this.channelsList = await this.fetchChannels()
+      // this.selectedChannel = null
+
+      // const toast = useToast()
+      // toast.success(`You have been kicked from ${channel.name}`)
+
     },
 
     async leaveGroup(userId: string, channelId: string): Promise<Channel> {
@@ -220,6 +236,7 @@ export const useChannelStore = defineStore('channels', {
       if (loggedUser == null) return channel
       
       this.removeMember(loggedUser.id, channel.id)
+      this.removeAdmin(loggedUser.id, channel.id)
 
       this.channelsList = await this.fetchChannels()
       this.selectedChannel = null

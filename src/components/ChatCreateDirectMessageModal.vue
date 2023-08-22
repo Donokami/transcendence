@@ -61,10 +61,6 @@ import { useChannelStore } from '@/stores/ChannelStore'
 import { useUserStore } from '@/stores/UserStore.js'
 import type { User } from '@/types'
 
-// ******************** //
-// VARIABLE DEFINITIONS //
-// ******************** //
-
 const channelStore = useChannelStore()
 const emit = defineEmits(['update:showModal'])
 const props = defineProps({
@@ -89,24 +85,12 @@ const filteredFriendList = computed(() => {
   )
 })
 
-// ******************** //
-// FUNCTION DEFINITIONS //
-// ******************** //
-
-// *************** //
-// createDmChannel //
-// *************** //
-
 const createDmChannel = async (friend: User): Promise<void> => {
   if (loggedUser.value == null || !friend) {
     return
   }
   await channelStore.createDmChannel(friend.id)
 }
-
-// **************** //
-// closeCreateModal //
-// **************** //
 
 function closeCreateModal(): void {
   const modalElement = document.getElementById('my-modal-1') as HTMLInputElement
@@ -115,10 +99,6 @@ function closeCreateModal(): void {
     emit('update:showModal', modalElement.checked)
   }
 }
-
-// ********************* //
-// VueJs LIFECYCLE HOOKS //
-// ********************* //
 
 onBeforeMount(async () => {
   if (friendList.value.length === 0) {
