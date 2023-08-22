@@ -1,4 +1,3 @@
-import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 
 import { defineStore } from 'pinia'
@@ -194,13 +193,13 @@ export const useChannelStore = defineStore('channels', {
         channelName,
         password
       })
-      
+
       const { loggedUser } = useUserStore()
       if (loggedUser == null) return channel
 
       await this.fetchChannel(channel.id)
       this.selectedChannel = channel.id
-      
+
       this.addMember(loggedUser, channel.id)
 
       const toast = useToast()
@@ -230,17 +229,20 @@ export const useChannelStore = defineStore('channels', {
     },
 
     async leaveGroup(userId: string, channelId: string): Promise<Channel> {
-      const channel: Channel = await fetcher.delete(`/channels/${channelId}/leave`, { userId })
-      
+      const channel: Channel = await fetcher.delete(
+        `/channels/${channelId}/leave`,
+        { userId }
+      )
+
       const { loggedUser } = useUserStore()
       if (loggedUser == null) return channel
-      
+
       this.removeMember(loggedUser.id, channel.id)
       this.removeAdmin(loggedUser.id, channel.id)
 
       this.channelsList = await this.fetchChannels()
       this.selectedChannel = null
-      
+
       const toast = useToast()
       toast.success(`You left ${channel.name} channel`)
 
@@ -310,7 +312,7 @@ export const useChannelStore = defineStore('channels', {
       if (!channel.members) channel.members = [] as User[]
 
       if (channel.members.some((member) => member.id === user.id)) return
-      
+
       channel.members.push(user)
     },
 
