@@ -211,7 +211,6 @@ chatSocket.on(
 
     if (loggedUser && loggedUser.id === user.id) {
       channelStore.selectedChannel = null
-      // channelStore.removeFromChannelList(channelId)
       channelsList.value = await channelStore.fetchChannels()
 
       toast.success(`You have been banned from ${channel.name}`)
@@ -266,7 +265,6 @@ chatSocket.on(
 
     if (loggedUser && loggedUser.id === user.id) {
       channelStore.selectedChannel = null
-      // channelStore.removeFromChannelList(channelId)
       channelsList.value = await channelStore.fetchChannels()
 
       toast.success(`You have been kicked from ${channel.name}`)
@@ -286,15 +284,7 @@ chatSocket.on(
 
     channelStore.removeMember(user.id, channelId)
 
-    if (loggedUser && loggedUser.id === user.id) {
-      selectedChannel.value = null
-      channelStore.removeFromChannelList(channelId)
-      channelsList.value = await channelStore.fetchChannels()
-      toast.success(`You left ${channel.name} channel`)
-      return await router.push('/chat')
-    } else {
-      toast.success(`${user.username} left ${channel.name} channel`)
-    }
+    toast.success(`${user.username} left ${channel.name} channel`)
   }
 )
 

@@ -196,16 +196,6 @@ function activateModal(modalName: string): void {
   }, 0)
 }
 
-// const getChannels = (): Channel[] => {
-//   const channels =
-//     props.listState === 'dms' ? channelStore.getDms() : channelStore.getGroups()
-
-//   return channels.filter(
-//     (channel, index, self) =>
-//       index === self.findIndex((c) => c.id === channel.id)
-//   )
-// }
-
 const getChannels = (): Channel[] => {
   return props.listState === 'dms'
     ? channelStore.getDms()

@@ -198,9 +198,10 @@ export const useChannelStore = defineStore('channels', {
       const { loggedUser } = useUserStore()
       if (loggedUser == null) return channel
 
-      this.addMember(loggedUser, channel.id)
-      this.selectedChannel = channel.id
       await this.fetchChannel(channel.id)
+      this.selectedChannel = channel.id
+      
+      this.addMember(loggedUser, channel.id)
 
       const toast = useToast()
       toast.success(`You joined ${channel.name} channel`)
@@ -212,17 +213,21 @@ export const useChannelStore = defineStore('channels', {
       await fetcher.put(`/channels/${channelId}/kick`, { userId })
     },
 
-    async leaveGroup(userId: string, channelId: string): Promise<void> {
+    async leaveGroup(userId: string, channelId: string): Promise<Channel> {
+      const channel: Channel = await fetcher.delete(`/channels/${channelId}/leave`, { userId })
+      
+      const { loggedUser } = useUserStore()
+      if (loggedUser == null) return channel
+      
+      this.removeMember(loggedUser.id, channel.id)
+
+      this.channelsList = await this.fetchChannels()
+      this.selectedChannel = null
+      
       const toast = useToast()
+      toast.success(`You left ${channel.name} channel`)
 
-      await fetcher
-        .delete(`/channels/${channelId}/leave`, { userId })
-        .then(async () => {
-          this.selectedChannel = null
-          this.removeFromChannelList(channelId)
-        })
-
-      toast.success(`You left the channel`)
+      return channel
     },
 
     async makeAdmin(userId: string, channelId: string): Promise<void> {
@@ -287,6 +292,8 @@ export const useChannelStore = defineStore('channels', {
 
       if (!channel.members) channel.members = [] as User[]
 
+      if (channel.members.some((member) => member.id === user.id)) return
+      
       channel.members.push(user)
     },
 

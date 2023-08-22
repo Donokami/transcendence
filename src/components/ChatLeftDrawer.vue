@@ -103,7 +103,8 @@
                           <user-avatar
                             :userProps="user as User"
                             :uploadMode="false"
-                            :status-mode="false"></user-avatar>
+                            :status-mode="false">
+                          </user-avatar>
                         </div>
                       </div>
                     </div>
