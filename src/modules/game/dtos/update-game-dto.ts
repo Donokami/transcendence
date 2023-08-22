@@ -14,11 +14,6 @@ export class UpdateGameDto {
   gameDuration?: number
 
   @ApiProperty()
-  @IsEnum([0.8, 1, 1.2])
-  @IsNotEmpty()
-  ballSpeed?: number
-
-  @ApiProperty()
   @IsEnum([0.1, 0.2, 0.3])
   @IsNotEmpty()
   @IsOptional()
