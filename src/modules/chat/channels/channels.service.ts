@@ -22,7 +22,7 @@ import {
   UserIsNotAdmin,
   UserIsNotBanned,
   UserNotFound,
-  UserNotInChannel,
+  UserNotInChannel
 } from '@/core/exceptions'
 import { parseMuteTime } from '@/core/utils/parseMuteTime'
 import { ChatGateway } from '@/modules/chat/chat.gateway'
@@ -122,7 +122,12 @@ export class ChannelsService {
     newPassword: string,
     channel: Channel
   ): Promise<OperationResult> {
-    channel.password = newPassword
+    const salt = randomBytes(8).toString('hex')
+
+    const hashBuffer = (await scrypt(newPassword, salt, 32)) as Buffer
+    const hashedPassword = salt + '.' + hashBuffer.toString('hex')
+
+    channel.password = hashedPassword
     channel.type = ChannelTypes.PROTECTED
 
     await this.channelsRepository.save(channel)
