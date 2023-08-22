@@ -40,10 +40,6 @@ lerna-debug.log*
 # Requests
 *.http
 
-# Tests
-/coverage
-/.nyc_output
-
 # Database
 data/
 db.sqlite

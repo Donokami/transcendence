@@ -35,14 +35,6 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
           entities: [Channel, Friendship, Message, User, MutedUser, Match],
           synchronize: true
         }
-      case 'test':
-        return {
-          type: 'sqlite',
-          database: process.env.DB_PATH + process.env.DB_NAME + '.test.sqlite',
-          entities: [Channel, Friendship, Message, User, MutedUser, Match],
-          synchronize: true,
-          dropSchema: true
-        }
     }
   }
 }
