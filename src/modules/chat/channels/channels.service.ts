@@ -111,7 +111,7 @@ export class ChannelsService {
         channel.admins
       )
     }
-    
+
     const updatePayload = { user: userToBan, channelId: channel.id }
 
     const updatedChannel = await this.updateChannel(
@@ -161,7 +161,7 @@ export class ChannelsService {
   async createChannel(
     createChannelDto: CreateChannelDto,
     ownerId: string
-  ): Promise<Channel> {
+  ): Promise<Partial<Channel>> {
     const owner: User = await this.checkExistingUser(ownerId)
 
     const members: User[] = await this.userService.findByIds(
@@ -172,6 +172,12 @@ export class ChannelsService {
     if (createChannelDto.type === ChannelTypes.DM && members.length > 2) {
       throw new DmChannelMembersLimit()
     }
+
+    if (
+      createChannelDto.type === ChannelTypes.PROTECTED &&
+      !createChannelDto.password
+    )
+      throw new MissingGroupPassword()
 
     members.sort((a, b) => a.id.localeCompare(b.id))
 
@@ -222,6 +228,8 @@ export class ChannelsService {
       const socket = this.chatGateway.getUserSocket(member.id)
       if (socket) socket.join(channel.id)
     })
+
+    delete channel.password
 
     this.chatGateway.server.to(channel.id).emit('chat:channel-created', channel)
 
@@ -367,7 +375,7 @@ export class ChannelsService {
     const updatePayload = { user: newMember, channelId: channel.id }
 
     await this.updateChannel('chat:join', channel, updatePayload)
-    
+
     const socket = this.chatGateway.getUserSocket(newMember.id)
     if (socket) socket.join(channel.id)
 
