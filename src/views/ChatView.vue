@@ -42,10 +42,10 @@
                   v-if="channelStore.getChannel(selectedChannel)?.isDm"
                   class="w-10 h-10 sm:w-11 sm:h-11">
                   <user-avatar
-                    :userProps="
-                      channelStore.getChannel(selectedChannel)?.dmUser as User
+                    :user-props="
+                      channelStore.getChannel(selectedChannel)?.dmUser
                     "
-                    :uploadMode="false"></user-avatar>
+                    :upload-mode="false"></user-avatar>
                 </div>
                 <img
                   v-else
@@ -64,20 +64,18 @@
                   :key="user.id">
                   <div class="w-11 h-11 sm:w-12 sm:h-12">
                     <user-avatar
-                      :userProps="user as User"
-                      :uploadMode="false"
+                      :user-props="user"
+                      :upload-mode="false"
                       :status-mode="false"></user-avatar>
                   </div>
                 </div>
               </div>
             </div>
-            <!-- CHANNEL NAME -->
             <h2
               class="text-lg font-bold text-black truncate sm:text-xl sm:w-fit">
               {{ channelStore.getChannel(selectedChannel)?.name }}
             </h2>
           </div>
-          <!-- GAME INVITE BUTTON -->
           <button
             v-if="channelStore.getChannel(selectedChannel)?.isDm === true"
             @click="createGame"
@@ -88,7 +86,6 @@
             <span class="hidden lg:block">Send game invite</span>
             <span class="block lg:hidden">Invite</span>
           </button>
-          <!-- MANAGE CHANNEL MOBILE BUTTON -->
           <chat-right-drawer />
           <label
             v-if="channelStore.getChannel(selectedChannel)?.isDm === false"
@@ -101,16 +98,13 @@
             </iconify-icon>
           </label>
         </div>
-        <!-- CHAT BOX -->
         <div
           ref="chatbox"
           class="flex-auto overflow-auto border-2 border-black">
           <chat-box @scroll-to-bottom="scrollToBottom"></chat-box>
         </div>
-        <!-- MESSAGE INPUT -->
         <chat-input></chat-input>
       </div>
-      <!-- RIGHT SIDEBAR -->
       <div
         v-if="
           selectedChannel &&
@@ -126,7 +120,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 
-import { ref, onBeforeMount, computed, onBeforeUnmount } from 'vue'
+import { ref, computed, onBeforeUnmount, onMounted } from 'vue'
 import {
   onBeforeRouteLeave,
   onBeforeRouteUpdate,
@@ -374,7 +368,7 @@ chatSocket.on(
   }
 )
 
-onBeforeMount(async () => {
+onMounted(async () => {
   if (channelsList.value === null) {
     channelsList.value = await channelStore.fetchChannels()
   }

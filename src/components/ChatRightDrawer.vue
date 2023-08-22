@@ -31,12 +31,10 @@
                   <div class="py-3">
                     <div class="flex items-center px-4 mx-auto">
                       <div class="w-10 h-10">
-                        <user-avatar
-                          :userProps="user as User"
-                          :uploadMode="false">
+                        <user-avatar :user-props="user" :upload-mode="false">
                         </user-avatar>
                       </div>
-                      <span class="pl-3 text-sm truncate w-32">{{
+                      <span class="w-32 pl-3 text-sm truncate">{{
                         user.username
                       }}</span>
                     </div>
@@ -91,7 +89,7 @@
                       <div class="flex gap-3 rounded-none">
                         <iconify-icon
                           icon="lucide:ban"
-                          class="h-4 w-4 shrink-0">
+                          class="w-4 h-4 shrink-0">
                         </iconify-icon>
                         <span>Unblock</span>
                       </div>
@@ -105,7 +103,7 @@
                         v-if="isMember(user) && showRevokeAdmin(user)"
                         @click="revokeAdmin(user)">
                         <div
-                          class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+                          class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
                           <iconify-icon
                             icon="lucide:x"
                             class="h-4 w-4 shrink-0 self-start mt-0.5">
@@ -119,7 +117,7 @@
                         v-if="isMember(user)"
                         @click="muteMember(user)">
                         <div
-                          class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+                          class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
                           <iconify-icon
                             icon="lucide:volume-x"
                             class="w-4 h-4 shrink-0">
@@ -161,10 +159,10 @@
                         v-if="isBanned(user)"
                         @click="unbanMember(user)">
                         <div
-                          class="flex gap-3 rounded-none text-green-500 hover:text-green-500">
+                          class="flex gap-3 text-green-500 rounded-none hover:text-green-500">
                           <iconify-icon
                             icon="lucide:gavel"
-                            class="h-4 w-4 shrink-0">
+                            class="w-4 h-4 shrink-0">
                           </iconify-icon>
                           <span>Unban</span>
                         </div>

@@ -49,7 +49,7 @@
           <!-- CHANNELS LIST -->
           <ul
             v-else-if="loggedUser && channelsList.length > 0"
-            class="bg-base-100 w-full p-0">
+            class="w-full p-0 bg-base-100">
             <li
               v-for="channel in getChannels()"
               :key="channel.id"
@@ -62,8 +62,8 @@
                   <div class="flex items-center px-2 mx-auto sm:px-4 w-18">
                     <div class="w-8 h-8 sm:h-11 sm:w-11" v-if="channel.isDm">
                       <user-avatar
-                        :userProps="channel.dmUser as User"
-                        :uploadMode="false"></user-avatar>
+                        :user-props="channel.dmUser"
+                        :upload-mode="false"></user-avatar>
                     </div>
                     <div v-else>
                       <img
@@ -101,10 +101,9 @@
                         :key="user.id">
                         <div class="w-10 h-10 sm:w-12 sm:h-12">
                           <user-avatar
-                            :userProps="user as User"
-                            :uploadMode="false"
-                            :status-mode="false">
-                          </user-avatar>
+                            :user-props="user"
+                            :upload-mode="false"
+                            :status-mode="false"></user-avatar>
                         </div>
                       </div>
                     </div>
@@ -184,9 +183,9 @@ import ChatCreateDirectMessageModal from '@/components/ChatCreateDirectMessageMo
 import ChatCreateGroupModal from '@/components/ChatCreateGroupModal.vue'
 import ChatJoinGroupModal from '@/components/ChatJoinGroupModal.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
-import { useChannelStore } from '@/stores/ChannelStore.js'
-import { useUserStore } from '@/stores/UserStore.js'
-import type { Channel, User } from '@/types'
+import { useChannelStore } from '@/stores/ChannelStore'
+import { useUserStore } from '@/stores/UserStore'
+import type { Channel } from '@/types'
 
 const channelImageUrl = (imagePath: string): string => {
   return `${import.meta.env.VITE_APP_BASE_URL}/${imagePath}`

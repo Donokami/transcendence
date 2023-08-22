@@ -1,5 +1,5 @@
 <template>
-  <div class="border-black border-x-2 border-b-2 px-5 py-4">
+  <div class="px-5 py-4 border-b-2 border-black border-x-2">
     <form @submit.prevent="sendMessage" class="flex justify-between gap-4">
       <div class="w-full mt-0.5">
         <textarea
@@ -20,10 +20,10 @@
       <button
         type="submit"
         :disabled="!channel || channel.isMuted"
-        class="flex self-end btn m-0 p-0 min-h-0 h-8 px-0 mx-0 w-0 relative bg-base-100 border-base-100 hover:bg-base-100 hover:border-base-100 hover:text-zinc-600 -mr-1">
+        class="relative flex self-end w-0 h-8 min-h-0 p-0 px-0 m-0 mx-0 -mr-1 btn bg-base-100 border-base-100 hover:bg-base-100 hover:border-base-100 hover:text-zinc-600">
         <iconify-icon
           icon="lucide:send-horizonal"
-          class="h-6 w-6 self-center absolute">
+          class="absolute self-center w-6 h-6">
         </iconify-icon>
       </button>
     </form>
@@ -36,15 +36,16 @@
 // ******* //
 
 import { nextTick, onMounted, ref, type Ref } from 'vue'
-
 import { useChannelStore } from '@/stores/ChannelStore.js'
+import type { Channel } from '@/types'
 
 const channelStore = useChannelStore()
 const input = ref('')
 const myTextarea: Ref<HTMLElement | null> = ref(null)
-const channel = channelStore.getChannel()
+const channel: Ref<Channel | null> = ref(null)
 
 onMounted(() => {
+  channel.value = channelStore.getChannel()
   autoResize()
 })
 

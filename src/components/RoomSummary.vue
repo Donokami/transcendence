@@ -14,8 +14,8 @@
             </div>
             <div class="w-10 h-10 sm:h-12 sm:w-12">
               <user-avatar
-                :userProps="room.players[0] as User"
-                :uploadMode="false"
+                :user-props="room.players[0] as User"
+                :upload-mode="false"
                 :status-mode="false"></user-avatar>
             </div>
           </template>
@@ -39,8 +39,8 @@
             </div>
             <div class="w-10 h-10 sm:h-12 sm:w-12">
               <user-avatar
-                :userProps="room.players[1] as User"
-                :uploadMode="false"
+                :user-props="room.players[1] as User"
+                :upload-mode="false"
                 :status-mode="false"></user-avatar>
             </div>
           </template>

@@ -1,8 +1,8 @@
 <template>
-  <div class="flex-auto overflow-auto w-fit h-full bg-white">
+  <div class="flex-auto h-full overflow-auto bg-white w-fit">
     <!-- LOADER FOR CHANNEL LIST -->
     <div v-if="channelsList && channelsList.length === 0">
-      <div class="flex justify-center items-center h-fit">
+      <div class="flex items-center justify-center h-fit">
         <span class="loading loading-spinner loading-lg"></span>
       </div>
     </div>
@@ -10,20 +10,20 @@
     <!-- USER LIST -->
     <ul
       v-else-if="loggedUser && channelsList && channelsList.length > 0"
-      class="bg-base-100 w-full">
+      class="w-full bg-base-100">
       <li v-for="user in channel?.members" :key="user.id">
         <div class="dropdown dropdown-bottom">
           <!-- AVATAR DROPDOWN BUTTON -->
           <label
             tabindex="0"
-            class="flex rounded-none hover:bg-base-300 cursor-pointer">
+            class="flex rounded-none cursor-pointer hover:bg-base-300">
             <div class="py-3">
-              <div class="flex items-center mx-auto px-4 w-18">
+              <div class="flex items-center px-4 mx-auto w-18">
                 <div class="w-10 h-10">
-                  <user-avatar :userProps="user as User" :uploadMode="false">
+                  <user-avatar :user-props="user" :upload-mode="false">
                   </user-avatar>
                 </div>
-                <span class="pl-3 truncate w-28 text-sm">{{
+                <span class="pl-3 text-sm truncate w-28">{{
                   user.username
                 }}</span>
               </div>
@@ -38,7 +38,7 @@
               <router-link
                 :to="`/profile/${user.id}`"
                 class="flex gap-3 rounded-none">
-                <iconify-icon icon="lucide:user" class="h-4 w-4 shrink-0">
+                <iconify-icon icon="lucide:user" class="w-4 h-4 shrink-0">
                 </iconify-icon>
                 <span>Profile</span>
               </router-link>
@@ -63,7 +63,7 @@
                 v-if="isBlocked(user) === false"
                 @click="blockUser(user)">
                 <div class="flex gap-3 rounded-none">
-                  <iconify-icon icon="lucide:ban" class="h-4 w-4 shrink-0">
+                  <iconify-icon icon="lucide:ban" class="w-4 h-4 shrink-0">
                   </iconify-icon>
                   <span>Block</span>
                 </div>
@@ -74,7 +74,7 @@
                 v-if="isBlocked(user) === true"
                 @click="unblockUser(user)">
                 <div class="flex gap-3 rounded-none">
-                  <iconify-icon icon="lucide:ban" class="h-4 w-4 shrink-0">
+                  <iconify-icon icon="lucide:ban" class="w-4 h-4 shrink-0">
                   </iconify-icon>
                   <span>Unblock</span>
                 </div>
@@ -88,7 +88,7 @@
                   v-if="isMember(user) && showRevokeAdmin(user)"
                   @click="revokeAdmin(user)">
                   <div
-                    class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+                    class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
                     <iconify-icon
                       icon="lucide:x"
                       class="h-4 w-4 shrink-0 self-start mt-0.5">
@@ -102,10 +102,10 @@
                   v-if="isMember(user)"
                   @click="muteMember(user)">
                   <div
-                    class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+                    class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
                     <iconify-icon
                       icon="lucide:volume-x"
-                      class="h-4 w-4 shrink-0">
+                      class="w-4 h-4 shrink-0">
                     </iconify-icon>
                     <span>Mute</span>
                   </div>
@@ -116,10 +116,10 @@
                   v-if="isMember(user)"
                   @click="kickMember(user)">
                   <div
-                    class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+                    class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
                     <iconify-icon
                       icon="lucide:door-open"
-                      class="h-4 w-4 shrink-0">
+                      class="w-4 h-4 shrink-0">
                     </iconify-icon>
                     <span>Kick</span>
                   </div>
@@ -130,8 +130,8 @@
                   v-if="isMember(user)"
                   @click="banMember(user)">
                   <div
-                    class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
-                    <iconify-icon icon="lucide:gavel" class="h-4 w-4 shrink-0">
+                    class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
+                    <iconify-icon icon="lucide:gavel" class="w-4 h-4 shrink-0">
                     </iconify-icon>
                     <span>Ban</span>
                   </div>
@@ -142,8 +142,8 @@
                   v-if="isBanned(user)"
                   @click="unbanMember(user)">
                   <div
-                    class="flex gap-3 rounded-none text-green-500 hover:text-green-500">
-                    <iconify-icon icon="lucide:gavel" class="h-4 w-4 shrink-0">
+                    class="flex gap-3 text-green-500 rounded-none hover:text-green-500">
+                    <iconify-icon icon="lucide:gavel" class="w-4 h-4 shrink-0">
                     </iconify-icon>
                     <span>Unban</span>
                   </div>

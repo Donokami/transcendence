@@ -1,41 +1,42 @@
 <template>
   <div class="neobrutalist-box sm:w-[30rem] px-4 py-7 sm:p-11">
-    <h2 class="text-xl sm:text-2xl font-bold mb-8 text-black">
+    <h2 class="mb-8 text-xl font-bold text-black sm:text-2xl">
       Personalize Your Account
     </h2>
     <div class="w-24 mx-auto">
       <user-avatar
-        :userProps="userStore.loggedUser as User"
-        :uploadMode="true"
-        :statusMode="false">
+        :user-props="userStore.loggedUser"
+        :upload-mode="true"
+        :status-mode="false"
+        v-if="userStore.loggedUser">
       </user-avatar>
     </div>
     <Form :validation-schema="usernameSchema" @submit="submitForm">
       <div class="my-6">
         <label
-          class="block font-medium mb-1 text-md text-lg sm:text-xl"
+          class="block mb-1 text-lg font-medium text-md sm:text-xl"
           for="username"
           >Username</label
         >
         <Field
-          class="neobrutalist-input w-full text-black"
+          class="w-full text-black neobrutalist-input"
           name="username"
           type="text"
           placeholder="Choose a username"
           autocomplete="off" />
         <ErrorMessage
-          class="font-normal text-base text-red-600"
+          class="text-base font-normal text-red-600"
           name="username" />
       </div>
       <div
-        class="text-white text-center font-bold p-4 rounded mb-4"
+        class="p-4 mb-4 font-bold text-center text-white rounded"
         v-if="showAlert"
         :class="alertColor">
         {{ alertMsg }}
       </div>
       <div class="mt-8">
         <button
-          class="btn border-zinc-900 bg-black text-white sm:w-fit w-full"
+          class="w-full text-white bg-black btn border-zinc-900 sm:w-fit"
           type="submit"
           :disabled="inSubmission">
           Update profile
@@ -51,8 +52,6 @@ import { Form, Field, ErrorMessage } from 'vee-validate'
 import { useRouter } from 'vue-router'
 import { useToast } from 'vue-toastification'
 import { useUserStore } from '../stores/UserStore'
-
-import type { User } from '@/types'
 
 import UserAvatar from '@/components/UserAvatar.vue'
 

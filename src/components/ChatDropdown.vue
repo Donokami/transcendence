@@ -11,24 +11,24 @@
       tabindex="0"
       class="rounded-full cursor-pointer"
       @click="toggleDropdown">
-      <div class="h-11 w-11 mt-1">
+      <div class="mt-1 h-11 w-11">
         <user-avatar
-          :userProps="user as User"
-          :uploadMode="false"
+          :user-props="user"
+          :upload-mode="false"
           :status-mode="false"></user-avatar>
       </div>
     </label>
     <!-- DROPDOWN CONTENT -->
     <ul
       tabindex="0"
-      class="dropdown-content menu shadow bg-base-100 p-0 border-2 border-black rounded-none mx-2 w-max"
+      class="p-0 mx-2 border-2 border-black rounded-none shadow dropdown-content menu bg-base-100 w-max"
       v-if="isOpen">
       <!-- GO TO PROFILE -->
       <li class="rounded-none">
         <router-link
           :to="`/profile/${user.id}`"
           class="flex gap-3 rounded-none">
-          <iconify-icon icon="lucide:user" class="h-4 w-4 shrink-0">
+          <iconify-icon icon="lucide:user" class="w-4 h-4 shrink-0">
           </iconify-icon>
           <span>Profile</span>
         </router-link>
@@ -50,7 +50,7 @@
         <!-- BLOCK -->
         <li class="rounded-none" @click="blockUser">
           <div class="flex gap-3 rounded-none">
-            <iconify-icon icon="lucide:ban" class="h-4 w-4 shrink-0">
+            <iconify-icon icon="lucide:ban" class="w-4 h-4 shrink-0">
             </iconify-icon>
             <span>Block</span>
           </div>
@@ -64,7 +64,7 @@
             v-if="isMember && showRevokeAdmin()"
             @click="revokeAdmin()">
             <div
-              class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
+              class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
               <iconify-icon
                 icon="lucide:x"
                 class="h-4 w-4 shrink-0 self-start mt-0.5">
@@ -75,8 +75,8 @@
           <!-- MUTE -->
           <li class="rounded-none" v-if="isMember" @click="muteMember">
             <div
-              class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
-              <iconify-icon icon="lucide:volume-x" class="h-4 w-4 shrink-0">
+              class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
+              <iconify-icon icon="lucide:volume-x" class="w-4 h-4 shrink-0">
               </iconify-icon>
               <span>Mute</span>
             </div>
@@ -84,8 +84,8 @@
           <!-- KICK -->
           <li class="rounded-none" v-if="isMember" @click="kickMember">
             <div
-              class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
-              <iconify-icon icon="lucide:door-open" class="h-4 w-4 shrink-0">
+              class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
+              <iconify-icon icon="lucide:door-open" class="w-4 h-4 shrink-0">
               </iconify-icon>
               <span>Kick</span>
             </div>
@@ -93,8 +93,8 @@
           <!-- BAN -->
           <li class="rounded-none" v-if="isMember" @click="banMember">
             <div
-              class="flex gap-3 rounded-none text-red-500 hover:text-red-500">
-              <iconify-icon icon="lucide:gavel" class="h-4 w-4 shrink-0">
+              class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
+              <iconify-icon icon="lucide:gavel" class="w-4 h-4 shrink-0">
               </iconify-icon>
               <span>Ban</span>
             </div>
@@ -102,8 +102,8 @@
           <!-- UNBAN -->
           <li class="rounded-none" v-if="isBanned" @click="unbanMember">
             <div
-              class="flex gap-3 rounded-none text-green-500 hover:text-green-500">
-              <iconify-icon icon="lucide:gavel" class="h-4 w-4 shrink-0">
+              class="flex gap-3 text-green-500 rounded-none hover:text-green-500">
+              <iconify-icon icon="lucide:gavel" class="w-4 h-4 shrink-0">
               </iconify-icon>
               <span>Unban</span>
             </div>
@@ -208,7 +208,7 @@ async function blockUser(): Promise<void> {
   }
 }
 
-async function kickMember(): void {
+async function kickMember(): Promise<void> {
   try {
     await channelStore.kickMember(props.user.id, props.channel.id)
   } catch (err: any) {
@@ -220,7 +220,7 @@ async function kickMember(): void {
   }
 }
 
-async function makeAdmin(): void {
+async function makeAdmin(): Promise<void> {
   try {
     await channelStore.makeAdmin(props.user.id, props.channel.id)
   } catch (err: any) {
@@ -232,7 +232,7 @@ async function makeAdmin(): void {
   }
 }
 
-async function muteMember(): void {
+async function muteMember(): Promise<void> {
   try {
     await channelStore.muteMember(props.user.id, props.channel.id)
   } catch (err: any) {
@@ -244,7 +244,7 @@ async function muteMember(): void {
   }
 }
 
-async function revokeAdmin(): void {
+async function revokeAdmin(): Promise<void> {
   try {
     await channelStore.revokeAdmin(props.user.id, props.channel.id)
   } catch (err: any) {

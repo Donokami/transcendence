@@ -21,8 +21,8 @@
       <div class="flex-col h-24">
         <div class="w-16 text-black">
           <user-avatar
-            :userProps="user as User"
-            :uploadMode="loggedUser?.id === user?.id"></user-avatar>
+            :user-props="user"
+            :upload-mode="loggedUser?.id === user?.id"></user-avatar>
         </div>
         <div class="flex items-baseline">
           <div class="stat-title">Status:</div>
@@ -133,7 +133,7 @@
           @click="showFriendRequestModal = true">
           <div class="indicator">
             <span
-              class="text-white text-xs badge badge-secondary indicator-start indicator-item animation-pulse"
+              class="text-xs text-white badge badge-secondary indicator-start indicator-item animation-pulse"
               >{{ nFriendRequests }}</span
             >
             <iconify-icon
