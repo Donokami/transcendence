@@ -362,7 +362,6 @@ export class SocialService {
     )
 
     const blockedClient = this.socialGateway.findClient(toBlock.id)
-    console.log(`DEBUG - blockedClient : ${blockedClient}`)
     if (blockedClient) {
       this.socialGateway.server
         .to(blockedClient.clientId)
