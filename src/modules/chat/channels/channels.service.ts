@@ -104,6 +104,14 @@ export class ChannelsService {
       channel.bannedMembers ?? []
     )
 
+    if (channel.admins.find((admin) => admin.id === userToBan.id)) {
+      channel.admins = this.removeUserFromList(
+        'admins',
+        userToBan,
+        channel.admins
+      )
+    }
+    
     const updatePayload = { user: userToBan, channelId: channel.id }
 
     const updatedChannel = await this.updateChannel(
@@ -317,7 +325,7 @@ export class ChannelsService {
   async joinGroup(
     newMemberId: string,
     joinGroupDto: JoinGroupDto
-  ): Promise<OperationResult> {
+  ): Promise<Channel> {
     const { channelName, password } = joinGroupDto
 
     const newMember: User = await this.checkExistingUser(newMemberId)
@@ -356,12 +364,12 @@ export class ChannelsService {
 
     const updatePayload = { user: newMember, channelId: channel.id }
 
+    await this.updateChannel('chat:join', channel, updatePayload)
+    
     const socket = this.chatGateway.getUserSocket(newMember.id)
     if (socket) socket.join(channel.id)
 
-    await this.updateChannel('chat:join', channel, updatePayload)
-
-    return { success: true }
+    return channel
   }
 
   async kickMember(
@@ -378,6 +386,14 @@ export class ChannelsService {
       userToKick,
       channel.members
     )
+
+    if (channel.admins.find((admin) => admin.id === userToKick.id)) {
+      channel.admins = this.removeUserFromList(
+        'admins',
+        userToKick,
+        channel.admins
+      )
+    }
 
     const updatePayload = { user: userToKick, channelId: channel.id }
 
