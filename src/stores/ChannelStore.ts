@@ -181,7 +181,7 @@ export const useChannelStore = defineStore('channels', {
       if (!channel) return []
 
       channel.bannedMembers = await fetcher.get(
-          `/channels/${channelId}/bannedMembers`
+        `/channels/${channelId}/bannedMembers`
       )
 
       return channel.bannedMembers
@@ -237,12 +237,7 @@ export const useChannelStore = defineStore('channels', {
     },
 
     async muteMember(userId: string, channelId: string): Promise<void> {
-      try {
-        await fetcher.put(`/channels/${channelId}/mute`, { userId })
-      } catch (error) {
-        console.error(error)
-        alert(`Failed to mute user with ID : ${userId}`)
-      }
+      await fetcher.put(`/channels/${channelId}/mute`, { userId })
     },
 
     async revokeAdmin(userId: string, channelId: string): Promise<void> {
@@ -306,7 +301,6 @@ export const useChannelStore = defineStore('channels', {
       if (!channel.bannedMembers) channel.bannedMembers = [] as User[]
 
       channel.bannedMembers.push(user)
-
     },
 
     addToChannelList(channel: Channel): void {
@@ -421,7 +415,7 @@ export const useChannelStore = defineStore('channels', {
       if (!channel) return
 
       if (!channel.members) return
-      
+
       const userIndex = channel.members?.findIndex((user) => user.id === userId)
       if (userIndex === -1) return
 

@@ -72,7 +72,7 @@
               </div>
             </div>
             <h2
-              class="text-lg font-bold text-black truncate sm:text-xl sm:w-fit">
+              class="text-lg font-bold text-black sm:text-xl lg:w-96 truncate w-40">
               {{ channelStore.getChannel(selectedChannel)?.name }}
             </h2>
           </div>

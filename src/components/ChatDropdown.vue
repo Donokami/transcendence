@@ -242,6 +242,8 @@ async function muteMember(): Promise<void> {
     if (err instanceof ApiError) {
       if (err.code === 'ForbiddenException') {
         toast.error('You are not allowed to mute this member.')
+      } else if (err.code === 'UserAlreadyMuted') {
+        toast.error('Member is already muted.')
       }
     }
   }
