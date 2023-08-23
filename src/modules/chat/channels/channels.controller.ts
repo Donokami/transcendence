@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Delete,
   Get,
@@ -8,7 +9,8 @@ import {
   Put,
   Session,
   UseFilters,
-  UseGuards
+  UseGuards,
+  UseInterceptors
 } from '@nestjs/common'
 import { ApiOperation } from '@nestjs/swagger'
 
@@ -35,11 +37,12 @@ import { OwnershipGuard } from '@/modules/chat/channels/guards/ownership.guard'
 import { User } from '@/modules/users/user.entity'
 
 @UseGuards(AuthGuard, UsernameGuard)
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('channels')
 @UseFilters(new GlobalExceptionFilter())
 export class ChannelsController {
   constructor(private readonly channelsService: ChannelsService) {}
-  
+
   @Put('/:channelId/ban')
   @ApiOperation({
     summary: 'Ban a member from a group',
@@ -57,7 +60,12 @@ export class ChannelsController {
   ): Promise<Channel> {
     const userId: string = session.userId
     const memberToBanId: string = body.userId
-    return await this.channelsService.banMember(userId, memberToBanId, channel)
+    const newChannel = await this.channelsService.banMember(
+      userId,
+      memberToBanId,
+      channel
+    )
+    return newChannel
   }
 
   @Put('/:channelId/password/change')
@@ -88,7 +96,7 @@ export class ChannelsController {
   async createChannel(
     @Body() body: CreateChannelDto,
     @Session() session: ISession
-  ): Promise<Partial<Channel>> {
+  ): Promise<Channel> {
     const ownerId = session.userId
     const channel = await this.channelsService.createChannel(body, ownerId)
     if (!channel)
@@ -186,9 +194,13 @@ export class ChannelsController {
     description: 'Join a group',
     tags: ['chat']
   })
-  async joinGroup(@Body() body: JoinGroupDto, @Session() session: ISession): Promise<Partial<Channel>> {
+  async joinGroup(
+    @Body() body: JoinGroupDto,
+    @Session() session: ISession
+  ): Promise<Channel> {
     const userId = session.userId
-    return await this.channelsService.joinGroup(userId, body)
+    const channel = await this.channelsService.joinGroup(userId, body)
+    return channel
   }
 
   @Put('/:channelId/kick')

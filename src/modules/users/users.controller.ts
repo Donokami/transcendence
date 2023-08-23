@@ -10,7 +10,8 @@ import {
   UploadedFile,
   UseInterceptors,
   UseFilters,
-  Session
+  Session,
+  ClassSerializerInterceptor
 } from '@nestjs/common'
 
 import { AuthGuard } from '@/core/guards/auth.guard'
@@ -40,9 +41,9 @@ import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { ISession } from '@/core/types'
 
 @Controller('user')
+@UseInterceptors(ClassSerializerInterceptor)
 @UseFilters(new GlobalExceptionFilter())
 export class UsersController {
-
   constructor(
     private readonly usersService: UsersService,
     private readonly socialService: SocialService,
@@ -144,7 +145,7 @@ export class UsersController {
     }
 
     user.blockedUsers = await this.socialService.getBlockedUsers(user.id)
-    
+
     return user
   }
 

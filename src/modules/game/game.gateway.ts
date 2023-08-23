@@ -1,4 +1,11 @@
-import { Inject, Logger, UseFilters, forwardRef } from '@nestjs/common'
+import {
+  ClassSerializerInterceptor,
+  Inject,
+  Logger,
+  UseFilters,
+  UseInterceptors,
+  forwardRef
+} from '@nestjs/common'
 
 import { Server, Socket } from 'socket.io'
 
@@ -25,6 +32,7 @@ import {
   transport: ['websocket', 'polling']
 })
 @UseFilters(new GlobalExceptionFilter())
+@UseInterceptors(ClassSerializerInterceptor)
 export class GameGateway {
   @WebSocketServer()
   server: Server

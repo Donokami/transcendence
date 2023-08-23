@@ -1,6 +1,8 @@
 import {
+  ClassSerializerInterceptor,
   Inject,
   Logger,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
   forwardRef
@@ -22,6 +24,7 @@ import { ChannelsService } from '@/modules/chat/channels/channels.service'
 import { UsersService } from '@/modules/users/users.service'
 
 @UsePipes(new ValidationPipe())
+@UseInterceptors(ClassSerializerInterceptor)
 @WebSocketGateway({
   namespace: '/chat',
   transport: ['websocket', 'polling']
@@ -37,7 +40,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly userService: UsersService,
     @Inject(forwardRef(() => ChannelsService))
     private readonly channelService: ChannelsService
-  ) { }
+  ) {}
 
   private logger = new Logger(ChatGateway.name)
 

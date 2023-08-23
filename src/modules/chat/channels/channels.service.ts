@@ -138,7 +138,7 @@ export class ChannelsService {
   async createChannel(
     createChannelDto: CreateChannelDto,
     ownerId: string
-  ): Promise<Partial<Channel>> {
+  ): Promise<Channel> {
     const owner: User = await this.checkExistingUser(ownerId)
 
     const members: User[] = await this.userService.findByIds(
@@ -205,8 +205,6 @@ export class ChannelsService {
       const socket = this.chatGateway.getUserSocket(member.id)
       if (socket) socket.join(channel.id)
     })
-
-    delete channel.password
 
     this.chatGateway.server.to(channel.id).emit('chat:channel-created', channel)
 
@@ -322,7 +320,7 @@ export class ChannelsService {
   async joinGroup(
     newMemberId: string,
     joinGroupDto: JoinGroupDto
-  ): Promise<Partial<Channel>> {
+  ): Promise<Channel> {
     const { channelName, password } = joinGroupDto
 
     const newMember: User = await this.checkExistingUser(newMemberId)
@@ -352,8 +350,6 @@ export class ChannelsService {
         throw new InvalidGroupPassword()
       }
     }
-
-    delete channel.password
 
     channel.members = this.addUserToList(
       'members',
@@ -407,24 +403,24 @@ export class ChannelsService {
 
     return updatedChannel
   }
-  
+
   async leaveGroup(
     leavingUserId: string,
     channel: Channel
   ): Promise<Channel | DeleteResult> {
-    const leavingUser: User = await this.checkExistingUser(leavingUserId);
-  
+    const leavingUser: User = await this.checkExistingUser(leavingUserId)
+
     if (channel.admins.find((admin) => admin.id === leavingUser.id)) {
-      return this.handleAdminLeave(leavingUser, channel);
+      return this.handleAdminLeave(leavingUser, channel)
     }
-  
+
     if (leavingUser.id === channel.owner.id) {
-      return this.handleOwnerLeave(leavingUser, channel);
+      return this.handleOwnerLeave(leavingUser, channel)
     }
-  
-    return this.removeUserAndUpdateChannel('chat:leave', leavingUser, channel);
+
+    return this.removeUserAndUpdateChannel('chat:leave', leavingUser, channel)
   }
-  
+
   async muteMember(
     mutingUserId: string,
     userToMuteId: string,
@@ -575,58 +571,74 @@ export class ChannelsService {
     return updatedChannel
   }
 
-  private async deleteChannel(channel: Channel): Promise<Channel | DeleteResult> {
+  private async deleteChannel(
+    channel: Channel
+  ): Promise<Channel | DeleteResult> {
     for (const member of channel.members) {
-      await this.removeUserAndUpdateChannel('chat:kick', member, channel);
+      await this.removeUserAndUpdateChannel('chat:kick', member, channel)
     }
-    return await this.channelsRepository.remove(channel);
+    return await this.channelsRepository.remove(channel)
   }
 
-  private async handleAdminLeave(leavingUser: User, channel: Channel): Promise<Channel> {
+  private async handleAdminLeave(
+    leavingUser: User,
+    channel: Channel
+  ): Promise<Channel> {
     channel.admins = this.removeUserFromList(
       'admins',
       leavingUser,
       channel.admins
-    );
-  
-    return this.removeUserAndUpdateChannel('chat:leave', leavingUser, channel);
+    )
+
+    return this.removeUserAndUpdateChannel('chat:leave', leavingUser, channel)
   }
 
-  private async handleOwnerLeave(leavingUser: User, channel: Channel): Promise<Channel | DeleteResult> {
+  private async handleOwnerLeave(
+    leavingUser: User,
+    channel: Channel
+  ): Promise<Channel | DeleteResult> {
     if (channel.admins.length === 0) {
       return this.deleteChannel(channel)
-    } 
+    }
 
-    const updatedChannel = await this.replaceOwner(channel);
+    const updatedChannel = await this.replaceOwner(channel)
 
-    return this.removeUserAndUpdateChannel('chat:leave', leavingUser, updatedChannel);
+    return this.removeUserAndUpdateChannel(
+      'chat:leave',
+      leavingUser,
+      updatedChannel
+    )
   }
 
-  private async removeUserAndUpdateChannel(type: string, leavingUser: User, channel: Channel) {
-    const updatePayload = { user: leavingUser, channelId: channel.id };
-    
+  private async removeUserAndUpdateChannel(
+    type: string,
+    leavingUser: User,
+    channel: Channel
+  ) {
+    const updatePayload = { user: leavingUser, channelId: channel.id }
+
     channel.members = this.removeUserFromList(
       'members',
       leavingUser,
       channel.members
-    );
-  
+    )
+
     const updatedChannel = await this.updateChannel(
       type,
       channel,
       updatePayload
-    );
-  
-    const socket = this.chatGateway.getUserSocket(leavingUser.id);
-    if (socket) socket.leave(channel.id);
-  
-    return updatedChannel;
-  }
-    
-  private async replaceOwner(channel:Channel): Promise<Channel> {
-    const newOwner = channel.admins[0];
+    )
 
-    channel.owner = newOwner;
+    const socket = this.chatGateway.getUserSocket(leavingUser.id)
+    if (socket) socket.leave(channel.id)
+
+    return updatedChannel
+  }
+
+  private async replaceOwner(channel: Channel): Promise<Channel> {
+    const newOwner = channel.admins[0]
+
+    channel.owner = newOwner
 
     const updatePayload = { user: newOwner, channelId: channel.id }
 
@@ -635,9 +647,9 @@ export class ChannelsService {
       channel,
       updatePayload
     )
-    
-    updatedChannel = await this.unsetAdmin(newOwner.id, updatedChannel);
-  
+
+    updatedChannel = await this.unsetAdmin(newOwner.id, updatedChannel)
+
     return updatedChannel
   }
 
@@ -675,7 +687,7 @@ export class ChannelsService {
 
     return userList
   }
-  
+
   private removeUserFromList(
     listName: string,
     user: User,

@@ -15,6 +15,7 @@ import {
 import { Message } from '@/modules/chat/channels/entities/message.entity'
 import { MutedUser } from '@/modules/chat/channels/entities/muted-user.entity'
 import { User } from '@/modules/users/user.entity'
+import { Exclude } from 'class-transformer'
 
 export enum ChannelTypes {
   PUBLIC = 'public',
@@ -27,7 +28,6 @@ const logger = new Logger('channel')
 
 @Entity()
 export class Channel {
-
   @PrimaryGeneratedColumn('uuid')
   id: string
 
@@ -60,6 +60,7 @@ export class Channel {
   type: ChannelTypes
 
   @Column({ nullable: true, select: false })
+  @Exclude({ toPlainOnly: true })
   password: string
 
   @OneToMany(() => Message, (message: Message) => message.channel)

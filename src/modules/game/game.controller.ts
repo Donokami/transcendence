@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
@@ -7,7 +8,8 @@ import {
   Post,
   Session,
   UseFilters,
-  UseGuards
+  UseGuards,
+  UseInterceptors
 } from '@nestjs/common'
 import { GameService } from './game.service'
 
@@ -23,6 +25,7 @@ import { RoomNotFound } from '@/core/exceptions/game'
 import { ISession } from '@/core/types'
 
 @UseGuards(AuthGuard, UsernameGuard)
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('games')
 @UseFilters(new GlobalExceptionFilter())
 export class GameController {

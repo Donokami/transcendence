@@ -27,7 +27,7 @@ import { User } from '@/modules/users/user.entity'
 export class UsersService {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly usersRepository: Repository<User>,
     @InjectRepository(Friendship)
     private readonly friendshipRepository: Repository<Friendship>,
     private readonly configService: ConfigService
@@ -49,13 +49,13 @@ export class UsersService {
   // }
 
   async create(username: string, password: string): Promise<User> {
-    const user = this.userRepository.create({ password, username })
-    return await this.userRepository.save(user)
+    const user = this.usersRepository.create({ password, username })
+    return await this.usersRepository.save(user)
   }
 
   createOauth(details: IUserDetails) {
-    const user = this.userRepository.create(details)
-    return this.userRepository.save(user)
+    const user = this.usersRepository.create(details)
+    return this.usersRepository.save(user)
   }
 
   async deleteFile(filePath: string) {
@@ -68,11 +68,11 @@ export class UsersService {
   }
 
   async disconnectAll() {
-    await this.userRepository.update({}, { status: 'offline' })
+    await this.usersRepository.update({}, { status: 'offline' })
   }
-  
+
   async findAll(query: PaginateQuery): Promise<Paginated<User>> {
-    return paginate(query, this.userRepository, {
+    return paginate(query, this.usersRepository, {
       sortableColumns: ['id'],
       nullSort: 'last',
       defaultSortBy: [['id', 'DESC']],
@@ -85,7 +85,7 @@ export class UsersService {
   }
 
   async findAllWithStats(query: PaginateQuery): Promise<Paginated<User>> {
-    return paginate(query, this.userRepository, {
+    return paginate(query, this.usersRepository, {
       sortableColumns: [
         'id',
         'gamesPlayed',
@@ -139,7 +139,7 @@ export class UsersService {
   }
 
   async findByIds(userIds: string[]): Promise<User[]> {
-    return this.userRepository.find({
+    return this.usersRepository.find({
       where: {
         id: In(userIds)
       }
@@ -151,7 +151,7 @@ export class UsersService {
       return null
     }
 
-    const user = await this.userRepository.findOne({ where: { username } })
+    const user = await this.usersRepository.findOne({ where: { username } })
 
     return user
   }
@@ -161,7 +161,7 @@ export class UsersService {
       return null
     }
 
-    const user = await this.userRepository.findOne({
+    const user = await this.usersRepository.findOne({
       where: { username },
       select: [
         'id',
@@ -180,7 +180,7 @@ export class UsersService {
       return null
     }
 
-    const user = await this.userRepository.findOne({
+    const user = await this.usersRepository.findOne({
       where: { fortyTwoId },
       select: [
         'id',
@@ -199,7 +199,7 @@ export class UsersService {
     if (!id) {
       return null
     }
-    const user = await this.userRepository.findOneBy({
+    const user = await this.usersRepository.findOneBy({
       id
     })
     if (user) {
@@ -218,7 +218,7 @@ export class UsersService {
       return null
     }
 
-    const user = await this.userRepository.findOne({
+    const user = await this.usersRepository.findOne({
       where: { id },
       select: ['id', 'username', 'twoFactorSecret', 'isTwoFactorEnabled']
     })
@@ -231,7 +231,7 @@ export class UsersService {
       return null
     }
 
-    const user = await this.userRepository.findOne({
+    const user = await this.usersRepository.findOne({
       where: { id },
       select: ['id', 'username', 'channels', 'bannedChannels', 'messages'],
       relations: ['channels', 'bannedChannels']
@@ -244,7 +244,7 @@ export class UsersService {
     if (!id) {
       return null
     }
-    const user = await this.userRepository.findOne({
+    const user = await this.usersRepository.findOne({
       where: { id },
       select: [
         'id',
@@ -273,7 +273,7 @@ export class UsersService {
   }
 
   async getUserRankByWinRate(userId: string): Promise<number> {
-    const user = await this.userRepository.findOne({
+    const user = await this.usersRepository.findOne({
       where: { id: userId },
       select: ['id', 'winRate'],
       order: { winRate: 'DESC' }
@@ -283,7 +283,7 @@ export class UsersService {
       throw new UserNotFound()
     }
 
-    const usersWithHigherWinRate = await this.userRepository.count({
+    const usersWithHigherWinRate = await this.usersRepository.count({
       where: {
         winRate: MoreThan(user.winRate)
       }
@@ -298,7 +298,7 @@ export class UsersService {
     if (!user) {
       throw new UserNotFound()
     }
-    return await this.userRepository.remove(user)
+    return await this.usersRepository.remove(user)
   }
 
   async saveFile(file: Express.Multer.File): Promise<string> {
@@ -315,11 +315,11 @@ export class UsersService {
       throw new UserNotFound()
     }
     Object.assign(user, attrs)
-    return await this.userRepository.save(user)
+    return await this.usersRepository.save(user)
   }
 
   async updateUserChannel(id: string, channel: Channel): Promise<User> {
-    const user = await this.userRepository.preload({
+    const user = await this.usersRepository.preload({
       id,
       channels: [] as Channel[]
     })
@@ -336,6 +336,6 @@ export class UsersService {
       throw new UserNotInChannel()
     }
 
-    return await this.userRepository.save(user)
+    return await this.usersRepository.save(user)
   }
 }

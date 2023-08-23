@@ -7,7 +7,9 @@ import {
   Session,
   UseGuards,
   Req,
-  UseFilters
+  UseFilters,
+  UseInterceptors,
+  ClassSerializerInterceptor
 } from '@nestjs/common'
 
 import { AuthGuard } from '@nestjs/passport'
@@ -32,6 +34,7 @@ import {
 } from '@/core/exceptions'
 
 @Controller('auth')
+@UseInterceptors(ClassSerializerInterceptor)
 @UseFilters(new GlobalExceptionFilter())
 export class AuthController {
   constructor(
@@ -99,10 +102,9 @@ export class AuthController {
   async createUser(
     @Body() body: RegisterUserDto,
     @Session() session: ISession
-  ) {
+  ): Promise<Partial<User>> {
     const { password: bPassword, username: bUsername } = body
-    const { password, twoFactorSecret, ...user } =
-      await this.authService.register(bUsername, bPassword)
+    const user = await this.authService.register(bUsername, bPassword)
     session.userId = user.id
     return user
   }
@@ -114,9 +116,11 @@ export class AuthController {
     description: 'Sign in with username and password',
     tags: ['auth']
   })
-  async signIn(@Body() body: SignInUserDto, @Session() session: ISession) {
-    const { password, twoFactorSecret, ...user } =
-      await this.authService.signIn(body.username, body.password)
+  async signIn(
+    @Body() body: SignInUserDto,
+    @Session() session: ISession
+  ): Promise<User> {
+    const user = await this.authService.signIn(body.username, body.password)
 
     if (user.isTwoFactorEnabled) {
       session.twoFactorUserId = user.id
@@ -137,7 +141,7 @@ export class AuthController {
   async setusername(
     @Body() body: SetUsernameDto,
     @Session() session: ISession
-  ) {
+  ): Promise<Partial<User>> {
     const { username } = body
     if (!username) {
       throw new MissingUsername()
@@ -156,6 +160,7 @@ export class AuthController {
     await this.usersService.update(session.userId, {
       username
     })
+
     return user
   }
 
@@ -204,7 +209,7 @@ export class AuthController {
   async verifyToken(
     @Body() body: VerifyTokenDto,
     @Session() session: ISession
-  ): Promise<User> {
+  ): Promise<Partial<User>> {
     const token = body.token
     try {
       const user = await this.authService.verifyTwoFactorToken(
@@ -228,7 +233,7 @@ export class AuthController {
     description: 'Sign out session',
     tags: ['auth']
   })
-  signOut(@Session() session: ISession): { status: string } {
+  async signOut(@Session() session: ISession): Promise<{ status: string }> {
     session.userId = null
     session.twoFactorUserId = null
     return { status: 'ok' }

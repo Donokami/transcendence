@@ -10,13 +10,13 @@ import {
   JoinTable,
   OneToMany,
   ManyToMany,
-  PrimaryGeneratedColumn,
+  PrimaryGeneratedColumn
 } from 'typeorm'
-
 
 import { Channel } from '@/modules/chat/channels/entities/channel.entity'
 import { type Message } from '@/modules/chat/channels/entities/message.entity'
 import { Friendship } from '@/modules/social/entities/friendship.entity'
+import { Exclude } from 'class-transformer'
 
 export enum UserStatus {
   ONLINE = 'online',
@@ -29,7 +29,6 @@ const logger = new Logger('user')
 
 @Entity()
 export class User {
-
   @PrimaryGeneratedColumn('uuid')
   @ApiProperty()
   id: string
@@ -43,6 +42,7 @@ export class User {
   username: string
 
   @Column({ nullable: true, select: false })
+  @Exclude({ toPlainOnly: true })
   password: string
 
   @Column({ nullable: true })
@@ -50,6 +50,7 @@ export class User {
   profilePicture: string
 
   @Column({ nullable: true, select: false })
+  @Exclude({ toPlainOnly: true })
   twoFactorSecret: string
 
   @Column({ default: false })
@@ -108,13 +109,21 @@ export class User {
   @Column({ default: 0, select: false })
   pointsDifference: number
 
-  @Column(process.env.NODE_ENV === 'production' ? { type: "timestamptz", default: () => "CURRENT_TIMESTAMP" } : { default: Date.now() })
+  @Column(
+    process.env.NODE_ENV === 'production'
+      ? { type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' }
+      : { default: Date.now() }
+  )
   @ApiProperty()
-  createdAt: Date;
+  createdAt: Date
 
-  @Column(process.env.NODE_ENV === 'production' ? { type: "timestamptz", default: () => "CURRENT_TIMESTAMP" } : { default: Date.now() })
+  @Column(
+    process.env.NODE_ENV === 'production'
+      ? { type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' }
+      : { default: Date.now() }
+  )
   @ApiProperty()
-  updatedAt: Date;
+  updatedAt: Date
 
   @AfterInsert()
   logInsert() {

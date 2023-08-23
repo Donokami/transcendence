@@ -1,4 +1,10 @@
-import { Injectable, Logger, UseFilters } from '@nestjs/common'
+import {
+  ClassSerializerInterceptor,
+  Injectable,
+  Logger,
+  UseFilters,
+  UseInterceptors
+} from '@nestjs/common'
 
 import { Server } from 'socket.io'
 
@@ -15,6 +21,7 @@ import { UserStatus } from '@/modules/users/user.entity'
   transport: ['websocket', 'polling']
 })
 @UseFilters(new GlobalExceptionFilter())
+@UseInterceptors(ClassSerializerInterceptor)
 @Injectable()
 export class SocialGateway {
   @WebSocketServer()
@@ -25,7 +32,7 @@ export class SocialGateway {
     userId: string
   }> = []
 
-  constructor(private readonly userService: UsersService) { }
+  constructor(private readonly userService: UsersService) {}
 
   private readonly logger = new Logger(SocialGateway.name)
 

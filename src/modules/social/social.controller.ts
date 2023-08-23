@@ -1,5 +1,6 @@
 import {
   Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
@@ -7,7 +8,8 @@ import {
   Put,
   Session,
   UseFilters,
-  UseGuards
+  UseGuards,
+  UseInterceptors
 } from '@nestjs/common'
 import { ApiOperation } from '@nestjs/swagger'
 
@@ -24,10 +26,10 @@ import { Friendship } from '@/modules/social/entities/friendship.entity'
 import { User } from '@/modules/users/user.entity'
 
 @UseGuards(AuthGuard, UsernameGuard)
+@UseInterceptors(ClassSerializerInterceptor)
 @Controller('social')
 @UseFilters(new GlobalExceptionFilter())
 export class SocialController {
-
   constructor(private readonly socialService: SocialService) {}
 
   @Put('/friendship/request/accept')
