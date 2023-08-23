@@ -104,8 +104,9 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
   alertColor.value = 'bg-blue-500'
 
   try {
-    await userStore.signIn(values)
-    if (userStore.twoFactorEnabled) {
+    const user = await userStore.signIn(values)
+    if (!user) throw new Error('User not found')
+    if (user.isTwoFactorEnabled) {
       await router.push('/mfa')
     } else {
       alertColor.value = 'bg-green-500'
