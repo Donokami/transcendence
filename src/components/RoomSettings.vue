@@ -56,36 +56,6 @@
   </div>
 
   <div class="mt-8 font-semibold text-md">
-    <h2>Ball Speed</h2>
-    <div class="mt-3 join">
-      <input
-        class="join-item btn"
-        type="radio"
-        name="speed"
-        :value="0.8"
-        :disabled="!isOwner"
-        aria-label="0.8x"
-        v-model="room.ballSpeed" />
-      <input
-        class="join-item btn"
-        type="radio"
-        name="speed"
-        :value="1"
-        :disabled="!isOwner"
-        aria-label="1x"
-        v-model="room.ballSpeed" />
-      <input
-        class="join-item btn"
-        type="radio"
-        name="speed"
-        :value="1.2"
-        :disabled="!isOwner"
-        aria-label="1.2x"
-        v-model="room.ballSpeed" />
-    </div>
-  </div>
-
-  <div class="mt-8 font-semibold text-md">
     <h2>Paddle Size</h2>
     <div class="mt-3 join">
       <input
@@ -130,8 +100,7 @@ const roomUpdate = computed(() => {
   return {
     isPrivate: room.isPrivate,
     paddleRatio: room.paddleRatio,
-    gameDuration: room.gameDuration,
-    ballSpeed: room.ballSpeed
+    gameDuration: room.gameDuration
   }
 })
 
@@ -144,8 +113,7 @@ watch(roomUpdate, async () => {
   await fetcher.patch(`/games/${room.id}`, {
     isPrivate: roomUpdate.value.isPrivate,
     paddleRatio: roomUpdate.value.paddleRatio,
-    gameDuration: roomUpdate.value.gameDuration,
-    ballSpeed: roomUpdate.value.ballSpeed
+    gameDuration: roomUpdate.value.gameDuration
   })
 })
 </script>

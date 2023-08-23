@@ -1,16 +1,18 @@
 <template>
-  <input type="checkbox" id="my-modal-4" class="modal-toggle" />
-  <div class="modal">
+  <dialog class="modal" ref="dialog">
     <div class="border-2 border-black rounded-none modal-box">
       <!-- TITLE -->
       <div class="flex justify-between text-xl">
         <h1>Change Your Username</h1>
-        <label
-          for="my-modal-4"
-          class="relative border-2 border-black btn btn-square hover:border-2 hover:border-black btn-sm">
-          <iconify-icon icon="material-symbols:close" class="absolute w-6 h-6">
-          </iconify-icon>
-        </label>
+        <form method="dialog" class="relative">
+          <button
+            class="relative border-2 border-black btn btn-square hover:border-2 hover:border-black btn-sm">
+            <iconify-icon
+              icon="material-symbols:close"
+              class="absolute w-6 h-6">
+            </iconify-icon>
+          </button>
+        </form>
       </div>
 
       <!-- FORM INPUT -->
@@ -32,7 +34,10 @@
         </button>
       </Form>
     </div>
-  </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
 </template>
 
 <script setup lang="ts">
@@ -42,6 +47,7 @@
 
 import { useUserStore } from '@/stores/UserStore.js'
 import { Form, Field, ErrorMessage } from 'vee-validate'
+import { ref, type Ref } from 'vue'
 import { useToast } from 'vue-toastification'
 
 // ******************** //
@@ -50,7 +56,15 @@ import { useToast } from 'vue-toastification'
 
 const toast = useToast()
 
-const emit = defineEmits(['close-modal'])
+const dialog: Ref<HTMLDialogElement | null> = ref(null)
+
+function showModal(): void {
+  if (dialog.value) dialog.value.showModal()
+}
+
+const emit = defineEmits(['usernameChanged'])
+defineExpose({ showModal })
+
 const userStore = useUserStore()
 const usernameSchema = {
   username: 'required|min:4|max:50'
@@ -71,7 +85,8 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
     await userStore.updateUser(userStore.loggedUser.id, {
       username: values.username
     })
-    emit('close-modal')
+    emit('usernameChanged')
+    dialog.value?.close()
   } catch (error) {
     toast.error('Error changing username')
   }

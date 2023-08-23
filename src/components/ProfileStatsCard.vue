@@ -13,7 +13,7 @@
           for="my-modal-4"
           class="text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white"
           type="button"
-          @click="showUsernameModal = true">
+          @click="changeUsernameModal?.showModal()">
           Change username
         </label>
       </div>
@@ -115,11 +115,10 @@
       <div class="flex justify-between items-top h-14">
         <div class="text-xl stat-value">Friends</div>
         <label
-          for="my-modal-3"
           class="mb-2 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white"
           type="button"
           v-if="props.user.nFriends > 0"
-          @click="showFriendListModal = true">
+          @click="friendListModal?.showModal()">
           See friend list
         </label>
       </div>
@@ -127,10 +126,9 @@
         <div class="text-black stat-value">{{ props.user.nFriends }}</div>
         <label
           v-if="nFriendRequests > 0"
-          for="my-modal-3"
           class="items-center h-16 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white no-animation"
           type="button"
-          @click="showFriendRequestModal = true">
+          @click="friendRequestModal?.showModal()">
           <div class="indicator">
             <span
               class="text-xs text-white badge badge-secondary indicator-start indicator-item animation-pulse"
@@ -148,17 +146,16 @@
 
   <!-- CHANGE USERNAME MODAL -->
   <profile-change-username-modal
-    v-if="showUsernameModal"
-    @close-modal="handleCloseUsernameModal"></profile-change-username-modal>
+    @username-changed="handleUsernameChangedModal"
+    ref="changeUsernameModal"></profile-change-username-modal>
 
   <!-- FRIEND LIST MODAL -->
-  <profile-friend-list-modal
-    v-if="showFriendListModal"></profile-friend-list-modal>
+  <profile-friend-list-modal ref="friendListModal"></profile-friend-list-modal>
 
   <!-- FRIEND REQUEST MODAL -->
   <profile-friend-request-modal
-    v-if="showFriendRequestModal"
-    @close-modal="closeFriendRequestModal"></profile-friend-request-modal>
+    @handle-request="handleFriendRequest"
+    ref="friendRequestModal"></profile-friend-request-modal>
 </template>
 
 <script setup lang="ts">
@@ -186,12 +183,17 @@ const isFriend = ref(false)
 const isProfileBlockedByUser = ref(false)
 const isUserBlockedByProfile = ref(false)
 const nFriendRequests = ref(0)
-const showFriendListModal = ref(false)
-const showFriendRequestModal = ref(false)
-const showUsernameModal = ref(false)
 const userRank = ref<number | null>(null)
 const userStore = useUserStore()
-
+const friendRequestModal = ref<InstanceType<
+  typeof ProfileFriendRequestModal
+> | null>(null)
+const friendListModal = ref<InstanceType<typeof ProfileFriendListModal> | null>(
+  null
+)
+const changeUsernameModal = ref<InstanceType<
+  typeof ProfileChangeUsernameModal
+> | null>(null)
 const { loggedUser, friendList } = storeToRefs(userStore)
 
 const props = defineProps<{
@@ -245,10 +247,9 @@ const checkBlockedStatus = async (): Promise<void> => {
   }
 }
 
-const closeFriendRequestModal = (event: string): void => {
-  showFriendRequestModal.value = false
-
-  if (event === 'accept' || event === 'reject') nFriendRequests.value -= 1
+const handleFriendRequest = (event: string): void => {
+  if (event === 'accept' || event === 'reject' || event === 'block')
+    nFriendRequests.value -= 1
 
   emit('updateUser')
 }
@@ -265,8 +266,7 @@ const getFriendRequestsNumber = async (): Promise<number> => {
   }
 }
 
-const handleCloseUsernameModal = (): void => {
-  showUsernameModal.value = false
+const handleUsernameChangedModal = (): void => {
   location.reload()
 }
 
