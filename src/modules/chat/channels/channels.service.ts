@@ -263,6 +263,18 @@ export class ChannelsService {
     return channel
   }
 
+  async getOwner(channel: Channel): Promise<User> {
+    const chan = await this.findOneById(channel.id)
+
+    return chan.owner ?? null as unknown as User
+  }
+
+  async getAdmins(channel: Channel): Promise<User[]> {
+    const chan = await this.findOneById(channel.id)
+
+    return chan.admins ?? []
+  }
+
   async getBannedMembers(channel: Channel): Promise<User[]> {
     const chan = await this.findOneById(channel.id)
 

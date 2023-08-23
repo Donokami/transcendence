@@ -112,6 +112,32 @@ export class ChannelsController {
     return await this.channelsService.deleteGroupPassword(channel)
   }
 
+  @Get('/:channelId/admins')
+  @ApiOperation({
+    summary: 'Get channel admins',
+    operationId: 'getAdmins',
+    description: 'Get channel admins',
+    tags: ['chat']
+  })
+  @UseGuards(GroupGuard)
+  @UseGuards(MembershipGuard)
+  async getAdmins(@CurrentChannel() channel: Channel): Promise<User[]> {
+    const admins = await this.channelsService.getAdmins(channel)
+    return admins
+  }
+
+  @Get('/:channelId')
+  @ApiOperation({
+    summary: 'Get a channel (via channel id)',
+    operationId: 'getChannel',
+    description: 'Get a channel (via channel id)',
+    tags: ['chat']
+  })
+  @UseGuards(MembershipGuard)
+  async getChannel(@CurrentChannel() channel: Channel): Promise<Channel> {
+    return channel
+  } 
+
   @Get('/:channelId/bannedMembers')
   @ApiOperation({
     summary: 'Get channel banned members',
@@ -127,16 +153,18 @@ export class ChannelsController {
     return bannedMembers
   }
 
-  @Get('/:channelId')
+  @Get('/:channelId/owner')
   @ApiOperation({
-    summary: 'Get a channel (via channel id)',
-    operationId: 'getChannel',
-    description: 'Get a channel (via channel id)',
+    summary: 'Get channel owner',
+    operationId: 'getOwner',
+    description: 'Get channel owner',
     tags: ['chat']
   })
+  @UseGuards(GroupGuard)
   @UseGuards(MembershipGuard)
-  async getChannel(@CurrentChannel() channel: Channel): Promise<Channel> {
-    return channel
+  async getOwner(@CurrentChannel() channel: Channel): Promise<User> {
+    const owner = await this.channelsService.getOwner(channel)
+    return owner
   }
 
   @Get('/:channelId/messages')
