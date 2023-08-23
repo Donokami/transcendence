@@ -98,6 +98,7 @@
                   @click="setPasswordRequirement()" />
               </label>
               <input
+                type="password"
                 v-model="password"
                 v-if="passwordRequired === true"
                 class="py-2 text-sm neobrutalist-input"

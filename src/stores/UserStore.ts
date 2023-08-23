@@ -22,7 +22,6 @@ interface StatusData {
 
 interface State {
   loggedUser: User | null
-  twoFactorEnabled: boolean
   friendList: User[]
   tempUserId: string | null
 }
@@ -30,7 +29,6 @@ interface State {
 export const useUserStore = defineStore('users', {
   state: (): State => ({
     loggedUser: null as unknown as User | null,
-    twoFactorEnabled: false,
     friendList: [],
     tempUserId: null as unknown as string | null
   }),
@@ -152,7 +150,6 @@ export const useUserStore = defineStore('users', {
       try {
         const user = await this.fetchUser()
         this.loggedUser = user
-        this.twoFactorEnabled = user.isTwoFactorEnabled
       } catch (error) {}
     },
 
@@ -180,13 +177,8 @@ export const useUserStore = defineStore('users', {
 
     async signIn(values: Record<string, any>): Promise<User> {
       const response: User = await fetcher.post(`/auth/signIn`, values)
+      if (!response.isTwoFactorEnabled) this.loggedUser = response
 
-      if (!response.isTwoFactorEnabled) {
-        this.loggedUser = response
-        return response
-      }
-
-      this.twoFactorEnabled = true
       return response
     },
 

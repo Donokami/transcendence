@@ -1,5 +1,11 @@
 <template>
   <div
+    class="p-4 m-auto italic text-center"
+    v-if="gameState.players[1].userId === 'bot'">
+    <span class="font-bold">Warning:</span> You are playing with the bot, this
+    game won't appear on your profile.
+  </div>
+  <div
     class="max-w-[960px] aspect-video relative mx-auto border-black border-2">
     <div
       class="absolute z-10 flex items-center w-full m-auto text-white sm:text-2xl">
@@ -201,7 +207,6 @@ const gameMetrics: Metrics = {
   tps: 20
 }
 
-// const cameraRef: ShallowRef<Object3D | null> = shallowRef(null)
 const ballRef: ShallowRef<Object3D | null> = shallowRef(null)
 const paddle1Ref: ShallowRef<Object3D | null> = shallowRef(null)
 const paddle2Ref: ShallowRef<Object3D | null> = shallowRef(null)

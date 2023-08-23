@@ -1,24 +1,26 @@
 <template>
-  <input type="checkbox" id="my-modal-3" class="modal-toggle" />
-  <div class="modal">
-    <div class="modal-box rounded-none border-2 border-black">
+  <dialog class="modal" ref="dialog">
+    <div class="border-2 border-black rounded-none modal-box">
       <!-- TITLE -->
-      <div class="text-xl flex justify-between">
+      <div class="flex justify-between text-xl">
         <h1>Friend request list</h1>
-        <label
-          for="my-modal-3"
-          class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
-          <iconify-icon icon="material-symbols:close" class="h-6 w-6 absolute">
-          </iconify-icon>
-        </label>
+        <form method="dialog" class="relative">
+          <button
+            class="relative border-2 border-black btn btn-square hover:border-2 hover:border-black btn-sm">
+            <iconify-icon
+              icon="material-symbols:close"
+              class="absolute w-6 h-6">
+            </iconify-icon>
+          </button>
+        </form>
       </div>
       <!-- FRIENDS REQUEST LIST -->
       <div
-        class="collapse collapse-arrow border-2 border-black rounded-none mt-6">
+        class="mt-6 border-2 border-black rounded-none collapse collapse-arrow">
         <input type="checkbox" />
-        <div class="collapse-title text-base">Handle a request</div>
-        <div class="collapse-content text-base">
-          <ul class="menu bg-base-100 w-full p-0">
+        <div class="text-base collapse-title">Handle a request</div>
+        <div class="text-base collapse-content">
+          <ul class="w-full p-0 menu bg-base-100">
             <li v-for="request in friendRequests" :key="request.id">
               <div class="flex p-0 rounded-none hover:bg-base-100">
                 <span class="block text-base"
@@ -45,7 +47,10 @@
         </div>
       </div>
     </div>
-  </div>
+    <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+    </form>
+  </dialog>
 </template>
 
 <script setup lang="ts">
@@ -53,7 +58,7 @@
 // IMPORTS //
 // ******* //
 
-import { onBeforeMount, ref } from 'vue'
+import { onBeforeMount, ref, type Ref } from 'vue'
 
 import { storeToRefs } from 'pinia'
 
@@ -75,7 +80,15 @@ const { loggedUser } = storeToRefs(userStore)
 
 const friendRequests = ref<Friendship[]>([])
 
-const emit = defineEmits(['closeModal'])
+const dialog: Ref<HTMLDialogElement | null> = ref(null)
+
+const emit = defineEmits(['requestHandled'])
+
+function showModal(): void {
+  if (dialog.value) dialog.value.showModal()
+}
+
+defineExpose({ showModal })
 
 // ******************** //
 // FUNCTION DEFINITIONS //
@@ -106,7 +119,7 @@ const acceptRequest = async (requestId: string): Promise<void> => {
     await userStore.acceptFriendRequest(requestId)
     toast.success('Friend request accepted !')
     await getFriendRequests()
-    emit('closeModal', 'accept')
+    emit('requestHandled', 'accept')
   } catch (error) {
     toast.error('Failed to accept friend request !')
   }
@@ -121,7 +134,7 @@ const rejectRequest = async (requestId: string): Promise<void> => {
     await userStore.rejectFriendRequest(requestId)
     toast.success('Friend request rejected !')
     await getFriendRequests()
-    emit('closeModal')
+    emit('requestHandled', 'reject')
   } catch (error) {
     toast.error('Failed to reject friend request !')
   }
@@ -136,7 +149,7 @@ const blockUser = async (userToBlockId: string): Promise<void> => {
     await userStore.blockUser(userToBlockId)
     await getFriendRequests()
     toast.success('User blocked !')
-    emit('closeModal')
+    emit('requestHandled', 'block')
   } catch (error) {
     toast.error('Failed to block user !')
   }
