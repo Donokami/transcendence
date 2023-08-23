@@ -51,19 +51,22 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { computed, onBeforeMount, toRefs, watch, type Ref } from 'vue'
-import { onBeforeRouteUpdate } from 'vue-router'
+import { onBeforeRouteUpdate, useRouter } from 'vue-router'
 
 import { useChannelStore } from '@/stores/ChannelStore'
 import { useUserStore } from '@/stores/UserStore.js'
+import { useToast } from 'vue-toastification'
 import type { User } from '@/types'
 
 const channelStore = useChannelStore()
+const router = useRouter()
 const emit = defineEmits(['update:showModal'])
 const props = defineProps({
   showModal: { type: Boolean }
 })
 const { showModal } = toRefs(props)
 const userStore = useUserStore()
+const toast = useToast()
 
 const { loggedUser } = storeToRefs(userStore)
 const { friendList }: { friendList: Ref<User[]> } = storeToRefs(userStore)
@@ -85,7 +88,14 @@ const createDmChannel = async (friend: User): Promise<void> => {
   if (loggedUser.value == null || !friend) {
     return
   }
-  await channelStore.createDmChannel(friend.id)
+  try {
+    const channel = await channelStore.createDmChannel(friend.id)
+    if (channel) {
+      await router.push(`/chat/${channel.id}`)
+    }
+  } catch (error) {
+    toast.error(`Failed to create DM`)
+  }
 }
 
 function closeCreateModal(): void {

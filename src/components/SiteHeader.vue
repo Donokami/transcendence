@@ -113,7 +113,7 @@
 
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/UserStore'
-import { computed } from 'vue'
+import { computed, onBeforeMount } from 'vue'
 
 // ******************** //
 // VARIABLE DEFINITIONS //
@@ -145,6 +145,10 @@ const logout = async (): Promise<void> => {
   await userStore.signOut()
   await router.push('/auth')
 }
+
+onBeforeMount(async () => {
+  await userStore.refreshUser()
+})
 </script>
 
 <style scoped>

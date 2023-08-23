@@ -100,7 +100,7 @@ export const useChannelStore = defineStore('channels', {
       })
     },
 
-    async createDmChannel(receiverId: string): Promise<void> {
+    async createDmChannel(receiverId: string): Promise<Channel | undefined> {
       const { loggedUser } = useUserStore()
       if (loggedUser == null) return
 
@@ -109,7 +109,12 @@ export const useChannelStore = defineStore('channels', {
         membersIds: [loggedUser.id, receiverId]
       }
 
-      await fetcher.post(`/channels/create`, channelParam)
+      const response: Channel = await fetcher.post(
+        `/channels/create`,
+        channelParam
+      )
+
+      return response
     },
 
     async createGroupChannel(
@@ -180,13 +185,11 @@ export const useChannelStore = defineStore('channels', {
       const channel = this.getChannel(channelId)
       if (!channel) return []
 
-      channel.admins = await fetcher.get(
-        `/channels/${channelId}/admins`
-      )
+      channel.admins = await fetcher.get(`/channels/${channelId}/admins`)
 
       return channel.admins
     },
-    
+
     async fetchBannedMembers(channelId: string): Promise<User[]> {
       const channel = this.getChannel(channelId)
       if (!channel) return []
@@ -202,9 +205,7 @@ export const useChannelStore = defineStore('channels', {
       const channel = this.getChannel(channelId)
       if (!channel) return null as unknown as User
 
-      channel.owner = await fetcher.get(
-        `/channels/${channelId}/owner`
-      )
+      channel.owner = await fetcher.get(`/channels/${channelId}/owner`)
 
       return channel.owner
     },
@@ -276,7 +277,7 @@ export const useChannelStore = defineStore('channels', {
           messageBody: message,
           date: new Date()
         })
-      } catch (err) {
+      } catch (err: any) {
         if (err instanceof ApiError) {
           if (err.code === 'UserIsMuted') {
             const channel = this.getChannel()
@@ -284,11 +285,13 @@ export const useChannelStore = defineStore('channels', {
             if (channel != null) {
               channel.isMuted = true
             }
+            toast.error(`You are muted for 30 seconds`)
           } else if (err.code === 'MessageTooLong') {
             toast.error(`Your message exceed 1000 characters limit`)
           }
+        } else {
+          toast.error('something went wrong')
         }
-        console.error(err)
       }
     },
 

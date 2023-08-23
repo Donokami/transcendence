@@ -17,6 +17,7 @@
           "
           class="h-full m-0 w-full outline-none overflow-auto resize-none bg-transparent max-h-[100px]"></textarea>
       </div>
+      {{ channel }}
       <button
         type="submit"
         :disabled="!channel || channel.isMuted"
@@ -35,8 +36,9 @@
 // IMPORTS //
 // ******* //
 
-import { nextTick, onMounted, ref, type Ref } from 'vue'
+import { nextTick, onBeforeMount, ref, type Ref } from 'vue'
 import { useChannelStore } from '@/stores/ChannelStore.js'
+import { onBeforeRouteUpdate } from 'vue-router'
 import type { Channel } from '@/types'
 
 const channelStore = useChannelStore()
@@ -44,7 +46,14 @@ const input = ref('')
 const myTextarea: Ref<HTMLElement | null> = ref(null)
 const channel: Ref<Channel | null> = ref(null)
 
-onMounted(() => {
+onBeforeMount(async () => {
+  await channelStore.fetchChannels()
+  channel.value = channelStore.getChannel()
+  autoResize()
+})
+
+onBeforeRouteUpdate(async (to, from) => {
+  await channelStore.fetchChannels()
   channel.value = channelStore.getChannel()
   autoResize()
 })
