@@ -17,7 +17,6 @@
           "
           class="h-full m-0 w-full outline-none overflow-auto resize-none bg-transparent max-h-[100px]"></textarea>
       </div>
-      {{ channel }}
       <button
         type="submit"
         :disabled="!channel || channel.isMuted"
