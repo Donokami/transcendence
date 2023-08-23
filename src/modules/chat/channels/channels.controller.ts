@@ -88,7 +88,7 @@ export class ChannelsController {
   async createChannel(
     @Body() body: CreateChannelDto,
     @Session() session: ISession
-  ): Promise<Channel> {
+  ): Promise<Partial<Channel>> {
     const ownerId = session.userId
     const channel = await this.channelsService.createChannel(body, ownerId)
     if (!channel)
