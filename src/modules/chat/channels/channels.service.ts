@@ -60,29 +60,6 @@ export class ChannelsService {
 
   private logger = new Logger(ChannelsService.name)
 
-  private addUserToList(
-    listName: string,
-    user: User,
-    userList: User[]
-  ): User[] {
-    if (userList.find((item) => item.id === user.id)) {
-      switch (listName) {
-        case 'admins':
-          throw new UserAlreadyAdmin()
-        case 'bannedMembers':
-          throw new UserAlreadyBanned()
-        case 'members':
-          throw new UserAlreadyInChannel()
-        default:
-          throw new Error('addUserToList Failed')
-      }
-    }
-
-    userList.push(user)
-
-    return userList
-  }
-
   async banMember(
     banningUserId: string,
     userToBanId: string,
@@ -410,68 +387,24 @@ export class ChannelsService {
 
     return updatedChannel
   }
-
+  
   async leaveGroup(
     leavingUserId: string,
     channel: Channel
   ): Promise<Channel | DeleteResult> {
-    const leavingUser: User = await this.checkExistingUser(leavingUserId)
-
+    const leavingUser: User = await this.checkExistingUser(leavingUserId);
+  
     if (channel.admins.find((admin) => admin.id === leavingUser.id)) {
-      channel.admins = this.removeUserFromList(
-        'admins',
-        leavingUser,
-        channel.admins
-      )
+      return this.handleAdminLeave(leavingUser, channel);
     }
-
-    channel.members = this.removeUserFromList(
-      'members',
-      leavingUser,
-      channel.members
-    )
-
+  
     if (leavingUser.id === channel.owner.id) {
-      if (channel.admins.length === 0) {
-        channel.members.forEach(async (member) => {
-          channel.members = this.removeUserFromList(
-            'members',
-            member,
-            channel.members
-          )
-          const updatePayload = { user: member, channelId: channel.id }
-          await this.updateChannel('chat:kick', channel, updatePayload)
-          const socket = this.chatGateway.getUserSocket(member.id)
-          if (socket) socket.leave(channel.id)
-        })
-
-        return await this.channelsRepository.remove(channel)
-      }
-
-      const newOwner = channel.admins[0]
-      channel.owner = newOwner
-
-      channel.admins = this.removeUserFromList(
-        'admins',
-        newOwner,
-        channel.admins
-      )
+      return this.handleOwnerLeave(leavingUser, channel);
     }
-
-    const updatePayload = { user: leavingUser, channelId: channel.id }
-
-    const updatedChannel = this.updateChannel(
-      'chat:leave',
-      channel,
-      updatePayload
-    )
-
-    const socket = this.chatGateway.getUserSocket(leavingUser.id)
-    if (socket) socket.leave(channel.id)
-
-    return updatedChannel
+  
+    return this.removeUserAndUpdateChannel('chat:leave', leavingUser, channel);
   }
-
+  
   async muteMember(
     mutingUserId: string,
     userToMuteId: string,
@@ -555,27 +488,6 @@ export class ChannelsService {
     return message
   }
 
-  private removeUserFromList(
-    listName: string,
-    user: User,
-    userList: User[]
-  ): User[] {
-    if (!userList.find((item) => item.id === user.id)) {
-      switch (listName) {
-        case 'admins':
-          throw new UserIsNotAdmin()
-        case 'bannedMembers':
-          throw new UserIsNotBanned()
-        case 'members':
-          throw new UserNotInChannel()
-        default:
-          throw new Error('removeUserToList Failed')
-      }
-    }
-
-    return userList.filter((item) => item.id !== user.id)
-  }
-
   async setAdmin(userToPromoteId: string, channel: Channel): Promise<Channel> {
     const userToPromote: User = await this.checkExistingUser(userToPromoteId)
 
@@ -643,6 +555,72 @@ export class ChannelsService {
     return updatedChannel
   }
 
+  private async deleteChannel(channel: Channel): Promise<Channel | DeleteResult> {
+    for (const member of channel.members) {
+      await this.removeUserAndUpdateChannel('chat:kick', member, channel);
+    }
+    return await this.channelsRepository.remove(channel);
+  }
+
+  private async handleAdminLeave(leavingUser: User, channel: Channel): Promise<Channel> {
+    channel.admins = this.removeUserFromList(
+      'admins',
+      leavingUser,
+      channel.admins
+    );
+  
+    return this.removeUserAndUpdateChannel('chat:leave', leavingUser, channel);
+  }
+
+  private async handleOwnerLeave(leavingUser: User, channel: Channel): Promise<Channel | DeleteResult> {
+    if (channel.admins.length === 0) {
+      return this.deleteChannel(channel)
+    } 
+
+    const updatedChannel = await this.replaceOwner(channel);
+
+    return this.removeUserAndUpdateChannel('chat:leave', leavingUser, updatedChannel);
+  }
+
+  private async removeUserAndUpdateChannel(type: string, leavingUser: User, channel: Channel) {
+    const updatePayload = { user: leavingUser, channelId: channel.id };
+    
+    channel.members = this.removeUserFromList(
+      'members',
+      leavingUser,
+      channel.members
+    );
+  
+    const updatedChannel = await this.updateChannel(
+      type,
+      channel,
+      updatePayload
+    );
+  
+    const socket = this.chatGateway.getUserSocket(leavingUser.id);
+    if (socket) socket.leave(channel.id);
+  
+    return updatedChannel;
+  }
+    
+  private async replaceOwner(channel:Channel): Promise<Channel> {
+    const newOwner = channel.admins[0];
+
+    channel.owner = newOwner;
+
+    const updatePayload = { user: newOwner, channelId: channel.id }
+
+    let updatedChannel: Channel = await this.updateChannel(
+      'chat:new-owner',
+      channel,
+      updatePayload
+    )
+    
+    updatedChannel = await this.unsetAdmin(newOwner.id, updatedChannel);
+  
+    return updatedChannel
+  }
+
   private async updateChannel(
     event: string,
     channelToUpdate: Channel,
@@ -653,5 +631,49 @@ export class ChannelsService {
     this.chatGateway.server.to(savedChannel.id).emit(event, payload)
 
     return savedChannel
+  }
+
+  private addUserToList(
+    listName: string,
+    user: User,
+    userList: User[]
+  ): User[] {
+    if (userList.find((item) => item.id === user.id)) {
+      switch (listName) {
+        case 'admins':
+          throw new UserAlreadyAdmin()
+        case 'bannedMembers':
+          throw new UserAlreadyBanned()
+        case 'members':
+          throw new UserAlreadyInChannel()
+        default:
+          throw new Error('addUserToList Failed')
+      }
+    }
+
+    userList.push(user)
+
+    return userList
+  }
+  
+  private removeUserFromList(
+    listName: string,
+    user: User,
+    userList: User[]
+  ): User[] {
+    if (!userList.find((item) => item.id === user.id)) {
+      switch (listName) {
+        case 'admins':
+          throw new UserIsNotAdmin()
+        case 'bannedMembers':
+          throw new UserIsNotBanned()
+        case 'members':
+          throw new UserNotInChannel()
+        default:
+          throw new Error('removeUserToList Failed')
+      }
+    }
+
+    return userList.filter((item) => item.id !== user.id)
   }
 }
