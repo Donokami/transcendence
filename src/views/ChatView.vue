@@ -120,7 +120,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 
-import { ref, computed, onBeforeUnmount, onMounted } from 'vue'
+import { ref, computed, onBeforeUnmount, onMounted, onBeforeMount } from 'vue'
 import {
   onBeforeRouteLeave,
   onBeforeRouteUpdate,
@@ -388,9 +388,7 @@ chatSocket.on(
 )
 
 onMounted(async () => {
-  if (channelsList.value === null) {
-    channelsList.value = await channelStore.fetchChannels()
-  }
+  channelsList.value = await channelStore.fetchChannels()
 
   if (selectedChannel.value) {
     await router.push(`/chat/${selectedChannel.value}`)

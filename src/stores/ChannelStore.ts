@@ -176,7 +176,18 @@ export const useChannelStore = defineStore('channels', {
       }
     },
 
-    async getBannedMembers(channelId: string): Promise<User[]> {
+    async fetchAdmins(channelId: string): Promise<User[]> {
+      const channel = this.getChannel(channelId)
+      if (!channel) return []
+
+      channel.admins = await fetcher.get(
+        `/channels/${channelId}/admins`
+      )
+
+      return channel.admins
+    },
+    
+    async fetchBannedMembers(channelId: string): Promise<User[]> {
       const channel = this.getChannel(channelId)
       if (!channel) return []
 
@@ -185,6 +196,17 @@ export const useChannelStore = defineStore('channels', {
       )
 
       return channel.bannedMembers
+    },
+
+    async fetchOwner(channelId: string): Promise<User> {
+      const channel = this.getChannel(channelId)
+      if (!channel) return null as unknown as User
+
+      channel.owner = await fetcher.get(
+        `/channels/${channelId}/owner`
+      )
+
+      return channel.owner
     },
 
     async joinGroup(channelName: string, password?: string): Promise<Channel> {

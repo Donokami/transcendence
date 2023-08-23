@@ -146,18 +146,19 @@ async function initChannel(): Promise<void> {
   }
 
   channel.value = channelStore.getChannel(selectedChannel.value)
+  if (!channel.value) return
 
-  if (channel.value?.messages.length === 0) {
-    await channelStore.fetchChannelMessages(selectedChannel.value)
-  }
+  await channelStore.fetchChannelMessages(selectedChannel.value)
 
-  if (
-    channel.value?.bannedMembers.length === 0 &&
-    channelStore.isAdmin(loggedUser.value.id, channel.value.id)
-  ) {
-    channel.value.bannedMembers = await channelStore.getBannedMembers(
-      selectedChannel.value
-    )
+  // channel.value.members = await channelStore.fetchMembers(selectedChannel.value)
+  if (channel.value.isDm === false) {
+    channel.value.owner = await channelStore.fetchOwner(selectedChannel.value)
+    channel.value.admins = await channelStore.fetchAdmins(selectedChannel.value)
+    if (channelStore.isAdmin(loggedUser.value.id, channel.value.id)) {
+      channel.value.bannedMembers = await channelStore.fetchBannedMembers(
+        selectedChannel.value
+      )
+    }
   }
 
   emit('scroll-to-bottom')

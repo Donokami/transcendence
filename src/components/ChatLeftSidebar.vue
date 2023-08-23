@@ -159,7 +159,7 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { onBeforeMount, ref } from 'vue'
+import { onBeforeMount, onMounted, ref } from 'vue'
 import { onBeforeRouteUpdate } from 'vue-router'
 
 import ChatCreateDirectMessageModal from '@/components/ChatCreateDirectMessageModal.vue'
@@ -203,6 +203,10 @@ const getChannels = (): Channel[] => {
 }
 
 onBeforeMount(() => {
+  channels.value = getChannels() as typeof channels.value
+})
+
+onMounted(() => {
   channels.value = getChannels() as typeof channels.value
 })
 

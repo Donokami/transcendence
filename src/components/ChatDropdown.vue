@@ -313,18 +313,15 @@ const toggleDropdown = (): void => {
   isOpen.value = !isOpen.value
 }
 
-async function getBannedMembers(): Promise<void> {
-  props.channel.bannedMembers = await channelStore.getBannedMembers(
-    props.channel.id
-  )
-}
-
 onMounted(async () => {
   document.addEventListener('click', handleClickOutside)
   if (loggedUser.value) {
     const isOwner = channelStore.isOwner(loggedUser.value.id, props.channel.id)
     const isAdmin = channelStore.isAdmin(loggedUser.value.id, props.channel.id)
-    if (isOwner || isAdmin) await getBannedMembers()
+    if (isOwner || isAdmin)
+      props.channel.bannedMembers = await channelStore.fetchBannedMembers(
+        props.channel.id
+      )
   }
 })
 
