@@ -34,7 +34,7 @@ export class GameService {
     @Inject(forwardRef(() => GameGateway))
     private readonly gameGateway: GameGateway,
     @InjectRepository(Match)
-    private readonly MatchRepository: Repository<Match>
+    private readonly matchRepository: Repository<Match>
   ) {}
 
   private readonly logger = new Logger(GameService.name)
@@ -51,17 +51,12 @@ export class GameService {
     const user = await this.usersService.findOneById(userId)
     if (!user) throw new UserNotFound()
 
-    const matches = await this.MatchRepository.createQueryBuilder('match')
-      .leftJoinAndSelect('match.players', 'player')
-      .where((qb) => {
-        const subQuery = qb
-          .subQuery()
-          .select('match.id')
-          .from(Match, 'match')
-          .leftJoin('match.players', 'player')
-          .where('player.id = :playerId', { playerId: userId })
-          .getQuery()
-        return 'match.id IN ' + subQuery
+    const matches = await this.matchRepository
+      .createQueryBuilder('match')
+      .leftJoinAndSelect('match.playerA', 'playerA')
+      .leftJoinAndSelect('match.playerB', 'playerB')
+      .where(`match.playerAId = :userId OR match.playerBId = :userId`, {
+        userId
       })
       .orderBy('match.playedAt', 'DESC')
       .limit(50)
@@ -110,7 +105,7 @@ export class GameService {
       },
       this.gameGateway,
       this.usersService,
-      this.MatchRepository
+      this.matchRepository
     )
 
     this.rooms.push(room)

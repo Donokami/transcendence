@@ -171,7 +171,8 @@ export class Game {
     this.usersService.update(secondPlayer.id, updatedSecondPlayer)
 
     const match = new Match()
-    match.players = [firstPlayer, secondPlayer]
+    match.playerA = firstPlayer
+    match.playerB = secondPlayer
     match.scoreA = players[0].score
     match.scoreB = players[1].score
     await this.matchRepository.save(match)

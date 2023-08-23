@@ -1,8 +1,8 @@
 import {
   Column,
   Entity,
-  JoinTable,
-  ManyToMany,
+  JoinColumn,
+  ManyToOne,
   PrimaryGeneratedColumn
 } from 'typeorm'
 
@@ -13,9 +13,13 @@ export class Match {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @ManyToMany(() => User)
-  @JoinTable()
-  players: User[]
+  @ManyToOne(() => User)
+  @JoinColumn()
+  playerA: User
+
+  @ManyToOne(() => User)
+  @JoinColumn()
+  playerB: User
 
   @Column({ default: 0 })
   scoreA: number
