@@ -280,8 +280,8 @@ chatSocket.on(
 
     channelStore.removeAdmin(user.id, channelId)
     channelStore.removeMember(user.id, channelId)
-
-    toast.success(`${user.username} left ${channel.name} channel`)
+    if (loggedUser && loggedUser.id !== user.id)
+      toast.success(`${user.username} left ${channel.name} channel`)
   }
 )
 
@@ -302,7 +302,7 @@ chatSocket.on(
       channel.isMuted = true
       toast.success(`You have been muted in ${channel.name}`)
     } else {
-      toast.success(`${user.username} successfully muted`)
+      toast.success(`${user.username} have been muted in ${channel.name}`)
     }
   }
 )
@@ -371,6 +371,22 @@ chatSocket.on(
   }
 )
 
+chatSocket.on(
+  'chat:new-owner',
+  async ({ user, channelId }: { user: User; channelId: string }) => {
+    const channel = channelStore.getChannel(channelId)
+    if (!channel) return
+
+    channel.owner = user
+
+    if (loggedUser && loggedUser.id === user.id) {
+      toast.success(`You are now owner of ${channel.name}`)
+    } else {
+      toast.success(`${user.username} is now owner of ${channel.name}`)
+    }
+  }
+)
+
 onMounted(async () => {
   if (channelsList.value === null) {
     channelsList.value = await channelStore.fetchChannels()
@@ -413,6 +429,7 @@ onBeforeUnmount(() => {
   chatSocket.off(`chat:leave`)
   chatSocket.off(`chat:message`)
   chatSocket.off(`chat:mute`)
+  chatSocket.off(`chat:new-owner`)
   chatSocket.off(`chat:unmute`)
   chatSocket.off(`chat:set-admin`)
   chatSocket.off(`chat:unban`)
