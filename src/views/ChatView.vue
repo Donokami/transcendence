@@ -38,19 +38,13 @@
               class="cursor-pointer"
               v-if="channelStore.getChannel(selectedChannel)?.isDm === true">
               <div class="flex">
-                <div
-                  v-if="channelStore.getChannel(selectedChannel)?.isDm"
-                  class="w-10 h-10 sm:w-11 sm:h-11">
+                <div class="w-10 h-10 sm:w-11 sm:h-11">
                   <user-avatar
                     :user-props="
                       channelStore.getChannel(selectedChannel)?.dmUser
                     "
                     :upload-mode="false"></user-avatar>
                 </div>
-                <img
-                  v-else
-                  :src="channelImageUrl"
-                  class="object-cover w-10 h-10 rounded-full sm:h-11 sm:w-11" />
               </div>
             </router-link>
             <div v-else class="flex items-center mx-auto">
@@ -72,7 +66,7 @@
               </div>
             </div>
             <h2
-              class="text-lg font-bold text-black sm:text-xl lg:w-96 truncate w-40">
+              class="w-40 text-lg font-bold text-black truncate sm:text-xl lg:w-96">
               {{ channelStore.getChannel(selectedChannel)?.name }}
             </h2>
           </div>
@@ -120,7 +114,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 
-import { ref, computed, onBeforeUnmount, onMounted, onBeforeMount } from 'vue'
+import { ref, computed, onBeforeUnmount, onMounted } from 'vue'
 import {
   onBeforeRouteLeave,
   onBeforeRouteUpdate,
@@ -128,8 +122,6 @@ import {
   useRouter
 } from 'vue-router'
 import { useToast } from 'vue-toastification'
-
-// import InfiniteLoading from 'v3-infinite-loading'
 
 import ChatBox from '@/components/ChatBox.vue'
 import ChatInput from '@/components/ChatInput.vue'
@@ -142,7 +134,7 @@ import { chatSocket } from '@/includes/chatSocket'
 import { useChannelStore } from '@/stores/ChannelStore.js'
 import { useUserStore } from '@/stores/UserStore'
 import type { Channel, Message, Room, User } from '@/types'
-import { fetcher } from '@/utils/fetcher'
+import { ApiError, fetcher } from '@/utils/fetcher'
 
 const channelStore = useChannelStore()
 const { channelsList, selectedChannel } = storeToRefs(channelStore)
@@ -154,10 +146,6 @@ const listState = ref('dms')
 const router = useRouter()
 const route = useRoute()
 const toast = useToast()
-
-const channelImageUrl = (imagePath: string): string => {
-  return `${import.meta.env.VITE_APP_BASE_URL}/${imagePath}`
-}
 
 const sidebarClasses = computed(() => {
   const baseClasses =
@@ -173,10 +161,32 @@ const sidebarClasses = computed(() => {
 })
 
 async function createGame(): Promise<void> {
-  const room: Room = await fetcher.post('/games')
-  await router.push(`/room/${room.id}`)
+  let room: Room
+  let roomId: string
+  try {
+    room = await fetcher.post('/games', { isPrivate: true })
+    roomId = room.id
+    await router.push(`/room/${roomId}`)
+  } catch (err) {
+    if (err instanceof ApiError) {
+      if (err.code === 'RoomAlreadyExists') {
+        const roomFind: string[] = await fetcher.get('/games/me')
+        if (roomFind.length < 1) {
+          toast.error('You cannot invite this player for now.')
+          return
+        }
+        roomId = roomFind[0]
+      } else {
+        toast.error(err.message)
+        return
+      }
+    } else {
+      toast.error('An error occured while creating the game.')
+      return
+    }
+  }
   await channelStore.sendMessage(
-    `${import.meta.env.VITE_APP_URL + '/room/' + room.id}`
+    `${import.meta.env.VITE_APP_URL}/room/${roomId}`
   )
 }
 
