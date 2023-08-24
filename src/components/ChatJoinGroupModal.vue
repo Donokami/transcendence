@@ -2,16 +2,16 @@
   <div>
     <input type="checkbox" id="my-modal-3" class="modal-toggle" />
     <div class="modal">
-      <div class="modal-box rounded-none border-2 border-black">
+      <div class="border-2 border-black rounded-none modal-box">
         <!-- TITLE -->
-        <div class="text-xl flex justify-between">
+        <div class="flex justify-between text-xl">
           <h1>Join a group</h1>
           <button
             @click="closeModal()"
-            class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
+            class="relative border-2 border-black btn btn-square hover:border-2 hover:border-black btn-sm">
             <iconify-icon
               icon="material-symbols:close"
-              class="h-6 w-6 absolute">
+              class="absolute w-6 h-6">
             </iconify-icon>
           </button>
         </div>
@@ -23,25 +23,25 @@
           <!-- GROUP SETTINGS -->
           <div>
             <!-- GROUP NAME -->
-            <div class="form-control py-4">
+            <div class="py-4 form-control">
               <span class="text-base text-black">Group name</span>
               <Field
                 name="channelName"
-                class="neobrutalist-input py-2"
+                class="py-2 neobrutalist-input"
                 placeholder="Enter a group name" />
               <ErrorMessage
-                class="font-normal text-base text-red-600"
+                class="text-base font-normal text-red-600"
                 name="channelName" />
               <div v-if="channelNameError" class="text-red-500">
                 {{ channelNameError }}
               </div>
             </div>
             <!-- PASSWORD -->
-            <div class="form-control py-4" v-if="passwordRequired">
+            <div class="py-4 form-control" v-if="passwordRequired">
               <span class="text-base text-black">Password</span>
               <Field
                 name="password"
-                class="neobrutalist-input py-2"
+                class="py-2 neobrutalist-input"
                 placeholder="Enter password"
                 type="password" />
               <div v-if="passwordError" class="text-red-500">
@@ -52,7 +52,7 @@
           <!-- JOIN GROUP BUTTON -->
           <div class="modal-action">
             <button
-              class="btn bg-white border-2 border-black my-4 mb-2 text-black hover:bg-black hover:border-black hover:text-white"
+              class="my-4 mb-2 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white"
               type="submit">
               JOIN GROUP
             </button>
@@ -144,7 +144,6 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
     const channel = await channelStore.joinGroup(channelName, password)
     passwordError.value = null
     passwordRequired.value = false
-    channelNameError.value = null
     closeModal()
     await router.push(`/chat/${channel.id}`)
   } catch (err: any) {
@@ -164,6 +163,7 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
       }
     }
   }
+  channelNameError.value = null
 }
 
 // ********************* //

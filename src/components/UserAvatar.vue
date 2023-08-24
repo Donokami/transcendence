@@ -25,6 +25,25 @@
   </div>
 </template>
 
+<style lang="postcss" scoped>
+.avatar.ingame:before {
+  content: '';
+  position: absolute;
+  z-index: 10;
+  display: block;
+  border-radius: 9999px;
+  --tw-bg-opacity: 1;
+  outline-style: solid;
+  outline-width: 2px;
+  outline-color: hsl(var(--b1) / 1);
+  width: 15%;
+  height: 15%;
+  top: 7%;
+  right: 7%;
+  @apply bg-purple-500;
+}
+</style>
+
 <script setup lang="ts">
 import type { User } from '@/types'
 import { computed, ref, type PropType, type Ref, onBeforeUnmount } from 'vue'
@@ -90,12 +109,9 @@ const statusBadge = (): string => {
   if (!props.statusMode) return ''
 
   if (user.value === null || loggedUser.value === null) return 'offline'
-  if (user.value && user.value.id === loggedUser.value.id) return 'online'
   switch (user?.value?.status) {
     case 'online':
       return 'online'
-    case 'away':
-      return 'away'
     case 'ingame':
       return 'ingame'
     default:
