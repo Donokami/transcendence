@@ -54,11 +54,7 @@
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
-
-import { onBeforeMount, ref, type Ref } from 'vue'
+import { onBeforeMount, onMounted, ref, type Ref } from 'vue'
 
 import { storeToRefs } from 'pinia'
 
@@ -67,10 +63,6 @@ import type { Friendship } from '@/types'
 import { useUserStore } from '@/stores/UserStore.js'
 
 import { useToast } from 'vue-toastification'
-
-// ******************** //
-// VARIABLE DEFINITIONS //
-// ******************** //
 
 const toast = useToast()
 
@@ -82,82 +74,67 @@ const friendRequests = ref<Friendship[]>([])
 
 const dialog: Ref<HTMLDialogElement | null> = ref(null)
 
-const emit = defineEmits(['requestHandled'])
+const emit = defineEmits(['handle-request'])
 
-function showModal(): void {
+async function showModal(): Promise<void> {
   if (dialog.value) dialog.value.showModal()
+  friendRequests.value = await getFriendRequests()
 }
 
 defineExpose({ showModal })
 
-// ******************** //
-// FUNCTION DEFINITIONS //
-// ******************** //
-
-// ***************** //
-// getFriendRequests //
-// ***************** //
-
-const getFriendRequests = async (): Promise<number> => {
-  if (loggedUser.value === null) return 0
+const getFriendRequests = async (): Promise<Friendship[]> => {
+  if (loggedUser.value === null) return null as unknown as Friendship[]
   try {
-    const response = await userStore.fetchFriendRequests()
-    friendRequests.value = response
-    return response.length
+    const friendRequests = await userStore.fetchFriendRequests()
+    return friendRequests
   } catch (error) {
     toast.error('Failed to fetch friend requests !')
-    return 0
+    return null as unknown as Friendship[]
   }
 }
-
-// ************* //
-// acceptRequest //
-// ************* //
 
 const acceptRequest = async (requestId: string): Promise<void> => {
   try {
     await userStore.acceptFriendRequest(requestId)
+    friendRequests.value = await getFriendRequests()
     toast.success('Friend request accepted !')
-    await getFriendRequests()
-    emit('requestHandled', 'accept')
+    dialog.value?.close()
+    emit('handle-request', 'accept')
   } catch (error) {
     toast.error('Failed to accept friend request !')
   }
 }
 
-// ************* //
-// rejectRequest //
-// ************* //
-
 const rejectRequest = async (requestId: string): Promise<void> => {
   try {
     await userStore.rejectFriendRequest(requestId)
+    friendRequests.value = await getFriendRequests()
     toast.success('Friend request rejected !')
-    await getFriendRequests()
-    emit('requestHandled', 'reject')
+    dialog.value?.close()
+    emit('handle-request', 'reject')
   } catch (error) {
     toast.error('Failed to reject friend request !')
   }
 }
 
-// ********* //
-// blockUser //
-// ********* //
-
 const blockUser = async (userToBlockId: string): Promise<void> => {
   try {
     await userStore.blockUser(userToBlockId)
-    await getFriendRequests()
+    friendRequests.value = await getFriendRequests()
     toast.success('User blocked !')
-    emit('requestHandled', 'block')
+    dialog.value?.close()
+    emit('handle-request', 'block')
   } catch (error) {
     toast.error('Failed to block user !')
   }
 }
 
-// ********************* //
-// VueJs LIFECYCLE HOOKS //
-// ********************* //
+onBeforeMount(async () => {
+  friendRequests.value = await getFriendRequests()
+})
 
-onBeforeMount(getFriendRequests)
+onMounted(async () => {
+  friendRequests.value = await getFriendRequests()
+})
 </script>
