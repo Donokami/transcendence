@@ -14,7 +14,7 @@
         class="flex flex-col justify-between text-justify bg-white w-full overflow-auto min-h-[calc(100vh-164px)] sm:mx-3"
         v-if="selectedChannel && channelsList">
         <div
-          class="flex items-center justify-between gap-2 px-5 py-4 border-t-2 border-black border-x-2 sm:px-5 sm:py-5">
+          class="flex items-center justify-between gap-2 px-5 py-4 border-t-2 border-black border-x-2 sm:px-5 sm:py-5 bg-white">
           <div class="flex items-center gap-2">
             <!-- CHANNEL MOBILE BUTTON -->
             <chat-left-drawer
@@ -66,7 +66,7 @@
               </div>
             </div>
             <h2
-              class="w-40 text-lg font-bold text-black truncate sm:text-xl lg:w-96">
+              class="text-lg font-bold text-black truncate sm:text-xl lg:w-max">
               {{ channelStore.getChannel(selectedChannel)?.name }}
             </h2>
           </div>
@@ -76,11 +76,13 @@
             class="text-black bg-white border-2 border-black btn shrink hover:bg-black hover:border-black hover:text-white">
             <iconify-icon
               icon="material-symbols:mail-outline"
-              class="hidden lg:block w-7 h-7"></iconify-icon>
-            <span class="hidden lg:block">Send game invite</span>
-            <span class="block lg:hidden">Invite</span>
+              class="hidden xl:block w-7 h-7">
+            </iconify-icon>
+            <span class="hidden md:block">Send game invite</span>
+            <span class="block md:hidden">Invite</span>
           </button>
-          <chat-right-drawer />
+          <chat-right-drawer
+            v-if="channelStore.getChannel(selectedChannel)?.isDm === false" />
           <label
             v-if="channelStore.getChannel(selectedChannel)?.isDm === false"
             for="my-drawer-4"
