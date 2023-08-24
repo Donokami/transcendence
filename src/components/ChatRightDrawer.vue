@@ -188,6 +188,7 @@
             <div class="w-full text-center">Manage Password</div>
           </label>
         </div>
+        <!-- LEAVE CHANNEL BUTTON -->
         <div>
           <label
             class="relative w-full text-black bg-white border-t-2 border-b-0 border-black btn border-x-0 hover:bg-black hover:border-black hover:text-white"

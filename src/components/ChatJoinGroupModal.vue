@@ -142,9 +142,10 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
     }
 
     const channel = await channelStore.joinGroup(channelName, password)
-
     passwordError.value = null
     passwordRequired.value = false
+    channelNameError.value = null
+    closeModal()
     await router.push(`/chat/${channel.id}`)
   } catch (err: any) {
     if (err instanceof ApiError) {
@@ -163,9 +164,6 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
       }
     }
   }
-
-  channelNameError.value = null
-  closeModal()
 }
 
 // ********************* //

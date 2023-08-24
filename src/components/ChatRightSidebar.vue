@@ -154,6 +154,31 @@
         </div>
       </li>
     </ul>
+    <div>
+      <!-- MANAGE PASSWORD BUTTON -->
+      <div>
+        <label
+          for="my-modal-13"
+          v-if="channel?.owner.id === loggedUser?.id"
+          class="relative w-full text-black bg-white border-t-2 border-b-0 border-black btn border-x-0 hover:bg-black hover:border-black hover:text-white"
+          type="button">
+          <iconify-icon icon="lucide:key-round" class="absolute w-6 h-6 left-5">
+          </iconify-icon>
+          <div class="w-full text-center">Manage Password</div>
+        </label>
+      </div>
+      <!-- LEAVE CHANNEL BUTTON -->
+      <div>
+        <label
+          class="relative w-full text-black bg-white border-t-2 border-b-0 border-black btn border-x-0 hover:bg-black hover:border-black hover:text-white"
+          type="button"
+          @click="leaveGroup">
+          <iconify-icon icon="lucide:door-open" class="absolute w-6 h-6 left-5">
+          </iconify-icon>
+          <div class="w-full text-center">Leave channel</div>
+        </label>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -215,6 +240,11 @@ async function getChannel(): Promise<void> {
 async function kickMember(target: User): Promise<void> {
   if (!channel.value) return
   await channelStore.kickMember(target.id, channel.value.id)
+}
+
+async function leaveGroup(): Promise<void> {
+  if (!loggedUser.value || !channel.value) return
+  await channelStore.leaveGroup(loggedUser.value.id, channel.value.id)
 }
 
 async function makeAdmin(target: User): Promise<void> {
