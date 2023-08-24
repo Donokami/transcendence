@@ -1,16 +1,14 @@
-import { Logger } from '@nestjs/common'
 import { ApiProperty } from '@nestjs/swagger'
 
 import {
-  AfterInsert,
-  AfterRemove,
-  AfterUpdate,
   Column,
   Entity,
   JoinTable,
   OneToMany,
   ManyToMany,
-  PrimaryGeneratedColumn
+  PrimaryGeneratedColumn,
+  CreateDateColumn,
+  UpdateDateColumn
 } from 'typeorm'
 
 import { Channel } from '@/modules/chat/channels/entities/channel.entity'
@@ -24,8 +22,6 @@ export enum UserStatus {
   AWAY = 'away',
   INGAME = 'ingame'
 }
-
-const logger = new Logger('user')
 
 @Entity()
 export class User {
@@ -109,39 +105,9 @@ export class User {
   @Column({ default: 0, select: false })
   pointsDifference: number
 
-  @Column(
-    process.env.NODE_ENV === 'production'
-      ? { type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' }
-      : { default: Date.now() }
-  )
-  @ApiProperty()
+  @CreateDateColumn()
   createdAt: Date
 
-  @Column(
-    process.env.NODE_ENV === 'production'
-      ? { type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' }
-      : { default: Date.now() }
-  )
-  @ApiProperty()
+  @UpdateDateColumn()
   updatedAt: Date
-
-  @AfterInsert()
-  logInsert() {
-    logger.verbose(`User with id ${this.id} inserted`)
-  }
-
-  @AfterRemove()
-  logRemove() {
-    logger.verbose(`User with id ${this.id} removed`, this.id)
-  }
-
-  @AfterUpdate()
-  logUpdate() {
-    logger.verbose(`User with id ${this.id} updated`, this.id)
-  }
-
-  @AfterUpdate()
-  updateDate() {
-    this.updatedAt = new Date()
-  }
 }

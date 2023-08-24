@@ -1,5 +1,6 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -27,10 +28,6 @@ export class Match {
   @Column({ default: 0 })
   scoreB: number
 
-  @Column(
-    process.env.NODE_ENV === 'production'
-      ? { type: 'timestamptz', default: () => 'CURRENT_TIMESTAMP' }
-      : { default: Date.now() }
-  )
+  @CreateDateColumn()
   playedAt: Date
 }
