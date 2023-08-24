@@ -250,7 +250,7 @@ async function blockUser(target: User): Promise<void> {
         toast.error('You cannot block yourself.')
       }
     } else {
-      toast.error('Something went wrong')
+      toast.error('An error occured while blocking this user.')
     }
   }
 }
@@ -335,16 +335,14 @@ async function unblockUser(target: User): Promise<void> {
   } catch (err: any) {
     if (err instanceof ApiError) {
       if (err.code === 'FriendshipNotBlocked') {
-        toast.error('Friendship status is not blocked')
-      } else if (err.code === 'FriendshipNotFound') {
-        toast.error('Friendship is not found')
+        toast.error("This friendship wasn't blocked.")
       } else if (err.code === 'SameIdsError') {
-        toast.error('You cannot unblock yourself')
+        toast.error('You cannot unblock yourself.')
       } else if (err.code === 'OnlyBlockerCanUnblock') {
         toast.error('Only the blocker can unblock the friendship')
       }
     } else {
-      toast.error('Something went wrong')
+      toast.error('An error occured while unblocking this user.')
     }
   }
 }

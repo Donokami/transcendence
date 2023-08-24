@@ -249,7 +249,7 @@ export const useUserStore = defineStore('users', {
               data = await res.json()
             } catch (jsonError) {
               toast.error(
-                'Something went wrong while uploading your profile picture'
+                'An error occured while uploading your profile picture'
               )
             }
           } else {
@@ -273,7 +273,7 @@ export const useUserStore = defineStore('users', {
         if (error instanceof ApiError) {
           throw error
         }
-        toast.error('Something went wrong while uploading your profile picture')
+        toast.error('An error occured while uploading your profile picture')
       }
     }
   }

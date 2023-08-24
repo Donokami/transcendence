@@ -1,49 +1,49 @@
 <template>
   <div class="sm:w-[28rem]">
-    <h2 class="text-xl sm:text-2xl font-bold mb-8 text-black">Sign In</h2>
+    <h2 class="mb-8 text-xl font-bold text-black sm:text-2xl">Sign In</h2>
     <Form ref="formRef" :validation-schema="signInSchema" @submit="submitForm">
       <div class="mb-6">
-        <label class="block font-medium mb-1 text-lg sm:text-xl" for="username"
+        <label class="block mb-1 text-lg font-medium sm:text-xl" for="username"
           >Username</label
         >
         <Field
-          class="neobrutalist-input w-full text-black"
+          class="w-full text-black neobrutalist-input"
           name="username"
           type="username"
           placeholder="Enter your username" />
         <ErrorMessage
-          class="font-normal text-base text-red-600"
+          class="text-base font-normal text-red-600"
           name="username" />
       </div>
       <div class="mb-6">
-        <label class="block font-medium mb-1 text-lg sm:text-xl" for="password"
+        <label class="block mb-1 text-lg font-medium sm:text-xl" for="password"
           >Password</label
         >
         <Field
-          class="neobrutalist-input w-full text-black"
+          class="w-full text-black neobrutalist-input"
           name="password"
           type="password"
           placeholder="Enter your password"
           autocomplete />
         <ErrorMessage
-          class="font-normal text-base text-red-600"
+          class="text-base font-normal text-red-600"
           name="password" />
       </div>
       <div
-        class="text-white text-center font-bold p-4 rounded mb-4"
+        class="p-4 mb-4 font-bold text-center text-white rounded"
         v-if="showAlert"
         :class="alertColor">
         {{ alertMsg }}
       </div>
-      <div class="flex items-center justify-between mt-8 gap-2">
+      <div class="flex items-center justify-between gap-2 mt-8">
         <button
-          class="btn border-zinc-900 bg-black text-white"
+          class="text-white bg-black btn border-zinc-900"
           type="submit"
           :disabled="inSubmission">
           Sign in
         </button>
         <button
-          class="btn border-gray-400 bg-gray-400 hover:bg-gray-300 hover:border-gray-300 text-zinc-900"
+          class="bg-gray-400 border-gray-400 btn hover:bg-gray-300 hover:border-gray-300 text-zinc-900"
           type="button"
           @click="toggleForm">
           Register
@@ -128,7 +128,7 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
       }, 2000)
     } else {
       alertMsg.value = ''
-      toast.error('Something went wrong !')
+      toast.error('An error occured while signing in.')
     }
   } finally {
     inSubmission.value = false

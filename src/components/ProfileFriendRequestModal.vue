@@ -89,7 +89,7 @@ const getFriendRequests = async (): Promise<Friendship[]> => {
     const friendRequests = await userStore.fetchFriendRequests()
     return friendRequests
   } catch (error) {
-    toast.error('Failed to fetch friend requests !')
+    toast.error('Failed to fetch friend requests!')
     return null as unknown as Friendship[]
   }
 }
@@ -98,11 +98,11 @@ const acceptRequest = async (requestId: string): Promise<void> => {
   try {
     await userStore.acceptFriendRequest(requestId)
     friendRequests.value = await getFriendRequests()
-    toast.success('Friend request accepted !')
+    toast.success('Friend request accepted!')
     dialog.value?.close()
     emit('handle-request', 'accept')
   } catch (error) {
-    toast.error('Failed to accept friend request !')
+    toast.error('Failed to accept friend request!')
   }
 }
 
@@ -110,11 +110,11 @@ const rejectRequest = async (requestId: string): Promise<void> => {
   try {
     await userStore.rejectFriendRequest(requestId)
     friendRequests.value = await getFriendRequests()
-    toast.success('Friend request rejected !')
+    toast.success('Friend request rejected!')
     dialog.value?.close()
     emit('handle-request', 'reject')
   } catch (error) {
-    toast.error('Failed to reject friend request !')
+    toast.error('Failed to reject friend request!')
   }
 }
 
@@ -122,11 +122,11 @@ const blockUser = async (userToBlockId: string): Promise<void> => {
   try {
     await userStore.blockUser(userToBlockId)
     friendRequests.value = await getFriendRequests()
-    toast.success('User blocked !')
+    toast.success('User blocked!')
     dialog.value?.close()
     emit('handle-request', 'block')
   } catch (error) {
-    toast.error('Failed to block user !')
+    toast.error('Failed to block user!')
   }
 }
 

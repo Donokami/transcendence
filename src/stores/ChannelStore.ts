@@ -99,10 +99,8 @@ export const useChannelStore = defineStore('channels', {
         newPassword
       })
     },
-    
-    async checkIsMuted(
-      channelId: string,
-    ): Promise<boolean> {
+
+    async checkIsMuted(channelId: string): Promise<boolean> {
       return await fetcher.get(`/channels/${channelId}/isMuted`)
     },
 
@@ -296,7 +294,7 @@ export const useChannelStore = defineStore('channels', {
             toast.error(`Your message exceed 1000 characters limit`)
           }
         } else {
-          toast.error('something went wrong')
+          toast.error('An error occured while sending your message')
         }
       }
     },

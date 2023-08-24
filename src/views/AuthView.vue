@@ -79,7 +79,7 @@ const handleOauth = async (): Promise<void> => {
         await router.push('/mfa')
       }
     } catch (error: any) {
-      toast.error('Something went wrong !')
+      toast.error('An error occured while authenticating!')
       clearInterval(intervalId)
       if (popup != null) popup.close()
       inSubmission.value = false

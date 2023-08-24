@@ -159,7 +159,7 @@ const submitForm = async (values: Record<string, string>): Promise<void> => {
       } else if (err.code === 'UserAlreadyInChannel') {
         toast.error('You are already a member of this channel.')
       } else {
-        toast.error('Something went wrong')
+        toast.error('An error occured while joining the group.')
       }
     }
   }

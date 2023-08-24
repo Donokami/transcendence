@@ -226,7 +226,7 @@ const blockUser = async (): Promise<void> => {
         toast.error('You cannot block yourself.')
       }
     } else {
-      toast.error('Something went wrong')
+      toast.error('An error occured while blocking this user.')
     }
   }
 }
@@ -262,7 +262,7 @@ const getFriendRequestsNumber = async (): Promise<number> => {
     nFriendRequests.value = response.length
     return response.length
   } catch (error) {
-    toast.error('Failed to get friend requests number !')
+    toast.error('Failed to get friend requests number!')
     return 0
   }
 }
@@ -280,7 +280,7 @@ const searchInFriendList = async (user: User): Promise<boolean> => {
     isFriend.value = !(friend == null)
     return true
   } catch (error) {
-    toast.error('Failed to get friend requests number !')
+    toast.error('Failed to get friend requests number!')
     return false
   }
 }
@@ -311,16 +311,14 @@ const unblockUser = async (): Promise<void> => {
   } catch (err: any) {
     if (err instanceof ApiError) {
       if (err.code === 'FriendshipNotBlocked') {
-        toast.error('Friendship status is not blocked')
-      } else if (err.code === 'FriendshipNotFound') {
-        toast.error('Friendship is not found')
+        toast.error("This friendship wasn't blocked.")
       } else if (err.code === 'SameIdsError') {
-        toast.error('You cannot unblock yourself')
+        toast.error('You cannot unblock yourself.')
       } else if (err.code === 'OnlyBlockerCanUnblock') {
         toast.error('Only the blocker can unblock the friendship')
       }
     } else {
-      toast.error('Something went wrong')
+      toast.error('An error occured while unblocking this user.')
     }
   }
 }
@@ -386,7 +384,7 @@ async function fetchData(): Promise<void> {
     await checkBlockedStatus()
     nFriendRequests.value = await getFriendRequestsNumber()
   } catch (error: any) {
-    toast.error('Something went wrong!')
+    toast.error('An error occured while fetching the user profile!')
   }
 }
 

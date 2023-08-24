@@ -2,34 +2,34 @@
   <div>
     <input type="checkbox" id="my-modal-13" class="modal-toggle" />
     <div class="modal">
-      <div class="modal-box rounded-none border-2 border-black">
+      <div class="border-2 border-black rounded-none modal-box">
         <!-- TITLE -->
-        <div class="text-xl flex justify-between">
+        <div class="flex justify-between text-xl">
           <h1>Manage password</h1>
           <button
             @click="closeModal()"
-            class="btn btn-square border-2 border-black hover:border-2 hover:border-black btn-sm relative">
+            class="relative border-2 border-black btn btn-square hover:border-2 hover:border-black btn-sm">
             <iconify-icon
               icon="material-symbols:close"
-              class="h-6 w-6 absolute">
+              class="absolute w-6 h-6">
             </iconify-icon>
           </button>
         </div>
         <!-- FORM -->
         <Form ref="formRef" @submit="submitForm">
-          <div class="form-control mt-6">
-            <label class="label cursor-pointer px-0">
+          <div class="mt-6 form-control">
+            <label class="px-0 cursor-pointer label">
               <span class="text-base text-black">Change password</span>
               <input
                 type="checkbox"
-                class="checkbox border-2 border-black rounded-none"
+                class="border-2 border-black rounded-none checkbox"
                 @click="setPasswordRequirement()" />
             </label>
             <!-- PASSWORD INPUT -->
             <input
               v-model="password"
               v-if="passwordRequired === true"
-              class="neobrutalist-input py-2 text-sm"
+              class="py-2 text-sm neobrutalist-input"
               placeholder="Choose a new password for your group" />
             <div v-if="passwordError" class="text-red-500">
               {{ passwordError }}
@@ -39,7 +39,7 @@
             <!-- UPDATE PASSWORD BUTTON -->
             <button
               v-if="passwordRequired === true"
-              class="btn bg-white border-2 border-black my-4 mb-2 text-black hover:bg-black hover:border-black hover:text-white"
+              class="my-4 mb-2 text-black bg-white border-2 border-black btn hover:bg-black hover:border-black hover:text-white"
               type="submit"
               @click="changeGroupPassword">
               Update Password
@@ -47,7 +47,7 @@
             <!-- DELETE PASSWORD BUTTON -->
             <button
               v-if="passwordRequired === false && channel?.type === 'protected'"
-              class="btn bg-red-400 border-2 border-black hover:border-black my-4 mb-2 hover:bg-black text-white"
+              class="my-4 mb-2 text-white bg-red-400 border-2 border-black btn hover:border-black hover:bg-black"
               type="submit"
               @click="deleteGroupPassword">
               Delete Password
@@ -106,10 +106,7 @@ const changeGroupPassword = async (): Promise<void> => {
     return
   }
 
-  if (!selectedChannel.value) {
-    toast.error(`Something went wrong`)
-    return
-  }
+  if (!selectedChannel.value) return
 
   try {
     await channelStore.changeGroupPassword(
@@ -119,7 +116,7 @@ const changeGroupPassword = async (): Promise<void> => {
     toast.success(`Password changed successfully`)
     passwordError.value = null
   } catch (error) {
-    toast.error(`Something went wrong`)
+    toast.error(`An error occured while changing the password`)
   }
 }
 
@@ -143,16 +140,13 @@ function closeModal(): void {
 // ******************* //
 
 const deleteGroupPassword = async (): Promise<void> => {
-  if (!selectedChannel.value) {
-    toast.error(`Something went wrong`)
-    return
-  }
+  if (!selectedChannel.value) return
 
   try {
     await channelStore.deleteGroupPassword(selectedChannel.value)
     toast.success(`Password deleted successfully`)
   } catch (error) {
-    toast.error(`Something went wrong`)
+    toast.error(`An error occured while deleting the group password.`)
   }
 }
 

@@ -89,7 +89,7 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
     } else {
       alertMsg.value = ''
       showAlert.value = false
-      toast.error('Something went wrong!')
+      toast.error('An error occured while updating your profile!')
     }
   } finally {
     inSubmission.value = false

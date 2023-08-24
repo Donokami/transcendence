@@ -1,30 +1,30 @@
 <template>
   <div class="neobrutalist-box sm:w-[30rem] px-4 py-7 sm:p-11">
-    <h2 class="text-xl sm:text-2xl font-bold mb-8 text-black">Welcome back</h2>
+    <h2 class="mb-8 text-xl font-bold text-black sm:text-2xl">Welcome back</h2>
     <Form ref="formRef" :validation-schema="mfaSchema" @submit="submitForm">
       <div class="mb-6">
         <label
-          class="block font-medium mb-1 text-md text-lg sm:text-xl"
+          class="block mb-1 text-lg font-medium text-md sm:text-xl"
           for="token"
           >6 digits code</label
         >
         <Field
-          class="neobrutalist-input w-full text-black"
+          class="w-full text-black neobrutalist-input"
           name="token"
           type="text"
           placeholder="Enter the code"
           autocomplete="off" />
-        <ErrorMessage class="font-normal text-base text-red-600" name="token" />
+        <ErrorMessage class="text-base font-normal text-red-600" name="token" />
       </div>
       <div
-        class="text-white text-center font-bold p-4 rounded mb-4"
+        class="p-4 mb-4 font-bold text-center text-white rounded"
         v-if="showAlert"
         :class="alertColor">
         {{ alertMsg }}
       </div>
       <div class="mt-8">
         <button
-          class="btn border-zinc-900 bg-black text-white sm:w-fit w-full"
+          class="w-full text-white bg-black btn border-zinc-900 sm:w-fit"
           type="submit"
           :disabled="inSubmission">
           Sign in
@@ -72,7 +72,7 @@ const submitForm = async (values: Record<string, any>): Promise<any> => {
       alertColor.value = 'bg-red-500'
       alertMsg.value = 'Your 2FA code could not be verified!'
     } else {
-      toast.error('Something went wrong!')
+      toast.error('An error occured while verifying your 2FA code.')
     }
   } finally {
     inSubmission.value = false
