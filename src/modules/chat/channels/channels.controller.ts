@@ -286,6 +286,27 @@ export class ChannelsController {
     return message
   }
 
+  @Get('/:channelId/isMuted')
+  @ApiOperation({
+    summary: 'Check if logged user is muted',
+    operationId: 'isMuted',
+    description: 'Check if logged user is muted',
+    tags: ['chat']
+  })
+  @UseGuards(MembershipGuard)
+  async isMuted(
+    @CurrentChannel() channel: Channel,
+    @Session() session: ISession,
+  ): Promise<boolean> {
+    const userId: string = session.userId
+    const isMuted = await this.channelsService.checkIsMuted(
+      userId,
+      channel
+    )
+
+    return isMuted
+  }
+
   @Put('/:channelId/set-admin')
   @ApiOperation({
     summary: 'Set a user as an admin of a group',

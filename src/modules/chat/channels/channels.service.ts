@@ -504,6 +504,18 @@ export class ChannelsService {
     return message
   }
 
+  async checkIsMuted(
+    userId: string,
+    channel: Channel
+  ): Promise<boolean> {
+    const user: User = await this.checkExistingUser(userId)
+
+    if (channel.isMuted(user)) {
+      return true
+    }
+    return false
+  }
+
   async setAdmin(userToPromoteId: string, channel: Channel): Promise<Channel> {
     const userToPromote: User = await this.checkExistingUser(userToPromoteId)
 
