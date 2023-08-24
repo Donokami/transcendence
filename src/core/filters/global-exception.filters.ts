@@ -22,7 +22,6 @@ interface IError {
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-
   catch(exception: Error, host: ArgumentsHost) {
     switch (host.getType<ContextType>()) {
       case 'http':
@@ -49,7 +48,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         typeof httpException.getResponse() === 'string' ||
         !Array.isArray((httpException.getResponse() as IError).message)
       ) {
-        message = (httpException.getResponse() as IError).message as unknown as string || httpException.getResponse() as string
+        message =
+          ((httpException.getResponse() as IError)
+            .message as unknown as string) ||
+          (httpException.getResponse() as string)
       } else {
         message = (httpException.getResponse() as IError).message.join(', ')
       }
@@ -66,7 +68,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             case 'postgres':
               message = (exception as any)['detail'].replace(
                 /^Key \((.*)\)=\((.*)\) (.*)/,
-                '$1 $2 already exists',
+                '$1 $2 already exists'
               ) // todo: to test on production mode
               break
             case 'sqlite':
@@ -86,9 +88,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         code = 'CannotCreateEntityIdMapError'
         break
       default:
-        status ??= HttpStatus.INTERNAL_SERVER_ERROR
-        message ??= 'Internal server error'
-        code ??= 'InternalServerError'
+        status ??= HttpStatus.UNPROCESSABLE_ENTITY
+        message ??= 'Unprocessable Entity'
+        code ??= 'UnprocessableEntity'
     }
 
     Logger.error(

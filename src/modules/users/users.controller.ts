@@ -60,7 +60,9 @@ export class UsersController {
     description: 'Get all users',
     tags: ['users']
   })
-  getAllUsers(@Paginate() query: PaginateQuery): Promise<Paginated<User>> {
+  async getAllUsers(
+    @Paginate() query: PaginateQuery
+  ): Promise<Paginated<User>> {
     return this.usersService.findAll(query)
   }
 

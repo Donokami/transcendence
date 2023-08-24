@@ -58,7 +58,7 @@ export class SocialGateway {
     this.server.emit('user:connect', client.request.user.id)
   }
 
-  handleDisconnect(client: IUserSocket) {
+  async handleDisconnect(client: IUserSocket) {
     const sockIndex = this.connectedSockets.findIndex(
       (sock) => sock.clientId === client.id
     )

@@ -24,6 +24,7 @@ import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { RoomNotFound } from '@/core/exceptions/game'
 import { ISession } from '@/core/types'
 import { CreateGameDto } from './dtos/create-game-dto'
+import { Match } from './entities/match.entity'
 
 @UseGuards(AuthGuard, UsernameGuard)
 @UseInterceptors(ClassSerializerInterceptor)
@@ -80,8 +81,8 @@ export class GameController {
     description: 'Get the matches by userId',
     tags: ['game']
   })
-  async findMatches(@Param('userId') userId: string) {
-    return this.gameService.findMatches(userId)
+  async findMatches(@Param('userId') userId: string): Promise<Match[]> {
+    return await this.gameService.findMatches(userId)
   }
 
   @Get()
@@ -91,8 +92,8 @@ export class GameController {
     description: 'Get all games',
     tags: ['game']
   })
-  async findAll(@Session() session: ISession) {
-    return this.gameService
+  async findAll(@Session() session: ISession): Promise<RoomObject[]> {
+    return await this.gameService
       .findAll()
       .filter((room) => !room.isPrivate || room.owner.id === session.userId)
   }
@@ -119,7 +120,10 @@ export class GameController {
     description: 'Update a game with given id',
     tags: ['game']
   })
-  async update(@Param('id') id: string, @Body() updateGameDto: UpdateGameDto) {
+  async update(
+    @Param('id') id: string,
+    @Body() updateGameDto: UpdateGameDto
+  ): Promise<RoomObject> {
     return this.gameService.update(id, updateGameDto)
   }
 }

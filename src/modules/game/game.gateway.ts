@@ -48,9 +48,7 @@ export class GameGateway {
     this.logger.verbose(`Client ${client.id} connected to /game socket`)
   }
 
-  handleDisconnect(client: IUserSocket) {
-    // const roomId = client.handshake.query.roomId as string
-    // this.gameService.leave(roomId, client.request.user.id).catch((err) => {})
+  async handleDisconnect(client: IUserSocket) {
     this.gameService.socketLeave(client.id)
     this.logger.verbose(`Client ${client.id} disconnected`)
   }

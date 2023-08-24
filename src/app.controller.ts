@@ -10,9 +10,10 @@ export class AppController {
     description: 'Get api infos',
     tags: ['default']
   })
-  getRoot(): { version: string } {
+  async getRoot(): Promise<{ version: string }> {
     return { version: 'v1' }
   }
+
   @Get('/heartbeat')
   @ApiOperation({
     summary: 'Get api status',
@@ -20,7 +21,7 @@ export class AppController {
     description: 'Get api status',
     tags: ['default']
   })
-  getHeartBeat(): { status: string } {
+  async getHeartBeat(): Promise<{ status: string }> {
     return { status: 'ok' }
   }
 }
