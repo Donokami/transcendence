@@ -4,7 +4,7 @@ import { GameGateway } from './game.gateway'
 import { UsersService } from '@/modules/users/users.service'
 import { Room, RoomStatus } from './game.room'
 import { type SimObject3D, type Metrics, PhysicsEngine } from './game.physics'
-import { User } from '../users/user.entity'
+import { User, UserStatus } from '../users/user.entity'
 import { Repository } from 'typeorm'
 import { Match } from './entities/match.entity'
 
@@ -178,6 +178,29 @@ export class Game {
     await this.matchRepository.save(match)
   }
 
+  private async updateUserStatus() {
+    const players = this.gameState.players
+    const playersNumber = this.gameState.players[1].userId === 'bot' ? 1 : 2
+    const firstPlayer = await this.usersService.findOneByIdWithStats(
+      players[0].userId
+    )
+
+    if (firstPlayer.status === UserStatus.INGAME)
+      this.usersService.update(firstPlayer.id, {
+        status: UserStatus.ONLINE
+      })
+
+    if (playersNumber > 1) {
+      const secondPlayer = await this.usersService.findOneByIdWithStats(
+        players[1].userId
+      )
+      if (secondPlayer.status === UserStatus.INGAME)
+        this.usersService.update(secondPlayer.id, {
+          status: UserStatus.ONLINE
+        })
+    }
+  }
+
   public userSurrended(userId: string) {
     // Remove all points from the user who surrended
     this.logger.log(`User ${userId} surrended`)
@@ -198,8 +221,12 @@ export class Game {
     this.gameState.endTime = Date.now()
     this.gameGateway.server.to(this.roomState.id).emit(`game:end`)
     await this.updateUserStats()
-    // todo: to test, it may be broken
-    this.roomState.update({ ...this.roomState, status: RoomStatus.OPEN })
+    await this.updateUserStatus()
+    if (this.roomState.players.length > 1) {
+      this.roomState.update({ ...this.roomState, status: RoomStatus.FULL })
+    } else {
+      this.roomState.update({ ...this.roomState, status: RoomStatus.OPEN })
+    }
     this.logger.log('end of game!')
   }
 

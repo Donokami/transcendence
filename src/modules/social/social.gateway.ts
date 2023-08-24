@@ -14,7 +14,8 @@ import { IUserSocket } from '@/core/types/socket'
 
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { UsersService } from '@/modules/users/users.service'
-import { UserStatus } from '@/modules/users/user.entity'
+import { User, UserStatus } from '@/modules/users/user.entity'
+import { UserNotFound } from '@/core/exceptions'
 
 @WebSocketGateway({
   namespace: '/social',
@@ -32,14 +33,21 @@ export class SocialGateway {
     userId: string
   }> = []
 
-  constructor(private readonly userService: UsersService) {}
+  constructor(private readonly usersService: UsersService) {}
 
   private readonly logger = new Logger(SocialGateway.name)
 
   async handleConnection(client: IUserSocket) {
-    this.userService.update(client.request.user.id, {
-      status: UserStatus.ONLINE
-    })
+    const user: User = await this.usersService.findOneById(
+      client.request.user.id
+    )
+
+    if (!user) throw new UserNotFound()
+
+    if (user.status === UserStatus.OFFLINE)
+      this.usersService.update(user.id, {
+        status: UserStatus.ONLINE
+      })
 
     this.connectedSockets.push({
       clientId: client.id,
@@ -63,7 +71,8 @@ export class SocialGateway {
       ).length > 0
     )
       return
-    this.userService.update(client.request.user.id, {
+    console.log('disconnected')
+    this.usersService.update(client.request.user.id, {
       status: UserStatus.OFFLINE
     })
     this.logger.verbose(`Client ${client.id} disconnected`)

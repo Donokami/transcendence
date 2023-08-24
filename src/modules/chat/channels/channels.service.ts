@@ -53,7 +53,7 @@ export class ChannelsService {
     private readonly messagesRepository: Repository<Message>,
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
-    private readonly userService: UsersService,
+    private readonly usersService: UsersService,
     @Inject(forwardRef(() => ChatGateway))
     private readonly chatGateway: ChatGateway
   ) {}
@@ -126,7 +126,7 @@ export class ChannelsService {
       throw new MissingUserId()
     }
 
-    const user: User = await this.userService.findOneById(userId)
+    const user: User = await this.usersService.findOneById(userId)
     if (!user) {
       this.logger.warn(`User with ID : ${userId} not found`)
       throw new UserNotFound()
@@ -141,7 +141,7 @@ export class ChannelsService {
   ): Promise<Channel> {
     const owner: User = await this.checkExistingUser(ownerId)
 
-    const members: User[] = await this.userService.findByIds(
+    const members: User[] = await this.usersService.findByIds(
       createChannelDto.membersIds
     )
     if (!members || members.length < 2) throw new ChannelMembersNotFound()
@@ -264,7 +264,7 @@ export class ChannelsService {
   async getOwner(channel: Channel): Promise<User> {
     const chan = await this.findOneById(channel.id)
 
-    return chan.owner ?? null as unknown as User
+    return chan.owner ?? (null as unknown as User)
   }
 
   async getAdmins(channel: Channel): Promise<User[]> {

@@ -37,7 +37,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   connectedUsers: Map<string, string> = new Map()
 
   constructor(
-    private readonly userService: UsersService,
+    private readonly usersService: UsersService,
     @Inject(forwardRef(() => ChannelsService))
     private readonly channelService: ChannelsService
   ) {}
@@ -77,7 +77,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     const requestingUser = client.request.user
 
-    const user = await this.userService.findOneByIdWithChannels(
+    const user = await this.usersService.findOneByIdWithChannels(
       requestingUser.id
     )
 
@@ -95,7 +95,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ): Promise<void> {
     const requestingUser = client.request.user
 
-    const user = await this.userService.findOneByIdWithChannels(
+    const user = await this.usersService.findOneByIdWithChannels(
       requestingUser.id
     )
 

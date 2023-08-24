@@ -19,7 +19,6 @@ import { Exclude } from 'class-transformer'
 export enum UserStatus {
   ONLINE = 'online',
   OFFLINE = 'offline',
-  AWAY = 'away',
   INGAME = 'ingame'
 }
 

@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common'
 import { randomUUID } from 'crypto'
-import { User } from '../users/user.entity'
+import { User, UserStatus } from '../users/user.entity'
 import { GameGateway } from './game.gateway'
 import { Game } from './game.engine'
 import { UsersService } from '@/modules/users/users.service'
@@ -33,15 +33,15 @@ export interface RoomObject {
 }
 
 export class Room implements RoomObject {
-  id = ''
-  name = ''
-  players = []
-  owner = null
-  isPrivate = false
-  paddleRatio = 0.3
-  ballSpeed = 1
-  gameDuration = 1.5
-  status = RoomStatus.OPEN
+  id: string = ''
+  name: string = ''
+  players: User[] = []
+  owner: User = null
+  isPrivate: boolean = false
+  paddleRatio: number = 0.3
+  ballSpeed: number = 1
+  gameDuration: number = 1.5
+  status: RoomStatus = RoomStatus.OPEN
   gameState: Game | null = null
   public connectedSockets: Map<string, string> = new Map()
 
@@ -117,6 +117,14 @@ export class Room implements RoomObject {
     this.logger.log('Starting game')
 
     this.update({ ...this, status: RoomStatus.INGAME })
+    this.usersService.update(this.players[0].id, {
+      status: UserStatus.INGAME
+    })
+    if (this.players.length > 1) {
+      this.usersService.update(this.players[1].id, {
+        status: UserStatus.INGAME
+      })
+    }
 
     this.gameState = new Game(
       this,
