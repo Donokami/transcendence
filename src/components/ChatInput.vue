@@ -31,31 +31,17 @@
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
-
 import { nextTick, onBeforeMount, ref, type Ref } from 'vue'
-import { useChannelStore } from '@/stores/ChannelStore.js'
 import { onBeforeRouteUpdate } from 'vue-router'
+
+import { useChannelStore } from '@/stores/ChannelStore.js'
+import { useUserStore } from '@/stores/UserStore'
 import type { Channel } from '@/types'
 
 const channelStore = useChannelStore()
 const input = ref('')
 const myTextarea: Ref<HTMLElement | null> = ref(null)
 const channel: Ref<Channel | null> = ref(null)
-
-onBeforeMount(async () => {
-  await channelStore.fetchChannels()
-  channel.value = channelStore.getChannel()
-  autoResize()
-})
-
-onBeforeRouteUpdate(async (to, from) => {
-  await channelStore.fetchChannels()
-  channel.value = channelStore.getChannel()
-  autoResize()
-})
 
 async function sendMessage(): Promise<void> {
   if (input.value.trim() !== '') {
@@ -74,4 +60,20 @@ function autoResize(): void {
     }px`
   }
 }
+
+onBeforeMount(async () => {
+  await channelStore.fetchChannels()
+  channel.value = channelStore.getChannel()
+  if (!channel.value) return
+
+  channel.value.isMuted = await channelStore.checkIsMuted(channel.value.id)
+
+  autoResize()
+})
+
+onBeforeRouteUpdate(async (to, from) => {
+  await channelStore.fetchChannels()
+  channel.value = channelStore.getChannel()
+  autoResize()
+})
 </script>

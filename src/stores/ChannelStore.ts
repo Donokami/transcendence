@@ -99,6 +99,12 @@ export const useChannelStore = defineStore('channels', {
         newPassword
       })
     },
+    
+    async checkIsMuted(
+      channelId: string,
+    ): Promise<boolean> {
+      return await fetcher.get(`/channels/${channelId}/isMuted`)
+    },
 
     async createDmChannel(receiverId: string): Promise<Channel | undefined> {
       const { loggedUser } = useUserStore()
