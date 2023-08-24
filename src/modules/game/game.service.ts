@@ -1,3 +1,4 @@
+import { CreateGameDto } from './dtos/create-game-dto'
 import {
   BadRequestException,
   Inject,
@@ -43,6 +44,13 @@ export class GameService {
     return this.rooms.find((room) => room.get().id === id)
   }
 
+  public findByOwnerId(ownerId: string): string[] {
+    const room = this.rooms.find((room) => room.get().owner.id === ownerId)
+
+    if (!room) return []
+    return [room.id]
+  }
+
   public findAll(): RoomObject[] {
     return this.rooms.map((room) => room.get())
   }
@@ -80,7 +88,10 @@ export class GameService {
     return [rooms[0]]
   }
 
-  public async create(ownerId: string): Promise<RoomObject> {
+  public async create(
+    ownerId: string,
+    createGameDto: CreateGameDto
+  ): Promise<RoomObject> {
     const owner = await this.usersService.findOneById(ownerId)
 
     if (!owner) {
@@ -89,7 +100,7 @@ export class GameService {
 
     const roomName = owner.username + "'s room"
 
-    if (this.rooms.find((g) => g.get().name === roomName)) {
+    if (this.rooms.find((g) => g.get().owner.id === owner.id)) {
       throw new RoomAlreadyExists()
     }
 
@@ -101,7 +112,7 @@ export class GameService {
       {
         name: roomName,
         owner: owner,
-        isPrivate: false
+        isPrivate: createGameDto.isPrivate ?? false
       },
       this.gameGateway,
       this.usersService,

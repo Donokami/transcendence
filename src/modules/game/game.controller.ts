@@ -23,6 +23,7 @@ import { ApiOperation } from '@nestjs/swagger'
 import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 import { RoomNotFound } from '@/core/exceptions/game'
 import { ISession } from '@/core/types'
+import { CreateGameDto } from './dtos/create-game-dto'
 
 @UseGuards(AuthGuard, UsernameGuard)
 @UseInterceptors(ClassSerializerInterceptor)
@@ -38,8 +39,20 @@ export class GameController {
     description: 'Join the matchmaking queue',
     tags: ['game']
   })
-  joinQueue(): Promise<RoomObject[]> {
+  async joinQueue(): Promise<RoomObject[]> {
     return this.gameService.joinQueue()
+  }
+
+  @Get('/me')
+  @UseGuards(AuthGuard)
+  @ApiOperation({
+    summary: 'Get a game by owner id',
+    operationId: 'findGame',
+    description: 'Get a game by owner id',
+    tags: ['game']
+  })
+  async findGame(@Session() session: ISession): Promise<string[]> {
+    return this.gameService.findByOwnerId(session.userId)
   }
 
   @Get(':id')
@@ -49,7 +62,7 @@ export class GameController {
     description: 'Get a game by id',
     tags: ['game']
   })
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<RoomObject> {
     const room = this.gameService.findOne(id)
 
     if (!room) {
@@ -67,7 +80,7 @@ export class GameController {
     description: 'Get the matches by userId',
     tags: ['game']
   })
-  findMatches(@Param('userId') userId: string) {
+  async findMatches(@Param('userId') userId: string) {
     return this.gameService.findMatches(userId)
   }
 
@@ -78,7 +91,7 @@ export class GameController {
     description: 'Get all games',
     tags: ['game']
   })
-  findAll(@Session() session: ISession) {
+  async findAll(@Session() session: ISession) {
     return this.gameService
       .findAll()
       .filter((room) => !room.isPrivate || room.owner.id === session.userId)
@@ -91,8 +104,11 @@ export class GameController {
     description: 'Create a game',
     tags: ['game']
   })
-  create(@Session() session: ISession): Promise<RoomObject> {
-    return this.gameService.create(session.userId)
+  async create(
+    @Session() session: ISession,
+    @Body() createGameDto: CreateGameDto
+  ): Promise<RoomObject> {
+    return this.gameService.create(session.userId, createGameDto)
   }
 
   @Patch(':id')
