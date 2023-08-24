@@ -8,7 +8,7 @@ export class RoomNotFound extends HttpException {
 
 export class RoomAlreadyExists extends HttpException {
   constructor() {
-    super('A room with this name already exists', HttpStatus.BAD_REQUEST)
+    super('You already made a room', HttpStatus.BAD_REQUEST)
   }
 }
 
@@ -19,14 +19,14 @@ export class RoomNameCannotBeEmpty extends HttpException {
 }
 export class UserAlreadyInRoom extends HttpException {
   constructor() {
-    super('User already in room', HttpStatus.BAD_REQUEST)
+    super('You are already in the room', HttpStatus.BAD_REQUEST)
   }
 }
 
 export class UserAlreadyInARoom extends HttpException {
   constructor() {
     super(
-      'User already in a room. Leave the room before joining another one',
+      'You are already in a room. Leave the room before joining another one',
       HttpStatus.BAD_REQUEST
     )
   }
