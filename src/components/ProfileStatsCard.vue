@@ -26,7 +26,7 @@
         </div>
         <div class="flex items-baseline">
           <div class="stat-title">Status:</div>
-          <div v-if="user" class="" :class="statusColor">
+          <div v-if="user" class="" :class="getStatusColor(user)">
             {{
               props.user.id === loggedUser?.id ? 'online' : props.user.status
             }}
@@ -202,13 +202,13 @@ const props = defineProps<{
 
 const emit = defineEmits(['updateUser'])
 
-const statusColor = computed(() => {
-  if (loggedUser.value === null) return 'text-gray-500'
-  if (props.user.status === 'online' || props.user.id === loggedUser.value.id)
+function getStatusColor(user: User): string {
+  if (loggedUser.value === null) return 'text-gray-400'
+  if (user.id === loggedUser.value.id || user.status === 'online')
     return 'text-[#62D49A]'
-  if (props.user.status === 'offline') return 'text-red-500'
-  return 'text-gray-500'
-})
+  if (user.status === 'offline') return 'text-gray-400'
+  return 'text-gray-400'
+}
 
 const blockUser = async (): Promise<void> => {
   try {
@@ -380,7 +380,7 @@ async function fetchData(): Promise<void> {
   userRank.value = await userStore.fetchUserRank(props.user.id)
   if (loggedUser.value == null) return
   try {
-    await userStore.refreshFriendList()
+    friendList.value = await userStore.refreshFriendList()
     await searchInFriendList(props.user)
     await checkBlockedStatus()
     nFriendRequests.value = await getFriendRequestsNumber()

@@ -50,26 +50,29 @@
 
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { computed, onBeforeMount, toRefs, watch, type Ref } from 'vue'
+
+import { computed, onBeforeMount, toRefs, watch } from 'vue'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 
 import { useChannelStore } from '@/stores/ChannelStore'
 import { useUserStore } from '@/stores/UserStore.js'
-import { useToast } from 'vue-toastification'
 import type { User } from '@/types'
 
 const channelStore = useChannelStore()
+const userStore = useUserStore()
+
 const router = useRouter()
+
 const emit = defineEmits(['update:showModal'])
 const props = defineProps({
   showModal: { type: Boolean }
 })
-const { showModal } = toRefs(props)
-const userStore = useUserStore()
-const toast = useToast()
 
-const { loggedUser } = storeToRefs(userStore)
-const { friendList }: { friendList: Ref<User[]> } = storeToRefs(userStore)
+const { showModal } = toRefs(props)
+const { loggedUser, friendList } = storeToRefs(userStore)
+
+const toast = useToast()
 
 const filteredFriendList = computed(() => {
   return friendList.value.filter(
@@ -108,13 +111,13 @@ function closeCreateModal(): void {
 
 onBeforeMount(async () => {
   if (friendList.value.length === 0) {
-    await userStore.refreshFriendList()
+    friendList.value = await userStore.refreshFriendList()
   }
 })
 
 onBeforeRouteUpdate(async (to, from) => {
   if (friendList.value.length === 0) {
-    await userStore.refreshFriendList()
+    friendList.value = await userStore.refreshFriendList()
   }
 })
 

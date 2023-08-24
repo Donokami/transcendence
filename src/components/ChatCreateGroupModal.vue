@@ -123,23 +123,16 @@
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
-
 import { storeToRefs } from 'pinia'
+
 import { Form } from 'vee-validate'
 import { computed, onBeforeMount, ref, toRefs, watch } from 'vue'
 import { onBeforeRouteUpdate, useRouter } from 'vue-router'
+import { useToast } from 'vue-toastification'
 
 import { useChannelStore } from '@/stores/ChannelStore'
 import { useUserStore } from '@/stores/UserStore.js'
-import { useToast } from 'vue-toastification'
 import type { User } from '@/types'
-
-// ******************** //
-// VARIABLE DEFINITIONS //
-// ******************** //
 
 const channelStore = useChannelStore()
 const userStore = useUserStore()
@@ -159,21 +152,12 @@ const props = defineProps({
 const toast = useToast()
 const usersToAdd = ref<User[]>([])
 
-const { friendList } = storeToRefs(userStore)
-const { loggedUser } = storeToRefs(userStore)
+const { loggedUser, friendList } = storeToRefs(userStore)
 const { showModal } = toRefs(props)
 
 const filteredFriendList = computed(() => {
   return friendList.value.filter((user) => !usersToAdd.value.includes(user))
 })
-
-// ******************** //
-// FUNCTION DEFINITIONS //
-// ******************** //
-
-// *************** //
-// cancelUserToAdd //
-// *************** //
 
 const cancelUserToAdd = (user: User): void => {
   const userIndex = usersToAdd.value.indexOf(user)
@@ -181,10 +165,6 @@ const cancelUserToAdd = (user: User): void => {
     usersToAdd.value.splice(userIndex, 1)
   }
 }
-
-// ********** //
-// closeModal //
-// ********** //
 
 function closeModal(): void {
   const modalElement = document.getElementById('my-modal-3') as HTMLInputElement
@@ -200,10 +180,6 @@ function closeModal(): void {
     emit('update:showModal', modalElement.checked)
   }
 }
-
-// ****************** //
-// createGroupChannel //
-// ****************** //
 
 const createGroupChannel = async (): Promise<void> => {
   if (loggedUser.value == null || !usersToAdd.value) {
@@ -244,19 +220,11 @@ const createGroupChannel = async (): Promise<void> => {
   }
 }
 
-// ************* //
-// pushUserToAdd //
-// ************* //
-
 const pushUserToAdd = (user: User): void => {
   if (!usersToAdd.value.includes(user)) {
     usersToAdd.value.push(user)
   }
 }
-
-// ********************** //
-// setPasswordRequirement //
-// ********************** //
 
 const setPasswordRequirement = (): void => {
   if (passwordRequired.value) {
@@ -266,10 +234,6 @@ const setPasswordRequirement = (): void => {
   }
   passwordError.value = null
 }
-
-// ********** //
-// submitForm //
-// ********** //
 
 const submitForm = async (values: Record<string, any>): Promise<void> => {
   if (channelName.value.length === 0) {
@@ -308,16 +272,12 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
   await createGroupChannel()
 }
 
-// ********************* //
-// VueJs LIFECYCLE HOOKS //
-// ********************* //
-
 onBeforeMount(async () => {
-  await userStore.refreshFriendList()
+  friendList.value = await userStore.refreshFriendList()
 })
 
 onBeforeRouteUpdate(async (to, from) => {
-  await userStore.refreshFriendList()
+  friendList.value = await userStore.refreshFriendList()
 })
 
 watch(showModal, (newValue) => {

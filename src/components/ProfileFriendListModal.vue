@@ -29,8 +29,11 @@
                 :upload-mode="false"></user-avatar>
             </div>
             <span class="pl-4 text-base truncate">
-              {{ friend.username }} ({{ friend.status }})
+              {{ friend.username }} :
             </span>
+            <div class="" :class="getStatusColor(friend)">
+              {{ friend.id === loggedUser?.id ? 'online' : friend.status }}
+            </div>
           </div>
         </li>
       </ul>
@@ -42,14 +45,11 @@
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
-
+import { storeToRefs } from 'pinia'
 import { onBeforeMount, ref, type Ref } from 'vue'
 
 import UserAvatar from '@/components/UserAvatar.vue'
-import { useUserStore } from '@/stores/UserStore.js'
+import { useUserStore } from '@/stores/UserStore'
 import type { User } from '@/types'
 
 const dialog: Ref<HTMLDialogElement | null> = ref(null)
@@ -61,9 +61,15 @@ function showModal(): void {
 defineExpose({ showModal })
 
 const userStore = useUserStore()
-const { friendList }: { friendList: User[] } = useUserStore()
+const { loggedUser, friendList } = storeToRefs(userStore)
+
+function getStatusColor(friend: User): string {
+  if (friend.status === 'online') return 'text-[#62D49A]'
+  if (friend.status === 'offline') return 'text-gray-400'
+  return 'text-gray-400'
+}
 
 onBeforeMount(async () => {
-  await userStore.refreshFriendList()
+  friendList.value = await userStore.refreshFriendList()
 })
 </script>
