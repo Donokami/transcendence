@@ -1,6 +1,5 @@
 envs/
 .env
-package-lock.json
 pnpm-lock.yaml
 /postgres-data
 /uploads
