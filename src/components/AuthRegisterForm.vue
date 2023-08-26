@@ -79,6 +79,7 @@ import { ref } from 'vue'
 import { Form, Field, ErrorMessage } from 'vee-validate'
 import { useUserStore } from '../stores/UserStore'
 import { useToast } from 'vue-toastification'
+import { ApiError } from '@/utils/fetcher'
 
 const alertMsg = ref('Your account is being created...')
 const alertColor = ref('bg-blue-500')
@@ -109,9 +110,9 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
     alertMsg.value = 'Account created!'
     setTimeout(() => toggleForm(), 1000)
   } catch (error: any) {
-    if (error.message === 'User already exists') {
+    if (error instanceof ApiError && error.statusCode === 400) {
       alertColor.value = 'bg-red-500'
-      alertMsg.value = 'User already exist!'
+      alertMsg.value = error.message
     } else {
       toast.error('An error occured while creating your account.')
     }
