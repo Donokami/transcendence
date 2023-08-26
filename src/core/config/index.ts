@@ -1,11 +1,8 @@
 import { registerAs } from '@nestjs/config'
 import { z } from 'zod'
 import { generateErrorMessage, type ErrorMessageOptions } from 'zod-error'
-import { config } from 'dotenv'
+import 'dotenv/config'
 
-config({
-  path: __dirname + `/../../../envs/.env.${process.env.NODE_ENV || 'development'}`
-})
 export default registerAs('transcendence-config', () => {
   const values = {
     nodeEnv: process.env.NODE_ENV || 'development',
@@ -27,8 +24,7 @@ export default registerAs('transcendence-config', () => {
 
     uploadDir: process.env.UPLOAD_DIR,
 
-    socketPort: parseInt(process.env.SOCKET_PORT),
-    socketOrigin: process.env.SOCKET_ORIGIN
+    socketPort: parseInt(process.env.SOCKET_PORT)
   }
 
   const schema = z.object({
@@ -36,10 +32,22 @@ export default registerAs('transcendence-config', () => {
     port: z.number(),
     frontendUrl: z.string(),
 
-    dbHost: process.env.NODE_ENV === 'production' ? z.string() : z.string().optional(),
-    dbPort: process.env.NODE_ENV === 'production' ? z.string() : z.string().optional(),
-    dbUser: process.env.NODE_ENV === 'production' ? z.string() : z.string().optional(),
-    dbPass: process.env.NODE_ENV === 'production' ? z.string() : z.string().optional(),
+    dbHost:
+      process.env.NODE_ENV === 'production'
+        ? z.string()
+        : z.string().optional(),
+    dbPort:
+      process.env.NODE_ENV === 'production'
+        ? z.string()
+        : z.string().optional(),
+    dbUser:
+      process.env.NODE_ENV === 'production'
+        ? z.string()
+        : z.string().optional(),
+    dbPass:
+      process.env.NODE_ENV === 'production'
+        ? z.string()
+        : z.string().optional(),
     dbName: z.string(),
     dbPath: z.string().optional(),
 
@@ -51,8 +59,7 @@ export default registerAs('transcendence-config', () => {
 
     uploadDir: z.string(),
 
-    socketPort: z.number(),
-    socketOrigin: z.string()
+    socketPort: z.number()
   })
 
   const options: ErrorMessageOptions = {

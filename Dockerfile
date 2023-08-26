@@ -1,5 +1,3 @@
-# todo: use npm-shrinkwrap.json
-
 ###################
 # BUILD FOR LOCAL DEVELOPMENT
 ###################
@@ -24,8 +22,6 @@ WORKDIR /usr/src/app
 
 COPY --chown=node:node ./package*.json ./
 
-# COPY --chown=node:node ./npm-shrinkwrap.json ./
-
 COPY --chown=node:node --from=development /usr/src/app/node_modules ./node_modules
 
 COPY --chown=node:node . .
@@ -43,6 +39,8 @@ USER node
 ###################
 
 FROM node:lts-alpine As production
+
+RUN apk --no-cache add curl
 
 COPY --chown=node:node --from=build /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=build /usr/src/app/dist ./dist

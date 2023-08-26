@@ -12,7 +12,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService)
 
-  app.enableShutdownHooks();
+  app.enableShutdownHooks()
 
   app.enableCors({
     allowedHeaders: ['content-type'],
@@ -42,7 +42,7 @@ async function bootstrap() {
     await fs.mkdir(dir, { recursive: true })
   }
 
-  app.get(AppService).subscribeToShutdown(() => app.close());
+  app.get(AppService).subscribeToShutdown(() => app.close())
 
   await app.listen(configService.get('PORT'))
 }
