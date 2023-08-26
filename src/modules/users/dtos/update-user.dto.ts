@@ -5,11 +5,6 @@ export class UpdateUserDto {
   @ApiProperty()
   @IsString()
   @IsOptional()
-  profilePicture: string
-
-  @ApiProperty()
-  @IsString()
-  @IsOptional()
   @Length(4, 50)
   username: string
 
