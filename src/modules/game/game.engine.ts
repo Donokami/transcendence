@@ -142,15 +142,20 @@ export class Game {
     const isFirstPlayerWinner = scoreDifference > 0
     const isSecondPlayerWinner = scoreDifference < 0
 
-    const updatedPlayerStats = (player: Partial<User>, isWinner: boolean) => ({
+    const updatedPlayerStats = (
+      player: Partial<User>,
+      isWinner: boolean,
+      index: number
+    ) => ({
       ...player,
       gamesPlayed: player.gamesPlayed + 1,
       win: isWinner ? player.win + 1 : player.win,
       loss: isWinner ? player.loss : player.loss + 1,
       winRate:
         (isWinner ? player.win + 1 : player.win) / (player.gamesPlayed + 1),
-      pointsScored: player.pointsScored + players[isWinner ? 0 : 1].score,
-      pointsConceded: player.pointsConceded + players[isWinner ? 1 : 0].score,
+      pointsScored: player.pointsScored + players[index].score,
+      pointsConceded:
+        player.pointsConceded + players[index === 1 ? 0 : 1].score,
       pointsDifference:
         player.pointsScored -
         player.pointsConceded +
@@ -160,11 +165,13 @@ export class Game {
 
     const updatedFirstPlayer = updatedPlayerStats(
       firstPlayer,
-      isFirstPlayerWinner
+      isFirstPlayerWinner,
+      0
     )
     const updatedSecondPlayer = updatedPlayerStats(
       secondPlayer,
-      isSecondPlayerWinner
+      isSecondPlayerWinner,
+      1
     )
 
     this.usersService.update(firstPlayer.id, updatedFirstPlayer)
