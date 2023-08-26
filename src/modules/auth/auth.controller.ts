@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common'
 
 import { AuthGuard } from '@nestjs/passport'
+import { SessionValidationGuard } from './guards/SessionValidation.guard'
 
 import { RegisterUserDto } from '@/modules/users/dtos/register-user.dto'
 import { SignInUserDto } from '@/modules/users/dtos/signin-user.dto'
@@ -55,7 +56,7 @@ export class AuthController {
   }
 
   @Get('42/callback')
-  @UseGuards(AuthGuard('42'))
+  @UseGuards(AuthGuard('42'), SessionValidationGuard)
   @ApiOperation({
     summary: 'Callback URI for 42 auth',
     operationId: 'fortyTwoAuthCallback',
