@@ -9,7 +9,8 @@ import {
   InvalidPassword,
   InvalidTwoFaToken,
   TwoFaDisabled,
-  UserNotFound
+  UserNotFound,
+  UsernameExists
 } from '@/core/exceptions'
 import { type IUserDetails } from '@/core/types/user-details'
 import { User } from '@/modules/users/user.entity'
@@ -36,6 +37,11 @@ export class AuthService {
     const salt = randomBytes(8).toString('hex')
     const hash = (await scrypt(password, salt, 32)) as Buffer
     const hashedPassword = salt + '.' + hash.toString('hex')
+
+    const isUsernameTaken = await this.usersService.findOneByUsername(username)
+    if (isUsernameTaken) {
+      throw new UsernameExists()
+    }
 
     const newUser = await this.usersService.create(username, hashedPassword)
     return newUser

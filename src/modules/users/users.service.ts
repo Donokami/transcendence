@@ -9,7 +9,7 @@ import {
 } from 'nestjs-paginate'
 import * as path from 'path'
 import { Subject } from 'rxjs'
-import { In, MoreThan, Repository } from 'typeorm'
+import { ILike, In, MoreThan, Repository } from 'typeorm'
 import { Injectable, Logger, BadRequestException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -151,7 +151,9 @@ export class UsersService {
       return null
     }
 
-    const user = await this.usersRepository.findOne({ where: { username } })
+    const user = await this.usersRepository.findOne({
+      where: { username: ILike(username) }
+    })
 
     return user
   }
