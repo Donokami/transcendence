@@ -65,8 +65,8 @@ const handleOauth = async (): Promise<void> => {
       if (authStatus.status === 'authenticated') {
         clearInterval(intervalId)
         if (popup != null) popup.close()
-        inSubmission.value = false
         setTimeout(async () => {
+          inSubmission.value = false
           await userStore.refreshUser()
           await router.push('/')
         }, 3000)
