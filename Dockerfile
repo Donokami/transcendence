@@ -1,5 +1,10 @@
 FROM node:lts-alpine AS build
 
+ARG VITE_APP_BASE_URL
+ARG VITE_API_URL
+ARG VITE_SOCKET_URL
+ARG VITE_APP_URL
+
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
