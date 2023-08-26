@@ -69,6 +69,20 @@ onBeforeMount(async () => {
 
 const sortedUsers = computed(() => {
   if (!users.value) return []
-  return users.value.slice().sort((a, b) => a.rank - b.rank)
+  return users.value.slice().sort((a, b) => {
+    const rankDifference = a.rank - b.rank
+
+    if (rankDifference !== 0) {
+      return rankDifference
+    }
+
+    const gamesPlayedDifference = b.gamesPlayed - a.gamesPlayed
+
+    if (gamesPlayedDifference !== 0) {
+      return gamesPlayedDifference
+    }
+
+    return b.pointsDifference - a.pointsDifference
+  })
 })
 </script>
