@@ -158,8 +158,9 @@ export class Game {
         player.pointsConceded + players[index === 1 ? 0 : 1].score,
       pointsDifference:
         player.pointsDifference +
-        (player.pointsScored + players[index].score) -
-        (player.pointsConceded + players[index === 1 ? 0 : 1].score)
+        (player.pointsScored +
+          players[index].score -
+          (player.pointsConceded + players[index === 1 ? 0 : 1].score))
     })
 
     const updatedFirstPlayer = updatedPlayerStats(
