@@ -226,7 +226,7 @@ const MovePaddle = (e: MouseEvent): void => {
     canvasWidth * 0.9
   )
   // Prevent sending too many events by adding a threshold
-  if (lastPos.value === null || Math.abs(lastPos.value - posX) > 0.025) {
+  if (lastPos.value === null || Math.abs(lastPos.value - posX) > 0.015) {
     lastPos.value = posX
     socket.emit('game:move', {
       roomId: room.value.id,
