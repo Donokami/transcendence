@@ -212,6 +212,8 @@ const paddle2Ref: ShallowRef<Object3D | null> = shallowRef(null)
 const canvasRef: Ref<HTMLElement | null> = ref(null)
 const { onLoop } = useRenderLoop()
 
+const lastPos: Ref<number | null> = ref(null)
+
 const MovePaddle = (e: MouseEvent): void => {
   if (isSpectator.value) return
   if (!canvasRef.value) return
@@ -223,10 +225,14 @@ const MovePaddle = (e: MouseEvent): void => {
     canvasWidth * 0.1,
     canvasWidth * 0.9
   )
-  socket.emit('game:move', {
-    roomId: room.value.id,
-    posX
-  })
+  // Prevent sending too many events by adding a threshold
+  if (lastPos.value === null || Math.abs(lastPos.value - posX) > 0.025) {
+    lastPos.value = posX
+    socket.emit('game:move', {
+      roomId: room.value.id,
+      posX
+    })
+  }
 }
 
 onLoop(({ delta }) => {

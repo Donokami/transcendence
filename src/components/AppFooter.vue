@@ -1,18 +1,15 @@
 <template>
-  <footer class="flex footer mx-auto bg-black">
+  <footer class="flex mx-auto bg-black footer">
     <div
-      class="flex flex-col sm:flex-row max-w-screen-xl justify-between w-full items-center footer px-6 py-4 text-white mx-auto">
+      class="flex flex-col items-center justify-between w-full max-w-screen-xl px-6 py-4 mx-auto text-white sm:flex-row footer">
       <img
-        class="hidden sm:block icon w-8 h-8"
+        class="hidden w-8 h-8 sm:block icon"
         src="../assets/42-logo.svg"
         alt="42 Logo" />
       <p class="text-xs">Made by Conobi, Hayce_, Mitsun0bu & Narcisserael</p>
-      <iconify-icon
-        icon="mdi:github"
-        class="hidden sm:block w-8 h-8"></iconify-icon>
-      <div class="sm:hidden flex gap-8 mt-2">
-        <img class="icon w-8 h-8" src="../assets/42-logo.svg" alt="42 Logo" />
-        <iconify-icon icon="mdi:github" class="w-8 h-8"></iconify-icon>
+      <div class="hidden w-8 h-8 sm:block"></div>
+      <div class="flex gap-8 mt-2 sm:hidden">
+        <img class="w-8 h-8 icon" src="../assets/42-logo.svg" alt="42 Logo" />
       </div>
     </div>
   </footer>
