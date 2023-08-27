@@ -5,6 +5,5 @@ export interface Metrics {
   paddleHeight: number
   paddleDepth: number
   ballRadius: number
-  timeout: number
   tps: number
 }

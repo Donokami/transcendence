@@ -203,8 +203,7 @@ const gameMetrics: Metrics = {
   paddleHeight: 1,
   paddleDepth: 1,
   ballRadius: 0.8,
-  timeout: 30000,
-  tps: 20
+  tps: 15
 }
 
 const ballRef: ShallowRef<Object3D | null> = shallowRef(null)

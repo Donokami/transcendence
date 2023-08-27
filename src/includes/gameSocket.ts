@@ -121,7 +121,6 @@ socket.on('game:state', (remoteGameState) => {
   ]
   game.remainingTime = remoteGameState.remainingTime
   game.started = true
-  // game.paddle2Pos = new Vector3(...gameState.players[1].paddlePos)
 })
 
 socket.on('game:end', () => {
