@@ -1,3 +1,4 @@
+import { Precalcs } from './game.precalcs'
 import { Server } from 'socket.io'
 import { Object3D, Vector3 } from 'three'
 import { type gameState } from './game.engine'
@@ -29,6 +30,7 @@ export type Metrics = {
 
 export class PhysicsEngine {
   private readonly logger = new Logger('PhysicsEngine')
+  public precalcs = new Precalcs(this.metrics)
 
   constructor(
     private gameState: gameState,
@@ -38,7 +40,7 @@ export class PhysicsEngine {
     this.gameState.players[0].paddle.position.set(
       0,
       this.metrics.fieldHeight,
-      this.metrics.fieldDepth * 0.5 + this.metrics.paddleDepth * 0.5
+      this.precalcs.halfFieldDepth + this.precalcs.halfPaddleDepth
     )
 
     // In case there is no 2nd player
@@ -53,20 +55,15 @@ export class PhysicsEngine {
     this.gameState.players[1].paddle.position.set(
       0,
       this.metrics.fieldHeight,
-      -this.metrics.fieldDepth * 0.5 - this.metrics.paddleDepth * 0.5
+      -this.precalcs.halfFieldDepth - this.precalcs.halfPaddleDepth
     )
 
-    this.gameState.ball.position.set(
-      0,
-      1.4 * this.metrics.fieldDepth * 0.1 - 0.5 * (1 / this.metrics.fieldDepth),
-      0
-    )
+    this.gameState.ball.position.set(0, this.precalcs.initBallPosY, 0)
   }
 
   private resetBall(ball: SimObject3D): void {
     ball.position.x = ball.position.z = 0
-    ball.position.y =
-      1.4 * this.metrics.fieldDepth * 0.1 - 0.5 * (1 / this.metrics.fieldDepth)
+    ball.position.y = this.precalcs.initBallPosY
 
     ball.velocity.x = ball.velocity.y = ball.velocity.z = 0
     ball.stopped = true
@@ -74,8 +71,7 @@ export class PhysicsEngine {
 
   private startBallMov(ball: SimObject3D): void {
     ball.position.x = ball.position.z
-    ball.position.y =
-      1.4 * this.metrics.fieldDepth * 0.1 - 0.5 * (1 / this.metrics.fieldDepth)
+    ball.position.y = this.precalcs.initBallPosY
 
     const direction: number = Math.random() > 0.5 ? -1 : 1
     ball.velocity = {
@@ -93,11 +89,7 @@ export class PhysicsEngine {
     ballPos.x += ball.velocity.x * delta * 60
     ballPos.z += ball.velocity.z * delta * 60
 
-    ballPos.y =
-      -((ballPos.z - 1) ** 2 / this.metrics.fieldDepth ** 2) *
-        this.metrics.fieldDepth *
-        0.5 +
-      1.4 * this.metrics.fieldDepth * 0.1
+    ballPos.y = this.precalcs.calculateBallY(ballPos.z)
 
     ballPos.x = Math.min(
       Math.max(ballPos.x, -this.metrics.fieldWidth * 0.5),
@@ -113,23 +105,22 @@ export class PhysicsEngine {
   private isPastPaddle1(ball: SimObject3D): boolean {
     return (
       ball.position.z >
-      this.metrics.fieldDepth * 0.5 + this.metrics.paddleDepth * 2
+      this.precalcs.halfFieldDepth + this.metrics.paddleDepth * 2
     )
   }
 
   private isPastPaddle2(ball: SimObject3D): boolean {
     return (
       ball.position.z <
-      this.metrics.fieldDepth * -0.5 - this.metrics.paddleDepth * 2
+      -this.precalcs.halfFieldDepth - this.metrics.paddleDepth * 2
     )
   }
 
   private isSideCollision(ball: SimObject3D): boolean {
     const ballX = ball.position.x
-    const halfFieldWidth = this.metrics.fieldWidth * 0.5
     return (
-      ballX >= halfFieldWidth - this.metrics.ballRadius * 0.5 ||
-      ballX <= -halfFieldWidth + this.metrics.ballRadius * 0.5
+      ballX >= this.precalcs.halfFieldWidth - this.precalcs.halfBall ||
+      ballX <= -this.precalcs.halfFieldWidth + this.precalcs.halfBall
     )
   }
 
@@ -153,12 +144,11 @@ export class PhysicsEngine {
     ball: SimObject3D,
     paddle: SimObject3D
   ): boolean {
-    const halfPaddleWidth =
-      this.metrics.fieldWidth * this.metrics.paddleRatio * 0.6
     const paddleX = paddle.position.x
     const ballX = ball.position.x
     return (
-      ballX > paddleX - halfPaddleWidth && ballX < paddleX + halfPaddleWidth
+      ballX > paddleX - this.precalcs.halfPaddleWidth * 1.2 &&
+      ballX < paddleX + this.precalcs.halfPaddleWidth * 1.2
     )
   }
 
@@ -187,10 +177,12 @@ export class PhysicsEngine {
 
     if (this.isPaddle1Collision(ball, paddle1)) {
       this.hitBallBack(ball, paddle1)
+      console.log('paddle1 collision')
     }
 
     if (this.isPaddle2Collision(ball, paddle2)) {
       this.hitBallBack(ball, paddle2)
+      console.log('paddle2 collision')
     }
 
     if (this.isPastPaddle1(ball)) {
@@ -219,8 +211,8 @@ export class PhysicsEngine {
     const velocity = Math.min(
       normalize(
         ballPos.z,
-        this.metrics.fieldDepth * 0.5,
-        -this.metrics.fieldDepth * 0.5
+        this.precalcs.halfFieldDepth,
+        -this.precalcs.halfFieldDepth
       ),
       0.2 // This set the difficulty of the bot
     )
@@ -229,11 +221,9 @@ export class PhysicsEngine {
     const newPosX = Math.min(
       Math.max(
         ballPos.x,
-        -this.metrics.fieldWidth * 0.5 +
-          this.metrics.fieldWidth * this.metrics.paddleRatio * 0.5
+        -this.metrics.fieldWidth * 0.5 + this.precalcs.halfPaddleWidth
       ),
-      this.metrics.fieldWidth * 0.5 -
-        this.metrics.fieldWidth * this.metrics.paddleRatio * 0.5
+      this.metrics.fieldWidth * 0.5 - this.precalcs.halfPaddleWidth
     )
 
     this.gameState.players[1].paddle.position.lerpVectors(

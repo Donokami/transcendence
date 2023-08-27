@@ -20,7 +20,7 @@ const metrics: Metrics = {
   ballRadius: 0.8,
   ballSpeed: 1,
   gameDuration: 30000,
-  tps: 20
+  tps: 15
 }
 
 export type gameState = {
@@ -39,7 +39,7 @@ export class Game {
   private readonly logger = new Logger(Game.name)
 
   private gameState: gameState
-  private physicsEngine: PhysicsEngine
+  public physicsEngine: PhysicsEngine
   private readonly metrics: Metrics = metrics
 
   constructor(
@@ -87,25 +87,6 @@ export class Game {
       this.metrics,
       this.gameGateway.server
     )
-  }
-
-  private async gameLoop() {
-    const startTime = (this.gameState.startTime = Date.now())
-    this.gameState.endTime = startTime + this.metrics.gameDuration
-
-    while (Date.now() < this.gameState.endTime) {
-      const deltaStart = Date.now()
-      this.physicsEngine.calculateFrame(this.gameState)
-      this.gameState.deltaTime = (Date.now() - deltaStart) / 1000
-      await this.broadcastUpdate()
-
-      // Imprecise timer, but probably good enough for our purposes.
-      await new Promise((resolve) =>
-        setTimeout(resolve, 1000 / this.metrics.tps)
-      )
-    }
-
-    this.endGame()
   }
 
   private async broadcastUpdate() {
@@ -234,7 +215,9 @@ export class Game {
   public async broadcastLoop() {
     while (Date.now() < this.gameState.endTime) {
       await this.broadcastUpdate()
-      await new Promise((resolve) => setTimeout(resolve, 1000 / 15))
+      await new Promise((resolve) =>
+        setTimeout(resolve, 1000 / this.metrics.tps)
+      )
     }
   }
 
@@ -270,14 +253,14 @@ export class Game {
       playerIndex == 1 ? 1 - normalizedPos : normalizedPos
     paddle.position.lerpVectors(
       new Vector3(
-        -this.metrics.fieldWidth * 0.5 +
-          this.paddleRatio * this.metrics.fieldWidth * 0.5,
+        -this.physicsEngine.precalcs.halfFieldWidth +
+          this.physicsEngine.precalcs.halfPaddleWidth,
         paddle.position.y,
         paddle.position.z
       ),
       new Vector3(
-        this.metrics.fieldWidth * 0.5 -
-          this.paddleRatio * this.metrics.fieldWidth * 0.5,
+        this.physicsEngine.precalcs.halfFieldWidth -
+          this.physicsEngine.precalcs.halfPaddleWidth,
         paddle.position.y,
         paddle.position.z
       ),

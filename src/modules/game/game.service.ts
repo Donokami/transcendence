@@ -249,13 +249,11 @@ export class GameService {
     roomId: string
   ): Promise<void> {
     const room = this.findOne(roomId)
-    const user = await this.usersService.findOneById(userId)
 
     if (!room) throw new RoomNotFound()
-    if (!user) throw new UserNotFound()
-    if (!room.players.find((p) => p.id === user.id)) throw new UserNotInRoom()
+    if (!room.players.find((p) => p.id === userId)) throw new UserNotInRoom()
     if (!room.gameState) throw new GameNotStarted()
 
-    room.gameState.updatePaddlePosition(posX, user.id)
+    room.gameState.updatePaddlePosition(posX, userId)
   }
 }
