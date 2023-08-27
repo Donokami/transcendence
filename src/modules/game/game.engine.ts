@@ -270,14 +270,14 @@ export class Game {
       playerIndex == 1 ? 1 - normalizedPos : normalizedPos
     paddle.position.lerpVectors(
       new Vector3(
-        -this.metrics.fieldWidth / 2 +
-          (this.paddleRatio * this.metrics.fieldWidth) / 2,
+        -this.metrics.fieldWidth * 0.5 +
+          this.paddleRatio * this.metrics.fieldWidth * 0.5,
         paddle.position.y,
         paddle.position.z
       ),
       new Vector3(
-        this.metrics.fieldWidth / 2 -
-          (this.paddleRatio * this.metrics.fieldWidth) / 2,
+        this.metrics.fieldWidth * 0.5 -
+          this.paddleRatio * this.metrics.fieldWidth * 0.5,
         paddle.position.y,
         paddle.position.z
       ),

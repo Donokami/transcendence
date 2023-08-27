@@ -6,7 +6,6 @@ import {
 } from '@nestjs/common'
 import { Response } from 'express'
 import { UnsupportedFileType } from '@/core/exceptions'
-import { stat } from 'fs'
 
 @Catch()
 export class FileUploadExceptionFilter implements ExceptionFilter {

@@ -93,11 +93,15 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         code ??= 'UnprocessableEntity'
     }
 
-    Logger.error(
-      message,
-      (exception as Error).stack,
-      `${request.method} ${request.url}`
-    )
+    if (process.env.NODE_ENV === 'production') {
+      Logger.error(message, `${request.method} ${request.url}`)
+    } else {
+      Logger.error(
+        message,
+        (exception as Error).stack,
+        `${request.method} ${request.url}`
+      )
+    }
 
     response
       .status(status)
@@ -122,6 +126,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         message: 'Internal server error'
       })
     }
-    Logger.error(message, (exception as Error).stack)
+    if (process.env.NODE_ENV === 'production') {
+      Logger.error(message)
+    } else {
+      Logger.error(message, (exception as Error).stack)
+    }
   }
 }

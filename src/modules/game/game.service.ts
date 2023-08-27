@@ -79,7 +79,7 @@ export class GameService {
       .map((room) => room.get())
   }
 
-  public async joinQueue(): Promise<RoomObject[]> {
+  public async getQueue(): Promise<RoomObject[]> {
     const rooms = this.findPublic()
 
     if (rooms.length === 0) {
@@ -119,6 +119,14 @@ export class GameService {
       this.matchRepository
     )
 
+    // If the room is empty after 10 seconds, delete it
+    setTimeout(() => {
+      const index = this.rooms.indexOf(room)
+      if (index !== -1 && this.rooms[index].players.length === 0) {
+        this.rooms.splice(index, 1)
+      }
+    }, 10000)
+
     this.rooms.push(room)
 
     return room.get()
@@ -149,20 +157,6 @@ export class GameService {
     this.logger.verbose(`Updating room ${id}`)
 
     return updatedGame
-  }
-
-  public async delete(id: string): Promise<RoomObject> {
-    const room = this.findOne(id)
-
-    if (!room) {
-      throw new RoomNotFound()
-    }
-
-    this.logger.verbose(`Removing room ${id}`)
-
-    this.gameGateway.server.to(room.id).emit('room:remove', room.get())
-
-    return room.get()
   }
 
   public async join(
@@ -231,10 +225,6 @@ export class GameService {
       this.logger.verbose(`Removing room ${user.id} because no players left`)
 
       this.rooms.splice(this.rooms.indexOf(room), 1)
-
-      this.gameGateway.server.emit('room:delete', {
-        id: room.id
-      })
     }
 
     this.gameGateway.server.to(room.id).emit('room:update', room.get())

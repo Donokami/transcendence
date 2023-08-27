@@ -35,13 +35,13 @@ export class GameController {
 
   @Get('/matchmaking')
   @ApiOperation({
-    summary: 'Join the matchmaking queue',
-    operationId: 'joinQueue',
-    description: 'Join the matchmaking queue',
+    summary: 'Get the matchmaking queue',
+    operationId: 'getQueue',
+    description: 'Get the matchmaking queue',
     tags: ['game']
   })
-  async joinQueue(): Promise<RoomObject[]> {
-    return this.gameService.joinQueue()
+  async getQueue(): Promise<RoomObject[]> {
+    return this.gameService.getQueue()
   }
 
   @Get('/me')
