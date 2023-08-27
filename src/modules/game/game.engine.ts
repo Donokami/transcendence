@@ -20,7 +20,7 @@ const metrics: Metrics = {
   ballRadius: 0.8,
   ballSpeed: 1,
   gameDuration: 30000,
-  tps: 30
+  tps: 20
 }
 
 export type gameState = {
@@ -95,15 +95,14 @@ export class Game {
 
     while (Date.now() < this.gameState.endTime) {
       const deltaStart = Date.now()
-
       this.physicsEngine.calculateFrame(this.gameState)
+      this.gameState.deltaTime = (Date.now() - deltaStart) / 1000
       await this.broadcastUpdate()
 
       // Imprecise timer, but probably good enough for our purposes.
       await new Promise((resolve) =>
         setTimeout(resolve, 1000 / this.metrics.tps)
       )
-      this.gameState.deltaTime = (Date.now() - deltaStart) / 1000
     }
 
     this.endGame()
@@ -219,9 +218,34 @@ export class Game {
     this.gameState.endTime = Date.now() + (1000 / this.metrics.tps) * 3
   }
 
-  public startGame() {
-    this.gameLoop()
-    this.logger.log('start of game!')
+  public async physicsLoop() {
+    // Start 3 seconds after the game starts
+    await new Promise((resolve) => setTimeout(resolve, 3000))
+
+    while (Date.now() < this.gameState.endTime) {
+      const deltaStart = Date.now()
+      const newGameState = this.physicsEngine.calculateFrame(this.gameState)
+      await new Promise((resolve) => setTimeout(resolve, 1000 / 50))
+      const deltaTime = (Date.now() - deltaStart) / 1000
+      this.gameState = { ...newGameState, deltaTime }
+    }
+  }
+
+  public async broadcastLoop() {
+    while (Date.now() < this.gameState.endTime) {
+      await this.broadcastUpdate()
+      await new Promise((resolve) => setTimeout(resolve, 1000 / 15))
+    }
+  }
+
+  public async startGame() {
+    this.logger.log('start of a game!')
+    const startTime = (this.gameState.startTime = Date.now())
+    this.gameState.endTime = startTime + this.metrics.gameDuration
+
+    await Promise.all([this.physicsLoop(), this.broadcastLoop()])
+
+    this.endGame()
   }
 
   public async endGame() {

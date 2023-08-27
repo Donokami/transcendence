@@ -33,7 +33,7 @@ export class PhysicsEngine {
   constructor(
     private gameState: gameState,
     private metrics: Metrics,
-    private readonly server: Server
+    private readonly server: Server // Added for emitting events, like collisions
   ) {
     this.gameState.players[0].paddle.position.set(
       0,
@@ -55,15 +55,19 @@ export class PhysicsEngine {
       this.metrics.fieldHeight,
       -this.metrics.fieldDepth * 0.5 - this.metrics.paddleDepth * 0.5
     )
+
+    this.gameState.ball.position.set(
+      0,
+      1.4 * this.metrics.fieldDepth * 0.1 - 0.5 * (1 / this.metrics.fieldDepth),
+      0
+    )
   }
 
   private resetBall(ball: SimObject3D): void {
     ball.position.x = ball.position.z = 0
     ball.position.y =
-      -((0 - 1) ** 2 / this.metrics.fieldDepth ** 2) *
-        this.metrics.fieldDepth *
-        0.5 +
-      1.4 * this.metrics.fieldDepth * 0.1
+      1.4 * this.metrics.fieldDepth * 0.1 - 0.5 * (1 / this.metrics.fieldDepth)
+
     ball.velocity.x = ball.velocity.y = ball.velocity.z = 0
     ball.stopped = true
   }
@@ -71,10 +75,7 @@ export class PhysicsEngine {
   private startBallMov(ball: SimObject3D): void {
     ball.position.x = ball.position.z
     ball.position.y =
-      -((0 - 1) ** 2 / this.metrics.fieldDepth ** 2) *
-        this.metrics.fieldDepth *
-        0.5 +
-      1.4 * this.metrics.fieldDepth * 0.1
+      1.4 * this.metrics.fieldDepth * 0.1 - 0.5 * (1 / this.metrics.fieldDepth)
 
     const direction: number = Math.random() > 0.5 ? -1 : 1
     ball.velocity = {
@@ -135,7 +136,7 @@ export class PhysicsEngine {
   private isPaddle1Collision(ball: SimObject3D, paddle1: SimObject3D): boolean {
     return (
       ball.position.z + this.metrics.ballRadius >
-        paddle1.position.z - this.metrics.paddleDepth &&
+        paddle1.position.z + this.metrics.paddleDepth * 0.8 &&
       this.isBallAlignedWithPaddle(ball, paddle1)
     )
   }
@@ -143,7 +144,7 @@ export class PhysicsEngine {
   private isPaddle2Collision(ball: SimObject3D, paddle2: SimObject3D): boolean {
     return (
       ball.position.z - this.metrics.ballRadius <
-        paddle2.position.z + this.metrics.paddleDepth &&
+        paddle2.position.z - this.metrics.paddleDepth * 0.8 &&
       this.isBallAlignedWithPaddle(ball, paddle2)
     )
   }
@@ -205,7 +206,6 @@ export class PhysicsEngine {
       this.gameState.players[0].score += 1
       this.logger.log(`player 1 score: ${this.gameState.players[1].score}`)
       this.resetBall(ball)
-      // After 2s, the ballRef will start moving again.
       setTimeout(() => {
         ball.stopped = false
       }, 2000)
@@ -222,7 +222,7 @@ export class PhysicsEngine {
         this.metrics.fieldDepth * 0.5,
         -this.metrics.fieldDepth * 0.5
       ),
-      0.3 // This set the difficulty of the bot
+      0.2 // This set the difficulty of the bot
     )
 
     const cpuPos = this.gameState.players[1].paddle.position
@@ -248,5 +248,6 @@ export class PhysicsEngine {
 
     if (this.gameState.players[1].userId === 'bot') this.processCpuPaddle()
     this.processBallMovement()
+    return this.gameState
   }
 }
