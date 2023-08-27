@@ -109,6 +109,14 @@ const statusBadge = (): string => {
   if (!props.statusMode) return ''
 
   if (user.value === null || loggedUser.value === null) return 'offline'
+
+  if (
+    user?.value?.id === loggedUser.value.id &&
+    user.value.status === 'offline'
+  ) {
+    return 'online'
+  }
+
   switch (user?.value?.status) {
     case 'online':
       return 'online'

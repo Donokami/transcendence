@@ -26,8 +26,8 @@
         </div>
         <div class="flex items-baseline">
           <div class="stat-title">Status:</div>
-          <div v-if="user" class="" :class="getStatusColor(user)">
-            {{ props.user.status }}
+          <div v-if="user" class="" :class="getStatusColor(hackyStatus)">
+            {{ hackyStatus }}
           </div>
         </div>
       </div>
@@ -157,7 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, watch, onBeforeUnmount } from 'vue'
+import { ref, onMounted, watch, onBeforeUnmount, computed } from 'vue'
 import { useToast } from 'vue-toastification'
 
 import { storeToRefs } from 'pinia'
@@ -200,8 +200,18 @@ const props = defineProps<{
 
 const emit = defineEmits(['updateUser'])
 
-function getStatusColor(user: User): string | null {
-  switch (user.status) {
+const hackyStatus = computed(() => {
+  if (
+    loggedUser.value?.id === props.user.id &&
+    props.user.status === 'offline'
+  ) {
+    return 'online'
+  }
+  return props.user.status
+})
+
+function getStatusColor(status: string): string | null {
+  switch (status) {
     case 'online':
       return 'text-success'
     case 'ingame':
