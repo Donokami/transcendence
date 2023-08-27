@@ -1,0 +1,92 @@
+version: "3"
+
+services:
+  backend:
+    container_name: backend
+    restart: always
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+      args:
+        - NODE_ENV=production
+    environment:
+      - NODE_ENV=production
+      - SOCKET_PORT=3000
+      - PORT=80
+      - DB_PORT=5432
+      - DB_HOST=postgres
+      - DB_USER=${DB_USER:?err}
+      - DB_PASSWORD=${DB_PASSWORD:?err}
+      - DB_NAME=${DB_NAME:?err}
+      - DB_PATH=data/
+      - FRONTEND_URL=${FRONT_URL:?err}
+      - COOKIE_SESSION_KEY=${COOKIE_SESSION_KEY:?err}
+      - UPLOAD_DIR=uploads/
+      - APP_URL=${BACK_URL:?err}
+      - FORTYTWO_APP_ID=${FORTYTWO_APP_ID:?err}
+      - FORTYTWO_APP_SECRET=${FORTYTWO_APP_SECRET:?err}
+      - FORTYTWO_APP_REDIRECT_URI=${FORTYTWO_APP_REDIRECT_URI:?err}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -f http://localhost:80/api/heartbeat || exit 1"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    ports:
+      - 80
+      - 3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./data/uploads:/uploads
+    networks:
+      - transcendence
+
+  frontend:
+    container_name: frontend
+    restart: always
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        - VITE_APP_BASE_URL=${BACK_URL:?err}
+        - VITE_API_URL=${BACK_URL:?err}/api
+        - VITE_SOCKET_URL=${BACK_URL:?err}
+        - VITE_APP_URL=${FRONT_URL:?err}
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - ${EXTERNAL_PORT:?err}:80
+    volumes:
+      - ./data/uploads:/usr/share/nginx/html/uploads
+    networks:
+      - transcendence
+
+  postgres:
+    container_name: postgres
+    image: postgres:alpine
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    environment:
+      POSTGRES_USER: ${DB_USER:?err}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?err}
+      POSTGRES_DB: ${DB_NAME:?err}
+    ports:
+      - 5432
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    networks:
+      - transcendence
+
+networks:
+  transcendence:
