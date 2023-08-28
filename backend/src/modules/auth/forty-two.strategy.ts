@@ -1,10 +1,18 @@
-import { Injectable } from '@nestjs/common'
+import {
+  ClassSerializerInterceptor,
+  Injectable,
+  UseFilters,
+  UseInterceptors
+} from '@nestjs/common'
 import { PassportStrategy } from '@nestjs/passport'
 import { Strategy } from 'passport-42'
 import { AuthService } from './auth.service'
 import { ConfigService } from '@nestjs/config'
+import { GlobalExceptionFilter } from '@/core/filters/global-exception.filters'
 
 @Injectable()
+@UseInterceptors(ClassSerializerInterceptor)
+@UseFilters(new GlobalExceptionFilter())
 export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
   constructor(
     private readonly authService: AuthService,

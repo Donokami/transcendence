@@ -144,7 +144,7 @@ export class ChannelsController {
   @UseGuards(MembershipGuard)
   async getChannel(@CurrentChannel() channel: Channel): Promise<Channel> {
     return channel
-  } 
+  }
 
   @Get('/:channelId/bannedMembers')
   @ApiOperation({
@@ -296,13 +296,10 @@ export class ChannelsController {
   @UseGuards(MembershipGuard)
   async isMuted(
     @CurrentChannel() channel: Channel,
-    @Session() session: ISession,
+    @Session() session: ISession
   ): Promise<boolean> {
     const userId: string = session.userId
-    const isMuted = await this.channelsService.checkIsMuted(
-      userId,
-      channel
-    )
+    const isMuted = await this.channelsService.checkIsMuted(userId, channel)
 
     return isMuted
   }
