@@ -86,8 +86,8 @@ export class PhysicsEngine {
     const ballPos = ball.position
     const delta = this.gameState.deltaTime
 
-    ballPos.x += ball.velocity.x * delta * 60
-    ballPos.z += ball.velocity.z * delta * 60
+    ballPos.x += ball.velocity.x * delta * 50
+    ballPos.z += ball.velocity.z * delta * 50
 
     ballPos.y = this.precalcs.calculateBallY(ballPos.z)
 
@@ -126,16 +126,14 @@ export class PhysicsEngine {
 
   private isPaddle1Collision(ball: SimObject3D, paddle1: SimObject3D): boolean {
     return (
-      ball.position.z + this.metrics.ballRadius >
-        paddle1.position.z + this.metrics.paddleDepth * 0.8 &&
+      ball.position.z + this.metrics.ballRadius >= paddle1.position.z &&
       this.isBallAlignedWithPaddle(ball, paddle1)
     )
   }
 
   private isPaddle2Collision(ball: SimObject3D, paddle2: SimObject3D): boolean {
     return (
-      ball.position.z - this.metrics.ballRadius <
-        paddle2.position.z - this.metrics.paddleDepth * 0.8 &&
+      ball.position.z - this.metrics.ballRadius <= paddle2.position.z &&
       this.isBallAlignedWithPaddle(ball, paddle2)
     )
   }
@@ -147,8 +145,8 @@ export class PhysicsEngine {
     const paddleX = paddle.position.x
     const ballX = ball.position.x
     return (
-      ballX > paddleX - this.precalcs.halfPaddleWidth * 1.2 &&
-      ballX < paddleX + this.precalcs.halfPaddleWidth * 1.2
+      ballX > paddleX - this.precalcs.halfPaddleWidth * 1.1 &&
+      ballX < paddleX + this.precalcs.halfPaddleWidth * 1.1
     )
   }
 
