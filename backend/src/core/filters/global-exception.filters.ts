@@ -38,7 +38,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     let message: string
     let code: string
 
-    let status = HttpStatus.INTERNAL_SERVER_ERROR
+    let status = HttpStatus.UNPROCESSABLE_ENTITY
 
     if (exception instanceof HttpException) {
       const httpException: HttpException = exception as HttpException
@@ -88,7 +88,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         code = 'CannotCreateEntityIdMapError'
         break
       default:
-        status ??= status == 0x1f4 ? HttpStatus.UNPROCESSABLE_ENTITY : status
+        status ??= HttpStatus.UNPROCESSABLE_ENTITY
         message ??= 'Unprocessable Entity'
         code ??= 'UnprocessableEntity'
     }
