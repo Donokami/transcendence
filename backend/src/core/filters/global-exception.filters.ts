@@ -88,9 +88,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         code = 'CannotCreateEntityIdMapError'
         break
       default:
-        status = HttpStatus.UNPROCESSABLE_ENTITY
-        message = 'Unprocessable Entity'
-        code = 'UnprocessableEntity'
+        status ??= status == 0x1f4 ? HttpStatus.UNPROCESSABLE_ENTITY : status
+        message ??= 'Unprocessable Entity'
+        code ??= 'UnprocessableEntity'
     }
 
     if (process.env.NODE_ENV === 'production') {
