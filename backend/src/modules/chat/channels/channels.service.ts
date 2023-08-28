@@ -307,6 +307,7 @@ export class ChannelsService {
   async getMessages(channel: Channel): Promise<Message[]> {
     const messages: Message[] = await this.messagesRepository.find({
       where: { channel: { id: channel.id } },
+      order: { createdAt: 'ASC' },
       relations: ['user']
     })
 
@@ -504,10 +505,7 @@ export class ChannelsService {
     return message
   }
 
-  async checkIsMuted(
-    userId: string,
-    channel: Channel
-  ): Promise<boolean> {
+  async checkIsMuted(userId: string, channel: Channel): Promise<boolean> {
     const user: User = await this.checkExistingUser(userId)
 
     if (channel.isMuted(user)) {

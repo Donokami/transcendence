@@ -105,14 +105,14 @@ export class PhysicsEngine {
   private isPastPaddle1(ball: SimObject3D): boolean {
     return (
       ball.position.z >
-      this.precalcs.halfFieldDepth + this.metrics.paddleDepth * 3
+      this.precalcs.halfFieldDepth + this.metrics.paddleDepth * 2
     )
   }
 
   private isPastPaddle2(ball: SimObject3D): boolean {
     return (
       ball.position.z <
-      -this.precalcs.halfFieldDepth - this.metrics.paddleDepth * 3
+      -this.precalcs.halfFieldDepth - this.metrics.paddleDepth * 2
     )
   }
 
@@ -168,8 +168,6 @@ export class PhysicsEngine {
       this.startBallMov(ball)
     }
 
-    this.updateBallPosition(ball)
-
     if (this.isSideCollision(ball)) {
       ball.velocity.x *= -1
       ball.velocity.y *= -1
@@ -177,12 +175,14 @@ export class PhysicsEngine {
 
     if (this.isPaddle1Collision(ball, paddle1)) {
       this.hitBallBack(ball, paddle1)
-      console.log('paddle1 collision')
+      this.updateBallPosition(ball)
+      return
     }
 
     if (this.isPaddle2Collision(ball, paddle2)) {
       this.hitBallBack(ball, paddle2)
-      console.log('paddle2 collision')
+      this.updateBallPosition(ball)
+      return
     }
 
     if (this.isPastPaddle1(ball)) {
@@ -202,6 +202,8 @@ export class PhysicsEngine {
         ball.stopped = false
       }, 2000)
     }
+
+    this.updateBallPosition(ball)
   }
 
   private processCpuPaddle(): void {

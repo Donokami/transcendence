@@ -71,7 +71,6 @@ export class SocialGateway {
       ).length > 0
     )
       return
-    console.log('disconnected')
     this.usersService.update(client.request.user.id, {
       status: UserStatus.OFFLINE
     })
