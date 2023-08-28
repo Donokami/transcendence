@@ -101,9 +101,6 @@ export class User {
   @Column({ default: 0, select: false })
   pointsConceded: number
 
-  @Column({ default: 0, select: false })
-  pointsDifference: number
-
   @CreateDateColumn()
   createdAt: Date
 

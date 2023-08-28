@@ -21,7 +21,7 @@ export interface User {
   // ******************************* //
   // FRIENDSHIP RELATED INFORMATIONS //
   // ******************************* //
-  
+
   nFriends: number
   sentRequest: Friendship[]
   receivedRequest: Friendship[]
@@ -47,5 +47,4 @@ export interface User {
   winRate: number
   pointsScored: number
   pointsConceded: number
-  pointsDifference: number
 }

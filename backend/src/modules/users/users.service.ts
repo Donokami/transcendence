@@ -9,7 +9,7 @@ import {
 } from 'nestjs-paginate'
 import * as path from 'path'
 import { Subject } from 'rxjs'
-import { ILike, In, MoreThan, Repository } from 'typeorm'
+import { ILike, In, IsNull, MoreThan, Not, Repository } from 'typeorm'
 import { Injectable, Logger, BadRequestException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
@@ -80,6 +80,9 @@ export class UsersService {
       filterableColumns: {
         name: [FilterOperator.EQ, FilterSuffix.NOT],
         status: [FilterOperator.EQ, FilterSuffix.NOT]
+      },
+      where: {
+        username: Not(IsNull())
       }
     })
   }
@@ -94,7 +97,6 @@ export class UsersService {
         'winRate',
         'pointsScored',
         'pointsConceded',
-        'pointsDifference',
         'createdAt',
         'updatedAt'
       ],
@@ -108,8 +110,7 @@ export class UsersService {
         'loss',
         'winRate',
         'pointsScored',
-        'pointsConceded',
-        'pointsDifference'
+        'pointsConceded'
       ],
       filterableColumns: {
         name: [FilterOperator.EQ, FilterSuffix.NOT],
@@ -119,8 +120,7 @@ export class UsersService {
         loss: [FilterOperator.EQ, FilterSuffix.NOT],
         winRate: [FilterOperator.EQ, FilterSuffix.NOT],
         pointsScored: [FilterOperator.EQ, FilterSuffix.NOT],
-        pointsConceded: [FilterOperator.EQ, FilterSuffix.NOT],
-        pointsDifference: [FilterOperator.EQ, FilterSuffix.NOT]
+        pointsConceded: [FilterOperator.EQ, FilterSuffix.NOT]
       },
       select: [
         'id',
@@ -132,47 +132,60 @@ export class UsersService {
         'loss',
         'winRate',
         'pointsScored',
-        'pointsConceded',
-        'pointsDifference'
-      ]
+        'pointsConceded'
+      ],
+      where: {
+        username: Not(IsNull())
+      }
     })
   }
 
   async findByIds(userIds: string[]): Promise<User[]> {
     return this.usersRepository.find({
       where: {
-        id: In(userIds)
+        id: In(userIds),
+        username: Not(IsNull())
       }
     })
   }
 
   async findOneByUsername(username: string): Promise<User> {
     if (!username) {
-      return null
+      throw new UserNotFound()
     }
 
-    const user = await this.usersRepository.findOne({
-      where: { username: ILike(username) }
-    })
+    let user: User
+    try {
+      user = await this.usersRepository.findOne({
+        where: { username: ILike(username) }
+      })
+    } catch (error) {
+      throw new UserNotFound()
+    }
 
     return user
   }
 
   async findOneByUsernameWithAuthInfos(username: string): Promise<User> {
     if (!username) {
-      return null
+      throw new UserNotFound()
     }
 
-    const user = await this.usersRepository.findOne({
-      where: { username },
-      select: [
-        'id',
-        'username',
-        'password',
-        'twoFactorSecret',
-        'isTwoFactorEnabled'
-      ]
-    })
+    let user: User
+    try {
+      user = await this.usersRepository.findOne({
+        where: { username },
+        select: [
+          'id',
+          'username',
+          'password',
+          'twoFactorSecret',
+          'isTwoFactorEnabled'
+        ]
+      })
+    } catch (error) {
+      throw new UserNotFound()
+    }
 
     return user
   }
@@ -234,7 +247,7 @@ export class UsersService {
     }
 
     const user = await this.usersRepository.findOne({
-      where: { id },
+      where: { id, username: Not(IsNull()) },
       select: ['id', 'username', 'channels', 'bannedChannels', 'messages'],
       relations: ['channels', 'bannedChannels']
     })
@@ -247,7 +260,7 @@ export class UsersService {
       return null
     }
     const user = await this.usersRepository.findOne({
-      where: { id },
+      where: { id, username: Not(IsNull()) },
       select: [
         'id',
         'username',
@@ -258,8 +271,7 @@ export class UsersService {
         'loss',
         'winRate',
         'pointsScored',
-        'pointsConceded',
-        'pointsDifference'
+        'pointsConceded'
       ]
     })
 

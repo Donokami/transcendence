@@ -35,11 +35,10 @@
       <TresAmbientLight color="#ffffff" :position="[0, 3, 0]" :intensity="1" />
       <TresDirectionalLight
         color="#ffffff"
-        cast-shadow
         :position="[-15, 25, 0]"
         :intensity="2" />
       <TresGroup>
-        <TresMesh receive-shadow>
+        <TresMesh>
           <TresBoxGeometry
             :args="[
               gameMetrics.fieldWidth,
@@ -74,7 +73,7 @@
           ]" />
         <TresMeshToonMaterial color="#fff" />
       </TresMesh>
-      <TresMesh cast-shadow ref="ballRef">
+      <TresMesh ref="ballRef">
         <TresSphereGeometry :args="[gameMetrics.ballRadius]" />
         <TresMeshToonMaterial color="#ff0" />
       </TresMesh>
@@ -91,7 +90,6 @@
           :rotation-y="Math.PI * 0.5"
           center
           need-updates
-          cast-shadow
           font="https://raw.githubusercontent.com/Tresjs/assets/main/fonts/FiraCodeRegular.json">
           <TresMeshToonMaterial color="#fff" />
         </Text3D>

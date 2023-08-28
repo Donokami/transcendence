@@ -11,12 +11,10 @@
           <th class="text-center">Games Played</th>
           <th class="text-center">Points Scored</th>
           <th class="text-center">Points Conceded</th>
-          <th class="text-center rounded-none">Points Difference</th>
         </tr>
       </thead>
       <tbody>
         <tr v-if="!users" class="animate-pulse">
-          <td class="text-center">-</td>
           <td class="text-center">-</td>
           <td class="text-center">-</td>
           <td class="text-center">-</td>
@@ -41,7 +39,6 @@
           <td class="text-center">{{ user.gamesPlayed }}</td>
           <td class="text-center">{{ user.pointsScored }}</td>
           <td class="text-center">{{ user.pointsConceded }}</td>
-          <td class="text-center">{{ user.pointsDifference }}</td>
         </tr>
       </tbody>
     </table>
@@ -78,11 +75,7 @@ const sortedUsers = computed(() => {
 
     const gamesPlayedDifference = b.gamesPlayed - a.gamesPlayed
 
-    if (gamesPlayedDifference !== 0) {
-      return gamesPlayedDifference
-    }
-
-    return b.pointsDifference - a.pointsDifference
+    return gamesPlayedDifference
   })
 })
 </script>

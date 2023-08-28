@@ -82,8 +82,4 @@ export class UserDto {
   @ApiProperty()
   @Expose()
   pointsConceded: number
-
-  @ApiProperty()
-  @Expose()
-  pointsDifference: number
 }

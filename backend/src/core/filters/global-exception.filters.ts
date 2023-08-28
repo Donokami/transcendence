@@ -88,9 +88,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         code = 'CannotCreateEntityIdMapError'
         break
       default:
-        status ??= HttpStatus.UNPROCESSABLE_ENTITY
-        message ??= 'Unprocessable Entity'
-        code ??= 'UnprocessableEntity'
+        status = HttpStatus.UNPROCESSABLE_ENTITY
+        message = 'Unprocessable Entity'
+        code = 'UnprocessableEntity'
     }
 
     if (process.env.NODE_ENV === 'production') {
@@ -121,9 +121,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       })
     } else {
       client.emit('error', {
-        code: HttpStatus.INTERNAL_SERVER_ERROR,
-        type: 'InternalServerError',
-        message: 'Internal server error'
+        code: HttpStatus.UNPROCESSABLE_ENTITY,
+        type: 'UnprocessableEntity',
+        message: 'Unprocessable Entity'
       })
     }
     if (process.env.NODE_ENV === 'production') {
