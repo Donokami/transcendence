@@ -105,14 +105,14 @@ export class PhysicsEngine {
   private isPastPaddle1(ball: SimObject3D): boolean {
     return (
       ball.position.z >
-      this.precalcs.halfFieldDepth + this.metrics.paddleDepth * 2
+      this.precalcs.halfFieldDepth + this.metrics.paddleDepth * 3
     )
   }
 
   private isPastPaddle2(ball: SimObject3D): boolean {
     return (
       ball.position.z <
-      -this.precalcs.halfFieldDepth - this.metrics.paddleDepth * 2
+      -this.precalcs.halfFieldDepth - this.metrics.paddleDepth * 3
     )
   }
 
