@@ -93,7 +93,7 @@
           <!-- BAN -->
           <li
             class="rounded-none"
-            v-if="isMember && !isBanned"
+            v-if="isBanned === false"
             @click="banMember">
             <div
               class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
@@ -103,7 +103,7 @@
             </div>
           </li>
           <!-- UNBAN -->
-          <li class="rounded-none" v-if="isBanned" @click="unbanMember">
+          <li class="rounded-none" v-if="isBanned === true" @click="unbanMember">
             <div
               class="flex gap-3 text-green-500 rounded-none hover:text-green-500">
               <iconify-icon icon="lucide:gavel" class="w-4 h-4 shrink-0">

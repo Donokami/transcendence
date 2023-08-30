@@ -17,11 +17,17 @@
               <span class="loading loading-spinner loading-lg"></span>
             </div>
           </div>
-
-          <!-- USER LIST -->
           <ul
             v-else-if="loggedUser && loggedUser && channelsList.length > 0"
             class="w-full bg-base-100">
+            <!-- LIST OF MEMBERS -->
+            <div class="flex pl-3 pt-3">
+              <iconify-icon
+                icon="lucide:user"
+                class="h-6 w-6 shrink-0 self-start mt-0.5">
+              </iconify-icon>
+              <span class="pl-3 text-xl">Group members</span>
+            </div>
             <li v-for="user in channel?.members" :key="user.id">
               <div class="w-full rounded-none dropdown dropdown-bottom">
                 <!-- AVATAR DROPDOWN BUTTON -->
@@ -142,7 +148,7 @@
                       <!-- BAN -->
                       <li
                         class="rounded-none"
-                        v-if="isMember(user)"
+                        v-if="isBanned(user) === false"
                         @click="banMember(user)">
                         <div
                           class="flex gap-3 text-red-500 rounded-none hover:text-red-500">
@@ -156,7 +162,98 @@
                       <!-- UNBAN -->
                       <li
                         class="rounded-none"
-                        v-if="isBanned(user)"
+                        v-if="isBanned(user) === true"
+                        @click="unbanMember(user)">
+                        <div
+                          class="flex gap-3 text-green-500 rounded-none hover:text-green-500">
+                          <iconify-icon
+                            icon="lucide:gavel"
+                            class="w-4 h-4 shrink-0">
+                          </iconify-icon>
+                          <span>Unban</span>
+                        </div>
+                      </li>
+                    </div>
+                  </div>
+                </ul>
+              </div>
+            </li>
+            <!-- LIST OF BANNED MEMBERS -->
+            <div
+              v-if="channel?.bannedMembers && channel.bannedMembers.length > 0"
+              class="flex pl-3 pt-3">
+              <iconify-icon
+                icon="lucide:gavel"
+                class="h-6 w-6 shrink-0 self-start mt-0.5">
+              </iconify-icon>
+              <span class="pl-3 text-xl">Banned members</span>
+            </div>
+            <li v-for="user in channel?.bannedMembers" :key="user.id">
+              <div class="w-full rounded-none dropdown dropdown-bottom">
+                <!-- AVATAR DROPDOWN BUTTON -->
+                <label
+                  tabindex="0"
+                  class="flex rounded-none cursor-pointer hover:bg-base-300">
+                  <div class="py-3">
+                    <div class="flex items-center px-4 mx-auto">
+                      <div class="w-10 h-10">
+                        <user-avatar :user-props="user" :upload-mode="false">
+                        </user-avatar>
+                      </div>
+                      <span class="w-32 pl-3 text-sm truncate">{{
+                        user.username
+                      }}</span>
+                    </div>
+                  </div>
+                </label>
+                <!-- DROPDOWN CONTENT -->
+                <ul
+                  tabindex="0"
+                  class="dropdown-content menu shadow bg-base-100 z-[1000] p-0 border-2 border-black rounded-none mx-2 w-40 top-100">
+                  <!-- GO TO PROFILE -->
+                  <li class="rounded-none">
+                    <router-link
+                      :to="`/profile/${user.id}`"
+                      class="flex gap-3 rounded-none">
+                      <iconify-icon icon="lucide:user" class="w-4 h-4 shrink-0">
+                      </iconify-icon>
+                      <span>Profile</span>
+                    </router-link>
+                  </li>
+                  <div v-if="user.id !== loggedUser?.id">
+                    <!-- BLOCK -->
+                    <li
+                      class="rounded-none"
+                      v-if="isBlocked(user) === false"
+                      @click="blockUser(user)">
+                      <div class="flex gap-3 rounded-none">
+                        <iconify-icon
+                          icon="lucide:ban"
+                          class="w-4 h-4 shrink-0">
+                        </iconify-icon>
+                        <span>Block</span>
+                      </div>
+                    </li>
+                    <!-- UNBLOCK -->
+                    <li
+                      class="rounded-none"
+                      v-if="isBlocked(user) === true"
+                      @click="unblockUser(user)">
+                      <div class="flex gap-3 rounded-none">
+                        <iconify-icon
+                          icon="lucide:ban"
+                          class="w-4 h-4 shrink-0">
+                        </iconify-icon>
+                        <span>Unblock</span>
+                      </div>
+                    </li>
+                    <!-- ADMIN ACTIONS -->
+                    <div v-if="showAdminActions(user)">
+                      <div class="divider p-0 m-0 h-[6px]"></div>
+                      <!-- UNBAN -->
+                      <li
+                        class="rounded-none"
+                        v-if="isBanned(user) === true"
                         @click="unbanMember(user)">
                         <div
                           class="flex gap-3 text-green-500 rounded-none hover:text-green-500">
