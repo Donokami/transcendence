@@ -147,10 +147,8 @@ export const useUserStore = defineStore('users', {
     },
 
     async refreshUser(): Promise<void> {
-      try {
-        const user = await this.fetchUser()
-        this.loggedUser = user
-      } catch (error) {}
+      const user = await this.fetchUser()
+      this.loggedUser = user
     },
 
     async register(values: Record<string, any>): Promise<User> {

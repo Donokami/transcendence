@@ -54,6 +54,7 @@ import { useToast } from 'vue-toastification'
 import { useUserStore } from '../stores/UserStore'
 
 import UserAvatar from '@/components/UserAvatar.vue'
+import { ApiError } from '@/utils/fetcher'
 
 const alertMsg = ref('Your account is being created...')
 const alertColor = ref('bg-blue-500')
@@ -77,13 +78,11 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
 
   try {
     await userStore.setUsername(values.username)
-    await userStore.refreshUser()
     alertColor.value = 'bg-green-500'
     alertMsg.value = 'Profile updated successfully!'
     await router.push('/')
   } catch (error: any) {
-    console.log(JSON.stringify(error, Object.getOwnPropertyNames(error)))
-    if (error.message === 'Username already exists') {
+    if (error instanceof ApiError && error.code === 'UsernameExists') {
       alertColor.value = 'bg-red-500'
       alertMsg.value = 'Username is already taken!'
     } else {

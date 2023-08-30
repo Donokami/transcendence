@@ -66,22 +66,24 @@ const router = createRouter({
 })
 
 router.beforeEach(async (to, from) => {
+  let isAuthenticated
+
   const userStore = useUserStore()
-  if (userStore.loggedUser === null) {
+  try {
     await userStore.refreshUser()
+    isAuthenticated = true
+  } catch (error) {
+    isAuthenticated = false
   }
+
   if (
     to.name !== 'onboarding' &&
-    userStore.loggedUser &&
+    isAuthenticated &&
     !userStore.loggedUser?.username
   ) {
     return { name: 'onboarding' }
   }
-  if (
-    to.name !== 'auth' &&
-    to.name !== 'mfa' &&
-    userStore.loggedUser === null
-  ) {
+  if (to.name !== 'auth' && to.name !== 'mfa' && !isAuthenticated) {
     return { name: 'auth' }
   }
   if (to.name === 'onboarding' && userStore.loggedUser?.username) {

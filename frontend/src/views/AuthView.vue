@@ -67,7 +67,7 @@ const handleOauth = async (): Promise<void> => {
         if (popup != null) popup.close()
         setTimeout(async () => {
           inSubmission.value = false
-          await userStore.refreshUser()
+          // await userStore.refreshUser()
           await router.push('/')
         }, 3000)
       }

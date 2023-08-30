@@ -145,10 +145,6 @@ const logout = async (): Promise<void> => {
   await userStore.signOut()
   await router.push('/auth')
 }
-
-onBeforeMount(async () => {
-  await userStore.refreshUser()
-})
 </script>
 
 <style scoped>
