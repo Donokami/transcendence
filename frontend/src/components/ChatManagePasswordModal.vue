@@ -30,6 +30,7 @@
               v-model="password"
               v-if="passwordRequired === true"
               class="py-2 text-sm neobrutalist-input"
+              type="password"
               placeholder="Choose a new password for your group" />
             <div v-if="passwordError" class="text-red-500">
               {{ passwordError }}
