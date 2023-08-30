@@ -71,7 +71,6 @@
             </h2>
           </div>
           <button
-            v-if="channelStore.getChannel(selectedChannel)?.isDm === true"
             @click="createGame"
             class="text-black bg-white border-2 border-black btn shrink hover:bg-black hover:border-black hover:text-white">
             <iconify-icon
