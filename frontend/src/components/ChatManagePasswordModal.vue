@@ -22,6 +22,7 @@
               <span class="text-base text-black">Change password</span>
               <input
                 type="checkbox"
+                id="checkbox"
                 class="border-2 border-black rounded-none checkbox"
                 @click="setPasswordRequirement()" />
             </label>
@@ -61,11 +62,8 @@
 </template>
 
 <script setup lang="ts">
-// ******* //
-// IMPORTS //
-// ******* //
 
-import { ref, toRefs, watch, type PropType } from 'vue'
+import { ref, toRefs, watch, type PropType, onBeforeMount, onMounted } from 'vue'
 import { Form } from 'vee-validate'
 import { useToast } from 'vue-toastification'
 
@@ -74,10 +72,6 @@ import { storeToRefs } from 'pinia'
 import type { Channel } from '@/types'
 
 import { useChannelStore } from '@/stores/ChannelStore'
-
-// ******************** //
-// VARIABLE DEFINITIONS //
-// ******************** //
 
 const channelStore = useChannelStore()
 const emit = defineEmits(['update:showModal'])
@@ -92,14 +86,6 @@ const toast = useToast()
 
 const { selectedChannel } = storeToRefs(channelStore)
 const { showModal, channel } = toRefs(props)
-
-// ******************** //
-// FUNCTION DEFINITIONS //
-// ******************** //
-
-// ******************* //
-// changeGroupPassword //
-// ******************* //
 
 const changeGroupPassword = async (): Promise<void> => {
   if (!password.value) {
@@ -116,29 +102,32 @@ const changeGroupPassword = async (): Promise<void> => {
     )
     toast.success(`Password changed successfully`)
     passwordError.value = null
+    closeModal()
   } catch (error) {
     toast.error(`An error occured while changing the password`)
   }
 }
 
-// ********** //
-// closeModal //
-// ********** //
-
 function closeModal(): void {
-  if (passwordRequired.value && (!password.value || passwordError.value)) return
+  if (passwordRequired.value && passwordError.value) {
+    return
+  }
+  const checkBox = document.getElementById(
+    'checkbox'
+  ) as HTMLInputElement
+  if (checkBox.checked) {
+  checkBox.checked = !checkBox.checked
+  }
+
   const modalElement = document.getElementById(
     'my-modal-13'
   ) as HTMLInputElement
   if (modalElement) {
     modalElement.checked = !modalElement.checked
+    passwordRequired.value = false
     emit('update:showModal', modalElement.checked)
   }
 }
-
-// ******************* //
-// deleteGroupPassword //
-// ******************* //
 
 const deleteGroupPassword = async (): Promise<void> => {
   if (!selectedChannel.value) return
@@ -146,24 +135,17 @@ const deleteGroupPassword = async (): Promise<void> => {
   try {
     await channelStore.deleteGroupPassword(selectedChannel.value)
     toast.success(`Password deleted successfully`)
+    closeModal()
   } catch (error) {
     toast.error(`An error occured while deleting the group password.`)
   }
 }
-
-// ********************** //
-// setPasswordRequirement //
-// ********************** //
 
 const setPasswordRequirement = (): void => {
   if (passwordRequired.value) passwordRequired.value = false
   else passwordRequired.value = true
   passwordError.value = null
 }
-
-// ********** //
-// submitForm //
-// ********** //
 
 const submitForm = async (values: Record<string, any>): Promise<void> => {
   if (passwordRequired.value && !password.value) {
@@ -181,9 +163,6 @@ const submitForm = async (values: Record<string, any>): Promise<void> => {
 
   passwordError.value = null
 }
-// ********************* //
-// VueJs LIFECYCLE HOOKS //
-// ********************* //
 
 watch(showModal, (newValue) => {
   const modalElement = document.getElementById(
